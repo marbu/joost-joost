@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.6 2003/01/21 10:22:35 obecker Exp $
+ * $Id: Value.java,v 1.7 2003/01/25 06:48:23 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,7 +29,7 @@ import net.sf.joost.grammar.EvalException;
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.6 $ $Date: 2003/01/21 10:22:35 $
+ * @version $Revision: 1.7 $ $Date: 2003/01/25 06:48:23 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -153,6 +153,7 @@ public class Value implements Cloneable
          break;
       }
       type = NUMBER;
+      next = null;
       return this;
    }
 
@@ -182,6 +183,7 @@ public class Value implements Cloneable
          break;
       }
       type = STRING;
+      next = null;
       return this;
    }
 
@@ -209,6 +211,7 @@ public class Value implements Cloneable
          break;
       }
       type = BOOLEAN;
+      next = null;
       return this;
    }
 
