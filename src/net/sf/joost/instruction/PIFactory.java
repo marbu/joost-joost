@@ -1,5 +1,5 @@
 /*
- * $Id: PIFactory.java,v 2.2 2003/06/03 14:30:24 obecker Exp $
+ * $Id: PIFactory.java,v 2.3 2004/09/29 06:14:20 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,24 +24,22 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.helpers.AttributesImpl;
-
 import java.util.HashSet;
 
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
-import net.sf.joost.stx.Value;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 
 /** 
  * Factory for <code>processing-instruction</code> elements, which are 
  * represented by the inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2003/06/03 14:30:24 $
+ * @version $Revision: 2.3 $ $Date: 2004/09/29 06:14:20 $
  * @author Oliver Becker
  */
 
@@ -94,8 +92,7 @@ final public class PIFactory extends FactoryBase
          this.name = name;
          buffer = new StringBuffer();
          strEmitter = new StringEmitter(buffer, 
-                                        "(`" + qName + "' started in line " +
-                                        lineNo + ")");
+                         "(`" + qName + "' started in line " + lineNo + ")");
       }
 
 
@@ -114,9 +111,9 @@ final public class PIFactory extends FactoryBase
             return PR_CONTINUE; // if the errorHandler returns
          }
          buffer.setLength(0);
-         context.emitter.pushEmitter(strEmitter);
+         context.pushEmitter(strEmitter);
 
-         piName = name.evaluate(context, this).string;
+         piName = name.evaluate(context, this).getString();
 
          // TO DO: is this piName valid?
          return PR_CONTINUE;
@@ -129,7 +126,7 @@ final public class PIFactory extends FactoryBase
       public short processEnd(Context context)
          throws SAXException
       {
-         context.emitter.popEmitter();
+         context.popEmitter();
          int index = buffer.length();
          if (index != 0) {
             // are there any "?>" in the pi data?

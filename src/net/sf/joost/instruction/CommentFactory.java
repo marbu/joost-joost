@@ -1,5 +1,5 @@
 /*
- * $Id: CommentFactory.java,v 2.1 2003/06/03 14:30:20 obecker Exp $
+ * $Id: CommentFactory.java,v 2.2 2004/09/29 06:14:20 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -36,7 +36,7 @@ import net.sf.joost.emitter.StringEmitter;
 /** 
  * Factory for <code>comment</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.1 $ $Date: 2003/06/03 14:30:20 $
+ * @version $Revision: 2.2 $ $Date: 2004/09/29 06:14:20 $
  * @author Oliver Becker
  */
 
@@ -68,9 +68,8 @@ public class CommentFactory extends FactoryBase
          super(qName, parent, context, true);
 
          buffer = new StringBuffer();
-         strEmitter = new StringEmitter(buffer, 
-                                        "(`" + qName + "' started in line " +
-                                        lineNo + ")");
+         strEmitter = new StringEmitter(buffer,
+                         "(`" + qName + "' started in line " + lineNo + ")");
       }
 
 
@@ -90,7 +89,7 @@ public class CommentFactory extends FactoryBase
             return PR_CONTINUE; // if the errorHandler returns
          }
          buffer.setLength(0);
-         context.emitter.pushEmitter(strEmitter);
+         context.pushEmitter(strEmitter);
          return PR_CONTINUE;
       }
 
@@ -102,7 +101,7 @@ public class CommentFactory extends FactoryBase
       public short processEnd(Context context)
          throws SAXException
       {
-         context.emitter.popEmitter();
+         context.popEmitter();
 
          int index = buffer.length();
          if (index != 0) {

@@ -1,5 +1,5 @@
 /*
- * $Id: CdataFactory.java,v 2.1 2003/06/03 14:30:20 obecker Exp $
+ * $Id: CdataFactory.java,v 2.2 2004/09/29 06:14:20 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,21 +24,20 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.ParseContext;
 
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+
 
 /** 
  * Factory for <code>cdata</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.1 $ $Date: 2003/06/03 14:30:20 $
+ * @version $Revision: 2.2 $ $Date: 2004/09/29 06:14:20 $
  * @author Oliver Becker
  */
 
@@ -70,8 +69,7 @@ final public class CdataFactory extends FactoryBase
          super(qName, parent, context, true);
          buffer = new StringBuffer();
          strEmitter = new StringEmitter(buffer, 
-                                        "(`" + qName + "' started in line " +
-                                        lineNo + ")");
+                         "(`" + qName + "' started in line " + lineNo + ")");
       }
 
 
@@ -89,7 +87,7 @@ final public class CdataFactory extends FactoryBase
          }
          super.process(context);
          buffer.setLength(0);
-         context.emitter.pushEmitter(strEmitter);
+         context.pushEmitter(strEmitter);
          return PR_CONTINUE;
       }
 
@@ -100,8 +98,8 @@ final public class CdataFactory extends FactoryBase
       public short processEnd(Context context)
          throws SAXException
       {
+         context.popEmitter();
          Emitter emitter = context.emitter;
-         emitter.popEmitter();
          emitter.startCDATA(publicId, systemId, lineNo, colNo);
          emitter.characters(buffer.toString().toCharArray(),
                             0, buffer.length());
