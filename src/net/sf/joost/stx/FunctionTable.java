@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.25 2004/09/29 06:10:53 obecker Exp $
+ * $Id: FunctionTable.java,v 2.26 2004/10/03 20:03:05 zubow Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -53,7 +53,7 @@ import net.sf.joost.instruction.AnalyzeTextFactory;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.25 $ $Date: 2004/09/29 06:10:53 $
+ * @version $Revision: 2.26 $ $Date: 2004/10/03 20:03:05 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -205,11 +205,11 @@ final public class FunctionTable implements Constants
       /** 
        * The evaluation method.
        * @param context the Context object
-       * @param events the current event stack
        * @param top the number of the upper most element on the stack
        * @param args the current parameters
        * @return a {@link Value} instance containing the result
-       * @exception StxException if an error occurs while processing
+       * @exception SAXException if an error occurs while processing
+       * @exception EvalException if an error occurs while processing
        */
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException;
