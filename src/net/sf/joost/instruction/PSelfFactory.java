@@ -1,5 +1,5 @@
 /*
- * $Id: PSelfFactory.java,v 1.9 2003/02/02 15:16:29 obecker Exp $
+ * $Id: PSelfFactory.java,v 1.10 2003/02/03 13:14:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.Context;
 /**
  * Factory for <code>process-self</code> elements, which are represented by 
  * the inner Instance class.
- * @version $Revision: 1.9 $ $Date: 2003/02/02 15:16:29 $
+ * @version $Revision: 1.10 $ $Date: 2003/02/03 13:14:29 $
  * @author Oliver Becker
  */
 
@@ -77,7 +77,7 @@ public class PSelfFactory extends FactoryBase
          ancestor = ancestor.parent;
       if (ancestor == null)
          throw new SAXParseException(
-            "`" + qName + "' must be a descendant of stx:template or" +
+            "`" + qName + "' must be a descendant of stx:template or " +
             "stx:procedure",
             locator);
       if (ancestor instanceof WithParamFactory.Instance)

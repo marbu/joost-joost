@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 1.6 2003/01/18 10:28:20 obecker Exp $
+ * $Id: LitElementFactory.java,v 1.7 2003/02/03 13:14:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,12 +29,11 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
-import org.xml.sax.helpers.NamespaceSupport;
 
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Stack;
 
+import net.sf.joost.Constants;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Emitter;
 import net.sf.joost.grammar.Tree;
@@ -43,7 +42,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for literal result elements, which are represented by the
  * inner Instance class. 
- * @version $Revision: 1.6 $ $Date: 2003/01/18 10:28:20 $
+ * @version $Revision: 1.7 $ $Date: 2003/02/03 13:14:29 $
  * @author Oliver Becker
 */
 
@@ -63,11 +62,19 @@ final public class LitElementFactory extends FactoryBase
                               Hashtable nsSet, Locator locator)
       throws SAXParseException
    {
-      if (parent == null)
-         throw new SAXParseException("file is not a STX stylesheet", locator);
+      if (parent == null) {
+         if (lName.equals("transform"))
+            throw new SAXParseException(
+               "File is not an STX stylesheet, need namespace `" +
+               Constants.STX_NS + "' for the `transform' element",
+               locator);
+         else
+            throw new SAXParseException(
+               "File is not an STX stylesheet, found " + qName, locator);
+      }
 
       if (parent instanceof TransformFactory.Instance)
-         throw new SAXParseException("result element `" + qName + 
+         throw new SAXParseException("Literal result element `" + qName + 
                                      "' may occur only within templates",
                                      locator);
 

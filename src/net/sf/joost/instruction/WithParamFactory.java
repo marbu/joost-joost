@@ -1,5 +1,5 @@
 /*
- * $Id: WithParamFactory.java,v 1.2 2003/01/16 15:56:27 obecker Exp $
+ * $Id: WithParamFactory.java,v 1.3 2003/02/03 13:14:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>with-param</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2003/01/16 15:56:27 $
+ * @version $Revision: 1.3 $ $Date: 2003/02/03 13:14:29 $
  * @author Oliver Becker
  */
 
@@ -80,8 +80,8 @@ final public class WithParamFactory extends FactoryBase
    {
       if (parent == null || !(parent instanceof ProcessBase)) {
          throw new SAXParseException(
-            "`" + qName + "' must be used only as a child of an " +
-            "stx:process-... instruction",
+            "`" + qName + "' must be used only as a child of " +
+            "stx:call-procedure or an stx:process-... instruction",
             locator);
       }
 
