@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 1.2 2002/09/20 12:52:02 obecker Exp $
+ * $Id: Tree.java,v 1.3 2002/10/21 15:54:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 1.2 $ $Date: 2002/09/20 12:52:02 $
+ * @version $Revision: 1.3 $ $Date: 2002/10/21 15:54:18 $
  * @author Oliver Becker
  */
 public class Tree
@@ -248,8 +248,9 @@ public class Tree
       try {
          switch (type) {
          case UNION:
-            // Should not happen, because such templates will be split
-            log4j.warn("UNION encountered");
+            // Note: templates with a pattern containing a UNION will be split
+            // This branch should be encountered only for patterns at other 
+            // places (for example in <stx:copy attributes="pattern">)
             if (left.matches(context, events, top))
                return true;
             return right.matches(context, events, top);
