@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.16 2002/11/07 11:09:24 obecker Exp $
+ * $Id: Processor.java,v 1.17 2002/11/07 11:38:16 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -43,7 +43,6 @@ import org.xml.sax.helpers.XMLReaderFactory;
 import javax.xml.transform.ErrorListener;
 
 import java.util.Arrays;
-//  import java.util.Enumeration;
 import java.util.EmptyStackException;
 import java.util.Hashtable;
 import java.util.Stack;
@@ -62,7 +61,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.16 $ $Date: 2002/11/07 11:09:24 $
+ * @version $Revision: 1.17 $ $Date: 2002/11/07 11:38:16 $
  * @author Oliver Becker
  */
 
@@ -157,15 +156,16 @@ public class Processor extends XMLFilterImpl
     */
    private Stack eventStack = new Stack();
 
-   /** Stack for {@link Data} objects */
-   private Stack dataStack = new Stack();
-
    /** 
-    * Stack for ancestor stacks ({@link #eventStack},
-    * needed for the processing of buffers, because each buffer has
-    * its own ancestor stack. 
+    * Stack needed for the processing of buffers, because each buffer has
+    * its own ancestor stack ({@link #eventStack}). This stack stores also
+    * character data that has been already read as look-ahead
+    * ({@link #collectedCharacters}).
     */
    private Stack bufferStack = new Stack();
+
+   /** Stack for {@link Data} objects */
+   private Stack dataStack = new Stack();
 
 
    // **********************************************************************
@@ -508,7 +508,8 @@ public class Processor extends XMLFilterImpl
       if (!name.startsWith("{"))
          name = "{}" + name;
       Value param = (Value)transformNode.globalParams.get(name);
-      return param != null ? param.convertToString().string : null;
+      // we know that this parameter was initialized with a string
+      return param != null ? param.string : null;
    }
 
    /**
@@ -823,6 +824,9 @@ public class Processor extends XMLFilterImpl
    {
       bufferStack.push(eventStack);
       eventStack = new Stack();
+      // there might be characters already read
+      bufferStack.push(collectedCharacters.toString());
+      collectedCharacters.setLength(0);
       startDocument();
    }
 
@@ -834,6 +838,7 @@ public class Processor extends XMLFilterImpl
       throws SAXException
    {
       endDocument();
+      collectedCharacters.append(bufferStack.pop());
       eventStack = (Stack)bufferStack.pop();
    }
 
