@@ -1,5 +1,5 @@
 /*
- * $Id: ProcessBase.java,v 2.8 2003/07/23 16:26:48 obecker Exp $
+ * $Id: ProcessBase.java,v 2.9 2004/01/07 15:07:27 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.ParseContext;
 /**
  * Common base class for all <code>stx:process-<em>xxx</em></code>
  * instructions
- * @version $Revision: 2.8 $ $Date: 2003/07/23 16:26:48 $
+ * @version $Revision: 2.9 $ $Date: 2004/01/07 15:07:27 $
  * @author Oliver Becker
  */
 public class ProcessBase extends NodeBase
@@ -212,8 +212,8 @@ public class ProcessBase extends NodeBase
    {
       context.targetGroup = targetGroup;
 
-      paramStack.push(context.passedParameters.clone());
-      context.passedParameters.clear();
+      paramStack.push(context.passedParameters);
+      context.passedParameters = new Hashtable();
       return PR_CONTINUE;
    }
 
