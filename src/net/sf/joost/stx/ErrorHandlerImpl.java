@@ -1,5 +1,5 @@
 /*
- * $Id: ErrorHandlerImpl.java,v 1.2 2003/04/29 15:06:41 obecker Exp $
+ * $Id: ErrorHandlerImpl.java,v 1.3 2003/06/18 11:45:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import javax.xml.transform.TransformerConfigurationException;
 /**
  * Class for receiving notifications of warnings and errors and for passing
  * them to a registered ErrorListener object.
- * @version $Revision: 1.2 $ $Date: 2003/04/29 15:06:41 $
+ * @version $Revision: 1.3 $ $Date: 2003/06/18 11:45:01 $
  * @author Oliver Becker
  */
 public final class ErrorHandlerImpl implements ErrorHandler
@@ -246,6 +246,9 @@ public final class ErrorHandlerImpl implements ErrorHandler
    public void error(SAXParseException pe)
       throws SAXException
    {
+      Exception em = pe.getException();
+      if (em instanceof RuntimeException)
+         throw (RuntimeException)em;
       error(pe.getMessage(), pe.getPublicId(), pe.getSystemId(),
             pe.getLineNumber(), pe.getColumnNumber());
    }
@@ -311,6 +314,9 @@ public final class ErrorHandlerImpl implements ErrorHandler
    public void fatalError(SAXParseException pe)
       throws SAXException
    {
+      Exception em = pe.getException();
+      if (em instanceof RuntimeException)
+         throw (RuntimeException)em;
       fatalError(pe.getMessage(), pe.getPublicId(), pe.getSystemId(),
                  pe.getLineNumber(), pe.getColumnNumber());
    }
