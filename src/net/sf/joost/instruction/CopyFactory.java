@@ -1,5 +1,5 @@
 /*
- * $Id: CopyFactory.java,v 1.12 2003/01/18 10:28:19 obecker Exp $
+ * $Id: CopyFactory.java,v 1.13 2003/01/27 17:57:45 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -36,17 +36,15 @@ import java.util.Hashtable;
 import java.util.Stack;
 
 
-import net.sf.joost.stx.SAXEvent;
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.Emitter;
+import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.grammar.Tree;
-import net.sf.joost.grammar.Yylex;
-import net.sf.joost.grammar.PatternParser;
 
 /** 
  * Factory for <code>copy</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.12 $ $Date: 2003/01/18 10:28:19 $
+ * @version $Revision: 1.13 $ $Date: 2003/01/27 17:57:45 $
  * @author Oliver Becker
  */
 
@@ -84,24 +82,11 @@ final public class CopyFactory extends FactoryBase
       throws SAXParseException
    {
       String attributesAtt = attrs.getValue("attributes");
-      Tree attributesPattern = null;
+      Tree attributesPattern = (attributesAtt != null )
+         ? parsePattern(attributesAtt, nsSet, locator)
+         : null;
 
-      if (attributesAtt != null) {
-         StringReader sr = new StringReader(attributesAtt);
-         Yylex lexer = new Yylex(sr);
-         PatternParser parser = new PatternParser(lexer, nsSet, locator);
-         try {
-            attributesPattern = (Tree)parser.parse().value;
-         }
-         catch (SAXParseException e) {
-            throw e;
-         }
-         catch (Exception e) {
-            throw new SAXParseException(e.getMessage() + 
-                                        "Found `" + lexer.last.value + "'",
-                                        locator);
-         }
-      }
+      checkAttributes(qName, attrs, attrNames, locator);
       return new Instance(qName, parent, locator, attributesPattern);
    }
 

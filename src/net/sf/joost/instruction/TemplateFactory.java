@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateFactory.java,v 1.9 2003/01/15 14:08:54 obecker Exp $
+ * $Id: TemplateFactory.java,v 1.10 2003/01/27 17:57:46 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -34,9 +34,7 @@ import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.Stack;
 
-import net.sf.joost.grammar.PatternParser;
 import net.sf.joost.grammar.Tree;
-import net.sf.joost.grammar.Yylex;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.SAXEvent;
@@ -45,7 +43,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>template</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 1.9 $ $Date: 2003/01/15 14:08:54 $
+ * @version $Revision: 1.10 $ $Date: 2003/01/27 17:57:46 $
  * @author Oliver Becker
  */
 
@@ -99,23 +97,7 @@ public final class TemplateFactory extends FactoryBase
       GroupBase parentGroup = (GroupBase)parent;
 
       String matchAtt = getAttribute(qName, attrs, "match", locator);
-
-      // parse the attribute
-      StringReader sr = new StringReader(matchAtt);
-      Yylex lexer = new Yylex(sr);
-      PatternParser parser = new PatternParser(lexer, nsSet, locator);
-      Tree matchPattern;
-      try {
-         matchPattern = (Tree)parser.parse().value;
-      }
-      catch (SAXParseException e) {
-         throw e;
-      }
-      catch (Exception e) {
-         throw new SAXParseException(e.getMessage() + 
-                                     "Found `" + lexer.last.value + "'",
-                                     locator);
-      }
+      Tree matchPattern = parsePattern(matchAtt, nsSet, locator);
 
       String priorityAtt = attrs.getValue("priority");
       double priority;

@@ -1,5 +1,5 @@
 /*
- * $Id: FactoryBase.java,v 1.5 2002/12/30 11:53:46 obecker Exp $
+ * $Id: FactoryBase.java,v 1.6 2003/01/27 17:57:46 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -35,12 +35,13 @@ import java.io.StringReader;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.grammar.Yylex;
 import net.sf.joost.grammar.ExprParser;
+import net.sf.joost.grammar.PatternParser;
 
 
 /**
  * Abstract base class for all factory classes which produce nodes
  * ({@link NodeBase}) for the tree representation of an STX stylesheet.
- * @version $Revision: 1.5 $ $Date: 2002/12/30 11:53:46 $
+ * @version $Revision: 1.6 $ $Date: 2003/01/27 17:57:46 $
  * @author Oliver Becker
  */
 
@@ -196,6 +197,37 @@ public abstract class FactoryBase
       //       the default namespace is not used
 
       return result.append('}').append(qName).toString();
+   }
+
+
+   /**
+    * Parses the string given in <code>string</code> as a pattern.
+    * @param string the string to be parsed
+    * @param nsSet the set of namespaces in scope
+    * @param locator the SAX Locator
+    * @return a <code>Tree</code> representation of the pattern
+    * @exception SAXParseException if a parse error occured
+    */
+   protected static Tree parsePattern(String string, Hashtable nsSet, 
+                                      Locator locator)
+      throws SAXParseException
+   {
+      StringReader sr = new StringReader(string);
+      Yylex lexer = new Yylex(sr);
+      PatternParser parser = new PatternParser(lexer, nsSet, locator);
+      Tree pattern;
+      try {
+         pattern = (Tree)parser.parse().value;
+      }
+      catch (SAXParseException e) {
+         throw e;
+      }
+      catch (Exception e) {
+         throw new SAXParseException(e.getMessage() + 
+                                     "Found `" + lexer.last.value + "'",
+                                     locator);
+      }
+      return pattern;
    }
 
 
