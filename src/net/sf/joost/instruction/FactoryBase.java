@@ -1,5 +1,5 @@
 /*
- * $Id: FactoryBase.java,v 2.4 2003/06/03 15:21:02 obecker Exp $
+ * $Id: FactoryBase.java,v 2.5 2003/10/06 10:10:49 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.ParseContext;
  * Abstract base class for all factory classes which produce nodes
  * ({@link NodeBase}) for the tree representation of an STX transformation
  * sheet.
- * @version $Revision: 2.4 $ $Date: 2003/06/03 15:21:02 $
+ * @version $Revision: 2.5 $ $Date: 2003/10/06 10:10:49 $
  * @author Oliver Becker
  */
 
@@ -218,13 +218,22 @@ public abstract class FactoryBase implements Constants
       Tree pattern;
       try {
          pattern = (Tree)parser.parse().value;
+         if (lexer.withinComment > 0)
+            throw new SAXParseException(
+               "Encountered end of pattern within a comment.", 
+               context.locator);
       }
       catch (SAXParseException e) {
          throw e;
       }
       catch (Exception e) {
          if (parser.errorToken.sym == Sym.EOF) {
-            if (lexer.last != null) 
+            if (lexer.withinComment > 0)
+               throw new SAXParseException(
+                  e.getMessage() + 
+                  "Encountered end of pattern within a comment.", 
+                  context.locator);
+            else if (lexer.last != null) 
                throw new SAXParseException(
                   e.getMessage() + "Encountered end of pattern after `" + 
                   lexer.last.value + "'.",
@@ -259,13 +268,22 @@ public abstract class FactoryBase implements Constants
       Tree expr;
       try {
          expr = (Tree)parser.parse().value;
+         if (lexer.withinComment > 0)
+            throw new SAXParseException(
+               "Encountered end of expression within a comment.", 
+               context.locator);
       }
       catch (SAXParseException e) {
          throw e;
       }
       catch (Exception e) {
          if (parser.errorToken.sym == Sym.EOF) {
-            if (lexer.last != null) 
+            if (lexer.withinComment > 0)
+               throw new SAXParseException(
+                  e.getMessage() + 
+                  "Encountered end of expression within a comment.", 
+                  context.locator);
+            else if (lexer.last != null) 
                throw new SAXParseException(
                   e.getMessage() + "Encountered end of expression after `" + 
                   lexer.last.value + "'.",
