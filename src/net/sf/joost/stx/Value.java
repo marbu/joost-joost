@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.7 2003/01/25 06:48:23 obecker Exp $
+ * $Id: Value.java,v 1.8 2003/02/24 13:30:28 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,12 +24,10 @@
 
 package net.sf.joost.stx;
 
-import net.sf.joost.grammar.EvalException;
-
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.7 $ $Date: 2003/01/25 06:48:23 $
+ * @version $Revision: 1.8 $ $Date: 2003/02/24 13:30:28 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -125,7 +123,6 @@ public class Value implements Cloneable
    //
 
    public Value convertToNumber()
-      throws EvalException
    {
       switch (type) {
       case EMPTY:
@@ -158,11 +155,13 @@ public class Value implements Cloneable
    }
 
    public Value convertToString()
-      throws EvalException
    {
       switch (type) {
       case EMPTY:
          string = "";
+         break;
+      case NODE:
+         string = event.value;
          break;
       case BOOLEAN:
          string = bool ? "true" : "false";
@@ -173,9 +172,6 @@ public class Value implements Cloneable
             string = string.substring(0,string.length()-2);
          break;
       case STRING:
-         break;
-      case NODE:
-         string = event.value;
          break;
       default:
          log4j.error("Don't know how to convert " + type + " to string");
@@ -188,20 +184,19 @@ public class Value implements Cloneable
    }
 
    public Value convertToBoolean()
-      throws EvalException
    {
       switch (type) {
       case EMPTY:
          bool = false;
+         break;
+      case NODE:
+         bool = true;
          break;
       case BOOLEAN:
          break;
       case NUMBER:
          bool = number != 0.0;
          break;
-      case NODE:
-         convertToString();
-         // falls through
       case STRING:
          bool = !string.equals("");
          break;
