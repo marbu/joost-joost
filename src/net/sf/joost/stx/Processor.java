@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.0 2003/04/25 16:47:18 obecker Exp $
+ * $Id: Processor.java,v 2.1 2003/04/27 15:36:24 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -64,7 +64,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:47:18 $
+ * @version $Revision: 2.1 $ $Date: 2003/04/27 15:36:24 $
  * @author Oliver Becker
  */
 
@@ -716,7 +716,9 @@ public class Processor extends XMLFilterImpl
       if (temp != null) {
          boolean attributeLoop;
          AbstractInstruction inst = temp;
-         do {
+         do { 
+            // loop as long as stx:process-attributes interrupts the inner 
+            // while
             attributeLoop = false;
             context.currentItem = null;
 
@@ -773,12 +775,33 @@ public class Processor extends XMLFilterImpl
                   if (DEBUG)
                      if (log.isDebugEnabled())
                         log.debug("stop " + ret);
-                  // ret == PR_SELF / PR_CHILDREN: Fehlermeldung!
-                  // ret == PR_SIBLINGS? BUG!
+                  switch (ret) {
+                  case PR_CHILDREN:
+                  case PR_SELF:
+                     NodeBase start = inst.getNode();
+                     context.errorHandler.error(
+                        "Encountered `" + start.qName + 
+                        "' after stx:process-self",
+                        start.publicId, start.systemId, 
+                        start.lineNo, start.colNo);
+                     // falls through, if the error handler returns
+                  case PR_ERROR:
+                     throw new SAXException("Non-recoverable error");
+                  case PR_SIBLINGS:
+                     dataStack.push(
+                        new Data(temp, inst, context.currentGroup, 
+                                 context.position, context.lookAhead,
+                                 context.nextProcessGroup.visibleTemplates,
+                                 PR_SIBLINGS, 
+                                 context.psiblings,
+                                 context.localVars, event));
+                     break;
+                  // case PR_ATTRIBUTES: won't happen
+                  // case PR_CONTINUE: nothing to do
+                  }
                }
                break;
             case PR_SIBLINGS: // stx:process-siblings encountered
-               // no stx:process-children before, skip contents
                if (event.type == SAXEvent.ELEMENT || 
                    event.type == SAXEvent.ROOT) {
                   // end of template reached, skip contents
@@ -794,16 +817,17 @@ public class Processor extends XMLFilterImpl
                            context.localVars, event));
                break;
             case PR_ATTRIBUTES: // stx:process-attributes encountered
-               // stx:process-attributes, just for elements
-               dataStack.push(
-                  new Data(temp, inst, context.currentGroup,
-                           context.position, context.lookAhead,
-                           context.nextProcessGroup.visibleTemplates,
-                           PR_ATTRIBUTES));
+               // happens only for elements with attributes
                processAttributes(event.attrs);
-               dataStack.pop();
-               attributeLoop = true;
+               attributeLoop = true; // continue processing
                break;
+            case PR_ERROR: // errorHandler returned after a fatal error
+               throw new SAXException("Non-recoverable error");
+            default:
+               // Mustn't happen
+               log.error("Unexpected return value from process() " + ret);
+               throw new SAXException(
+                  "Unexpected return value from process() " + ret);
             }
          } while(attributeLoop);
       }
@@ -951,6 +975,12 @@ public class Processor extends XMLFilterImpl
    private void processAttributes(Attributes attrs)
       throws SAXException
    {
+      // actually only the visible templates need to be put on this stack ..
+      dataStack.push(
+         new Data(null, null, context.currentGroup,
+                  context.position, context.lookAhead,
+                  context.nextProcessGroup.visibleTemplates,
+                  PR_ATTRIBUTES));
       for (int i=0; i<attrs.getLength(); i++) {
          if (DEBUG)
             if (log.isDebugEnabled())
@@ -962,6 +992,10 @@ public class Processor extends XMLFilterImpl
             if (log.isDebugEnabled())
                log.debug("done " + attrs.getQName(i));
       }
+      Data d =(Data)dataStack.pop();
+      // restore position and current group
+      context.position = d.contextPosition;
+      context.currentGroup = d.currentGroup;
    }
 
 
@@ -1059,16 +1093,29 @@ public class Processor extends XMLFilterImpl
                inst = inst.next;
             }
             if (DEBUG)             
-               if (log.isDebugEnabled())
-                  {
-                     log.debug("stop " + ret);
-                     log.debug(context.localVars);
-                  }
-            if (ret == PR_ATTRIBUTES)
+               if (log.isDebugEnabled()) {
+                  log.debug("stop " + ret);
+                  log.debug(context.localVars);
+               }
+            switch (ret) {
+            case PR_ATTRIBUTES:
                processAttributes(data.sibEvent.attrs);
-         } while (ret != PR_CONTINUE && 
+               break;
+            case PR_CHILDREN:
+            case PR_SELF:
+               NodeBase start = inst.getNode();
+               context.errorHandler.error(
+                 "Encountered `" + start.qName + 
+                 "' after stx:process-siblings",
+                 start.publicId, start.systemId, start.lineNo, start.colNo);
+               // falls through, if the error handler returns
+            case PR_ERROR:
+               throw new SAXException("Non-recoverable error");
+            // case PR_CONTINUE or PR_SIBLINGS: ok, nothing to do
+            }
+         } while (ret == PR_SIBLINGS && 
                   (clearLast || data != stopData));
-         if (!clearLast && ret != PR_CONTINUE) {
+         if (!clearLast && ret == PR_SIBLINGS) {
             // put back the last stx:process-siblings instruction
             stopData.instruction = inst;
             // there might have been a group attribute
@@ -1093,7 +1140,8 @@ public class Processor extends XMLFilterImpl
    // from interface ContentHandler
    //
 
-   public void startDocument() throws SAXException
+   public void startDocument() 
+      throws SAXException
    {
       // perform this only at the begin of a transformation,
       // not at the begin of processing another document
@@ -1131,12 +1179,30 @@ public class Processor extends XMLFilterImpl
             context.position = data.contextPosition; // restore position
             context.lookAhead = data.lookAhead;      // restore look ahead
 
-            for (AbstractInstruction inst = data.instruction;
-                 inst != null; inst = inst.next) {
+            AbstractInstruction inst = data.instruction;
+            short ret = PR_CONTINUE;
+            while (inst != null && ret == PR_CONTINUE) {
                if (DEBUG)
                   if (log.isDebugEnabled())
                      log.debug(inst);
-               inst.process(context);
+               ret = inst.process(context);
+               inst = inst.next;
+            }
+            switch (ret) {
+            case PR_CHILDREN:
+            case PR_SELF:
+               NodeBase start = inst.getNode();
+               context.errorHandler.error(
+                 "Encountered `" + start.qName + "' after stx:process-" +
+                 // prStatus must be either PR_CHILDREN or PR_SELF, see above
+                 (prStatus == PR_CHILDREN ? "children" : "self"),
+                 start.publicId, start.systemId, start.lineNo, start.colNo);
+               // falls through if the error handler returns
+            case PR_ERROR:
+               throw new SAXException("Non-recoverable error");
+            // case PR_ATTRIBUTE: 
+            // case PR_SIBLINGS:
+            // not possible because the context node is the document node
             }
          }
          else {
@@ -1240,7 +1306,6 @@ public class Processor extends XMLFilterImpl
             context.position = data.contextPosition; // restore position
             context.lookAhead = data.lookAhead;      // restore look ahead
             Object topData = dataStack.peek();
-            // as long as we encounter stx:process-attributes ...
             AbstractInstruction inst = data.instruction;
             int ret = PR_CONTINUE;
             while (inst != null && ret == PR_CONTINUE) {
@@ -1249,6 +1314,7 @@ public class Processor extends XMLFilterImpl
                      log.debug(inst);
                ret = inst.process(context);
                inst = inst.next;
+               // if we encountered stx:process-attributes
                if (ret == PR_ATTRIBUTES) {
                   processAttributes(((SAXEvent)eventStack.peek()).attrs);
                   ret = PR_CONTINUE;
@@ -1258,13 +1324,27 @@ public class Processor extends XMLFilterImpl
                if (log.isDebugEnabled())
                   log.debug("stop " + ret);
 
-            if (ret == PR_SIBLINGS) {
+            switch (ret) {
+            case PR_CHILDREN:
+            case PR_SELF: {
+               NodeBase start = inst.getNode();
+               context.errorHandler.error(
+                 "Encountered `" + start.qName + "' after stx:process-" +
+                 // prStatus must be either PR_CHILDREN or PR_SELF, see above
+                 (prStatus == PR_CHILDREN ? "children" : "self"),
+                 start.publicId, start.systemId, start.lineNo, start.colNo);
+               throw new SAXException("Non-recoverable error");
+            }
+            case PR_SIBLINGS:
                dataStack.push(
                   new Data(data.template, inst, context.currentGroup, 
                            context.position, context.lookAhead,
                            context.nextProcessGroup.visibleTemplates,
                            PR_SIBLINGS, context.psiblings, context.localVars,
                            (SAXEvent)eventStack.peek()));
+               break;
+            case PR_ERROR:
+               throw new SAXException("Non-recoverable error");
             }
          }
          else {
