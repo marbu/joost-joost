@@ -76,7 +76,6 @@ public class DOMDriver implements Locator, XMLReader
 
     /**
      * <b>SAX1, SAX2</b>: Set the entity resolver for this parser.
-     * @param handler The object to receive entity events.
      */
 
     public void setEntityResolver (EntityResolver resolver) {}
@@ -156,7 +155,6 @@ public class DOMDriver implements Locator, XMLReader
 
     /**
     * Walk a document (traversing the nodes depth first)
-    * @param doc The (DOM) Document object to walk.
     * @exception SAXException On any error in the document
     */
 
@@ -176,8 +174,8 @@ public class DOMDriver implements Locator, XMLReader
     }
 
   /**
-    * Walk an element of a document (traversing the children depth first)
-    * @param elem The DOM Element object to walk
+    * Walk a node of a document (traversing the children depth first)
+    * @param node The DOM Node object to walk
     * @exception SAXException On any error in the document
     *
     */
