@@ -1,5 +1,5 @@
 /*
- * $Id: ProcedureFactory.java,v 2.4 2003/06/03 14:30:24 obecker Exp $
+ * $Id: ProcedureFactory.java,v 2.5 2004/01/07 10:04:36 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,6 +29,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import java.util.HashSet;
+import java.util.Hashtable;
 
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
@@ -38,7 +39,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>procedure</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.4 $ $Date: 2003/06/03 14:30:24 $
+ * @version $Revision: 2.5 $ $Date: 2004/01/07 10:04:36 $
  * @author Oliver Becker
  */
 
@@ -142,6 +143,9 @@ public final class ProcedureFactory extends FactoryBase
          throws SAXException
       {
          localFieldStack.push(context.currentGroup);
+         // save and reset local variables
+         localFieldStack.push(context.localVars.clone());
+         context.localVars.clear();
          return super.process(context);
       }
 
@@ -150,6 +154,8 @@ public final class ProcedureFactory extends FactoryBase
          throws SAXException
       {
          super.processEnd(context);
+         // restore local variables
+         context.localVars = (Hashtable)localFieldStack.pop();
          context.currentGroup = (GroupBase)localFieldStack.pop();
          return PR_CONTINUE;
       }
