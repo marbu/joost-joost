@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.17 2003/12/01 16:58:24 obecker Exp $
+ * $Id: FunctionTable.java,v 2.18 2003/12/09 12:35:43 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -50,7 +50,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.17 $ $Date: 2003/12/01 16:58:24 $
+ * @version $Revision: 2.18 $ $Date: 2003/12/09 12:35:43 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -79,7 +79,7 @@ final public class FunctionTable implements Constants
          new LocalName(),
          new NamespaceURI(),
          new GetNamespaceUriForPrefix(),
-         new GetInScopeNamespaces(),
+         new GetInScopePrefixes(),
          new Not(),
          new True(),
          new False(),
@@ -522,16 +522,16 @@ final public class FunctionTable implements Constants
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         Value v = args.left.evaluate(context, top);
+         String prefix = args.left.evaluate(context, top)
+                                  .convertToString().string;
+
+         Value v = args.right.evaluate(context, top);
          if (v.type != Value.NODE) 
-            throw new EvalException("The parameter passed to the `" +
+            throw new EvalException("The second parameter passed to the `" +
                                     getName().substring(FNSP.length()) + 
                                     "' function must be a node (got " + 
                                     v + ")");
          SAXEvent e = v.event;
-
-         String prefix = args.right.evaluate(context, top)
-                                   .convertToString().string;
 
          if (e.namespaces == null)
             return v.setEmpty();
@@ -546,20 +546,20 @@ final public class FunctionTable implements Constants
 
 
    /**
-    * The <code>get-in-scope-namespaces</code> function.
+    * The <code>get-in-scope-prefixes</code> function.
     * Returns the names of the in-scope namespaces for this node.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-get-in-scope-namespaces">
-    * fn:get-in-scope-namespaces in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
+    * href="http://www.w3.org/TR/xquery-operators/#func-get-in-scope-prefixes">
+    * fn:get-in-scope-prefixes in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   final public class GetInScopeNamespaces implements Instance
+   final public class GetInScopePrefixes implements Instance
    {
       /** @return 1 */
       public int getMinParCount() { return 1; }
       /** @return 1 */
       public int getMaxParCount() { return 1; }
-      /** @return "get-in-scope-namespaces" */
-      public String getName() { return FNSP + "get-in-scope-namespaces"; }
+      /** @return "get-in-scope-prefixes" */
+      public String getName() { return FNSP + "get-in-scope-prefixes"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -1196,9 +1196,6 @@ final public class FunctionTable implements Constants
     * The <code>string-pad</code> function.
     * Returns a string composed of as many copies of its first argument as 
     * specified in its second argument.
-    * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-string-pad">
-    * fn:string-pad in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class StringPad implements Instance 
    {
@@ -1360,9 +1357,6 @@ final public class FunctionTable implements Constants
     * The <code>item-at</code> function.
     * Returns the item in the sequence (first parameter) at the specified
     * position (second parameter).
-    * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-item-at">
-    * fn:item-at in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class ItemAt implements Instance
    {
@@ -1716,8 +1710,7 @@ final public class FunctionTable implements Constants
          double sum = 0;
          while (v != null) {
             Value next = v.next;
-            if (!Double.isNaN(v.convertToNumber().number))
-               sum += v.number;
+            sum += v.convertToNumber().number;
             v = next;
          }
          return new Value(sum);
@@ -1744,24 +1737,16 @@ final public class FunctionTable implements Constants
          Value v = args.evaluate(context, top);
          if (v.type == Value.EMPTY) // empty sequence
             return v;
-         boolean set = false;
-         double min = 0;
+         double min = Double.POSITIVE_INFINITY;
          while (v != null) {
             Value next = v.next;
-            if (!Double.isNaN(v.convertToNumber().number)) {
-               if (set)
-                  min = v.number < min ? v.number : min;
-               else {
-                  min = v.number;
-                  set = true;
-               }
-            }
+            if (Double.isNaN(v.convertToNumber().number))
+               return v;
+            else
+               min = v.number < min ? v.number : min;
             v = next;
          }
-         if (set)
-            return new Value(min);
-         else
-            return new Value();
+         return new Value(min);
       }
    }
 
@@ -1785,24 +1770,16 @@ final public class FunctionTable implements Constants
          Value v = args.evaluate(context, top);
          if (v.type == Value.EMPTY) // empty sequence
             return v;
-         boolean set = false;
-         double max = 0;
+         double max = Double.NEGATIVE_INFINITY;
          while (v != null) {
             Value next = v.next;
-            if (!Double.isNaN(v.convertToNumber().number)) {
-               if (set)
-                  max = v.number > max ? v.number : max;
-               else {
-                  max = v.number;
-                  set = true;
-               }
-            }
+            if (Double.isNaN(v.convertToNumber().number))
+               return v;
+            else
+               max = v.number > max ? v.number : max;
             v = next;
          }
-         if (set)
-            return new Value(max);
-         else
-            return new Value();
+         return new Value(max);
       }
    }
 
@@ -1830,16 +1807,11 @@ final public class FunctionTable implements Constants
          int count = 0;
          while (v != null) {
             Value next = v.next;
-            if (!Double.isNaN(v.convertToNumber().number)) {
-               avg += v.number;
-               count++;
-            }
+            avg += v.convertToNumber().number;
+            count++;
             v = next;
          }
-         if (count == 0)
-            return new Value();
-         else
-            return new Value(avg / count);
+         return new Value(avg / count);
       }
    }
 

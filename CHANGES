@@ -4,6 +4,10 @@ Changes since 20030914
 - added @output-method to stx:transform and stx:result-document,
   added support for text output (spec change 2003-12-08)
 - renamed @encoding to @output-encoding in stx:result-document (dito)
+- Changes according to WD-xpath-functions-20031112:
+  * renamed get-in-scope-namespaces() to get-in-scope-prefixes()
+  * swapped arguments of get-namespace-uri-for-prefix()
+  * don't drop NaNs in sum(), avg(), min(), max()
 - command line: allow '-' for stdin and multiple STX sheets to form a
   transformation chain
 - Bugfixes: 828230, 828958, 828959, 828969
