@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 1.8 2002/12/19 15:04:25 obecker Exp $
+ * $Id: Tree.java,v 1.9 2003/01/08 16:09:24 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,8 +28,8 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import java.util.Stack;
 import java.util.Hashtable;
+import java.util.Stack;
 
 import net.sf.joost.instruction.GroupBase;
 import net.sf.joost.stx.Context;
@@ -40,7 +40,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 1.8 $ $Date: 2002/12/19 15:04:25 $
+ * @version $Revision: 1.9 $ $Date: 2003/01/08 16:09:24 $
  * @author Oliver Becker
  */
 public class Tree
@@ -85,7 +85,10 @@ public class Tree
       AVT                 = 35,  // "{" ... "}"
       VAR                 = 36,  // "$qname"
       DOT                 = 37,  // "."
-      DDOT                = 38;  // ".."
+      DDOT                = 38,  // ".."
+      PARENT              = 39,  // "parent::" axis
+      ANC                 = 40,  // "ancestor::" axis
+      NAMESPACE           = 41;  // "namespace::" axis
 
    /** The type of the node in the Tree. */
    public int type;
@@ -202,8 +205,9 @@ public class Tree
       if (type != URI_WILDCARD && type != LOCAL_WILDCARD &&
           type != ATTR_URI_WILDCARD && type != ATTR_LOCAL_WILDCARD) {
          log4j.fatal("Unexpected type " + type);
-         throw new SAXParseException("FATAL: Tree constructor: Unexpected type " +
-                                type, locator);
+         throw new SAXParseException(
+                      "FATAL: Tree constructor: Unexpected type " + type, 
+                      locator);
       }
       this.lName = lName;
       if (type == URI_WILDCARD || type == ATTR_URI_WILDCARD)
@@ -242,10 +246,6 @@ public class Tree
    public boolean matches(Context context, Stack events, int top)
       throws SAXException
    {
-//        System.err.println("top = " + top);
-//        System.err.println("  events = " + events);
-//        System.err.println("    this = " + this);
-
       try {
          switch (type) {
          case UNION:
@@ -404,8 +404,6 @@ public class Tree
             if (e.type != SAXEvent.ATTRIBUTE) 
                return false;
             context.position = 1; // position for attributes is undefined
-//                    ((SAXEvent)events.elementAt(top-2))
-//                                     .getPositionOf("@{*}*");
             switch (type) {
             case ATTR_WILDCARD:
                return true;
@@ -425,7 +423,7 @@ public class Tree
             return false;
 
          default:
-            log4j.warn("unprocessed type: " + type);
+            log4j.warn("unprocessed type: " + this);
             return false;
          } // switch
       }
@@ -614,23 +612,36 @@ public class Tree
                return new Value(s);
          }
 
+         case ATTR_WILDCARD:
+         case ATTR_URI_WILDCARD:
+         case ATTR_LOCAL_WILDCARD:
+            // TODO
+            log4j.warn("attribute wildcards are not implemented yet");
+            return new Value("");
+
          case DOT: 
-            if (top > 0)
-               return new Value((SAXEvent)events.elementAt(top-1), top);
+            if (top > 0) {
+               if (right != null)
+                  // path continues, evaluate recursively
+                  return right.evaluate(context, events, top);
+               else
+                  return new Value((SAXEvent)events.elementAt(top-1), top);
+            }
             else
                return new Value(null, 0);
 
          case DDOT:
-            if (left != null)
-               // evaluate recursively with top-1
-               v1 = left.evaluate(context, events, top-1);
-            else if (top > 1)
-               // store the event at position top-1
-               v1 = new Value((SAXEvent)events.elementAt(top-2), top-1);
+            if (top > 1) {
+               if (right != null)
+                  // path continues, evaluate recursively with top-1
+                  return right.evaluate(context, events, top-1);
+               else
+                  // return the node at position top-1
+                  return new Value((SAXEvent)events.elementAt(top-2), top-1);
+            }
             else
-               // no event available
-               v1 = new Value(null, 0);
-            return v1;
+               // path selects nothing
+               return new Value(null, 0);
 
          case TEXT_TEST:
             // return the string value of the look-ahead node if it's a text
@@ -643,20 +654,126 @@ public class Tree
             else
                return new Value("");
 
+         case ROOT:
+            // set top to 1
+            return left.evaluate(context, events, 1);
+
+         case CHILD:
+            if (top < events.size() && left.matches(context, events, top+1)) {
+               if (right != null) 
+                  // path continues, evaluate recursively with top+1
+                  return right.evaluate(context, events, top+1);
+               else 
+                  // last step, return node at position top+1
+                  return new Value((SAXEvent)events.elementAt(top), top+1);
+            }
+            else // path selects nothing
+               return new Value(null, 0);
+
+         case DESC:
+            String msg = "descendent axis (//) is not implemented yet";
+            log4j.warn(msg);
+            while (top < events.size()) {
+               Value v = right.evaluate(context, events, top++);
+               if (v.event != null)
+                  return v;
+               // TODO: return a sequence of nodes
+            }
+            return new Value(null, 0);
+
+         case PARENT:
+            if (top > 1 && left.matches(context, events, top-1)) {
+               if (right != null)
+                  // path continues, evaluate recursively with top-1
+                  return right.evaluate(context, events, top-1);
+               else
+                  // return the node at position top-1
+                  return new Value((SAXEvent)events.elementAt(top-2), top-1);
+            }
+            else
+               // path selects nothing
+               return new Value(null, 0);
+
+         case ANC:
+            // TODO
+            log4j.warn("ancestor axis is not implemented yet");
+            return new Value(null, 0);
+
+         case NAMESPACE: {
+            if ("*".equals(value)) {
+               // TODO
+               log4j.warn("namespace wildcard is not implemented yet");
+               return new Value("");
+            }
+            SAXEvent e = null;
+            if (left != null) {
+               v1 = left.evaluate(context, events, top);
+               if (v1.type != Value.NODE)
+                  throw new EvalException(
+                     "sub expression before `/namespace::" + value + 
+                     "' must evaluate to a node (got " + v1 + ")");
+               e = v1.event;
+            }
+            else if (top > 0)
+               e = (SAXEvent)events.elementAt(top-1);
+            if (e == null || e.nsSupport == null)
+               return new Value("");
+            String s = e.nsSupport.getURI((String)value);
+            if (s == null)
+               return new Value("");
+            else
+               return new Value(s);
+         }
+
+         case LIST:
+            // TODO
+            log4j.warn("sequences are not implemented yet");
+            if (left != null)
+               return left.evaluate(context, events, top);
+            else
+               return new Value("");
+
          default:
-            log4j.fatal("type " + type + " not implemented");
+            log4j.fatal("type " + this + " is not implemented");
             return null;
          }
       }
       catch (EvalException e) {
          context.errorHandler.error(e.getMessage(),
-                                     context.currentInstruction.publicId,
-                                     context.currentInstruction.systemId,
-                                     context.currentInstruction.lineNo,
-                                     context.currentInstruction.colNo);
+                                    context.currentInstruction.publicId,
+                                    context.currentInstruction.systemId,
+                                    context.currentInstruction.lineNo,
+                                    context.currentInstruction.colNo);
          return new Value(""); // if the errorHandler decides to continue ...
       }
    }
+
+
+   /**
+    * Transforms a location path by reversing the associativity of
+    * the path operators <code>/</code> and <code>//</code>
+    * @return the new root
+    */
+   protected Tree reverseAssociativity()
+   {
+      if (type == CHILD || type == PARENT || type == ANC || type == DESC ||
+                           type == DOT || type == DDOT) {
+         Tree newRoot;
+         if (left != null) {
+            newRoot = left.reverseAssociativity();
+            left.right = this;
+         }
+         else
+            newRoot = this;
+         left = right;
+         right = null;
+         return newRoot;
+      }
+      else
+         return this;
+   }
+
+
 
 
    // for debugging
@@ -676,6 +793,7 @@ public class Tree
       case STRING:  ret += "STRING"; break;
       case NUMBER:  ret += "NUMBER"; break;
       case WILDCARD:  ret += "*"; break;
+      case DDOT: ret += ".."; break;
       default:      ret += type; break;
       }
       /*
