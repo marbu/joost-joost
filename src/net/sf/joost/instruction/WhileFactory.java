@@ -1,5 +1,5 @@
 /*
- * $Id: WhileFactory.java,v 2.3 2003/06/03 14:30:27 obecker Exp $
+ * $Id: WhileFactory.java,v 2.4 2004/02/02 10:38:42 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>while</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.3 $ $Date: 2003/06/03 14:30:27 $
+ * @version $Revision: 2.4 $ $Date: 2004/02/02 10:38:42 $
  * @author Oliver Becker
  */
 
@@ -76,8 +76,8 @@ final public class WhileFactory extends FactoryBase
    final public class Instance extends NodeBase
    {
       private Tree test;
-      private AbstractInstruction contents;
-      private NodeBase me;
+      private AbstractInstruction contents, successor;
+
 
       // Constructor
       protected Instance(final String qName, NodeBase parent, 
@@ -85,28 +85,18 @@ final public class WhileFactory extends FactoryBase
       {
          super(qName, parent, context, true);
          this.test = test;
-         me = this;
-
-         // dummy node, needed as store for the next node
-         next.next = nodeEnd = new AbstractInstruction() {
-            public NodeBase getNode() {
-               return me;
-            }
-            public short process(Context context) 
-               throws SAXException {
-               throw new SAXParseException(
-                  "Processed dummy node of " + qName, 
-                  publicId, systemId, lineNo, colNo);
-            }
-         };
       }
 
 
       public boolean compile(int pass)
          throws SAXException
       {
+         if (pass == 0) // successor not available yet
+            return true;
+
          contents = next;
-         lastChild.next.next = this; // loop
+         successor = nodeEnd.next;
+         nodeEnd.next = this; // loop
          return false; // done
       }
 
@@ -118,11 +108,12 @@ final public class WhileFactory extends FactoryBase
       public short process(Context context)
          throws SAXException
       {
-         super.process(context);
-         if (test.evaluate(context, this).convertToBoolean().bool)
+         if (test.evaluate(context, this).convertToBoolean().bool) {
+            super.process(context);
             next = contents;
+         }
          else
-            next = nodeEnd.next;
+            next = successor;
          return PR_CONTINUE;
       }
    }
