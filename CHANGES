@@ -1,6 +1,7 @@
 Changes since 20030121
 - added floor(), ceiling(), round()
-- added stx:process-siblings
+- added stx:process-siblings, stx:procedure, stx:call-procedure
+- made text() location step (data accessor) deprecated
 
 Changes since 20021223
 - added 'required' attribute to stx:param
