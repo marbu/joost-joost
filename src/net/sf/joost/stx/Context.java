@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 2.5 2003/05/02 05:54:40 obecker Exp $
+ * $Id: Context.java,v 2.6 2003/05/14 11:54:15 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import java.util.Stack;
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 2.5 $ $Date: 2003/05/02 05:54:40 $
+ * @version $Revision: 2.6 $ $Date: 2003/05/14 11:54:15 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
@@ -69,9 +69,6 @@ public final class Context implements Cloneable
 
    /** Encountered <code>process-siblings</code> instruction */
    public PSiblingsFactory.Instance psiblings;
-
-   /** The next event to be processed */
-   public SAXEvent lookAhead = null;
 
    /** Local defined variables of a template. */
    public Hashtable localVars = new Hashtable();
