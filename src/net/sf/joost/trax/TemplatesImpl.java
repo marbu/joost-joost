@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.17 2004/04/16 14:04:03 obecker Exp $
+ * $Id: TemplatesImpl.java,v 1.18 2004/08/21 21:39:16 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -222,7 +222,7 @@ public class TemplatesImpl implements Templates, TrAXConstants {
                           "object for Transformation");
             //register the processor
             Transformer transformer = 
-                new TransformerImpl(new Processor(processor));
+                new TransformerImpl(processor.copy());
             return transformer;
         }
     }

@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.39 2004/04/16 10:34:43 obecker Exp $
+ * $Id: Processor.java,v 2.40 2004/08/21 21:39:13 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -67,7 +67,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.39 $ $Date: 2004/04/16 10:34:43 $
+ * @version $Revision: 2.40 $ $Date: 2004/08/21 21:39:13 $
  * @author Oliver Becker
  */
 
@@ -497,6 +497,13 @@ public class Processor extends XMLFilterImpl
       setParent(proc.getParent());
    }
 
+   /**
+    * Constructs a copy of this Processor.
+    */
+   public Processor copy()
+   {
+      return new Processor(this);
+   }
 
    //
    // Methods

@@ -1,5 +1,5 @@
 /*
- * $Id: DebugProcessor.java,v 1.12 2004/02/12 12:39:50 zubow Exp $
+ * $Id: DebugProcessor.java,v 1.13 2004/08/21 21:39:16 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -45,7 +45,7 @@ import java.util.Hashtable;
 
 /**
  * Extends the {@link net.sf.joost.stx.Processor} with debug features.
- * @version $Revision: 1.12 $ $Date: 2004/02/12 12:39:50 $
+ * @version $Revision: 1.13 $ $Date: 2004/08/21 21:39:16 $
  * @author Zubow
  */
 public class DebugProcessor extends Processor {
@@ -118,6 +118,15 @@ public class DebugProcessor extends Processor {
                           URIResolver uriResolver)
             throws IOException, SAXException {
         super(reader, src, errorListener, uriResolver);
+    }
+
+
+    /**
+     * See {@link net.sf.joost.Processor#copy()}
+     */
+    public Processor copy()
+    {
+        return new DebugProcessor(this);
     }
 
 
