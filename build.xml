@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.16 2004/10/03 20:01:59 zubow Exp $
+ | $Id: build.xml,v 1.17 2004/11/07 10:45:39 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -146,10 +146,11 @@
     <copy file="docsrc/index.html" tofile="doc/index.html" />
     <replace file="doc/index.html" token="@@@DATE@@@" value="${date.today}" />
     <javadoc sourcepath="${src}" destdir="${doc}/api"
-             link="http://java.sun.com/j2se/1.4.1/docs/api"
-             packagenames="net.sf.joost, net.sf.joost.stx,
-                           net.sf.joost.instruction, net.sf.joost.emitter,
-                           net.sf.joost.grammar, net.sf.joost.grammar.cup,
+             link="http://java.sun.com/j2se/1.4.2/docs/api"
+             packagenames="net.sf.joost, net.sf.joost.instruction,
+                           net.sf.joost.stx, net.sf.joost.stx.helpers,
+                           net.sf.joost.emitter, net.sf.joost.grammar,
+                           net.sf.joost.grammar.cup, net.sf.joost.grammar.tree,
                            net.sf.joost.trace, net.sf.joost.trax"
              windowtitle="Joost API documentation" private="true"
              breakiterator="true">
