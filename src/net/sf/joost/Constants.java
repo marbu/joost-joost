@@ -1,5 +1,5 @@
 /*
- * $Id: Constants.java,v 2.3 2004/09/29 05:48:52 obecker Exp $
+ * $Id: Constants.java,v 2.4 2004/10/30 15:04:35 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -27,7 +27,7 @@ package net.sf.joost;
 
 /**
  * This interface contains constants shared between different classes. 
- * @version $Revision: 2.3 $ $Date: 2004/09/29 05:48:52 $
+ * @version $Revision: 2.4 $ $Date: 2004/10/30 15:04:35 $
  * @author Oliver Becker
  */
 public interface Constants
@@ -39,9 +39,9 @@ public interface Constants
    public static final String FUNC_NS = 
       "http://stx.sourceforge.net/2003/functions";
 
-   /** The Joost extension functions namespace */
-   public static final String JOOST_FUNC_NS = 
-      "http://joost.sf.net/functions";
+   /** The Joost extension namespace */
+   public static final String JOOST_EXT_NS = 
+      "http://joost.sf.net/extension";
 
 
    /*

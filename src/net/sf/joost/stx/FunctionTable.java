@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.26 2004/10/03 20:03:05 zubow Exp $
+ * $Id: FunctionTable.java,v 2.27 2004/10/30 15:04:35 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -53,7 +53,7 @@ import net.sf.joost.instruction.AnalyzeTextFactory;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.26 $ $Date: 2004/10/03 20:03:05 $
+ * @version $Revision: 2.27 $ $Date: 2004/10/30 15:04:35 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -63,7 +63,7 @@ final public class FunctionTable implements Constants
    private static String FNSP = "{" + FUNC_NS + "}";
 
    // Joost extension namespace prefix
-   private static String JENSP = "{" + JOOST_FUNC_NS + "}";
+   private static String JENSP = "{" + JOOST_EXT_NS + "}";
 
    /** Contains one instance for each function. */
    private static Hashtable functionHash;
