@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.63 2003/12/19 10:45:58 obecker Exp $ -->
+<!-- $Id: index.html,v 1.64 2004/03/30 08:25:09 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -115,9 +115,38 @@
       <strong><code>parameter=value</code></strong> directly after
       each <code>stx-sheet</code>. <code>value</code>
       is interpreted as a string, not as an expression.</p>
-      <p>
-      To get a list of possible options use the command line parameter
-      <strong><code>-help</code></strong>
+      <p>The list of possible options includes
+        <table>
+          <tr>
+            <td rowspan="6">&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top"><strong><code>-help</code></strong></td>
+            <td rowspan="6">&nbsp;</td>
+            <td>print a help message</td>
+          </tr>
+          <tr>
+            <td valign="top"><strong><code>-version</code></strong></td>
+            <td>print the version information and exit</td>
+          </tr>
+          <tr>
+            <td valign="top"><strong><code>-o &lt;filename&gt;</code></strong></td>
+            <td>write the result to the file &lt;filename&gt;</td>
+          </tr>
+          <tr>
+            <td valign="top"><strong><code>-m &lt;classname&gt;</code></strong></td>
+            <td>use a &lt;classname&gt; object for stx:message output<br>
+                this class must implement the interface
+                net.sf.joost.emitter.StxEmitter</td>
+          </tr>
+          <tr>
+            <td valign="top"><strong><code>-time</code></strong></td>
+            <td>print timing information on standard error output</td>
+          </tr>
+          <tr>
+            <td valign="top"><strong><code>-pdf</code></strong></td>
+            <td>pass the result to FOP for PDF generation (requires -o),
+                see below</td>
+          </tr>
+        </table>
       </p>
       <p><em>Joost</em> is able to pass its output to <a target="_top"
       href="http://xml.apache.org/fop/">FOP</a> for producing PDF output
