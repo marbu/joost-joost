@@ -1,3 +1,6 @@
+Changes since 20040330
+- flush output on error
+
 Changes since 20031219
 - added command line switches: -time, -m
 - Bugfixes: 869207, 890961, 925215

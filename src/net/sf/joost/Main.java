@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.19 2004/03/30 08:25:44 obecker Exp $
+ * $Id: Main.java,v 1.20 2004/04/03 18:11:08 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.19 $ $Date: 2004/03/30 08:25:44 $
+ * @version $Revision: 1.20 $ $Date: 2004/04/03 18:11:08 $
  * @author Oliver Becker
  */
 public class Main implements Constants
@@ -97,6 +97,9 @@ public class Main implements Constants
 
       // needed for evaluating parameter assignments
       int index;
+
+      // serializer SAX -> XML text
+      StreamEmitter emitter = null;
 
       try {
 
@@ -371,7 +374,6 @@ public class Main implements Constants
          // For a real XMLFilter usage you have to call 
          // processor.setParent(yourXMLReader)
 
-         StreamEmitter emitter = null;
          // Connect a SAX consumer
          if (doFOP) {
             // pass output events to FOP
@@ -441,6 +443,16 @@ public class Main implements Constants
          System.exit(1);
       }
       catch (SAXException ex) {
+         if (emitter != null) {
+            try {
+               // flushes the internal BufferedWriter, i.e. outputs
+               // the intermediate result
+               emitter.endDocument();
+            }
+            catch (SAXException exx) {
+               // ignore
+            }
+         }
          Exception embedded = ex.getException();
          if (embedded != null) {
             if (embedded instanceof TransformerException) {
