@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 1.11 2003/01/16 16:13:45 obecker Exp $
+ * $Id: Tree.java,v 1.12 2003/01/18 10:41:27 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 1.11 $ $Date: 2003/01/16 16:13:45 $
+ * @version $Revision: 1.12 $ $Date: 2003/01/18 10:41:27 $
  * @author Oliver Becker
  */
 public class Tree
@@ -453,6 +453,8 @@ public class Tree
       try {
          Value v1, v2;
          switch (type) {
+
+         // Arithmetic expressions
          case NUMBER:
             return new Value(((Double)value).doubleValue());
 
@@ -509,6 +511,90 @@ public class Tree
             v1.convertToNumber().number %= v2.convertToNumber().number;
             return v1;
 
+
+         // Comparison expressions
+         case EQ:
+         case NE:
+         case LT:
+         case LE:
+         case GT:
+         case GE:
+            v1 = left.evaluate(context, events, top);
+            v2 = right.evaluate(context, events, top);
+            if (v1.type == Value.EMPTY || v2.type == Value.EMPTY)
+               return v1.setBoolean(false);
+
+            // sequences: find a pair that the comparison is true
+            for (Value vi = v1; vi != null; vi = vi.next)
+               // must copy the original value because items will be converted
+               // in comparisons
+               for (Value vj = v2.copy(); vj != null; vj = vj.next)
+                  switch (type) {
+                  case EQ:
+                     if (vi.type == Value.BOOLEAN || 
+                         vj.type == Value.BOOLEAN) {
+                        if(vi.convertToBoolean().bool == 
+                           vj.convertToBoolean().bool)
+                           return v1.setBoolean(true);
+                     }
+                     else if (vi.type == Value.NUMBER || 
+                              vj.type == Value.NUMBER) {
+                        if (vi.convertToNumber().number ==
+                            vj.convertToNumber().number)
+                           return v1.setBoolean(true);
+                     }
+                     else {
+                        if (vi.convertToString().string.equals(
+                            vj.convertToString().string))
+                           return v1.setBoolean(true);
+                     }
+                     break;
+                  case NE:
+                     if (vi.type == Value.BOOLEAN || 
+                         vj.type == Value.BOOLEAN) {
+                        if(vi.convertToBoolean().bool !=
+                           vj.convertToBoolean().bool)
+                           return v1.setBoolean(true);
+                     }
+                     else if (vi.type == Value.NUMBER || 
+                              vj.type == Value.NUMBER) {
+                        if (vi.convertToNumber().number !=
+                            vj.convertToNumber().number)
+                           return v1.setBoolean(true);
+                     }
+                     else {
+                        if (!vi.convertToString().string.equals(
+                            vj.convertToString().string))
+                           return v1.setBoolean(true);
+                     }
+                     break;
+                  case LT:
+                     if (vi.convertToNumber().number < 
+                         vj.convertToNumber().number)
+                        return v1.setBoolean(true);
+                     break;
+                  case LE:
+                     if (vi.convertToNumber().number <= 
+                         vj.convertToNumber().number)
+                        return v1.setBoolean(true);
+                     break;
+                  case GT:
+                     if (vi.convertToNumber().number >
+                         vj.convertToNumber().number)
+                        return v1.setBoolean(true);
+                     break;
+                  case GE:
+                     if (vi.convertToNumber().number >=
+                         vj.convertToNumber().number)
+                        return v1.setBoolean(true);
+                     break;
+                  } // inner switch
+
+            // none of the item comparisons evaluated to true
+            return v1.setBoolean(false);
+
+
+         // Logical expressions
          case AND:
             v1 = left.evaluate(context, events, top).convertToBoolean();
             if (v1.bool == false)
@@ -521,59 +607,7 @@ public class Tree
                return v1;
             return right.evaluate(context, events, top).convertToBoolean();
 
-         case EQ:
-            v1 = left.evaluate(context, events, top);
-            v2 = right.evaluate(context, events, top);
-            if (v1.type == Value.BOOLEAN || v2.type == Value.BOOLEAN) {
-               v1.convertToBoolean();
-               v1.bool = (v1.bool == v2.convertToBoolean().bool);
-               return v1;
-            }
-            if (v1.type == Value.NUMBER || v2.type == Value.NUMBER) {
-               v1.convertToNumber();
-               v2.convertToNumber();
-               return v1.setBoolean(v1.number == v2.number);
-            }
-            v1.convertToString();
-            v2.convertToString();
-            return v1.setBoolean(v1.string.equals(v2.string));
 
-         case NE:
-            v1 = left.evaluate(context, events, top);
-            v2 = right.evaluate(context, events, top);
-            if (v1.type == Value.BOOLEAN || v2.type == Value.BOOLEAN) {
-               v1.convertToBoolean();
-               v1.bool = (v1.bool != v2.convertToBoolean().bool);
-               return v1;
-            }
-            if (v1.type == Value.NUMBER || v2.type == Value.NUMBER) {
-               v1.convertToNumber();
-               v2.convertToNumber();
-               return v1.setBoolean(v1.number != v2.number);
-            }
-            v1.convertToString();
-            v2.convertToString();
-            return v1.setBoolean(!v1.string.equals(v2.string));
-
-         case LT:
-            v1 = left.evaluate(context, events, top).convertToNumber();
-            v2 = right.evaluate(context, events, top).convertToNumber();
-            return v1.setBoolean(v1.number < v2.number);
-
-         case LE:
-            v1 = left.evaluate(context, events, top).convertToNumber();
-            v2 = right.evaluate(context, events, top).convertToNumber();
-            return v1.setBoolean(v1.number <= v2.number);
-
-         case GT:
-            v1 = left.evaluate(context, events, top).convertToNumber();
-            v2 = right.evaluate(context, events, top).convertToNumber();
-            return v1.setBoolean(v1.number > v2.number);
-
-         case GE:
-            v1 = left.evaluate(context, events, top).convertToNumber();
-            v2 = right.evaluate(context, events, top).convertToNumber();
-            return v1.setBoolean(v1.number >= v2.number);
 
          case FUNCTION: 
             return func.evaluate(context, events, top, left);
@@ -647,39 +681,29 @@ public class Tree
                   }
                }
                else if (type == NAMESPACE) {
-                  if (e == null || e.nsSupport == null)
-                     return new Value();
-                  if ("*".equals(value)) { // return all declared namespaces
-                     for (Enumeration en=e.nsSupport.getPrefixes();
-                          en.hasMoreElements(); ) {
-                        v2 = new Value(e.nsSupport.getURI(
-                                          (String)en.nextElement()));
-                        if (last != null)
-                           last.next = v2;
-                        else
-                           ret = v2;
-                        last = v2;
+                  if (e != null && e.namespaces != null) {
+                     if ("*".equals(value)) { // return all declared namespaces
+                        for (Enumeration en=e.namespaces.keys();
+                             en.hasMoreElements(); ) {
+                           v2 = new Value((String)e.namespaces
+                                                   .get(en.nextElement()));
+                           if (last != null)
+                              last.next = v2;
+                           else
+                              ret = v2;
+                           last = v2;
+                        }
                      }
-                     // have to check for the default namespace separately
-                     String s = e.nsSupport.getURI("");
-                     if (s != null) {
-                        v2 = new Value(s);
-                        if (last != null)
-                           last.next = v2;
-                        else
-                           ret = v2;
-                        last = v2;
-                     }
-                  }
-                  else { // prefix specified in namespace axis
-                     String s = e.nsSupport.getURI((String)value);
-                     if (s != null) {
-                        v2 = new Value(s);
-                        if (last != null)
-                           last.next = v2;
-                        else
-                           ret = v2;
-                        last = v2;
+                     else { // prefix specified in namespace axis
+                        String s = (String)e.namespaces.get(value);
+                        if (s != null) {
+                           v2 = new Value(s);
+                           if (last != null)
+                              last.next = v2;
+                           else
+                              ret = v2;
+                           last = v2;
+                        }
                      }
                   }
                } // if (type == NAMESPACE)
@@ -753,7 +777,7 @@ public class Tree
                    context.lookAhead.type == SAXEvent.CDATA))
                return new Value(context.lookAhead.value);
             else
-               return new Value();
+               return new Value("");
 
          case ROOT:
             // set top to 1
@@ -774,13 +798,29 @@ public class Tree
          case DESC: {
             Value ret = null, last = null; // for constructing the result seq
             while (top < events.size()) {
-               v2 = right.evaluate(context, events, top++);
-               if (v2.event != null) { // right sub-path evaluates to a node
-                  if (last != null)
-                     last.next = v2;
-                  else 
-                     ret = v2;
-                  last = v2;
+               v1 = right.evaluate(context, events, top++);
+               if (v1.type == Value.NODE) {
+                  if (ret != null) {
+                     // skip duplicates
+                     Value vi = v1;
+                     while (vi != null) {
+                        Value vj;
+                        for (vj = ret; vj != null; vj = vj.next)
+                           if (vi.event == vj.event)
+                              break;
+                        if (vj == null) { // vi not found in ret
+                           last.next = vi;
+                           last = vi;
+                        }
+                        vi = vi.next;
+                        last.next = null; // because last=vi above
+                     }
+                  }
+                  else {
+                     ret = v1;
+                     for (last = v1; last.next != null; last = last.next)
+                        ;
+                  }
                }
             }
             if (ret != null)
