@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 1.2 2002/11/02 15:55:00 obecker Exp $
+ * $Id: PBufferFactory.java,v 1.3 2002/11/03 11:37:24 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,8 +32,8 @@ import org.xml.sax.SAXParseException;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Stack;
-import java.util.Vector;
 
+import net.sf.joost.emitter.BufferEmitter;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Processor;
@@ -43,7 +43,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.2 $ $Date: 2002/11/02 15:55:00 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/03 11:37:24 $
  * @author Oliver Becker
  */
 
@@ -133,50 +133,56 @@ public class PBufferFactory extends FactoryBase
             context.errorHandler.error(
                "Can't process an undeclared buffer `" + bufName + "'",
                publicId, systemId, lineNo, colNo);
-            return processStatus;
+            return processStatus; // if the errorHandler returns
+         }
+
+         if (emitter.isBufferActive((BufferEmitter)buffer)) {
+            context.errorHandler.error(
+               "Can't process active buffer `" + bufName + "'",
+               publicId, systemId, lineNo, colNo);
+            return processStatus; // if the errorHandler returns
          }
 
          // walk through the buffer and emit events to the Processor object
-         Vector bufv = (Vector)buffer;
-         int size = bufv.size();
+         SAXEvent[] events = ((BufferEmitter)buffer).getEvents();
          Processor proc = context.currentProcessor;
-         for (int i=0; i<size; i++) {
-            SAXEvent event = (SAXEvent)bufv.elementAt(i);
-            log4j.debug("Buffer Processing " + event);
-            switch (event.type) {
+         for (int i=0; i<events.length; i++) {
+            log4j.debug("Buffer Processing " + events[i]);
+            switch (events[i].type) {
             case SAXEvent.ELEMENT:
-               proc.startElement(event.uri, event.lName, event.qName,
-                                 event.attrs);
+               proc.startElement(events[i].uri, events[i].lName, 
+                                 events[i].qName, events[i].attrs);
                break;
             case SAXEvent.ELEMENT_END:
-               proc.endElement(event.uri, event.lName, event.qName);
+               proc.endElement(events[i].uri, events[i].lName, 
+                               events[i].qName);
                break;
             case SAXEvent.TEXT:
-               proc.characters(event.value.toCharArray(), 
-                               0, event.value.length());
+               proc.characters(events[i].value.toCharArray(), 
+                               0, events[i].value.length());
                break;
             case SAXEvent.CDATA:
                proc.startCDATA();
-               proc.characters(event.value.toCharArray(), 
-                               0, event.value.length());
+               proc.characters(events[i].value.toCharArray(), 
+                               0, events[i].value.length());
                proc.endCDATA();
                break;
             case SAXEvent.PI:
-               proc.processingInstruction(event.qName, event.value);
+               proc.processingInstruction(events[i].qName, events[i].value);
                break;
             case SAXEvent.COMMENT:
-               proc.comment(event.value.toCharArray(), 
-                            0, event.value.length());
+               proc.comment(events[i].value.toCharArray(), 
+                            0, events[i].value.length());
                break;
             case SAXEvent.MAPPING:
-               proc.startPrefixMapping(event.qName, event.uri);
+               proc.startPrefixMapping(events[i].qName, events[i].value);
                break;
             case SAXEvent.MAPPING_END:
-               proc.endPrefixMapping(event.qName);
+               proc.endPrefixMapping(events[i].qName);
                break;
             default:
-               log4j.error("Unexpected type: " + event.type + 
-                           " (" + event + ")");
+               log4j.error("Unexpected type: " + events[i].type + 
+                           " (" + events[i] + ")");
             }
          }
          return processStatus;

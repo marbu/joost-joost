@@ -1,5 +1,5 @@
 /*
- * $Id: BufferFactory.java,v 1.2 2002/11/02 15:55:00 obecker Exp $
+ * $Id: BufferFactory.java,v 1.3 2002/11/03 11:37:24 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,8 +32,8 @@ import org.xml.sax.SAXParseException;
 import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.Stack;
-import java.util.Vector;
 
+import net.sf.joost.emitter.BufferEmitter;
 import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Context;
 /** 
  * Factory for <code>buffer</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2002/11/02 15:55:00 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/03 11:37:24 $
  * @author Oliver Becker
  */
 
@@ -141,7 +141,7 @@ final public class BufferFactory extends FactoryBase
                return processStatus;// if the errorHandler returns
             }
 
-            varTable.put(expName, new Vector());
+            varTable.put(expName, new BufferEmitter());
 
             if (varTable == context.localVars)
                parent.declareVariable(expName);
