@@ -1,5 +1,5 @@
 /*
- * $Id: ValueOfFactory.java,v 2.3 2003/05/26 11:47:09 obecker Exp $
+ * $Id: ValueOfFactory.java,v 2.4 2003/05/26 13:49:39 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>value-of</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.3 $ $Date: 2003/05/26 11:47:09 $
+ * @version $Revision: 2.4 $ $Date: 2003/05/26 13:49:39 $
  * @author Oliver Becker
  */
 
@@ -72,22 +72,22 @@ final public class ValueOfFactory extends FactoryBase
       Tree selectExpr = parseExpr(selectAtt, nsSet, parent, locator);
 
       String separatorAtt = attrs.getValue("separator");
-      if (separatorAtt == null)
-         separatorAtt = " "; // default value
+      Tree separatorAVT = null;
+      if (separatorAtt != null)
+         separatorAVT = parseAVT(separatorAtt, nsSet, parent, locator);
 
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, selectExpr, separatorAtt);
+      return new Instance(qName, parent, locator, selectExpr, separatorAVT);
    }
 
 
    /** Represents an instance of the <code>value-of</code> element. */
    final public class Instance extends NodeBase
    {
-      private Tree select;
-      private String separator;
+      private Tree select, separator;
 
       protected Instance(String qName, NodeBase parent, Locator locator, 
-                         Tree select, String separator)
+                         Tree select, Tree separator)
       {
          super(qName, parent, locator, false);
          this.select = select;
@@ -107,13 +107,18 @@ final public class ValueOfFactory extends FactoryBase
          if (v.next == null)
             s = v.convertToString().string;
          else {
-            // use a string buffer for evaluating the sequence
+            // create a string from a sequence
+            // evaluate separator
+            String sep = (separator != null) 
+               ? separator.evaluate(context, this).string 
+               : " "; // default value
+            // use a string buffer for creating the result
             StringBuffer sb = new StringBuffer();
             Value next = v.next;
             v.next = null;
             sb.append(v.convertToString().string);
             while (next != null) {
-               sb.append(separator);
+               sb.append(sep);
                v = next;
                next = v.next;
                v.next = null;
