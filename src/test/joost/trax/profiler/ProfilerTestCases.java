@@ -1,5 +1,5 @@
 /*
- * $Id: ProfilerTestCases.java,v 1.6 2004/10/17 20:37:25 obecker Exp $
+ * $Id: ProfilerTestCases.java,v 1.7 2004/12/17 18:36:22 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -313,7 +313,7 @@ public class ProfilerTestCases extends TestCase {
        // Create a new STX Processor object
        long delta = 0;
        try {
-           Processor pr = new Processor(new InputSource(stxFile));
+           Processor pr = new Processor(new InputSource(stxFile), true);
            StreamEmitter em =
               StreamEmitter.newXMLEmitter(
                  new BufferedWriter(
