@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 2.5 2003/08/31 19:38:54 obecker Exp $
+ * $Id: Parser.java,v 2.6 2003/09/02 14:13:48 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,7 +46,7 @@ import net.sf.joost.instruction.*;
 /** 
  * Creates the tree representation of an STX transformation sheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 2.5 $ $Date: 2003/08/31 19:38:54 $
+ * @version $Revision: 2.6 $ $Date: 2003/09/02 14:13:48 $
  * @author Oliver Becker
  */
 
@@ -201,12 +201,15 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
 
    public void startDocument() throws SAXException
    {
+      // declare xml namespace
+      startPrefixMapping("xml", NamespaceSupport.XMLNS);
    }
 
 
    public void endDocument()
       throws SAXException
    {
+      endPrefixMapping("xml");
       if (includingGroup != null)
          return;
       try {
