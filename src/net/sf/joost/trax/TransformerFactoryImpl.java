@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.8 2003/06/12 11:33:27 obecker Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.9 2003/07/04 08:07:39 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -176,7 +176,8 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         throws IllegalArgumentException {
 
         synchronized (reentryGuard) {
-            log.debug("setting ErrorListener");
+            if (DEBUG)
+                log.debug("setting ErrorListener");
             if (errorListener == null) {
                 throw new IllegalArgumentException("ErrorListener is null");
             }
@@ -260,9 +261,10 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         throws TransformerConfigurationException {
 
         synchronized (reentryGuard) {
-            if (log.isDebugEnabled())
-                log.debug("get a Templates-instance from Source " +
-                          source.getSystemId());
+            if (DEBUG) 
+                if (log.isDebugEnabled())
+                    log.debug("get a Templates-instance from Source " +
+                              source.getSystemId());
             try {
                 SAXSource saxSource = getSAXSource(source, true);
                 InputSource isource = saxSource.getInputSource();
@@ -316,7 +318,8 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         throws TransformerConfigurationException {
 
         synchronized (reentryGuard) {
-            log.debug("get a Transformer-instance");
+            if (DEBUG)
+                log.debug("get a Transformer-instance");
             Templates templates     = newTemplates(source);
             Transformer transformer = templates.newTransformer();
             //set the URI-Resolver
@@ -341,15 +344,18 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     private SAXSource getSAXSource(Source source, boolean isStyleSheet)
         throws TransformerConfigurationException{
 
-        log.debug("Convert a supplied Source to a SAXSource, DOMSource " +
-            "or StreamSource");
+        if (DEBUG)
+            log.debug("Convert a supplied Source to a SAXSource, DOMSource " +
+                      "or StreamSource");
         if (source instanceof SAXSource) {
-            log.debug("Source is a SAXSource");
+            if (DEBUG)
+                log.debug("Source is a SAXSource");
             return (SAXSource)source;
         }
         if (source instanceof DOMSource) {
-            log.debug("Source is a DOMSource, so using DOMDriver to " +
-                "emulate a SAXSource");
+            if (DEBUG)
+                log.debug("Source is a DOMSource, so using DOMDriver to " +
+                          "emulate a SAXSource");
             InputSource is = new InputSource("dummy");
             Node startNode = ((DOMSource)source).getNode();
             Document doc;
@@ -367,7 +373,8 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         }
         if (source instanceof StreamSource) {
 
-            log.debug("Source is a StreamSource");
+            if (DEBUG)
+                log.debug("Source is a StreamSource");
             InputSource isource =
                 TrAXHelper.getInputSourceForStreamSources(source, errorListener);
             return new SAXSource(isource);
@@ -415,7 +422,8 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         throws TransformerConfigurationException {
 
         synchronized (reentryGuard) {
-            log.debug("create a TemplatesHandler-instance");
+            if (DEBUG)
+                log.debug("create a TemplatesHandler-instance");
             TemplatesHandlerImpl thandler = new TemplatesHandlerImpl(this);
             return thandler;
         }
@@ -435,8 +443,9 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         throws TransformerConfigurationException {
 
         synchronized (reentryGuard) {
-            log.debug("get a TransformerHandler (identity transformation " +
-                "or copy)");
+            if (DEBUG)
+                log.debug("get a TransformerHandler (identity " + 
+                          "transformation or copy)");
             StreamSource streamSrc =
                 new StreamSource(new StringReader(IDENTITY_TRANSFORM));
             return newTransformerHandler(streamSrc);
@@ -457,9 +466,10 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         throws TransformerConfigurationException {
 
         synchronized (reentryGuard) {
-            if (log.isDebugEnabled())
-                log.debug("get a TransformerHandler-instance from Source " +
-                          src.getSystemId());
+            if (DEBUG)
+                if (log.isDebugEnabled())
+                    log.debug("get a TransformerHandler-instance from " + 
+                              "Source " + src.getSystemId());
             Templates templates = newTemplates(src);
             return newTransformerHandler(templates);
         }
@@ -478,7 +488,8 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         throws TransformerConfigurationException {
 
         synchronized (reentryGuard) {
-            log.debug("get a TransformerHandler-instance from Templates ");
+            if (DEBUG)
+                log.debug("get a TransformerHandler-instance from Templates");
             Transformer internal = templates.newTransformer();
             TransformerHandlerImpl thandler = new TransformerHandlerImpl(internal);
             return thandler;
@@ -498,9 +509,10 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     public XMLFilter newXMLFilter(Source src)
         throws TransformerConfigurationException {
 
-        if (log.isDebugEnabled())
-            log.debug("getting SAXTransformerFactory.FEATURE_XMLFILTER " +
-                      "from Source " + src.getSystemId());
+        if (DEBUG)
+            if (log.isDebugEnabled())
+                log.debug("getting SAXTransformerFactory.FEATURE_XMLFILTER " +
+                          "from Source " + src.getSystemId());
         XMLFilter xFilter = null;
         try {
             Templates templates = newTemplates(src);
@@ -543,8 +555,9 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     public XMLFilter newXMLFilter(Templates templates)
         throws TransformerConfigurationException {
 
-        log.debug("getting SAXTransformerFactory.FEATURE_XMLFILTER " +
-            "from Templates");
+        if (DEBUG)
+            log.debug("getting SAXTransformerFactory.FEATURE_XMLFILTER " +
+                      "from Templates");
         try {
             //Implementation
             return new TrAXFilter(templates);
