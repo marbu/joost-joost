@@ -1,5 +1,5 @@
 /*
- * $Id: StringEmitter.java,v 1.1 2002/11/20 16:58:27 obecker Exp $
+ * $Id: StringEmitter.java,v 1.2 2002/11/21 16:43:09 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,7 +26,6 @@ package net.sf.joost.emitter;
 
 //SAX2
 import org.xml.sax.Attributes;
-import org.xml.sax.ErrorHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
@@ -36,7 +35,7 @@ import net.sf.joost.stx.SAXEvent;
 
 /**
  * This class implements an emitter that collects characters events
- * @version $Revision: 1.1 $ $Date: 2002/11/20 16:58:27 $
+ * @version $Revision: 1.2 $ $Date: 2002/11/21 16:43:09 $
  * @author Oliver Becker
  */
 
@@ -45,13 +44,12 @@ final public class StringEmitter implements StxEmitter
    /** the string buffer */
    private StringBuffer buffer;
 
-
-   // Note: The error notification mechanism is not finalized
-
-   /** additional info for error messages */
+   /** 
+    * additional info for error messages, <code>null</code> means:
+    * don't report errors 
+    */
    private String errorInfo;
 
-   private ErrorHandler errorHandler;
 
    //
    // Constructor
@@ -60,12 +58,6 @@ final public class StringEmitter implements StxEmitter
    {
       this.buffer = buffer;
       this.errorInfo = errorInfo;
-   }
-
-
-   public void setErrorHandler(ErrorHandler errorHandler)
-   {
-      this.errorHandler = errorHandler;
    }
 
 
@@ -102,9 +94,9 @@ final public class StringEmitter implements StxEmitter
                             String qName, Attributes atts)
       throws SAXException
    {
-      // Hmm, need locator information ...
-//        if (errorHandler != null)
-//           errorHandler.error("Can't create markup here " + errorInfo);
+      if (errorInfo != null)
+         throw new SAXException("Can't create element `" + qName + "' here " +
+                                errorInfo);
    }
 
    /** not allowed */
@@ -112,6 +104,8 @@ final public class StringEmitter implements StxEmitter
                           String qName)
       throws SAXException
    {
+      // no test necessary here, because there must have been be a
+      // startElement event before
    }
 
    /** Add the characters to the internal buffer */
@@ -178,5 +172,7 @@ final public class StringEmitter implements StxEmitter
    public void comment(char[] ch, int start, int length)
       throws SAXException
    {
+      if (errorInfo != null)
+         throw new SAXException("Can't create comment here " + errorInfo);
    }
 }

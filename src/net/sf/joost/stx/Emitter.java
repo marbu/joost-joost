@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.7 2002/11/20 16:56:25 obecker Exp $
+ * $Id: Emitter.java,v 1.8 2002/11/21 16:42:20 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.emitter.StxEmitter;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.7 $ $Date: 2002/11/20 16:56:25 $
+ * @version $Revision: 1.8 $ $Date: 2002/11/21 16:42:20 $
  * @author Oliver Becker
  */
 
@@ -52,6 +52,7 @@ public final class Emitter
 {
    private ContentHandler contH;
    private LexicalHandler lexH;
+   private ErrorHandlerImpl errorHandler;  // set in the constructor
 
    private Hashtable inScopeNamespaces;
    private Stack namespaceStack;
@@ -62,8 +63,12 @@ public final class Emitter
    /** Stack of handler objects */
    private Stack emitterStack;
 
+   // last properties of the element 
    private String lastUri, lastLName, lastQName;
    private AttributesImpl lastAttrs;
+   private String lastPublicId, lastSystemId;
+   private int lastLineNo, lastColNo;
+
 
    private boolean insideCDATA = false;
 
@@ -72,7 +77,7 @@ public final class Emitter
       org.apache.log4j.Logger.getLogger(Emitter.class);
 
 
-   Emitter() // package private
+   Emitter(ErrorHandlerImpl errorHandler) // package private
    {
       inScopeNamespaces = new Hashtable();
       inScopeNamespaces.put("", "");
@@ -81,6 +86,7 @@ public final class Emitter
       namespaceStack.push(inScopeNamespaces.clone());
       outputEvents = new Stack();
       emitterStack = new Stack();
+      this.errorHandler = errorHandler;
    }
 
 
@@ -140,7 +146,15 @@ public final class Emitter
       // remember the current mapping
       namespaceStack.push(inScopeNamespaces.clone());
          
-      contH.startElement(lastUri, lastLName, lastQName, lastAttrs);
+      try {
+         contH.startElement(lastUri, lastLName, lastQName, lastAttrs);
+      }
+      catch (SAXException se) {
+         errorHandler.error(se.getMessage(),
+                            lastPublicId, lastSystemId, 
+                            lastLineNo, lastColNo);
+      }
+
       outputEvents.push(SAXEvent.newElement(lastUri, lastLName, lastQName, 
                                             lastAttrs, null));
 
@@ -153,15 +167,14 @@ public final class Emitter
     */
    public void addAttribute(String uri, String qName, String lName, 
                             String value,
-                            Context context,
                             String publicId, String systemId, 
                             int lineNo, int colNo)
       throws SAXException
    {
       if (lastAttrs == null) {
-         context.errorHandler.error("Can't create an attribute if there's " +
-                                    "no opened element", 
-                                    publicId, systemId, lineNo, colNo);
+         errorHandler.error("Can't create an attribute if there's " +
+                            "no opened element", 
+                            publicId, systemId, lineNo, colNo);
          return; // if the errorHandler returns
       }
 
@@ -184,8 +197,7 @@ public final class Emitter
    }
 
 
-   public void endDocument(Context context,
-                           String publicId, String systemId, 
+   public void endDocument(String publicId, String systemId, 
                            int lineNo, int colNo) 
       throws SAXException
    {
@@ -195,7 +207,7 @@ public final class Emitter
          if (outputEvents.size() > 1) {
             SAXEvent ev = (SAXEvent)outputEvents.pop();
 
-            context.errorHandler.fatalError(
+            errorHandler.fatalError(
                "Missing end tag for `" + ev.qName + "' at the document end", 
                publicId, systemId, lineNo, colNo);
          }
@@ -206,7 +218,9 @@ public final class Emitter
 
 
    public void startElement(String uri, String lName, String qName,
-                            Attributes attrs, NamespaceSupport nsSupport)
+                            Attributes attrs, NamespaceSupport nsSupport,
+                            String publicId, String systemId, 
+                            int lineNo, int colNo)
       throws SAXException
    {
       if (contH != null) {
@@ -233,12 +247,15 @@ public final class Emitter
             // We use the empty string instead
             inScopeNamespaces.put("", defaultNS == null ? "" : defaultNS);
          }
+         lastPublicId = publicId;
+         lastSystemId = systemId;
+         lastLineNo = lineNo;
+         lastColNo = colNo;
       }
    }
 
 
    public void endElement(String uri, String lName, String qName,
-                          Context context,
                           String publicId, String systemId, 
                           int lineNo, int colNo)
       throws SAXException
@@ -255,7 +272,7 @@ public final class Emitter
             log4j.fatal(ex);
          }
          if (ev == null || ev.type != SAXEvent.ELEMENT) {
-            context.errorHandler.fatalError(
+            errorHandler.fatalError(
                "Attempt to emit unmatched end tag " +
                (qName != null ? "`" + qName + "' " : "") +
                "(no element opened)",
@@ -263,14 +280,14 @@ public final class Emitter
             return; // if the errorHandler returns
          }
          if (!qName.equals(ev.qName)) {
-            context.errorHandler.fatalError(
+            errorHandler.fatalError(
                "Attempt to emit unmatched end tag `"+
                qName + "' (`" + ev.qName + "' expected)",
                publicId, systemId, lineNo, colNo);
             return; // if the errorHandler returns
          }
          if (!uri.equals(ev.uri)) {
-            context.errorHandler.fatalError(
+            errorHandler.fatalError(
                "Attempt to emit unmatched end tag `{" + uri + "}" + qName + 
                "' (`{" + ev.uri + "}" +           ev.qName + "' expected)",
                publicId, systemId, lineNo, colNo);
@@ -338,13 +355,22 @@ public final class Emitter
    }
 
    
-   public void comment(char[] ch, int start, int length)
+   public void comment(char[] ch, int start, int length,
+                       String publicId, String systemId, 
+                       int lineNo, int colNo)
       throws SAXException
    {
       if (contH != null && lastAttrs != null)
          processStartElement();
-      if (lexH != null)
-         lexH.comment(ch, start, length);
+      if (lexH != null) {
+         try {
+            lexH.comment(ch, start, length);
+         }
+         catch (SAXException se) {
+            errorHandler.error(se.getMessage(),
+                               publicId, systemId, lineNo, colNo);
+         }
+      }
    }
 
 
