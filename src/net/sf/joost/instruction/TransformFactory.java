@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 2.7 2003/06/15 11:52:25 obecker Exp $
+ * $Id: TransformFactory.java,v 2.8 2003/06/17 12:32:55 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Processor;
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 2.7 $ $Date: 2003/06/15 11:52:25 $
+ * @version $Revision: 2.8 $ $Date: 2003/06/17 12:32:55 $
  * @author Oliver Becker
  */
 
@@ -54,6 +54,10 @@ public class TransformFactory extends FactoryBase
    /** allowed attributes for this element. */
    private HashSet attrNames;
 
+   private static final String EXCLUDE_RESULT_PREFIXES = 
+      "exclude-result-prefixes";
+
+
    // Constructor
    public TransformFactory()
    {
@@ -64,7 +68,7 @@ public class TransformFactory extends FactoryBase
       attrNames.add("pass-through");
       attrNames.add("recognize-cdata");
       attrNames.add("strip-space");
-      attrNames.add("exclude-result-prefixes");
+      attrNames.add(EXCLUDE_RESULT_PREFIXES);
    }
 
    /** @return <code>"transform"</code> */
@@ -117,16 +121,24 @@ public class TransformFactory extends FactoryBase
          getEnumAttValue("recognize-cdata", attrs, YESNO_VALUES, 
                          context) != NO_VALUE;
 
-      String excludedPrefixes = attrs.getValue("exclude-result-prefixes");
+      String excludedPrefixes = attrs.getValue(EXCLUDE_RESULT_PREFIXES);
       HashSet excludedNamespaces = new HashSet();
       excludedNamespaces.add(STX_NS);
       if (excludedPrefixes != null) {
+         int tokenNo = 0;
          StringTokenizer tokenizer = new StringTokenizer(excludedPrefixes);
          while (tokenizer.hasMoreTokens()) {
+            tokenNo++;
             String prefix = tokenizer.nextToken();
             if ("#all".equals(prefix)) {
-               excludedNamespaces.addAll(context.nsSet.values());
-               continue; // while
+               if (tokenNo != 1 || tokenizer.hasMoreTokens())
+                  throw new SAXParseException(
+                     "The value `#all' must be used standalone in the `" +
+                     EXCLUDE_RESULT_PREFIXES + "' attribute", 
+                     context.locator);
+               else
+                  excludedNamespaces.addAll(context.nsSet.values());
+               break; // while
             }
             if ("#default".equals(prefix))
                prefix = "";
@@ -134,11 +146,18 @@ public class TransformFactory extends FactoryBase
             if (ns != null)
                excludedNamespaces.add(ns);
             else
-               if (prefix != "") // #default
+               if (prefix == "") // #default
+                  throw new SAXParseException(
+                     "No default namespace declared to be excluded by " +
+                     "using the value `#default' in the `" +
+                     EXCLUDE_RESULT_PREFIXES + "' attribute",
+                     context.locator);
+               else
                   throw new SAXParseException(
                      "No namespace declared for prefix `" + prefix + 
-                     "' in the `exclude-result-prefixes' attribute", 
+                     "' in the `" + EXCLUDE_RESULT_PREFIXES + "' attribute", 
                      context.locator);
+
          }
       }
 
