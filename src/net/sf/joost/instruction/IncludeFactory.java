@@ -1,5 +1,5 @@
 /*
- * $Id: IncludeFactory.java,v 2.5 2003/09/03 15:01:56 obecker Exp $
+ * $Id: IncludeFactory.java,v 2.6 2004/01/23 09:48:39 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -48,7 +48,7 @@ import net.sf.joost.trax.TrAXHelper;
 /** 
  * Factory for <code>include</code> elements, which will be replaced by
  * groups for the included transformation sheet
- * @version $Revision: 2.5 $ $Date: 2003/09/03 15:01:56 $
+ * @version $Revision: 2.6 $ $Date: 2004/01/23 09:48:39 $
  * @author Oliver Becker
  */
 
@@ -85,8 +85,10 @@ final public class IncludeFactory extends FactoryBase
 
       checkAttributes(qName, attrs, attrNames, context);
 
-      Parser stxParser = new Parser(context.errorHandler, 
-                                    context.uriResolver);
+      Parser stxParser = new Parser();
+      stxParser.setErrorHandler(context.errorHandler);
+      stxParser.setURIResolver(context.uriResolver);
+      stxParser.setParserListener(context.parserListener);
       stxParser.includingGroup = (GroupBase)parent;
 
       XMLReader reader = null;
