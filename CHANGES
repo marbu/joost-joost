@@ -1,7 +1,7 @@
 Changes since 20041107
 - added command line switch -noext and TrAX attribute ALLOW_EXTENSION_FUNCTIONS
   to prevent/allow the call of Java extension functions
-- Bugfixes: 1086639, 1086657, 1093383, 1107878, 1170453, 1170454
+- Bugfixes: 1086639, 1086657, 1093383, 1107878, 1170453, 1170454, 1170668
 
 Changes since 20041002
 - Joost now requires Java 1.4 (or above)
