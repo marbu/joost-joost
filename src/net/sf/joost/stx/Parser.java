@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 1.21 2003/02/18 17:06:50 obecker Exp $
+ * $Id: Parser.java,v 1.22 2003/03/17 15:56:40 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.instruction.*;
 /** 
  * Creates the tree representation of an STX stylesheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 1.21 $ $Date: 2003/02/18 17:06:50 $
+ * @version $Revision: 1.22 $ $Date: 2003/03/17 15:56:40 $
  * @author Oliver Becker
  */
 
@@ -118,6 +118,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
          new CommentFactory(),
          new PIFactory(),
          new ForEachFactory(),
+         new WhileFactory(),
          new IfFactory(),
          new ElseFactory(),
          new ChooseFactory(),
