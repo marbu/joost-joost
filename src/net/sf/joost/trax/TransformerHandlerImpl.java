@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerImpl.java,v 1.9 2004/09/19 13:40:38 obecker Exp $
+ * $Id: TransformerHandlerImpl.java,v 1.10 2004/10/06 07:39:13 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -153,7 +153,7 @@ public class TransformerHandlerImpl implements TransformerHandler, Constants {
 
     /**
      * Setter for {@link #systemId}
-     * @param systemID
+     * @param systemId the system identifier to set
      */
     public void setSystemId(String systemId) {
         this.systemId = systemId;
