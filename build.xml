@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ | $Id: build.xml,v 1.2 2002/08/27 14:24:23 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -129,12 +129,14 @@
   
   <target name="doc" depends="dep, mk.apidoc"
     description="creates the API documentation in the doc/api subdirectory">
-    <javadoc sourcepath="${src}" destdir="${doc}/api" classpathref="$cp"
+    <javadoc sourcepath="${src}" destdir="${doc}/api"
              packagenames="net.sf.joost, net.sf.joost.stx,
                            net.sf.joost.instruction, net.sf.joost.emitter,
                            net.sf.joost.grammar, net.sf.joost.grammar.cup,
                            net.sf.joost.trax"
-             windowtitle="Joost API documentation" private="true" />
+             windowtitle="Joost API documentation" private="true">
+      <classpath refid="cp" />
+    </javadoc>
   </target>
   
 
@@ -156,70 +158,94 @@
       </fileset>
     </delete>
   </target>
-  
-  
+
+
   <property name="dist" value="dist" />
-  <target name="dist"
-    description="creates a packed source distribution in .tar.gz format">
+  <target name="dist" depends="jar, doc"
+    description="creates packed source and binary distributions in .tar.gz and .zip format">
     <mkdir dir="${dist}" />
-    <cvs cvsRoot="/vol/marvin0-vol6/obecker/cvs" command="export"
-         dest="${dist}" package="${ant.project.name}" date="today" />
-    <tar tarfile="${dist}.tar">
+    <cvs cvsRoot=":pserver:anonymous@cvs.joost.sourceforge.net:/cvsroot/joost"
+         command="export" dest="${dist}" date="today"
+         package="${ant.project.name}" />
+    <!-- rename the directory name from "joost" to something like
+         "joost-20020401" -->
+    <tstamp>
+      <format property="date.version" pattern="yyyyMMdd" />
+    </tstamp>
+    <property name="dist.name" value="${ant.project.name}-${date.version}" />
+    <move todir="${dist}/${dist.name}">
+      <fileset dir="${dist}/${ant.project.name}" />
+    </move>
+    <!-- unfortunately the target "move" seems to move all files separately,
+         keeping the directories, so we have to delete them -->
+    <delete dir="${dist}/${ant.project.name}" />
+    <!-- delete unwanted scripts -->
+    <delete file="${dist}/${dist.name}/runtest.sh" />
+    <delete file="${dist}/${dist.name}/runerrortest.sh" />
+    <!-- copy the generated jar and javadoc -->
+    <copy file="${ant.project.name}.jar"
+          todir="${dist}/${dist.name}" />
+    <copy todir="${dist}/${dist.name}/${doc}">
+      <fileset dir="${doc}" />
+    </copy>
+    <!-- 1. source distribution -->
+    <!-- create .tar.gz -->
+    <tar tarfile="${ant.project.name}-src.tar">
       <tarfileset dir="${dist}">
-        <include name="${ant.project.name}/**" />
+        <include name="${dist.name}/**" />
         <!-- included with a different mode -->
-        <exclude name="${ant.project.name}/run.sh" />
-        <exclude name="${ant.project.name}/rundb.sh" />
-        <exclude name="${ant.project.name}/runjar.sh" />
-        <exclude name="${ant.project.name}/runfop.sh" />
-        <exclude name="${ant.project.name}/runtraxtest.sh" />
-        <!-- don't distribute these at all -->
-        <exclude name="${ant.project.name}/misc/**" />
-        <!-- distribute as a different package -->
-        <exclude name="${ant.project.name}/lib/**" />
-        <exclude name="${ant.project.name}/helper/**" />
-        <exclude name="${ant.project.name}/test/**" />
-        <exclude name="${ant.project.name}/runtest.sh" />
-        <exclude name="${ant.project.name}/runerrortest.sh" />
+        <exclude name="${dist.name}/joost.sh" />
+        <exclude name="${dist.name}/run.sh" />
+        <exclude name="${dist.name}/rundb.sh" />
+        <exclude name="${dist.name}/runfop.sh" />
       </tarfileset>
       <!-- set execute permissions -->
       <tarfileset dir="${dist}" mode="755">
-        <include name="${ant.project.name}/run.sh" />
-        <include name="${ant.project.name}/rundb.sh" />
-        <include name="${ant.project.name}/runjar.sh" />
-        <include name="${ant.project.name}/runfop.sh" />
-        <include name="${ant.project.name}/runtraxtest.sh" />
+        <include name="${dist.name}/joost.sh" />
+        <include name="${dist.name}/run.sh" />
+        <include name="${dist.name}/rundb.sh" />
+        <include name="${dist.name}/runfop.sh" />
       </tarfileset>
     </tar>
-    <tar tarfile="test.tar">
+    <gzip src="${ant.project.name}-src.tar"
+          zipfile="${dist.name}-src.tar.gz" />
+    <delete file="${ant.project.name}-src.tar" />
+    <!-- create .zip -->
+    <zip basedir="${dist}"
+         destfile="${dist.name}-src.zip" />
+    <!-- 2. binary distribution -->
+    <!-- remove sources and apidoc -->
+    <delete includeEmptyDirs="true">
+      <fileset dir="${dist}/${dist.name}">
+        <include name="run*.sh" />
+        <include name="README" />
+        <include name="build.xml" />
+        <include name="${src}/**" />
+        <include name="conf/**" />
+        <include name="lib/**" />
+        <include name="${doc}/api/**" />
+      </fileset>
+    </delete>
+    <!-- create .tar.gz -->
+    <tar tarfile="${ant.project.name}-bin.tar">
       <tarfileset dir="${dist}">
-        <include name="${ant.project.name}/test/**" />
+        <include name="${dist.name}/**" />
+        <!-- included with a different mode -->
+        <exclude name="${dist.name}/joost.sh" />
       </tarfileset>
+      <!-- set execute permissions -->
       <tarfileset dir="${dist}" mode="755">
-        <include name="${ant.project.name}/run.sh" />
-        <include name="${ant.project.name}/runtest.sh" />
-        <include name="${ant.project.name}/runerrortest.sh" />
+        <include name="${dist.name}/joost.sh" />
       </tarfileset>
     </tar>
-    <tar tarfile="helper.tar">
-      <tarfileset dir="${dist}">
-        <include name="${ant.project.name}/helper/**" />
-      </tarfileset>
-    </tar>
-    <tar tarfile="lib.tar">
-      <tarfileset dir="${dist}">
-        <include name="${ant.project.name}/lib/**" />
-      </tarfileset>
-    </tar>
-    <gzip src="${dist}.tar" zipfile="${ant.project.name}-src.tar.gz" />
-    <gzip src="test.tar" zipfile="${ant.project.name}-test.tar.gz" />
-    <gzip src="helper.tar" zipfile="${ant.project.name}-helper.tar.gz" />
-    <gzip src="lib.tar" zipfile="${ant.project.name}-lib.tar.gz" />
+    <gzip src="${ant.project.name}-bin.tar"
+          zipfile="${dist.name}-bin.tar.gz" />
+    <delete file="${ant.project.name}-bin.tar" />
+    <!-- create .zip -->
+    <zip basedir="${dist}"
+         destfile="${dist.name}-bin.zip" />
+    <!-- clean up -->
     <delete dir="${dist}" />
-    <delete file="${dist}.tar" />
-    <delete file="test.tar" />
-    <delete file="helper.tar" />
-    <delete file="lib.tar" />
   </target>
-
+  
 </project>
