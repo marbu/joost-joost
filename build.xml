@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.17 2004/11/07 10:45:39 obecker Exp $
+ | $Id: build.xml,v 1.18 2004/11/07 21:47:30 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -184,7 +184,7 @@
   <target name="dist" depends="jar, doc"
     description="creates packed source and binary distributions in .tar.gz and .zip format">
     <mkdir dir="${dist}" />
-    <cvs cvsRoot=":pserver:anonymous@cvs.joost.sourceforge.net:/cvsroot/joost"
+    <cvs cvsRoot=":pserver:anonymous@cvs.sourceforge.net:/cvsroot/joost"
          command="export" dest="${dist}" date="today"
          package="${ant.project.name}" />
     <!-- rename the directory name from "joost" to something like
