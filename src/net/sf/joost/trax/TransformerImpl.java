@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.9 2002/11/11 18:49:52 zubow Exp $
+ * $Id: TransformerImpl.java,v 1.10 2002/11/24 19:08:52 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -29,6 +29,7 @@ package net.sf.joost.trax;
 import net.sf.joost.emitter.DOMEmitter;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.stx.Processor;
+import net.sf.joost.trace.TraceManager;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -76,7 +77,20 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
     private Boolean reentryGuard = new Boolean(true);
 
     /**
-     * Defaultconstrucor
+     * This is a compile-time flag to enable or disable calling
+     * of trace listeners. For optimization purposes this flag
+     * must be set to false.
+     * todo : Implementation.
+     */
+    public static boolean DEBUG_MODE = true;
+
+    /**
+    * The trace manager.
+    */
+    private TraceManager traceManager = new TraceManager(this);
+
+    /**
+     * Defaultconstructor.
      */
     protected TransformerImpl() {}
 
@@ -86,6 +100,17 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
      */
     protected TransformerImpl(Processor processor) {
         this.processor = processor;
+    }
+
+    /**
+     * Get an instance of the tracemanager for this transformation.
+     * This object can be used to set tracelisteners on various
+     * events during the transformation.
+     *
+     * @return A reference to a tracemanager
+     */
+    public TraceManager getTraceManager() {
+        return traceManager;
     }
 
     /**
@@ -156,11 +181,15 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
                              * see the {@link org.xml.sax} Package Description.
                              */
                             if (xmlReader != null) {
+                                try {
                                 // set the required "http://xml.org/sax/features/namespaces" Feature
                                 xmlReader.setFeature(FEAT_NS, true);
                                 // set the required "http://xml.org/sax/features/namespace-prefixes" Feature
                                 xmlReader.setFeature(FEAT_NSPREFIX, false);
                                 // maybe there would be other features
+                                } catch (SAXException sE) {
+                                    log.warn(sE);
+                                }
                             }
                             // set the the SAXSource as the parent of the STX-Processor
                             this.processor.setParent(saxSource.getXMLReader());
@@ -186,6 +215,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
                         throw tE;
                     }
                 } else {
+                    ex.printStackTrace();
                     TransformerException tE =
                             new TransformerException(ex.getMessage(), ex);
                     log.fatal(tE);
