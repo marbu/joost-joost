@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 1.8 2002/12/17 16:36:29 obecker Exp $
+ * $Id: PBufferFactory.java,v 1.9 2002/12/19 14:23:52 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.8 $ $Date: 2002/12/17 16:36:29 $
+ * @version $Revision: 1.9 $ $Date: 2002/12/19 14:23:52 $
  * @author Oliver Becker
  */
 
@@ -153,7 +153,7 @@ public class PBufferFactory extends FactoryBase
          // walk through the buffer and emit events to the Processor object
          SAXEvent[] events = ((BufferEmitter)buffer).getEvents();
          Processor proc = context.currentProcessor;
-         proc.startBuffer();
+         proc.startInnerProcessing();
          for (int i=0; i<events.length; i++) {
             log4j.debug("Buffer Processing " + events[i]);
             switch (events[i].type) {
@@ -193,7 +193,7 @@ public class PBufferFactory extends FactoryBase
                            " (" + events[i] + ")");
             }
          }
-         proc.endBuffer();
+         proc.endInnerProcessing();
          return processStatus;
       }
    }
