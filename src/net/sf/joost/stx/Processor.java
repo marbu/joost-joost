@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.21 2003/08/29 13:30:27 obecker Exp $
+ * $Id: Processor.java,v 2.22 2003/09/03 15:03:08 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -49,6 +49,7 @@ import java.util.Properties;
 import java.util.Stack;
 import java.util.Vector;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.URIResolver;
 
 import java.io.IOException;
 
@@ -69,7 +70,7 @@ import net.sf.joost.trace.DebugProcessor;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.21 $ $Date: 2003/08/29 13:30:27 $
+ * @version $Revision: 2.22 $ $Date: 2003/09/03 15:03:08 $
  * @author Oliver Becker
  */
 
@@ -333,13 +334,15 @@ public class Processor extends XMLFilterImpl
     *        while <em>parsing the transformation sheet</em> (not for
     *        processing of XML input with this transformation sheet,
     *        see {@link #setErrorListener})
+    * @param uriResolver resolver for <code>stx:include</code>
     * @throws IOException if <code>src</code> couldn't be retrieved
     * @throws SAXException if a SAX parser couldn't be created
     */
-   public Processor(InputSource src, ErrorListener errorListener)
+   public Processor(InputSource src, ErrorListener errorListener,
+                    URIResolver uriResolver)
       throws IOException, SAXException
    {
-      this(null, src, errorListener);
+      this(null, src, errorListener, uriResolver);
    }
 
 
@@ -354,7 +357,7 @@ public class Processor extends XMLFilterImpl
    public Processor(InputSource src)
       throws IOException, SAXException
    {
-      this(src, null);
+      this(src, null, null);
    }
 
 
@@ -364,11 +367,17 @@ public class Processor extends XMLFilterImpl
     * @param reader the parser that is used for reading the transformation 
     *               sheet
     * @param src the source for the STX transformation sheet
+    * @param errorListener an ErrorListener object for reporting errors
+    *        while <em>parsing the transformation sheet</em> (not for
+    *        processing of XML input with this transformation sheet,
+    *        see {@link #setErrorListener})
+    * @param uriResolver resolver for <code>stx:include</code>
     * @throws IOException if <code>src</code> couldn't be retrieved
     * @throws SAXException if a SAX parser couldn't be created
     */
    public Processor(XMLReader reader, InputSource src, 
-                    ErrorListener errorListener)
+                    ErrorListener errorListener,
+                    URIResolver uriResolver)
       throws IOException, SAXException
    {
       if (reader == null)
@@ -377,7 +386,7 @@ public class Processor extends XMLFilterImpl
       // create a Parser for parsing the STX transformation sheet
       ErrorHandlerImpl errorHandler = new ErrorHandlerImpl(errorListener,
                                                            true);
-      Parser stxParser = new Parser(errorHandler);
+      Parser stxParser = new Parser(errorHandler, uriResolver);
       reader.setContentHandler(stxParser);
       reader.setErrorHandler(errorHandler);
 
@@ -652,6 +661,16 @@ public class Processor extends XMLFilterImpl
       TransformerHandlerResolver resolver)
    {
       context.defaultTransformerHandlerResolver.customResolver = resolver;
+   }
+
+
+   /**
+    * Registers a URIResolver for <code>stx:process-document</code>
+    * @param resolver the resolver to be registered
+    */
+   public void setURIResolver(URIResolver resolver)
+   {
+      context.uriResolver = resolver;
    }
 
 

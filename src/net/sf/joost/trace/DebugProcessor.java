@@ -1,5 +1,5 @@
 /*
- * $Id: DebugProcessor.java,v 1.3 2003/08/28 16:09:51 obecker Exp $
+ * $Id: DebugProcessor.java,v 1.4 2003/09/03 15:03:36 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -34,11 +34,12 @@ import org.xml.sax.Attributes;
 import org.xml.sax.XMLReader;
 
 import javax.xml.transform.ErrorListener;
+import javax.xml.transform.URIResolver;
 import java.io.IOException;
 
 /**
  * Extends the {@link net.sf.joost.stx.Processor} with debug features.
- * @version $Revision: 1.3 $ $Date: 2003/08/28 16:09:51 $
+ * @version $Revision: 1.4 $ $Date: 2003/09/03 15:03:36 $
  * @author Zubow
  */
 public class DebugProcessor extends Processor {
@@ -50,20 +51,22 @@ public class DebugProcessor extends Processor {
     public Parser stxparser;
 
     /**
-     * See {@link net.sf.joost.stx.Processor#Processor(org.xml.sax.XMLReader, org.xml.sax.InputSource, javax.xml.transform.ErrorListener)}
+     * See {@link net.sf.joost.stx.Processor#Processor(XMLReader, InputSource, ErrorListener, URIResolver)}
      */
     public DebugProcessor(XMLReader reader, InputSource src, 
-                          ErrorListener errorListener)
+                          ErrorListener errorListener,
+                          URIResolver uriResolver)
             throws IOException, SAXException {
-        super(reader, src, errorListener);
+        super(reader, src, errorListener, uriResolver);
     }
 
     /**
-     * See {@link net.sf.joost.stx.Processor#Processor(org.xml.sax.InputSource, javax.xml.transform.ErrorListener)}
+     * See {@link net.sf.joost.stx.Processor#Processor(InputSource, ErrorListener, URIResolver)}
      */
-    public DebugProcessor(InputSource src, ErrorListener errorListener)
+    public DebugProcessor(InputSource src, ErrorListener errorListener,
+                          URIResolver uriResolver)
             throws IOException, SAXException {
-        super(src, errorListener);
+        super(src, errorListener, uriResolver);
     }
 
     /**

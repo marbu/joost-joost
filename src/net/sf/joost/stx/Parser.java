@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 2.6 2003/09/02 14:13:48 obecker Exp $
+ * $Id: Parser.java,v 2.7 2003/09/03 15:03:06 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,6 +38,7 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Stack;
 import java.util.Vector;
+import javax.xml.transform.URIResolver;
 
 import net.sf.joost.Constants;
 import net.sf.joost.instruction.*;
@@ -46,7 +47,7 @@ import net.sf.joost.instruction.*;
 /** 
  * Creates the tree representation of an STX transformation sheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 2.6 $ $Date: 2003/09/02 14:13:48 $
+ * @version $Revision: 2.7 $ $Date: 2003/09/03 15:03:06 $
  * @author Oliver Becker
  */
 
@@ -141,11 +142,13 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
     * Constructs a new Parser instance.
     * @param errorHandler a handler object for reporting errors while
     *        parsing the transformation sheet.
+    * @param uriResolver a resolver for <code>stx:include</code> instructions
     */
-   public Parser(ErrorHandlerImpl errorHandler)
+   public Parser(ErrorHandlerImpl errorHandler, URIResolver uriResolver)
    {
       this();
       context.errorHandler = errorHandler;
+      context.uriResolver = uriResolver;
    }
 
 

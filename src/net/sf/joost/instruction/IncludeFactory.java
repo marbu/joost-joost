@@ -1,5 +1,5 @@
 /*
- * $Id: IncludeFactory.java,v 2.4 2003/06/03 15:21:54 obecker Exp $
+ * $Id: IncludeFactory.java,v 2.5 2003/09/03 15:01:56 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,6 +25,7 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -32,17 +33,22 @@ import org.xml.sax.XMLReader;
 
 import java.net.URL;
 import java.util.HashSet;
+
+import javax.xml.transform.Source;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.sax.SAXSource;
 
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Parser;
 import net.sf.joost.stx.Processor;
+import net.sf.joost.trax.TrAXHelper;
 
 
 /** 
  * Factory for <code>include</code> elements, which will be replaced by
  * groups for the included transformation sheet
- * @version $Revision: 2.4 $ $Date: 2003/06/03 15:21:54 $
+ * @version $Revision: 2.5 $ $Date: 2003/09/03 15:01:56 $
  * @author Oliver Becker
  */
 
@@ -79,16 +85,31 @@ final public class IncludeFactory extends FactoryBase
 
       checkAttributes(qName, attrs, attrNames, context);
 
-      // TODO: use URIResolver
-
-      Parser stxParser = new Parser(context.errorHandler);
+      Parser stxParser = new Parser(context.errorHandler, 
+                                    context.uriResolver);
       stxParser.includingGroup = (GroupBase)parent;
+
+      XMLReader reader = null;
+      InputSource iSource;
       try {
-         XMLReader reader = Processor.getXMLReader();
+         Source source;
+         if (context.uriResolver != null && 
+             (source = context.uriResolver.resolve(
+                hrefAtt, context.locator.getSystemId())) != null) {
+            SAXSource saxSource = TrAXHelper.getSAXSource(source, null);
+            reader = saxSource.getXMLReader();
+            iSource = saxSource.getInputSource();
+         }
+         else {
+            iSource = new InputSource(
+               new URL(new URL(context.locator.getSystemId()), hrefAtt)
+                  .toExternalForm());
+         }
+         if (reader == null)
+            reader = Processor.getXMLReader();
          reader.setContentHandler(stxParser);
          reader.setErrorHandler(context.errorHandler);
-         reader.parse(new URL(new URL(context.locator.getSystemId()), 
-                                      hrefAtt).toExternalForm());
+         reader.parse(iSource);
       }
       catch (java.io.IOException ex) {
          // TODO: better error handling
@@ -106,6 +127,9 @@ final public class IncludeFactory extends FactoryBase
             // add locator information
             throw new SAXParseException(ex.getMessage(), context.locator);
          }
+      }
+      catch (TransformerException te) {
+         throw new SAXException(te);
       }
 
       TransformFactory.Instance tfi = stxParser.getTransformNode();

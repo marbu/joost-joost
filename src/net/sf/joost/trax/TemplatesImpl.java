@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.11 2003/08/28 16:12:44 obecker Exp $
+ * $Id: TemplatesImpl.java,v 1.12 2003/09/03 15:04:54 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -169,9 +169,13 @@ public class TemplatesImpl implements Templates, TrAXConstants {
 
             if (debugmode) {
                 log.info("init transformer in debug mode");
-                processor = new DebugProcessor(reader, isource, factory.getErrorListener());
+                processor = new DebugProcessor(reader, isource, 
+                                               factory.getErrorListener(),
+                                               factory.getURIResolver());
             } else {
-                processor = new Processor(reader, isource, factory.getErrorListener());
+                processor = new Processor(reader, isource, 
+                                          factory.getErrorListener(),
+                                          factory.getURIResolver());
             }
             if (factory.thResolver != null)
                 processor.setTransformerHandlerResolver(factory.thResolver);

@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 2.7 2003/07/23 16:26:48 obecker Exp $
+ * $Id: PDocumentFactory.java,v 2.8 2003/09/03 15:01:57 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -26,11 +26,15 @@ package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
+import javax.xml.transform.Source;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.sax.TransformerHandler;
 
 import java.net.URL;
@@ -41,12 +45,13 @@ import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Processor;
 import net.sf.joost.stx.Value;
+import net.sf.joost.trax.TrAXHelper;
 
 
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.7 $ $Date: 2003/07/23 16:26:48 $
+ * @version $Revision: 2.8 $ $Date: 2003/09/03 15:01:57 $
  * @author Oliver Becker
  */
 
@@ -98,7 +103,8 @@ public class PDocumentFactory extends FactoryBase
 
       if (groupAtt != null && filterMethodAtt != null)
          throw new SAXParseException(
-            "It's not allowed to use both `group' and `filter-method' attributes",
+            "It's not allowed to use both `group' and `filter-method' " + 
+            "attributes",
             context.locator);
 
       String filterSrcAtt = attrs.getValue("filter-src");
@@ -195,12 +201,43 @@ public class PDocumentFactory extends FactoryBase
          try {
             Value next;
             do {
+               XMLReader thisReader = null;
+               InputSource iSource;
+               Source source;
                next = v.next;
                v.next = null;
                String hrefURI = v.convertToString().string;
-               // TODO: use javax.xml.transform.URIResolver if present
-               // source = theURIResolver.resolve(hrefURI, base);
-               reader.parse(new URL(new URL(base), hrefURI).toExternalForm());
+               if (context.uriResolver != null && 
+                   (source = 
+                       context.uriResolver.resolve(hrefURI, base)) != null) {
+                  SAXSource saxSource = TrAXHelper.getSAXSource(source, null);
+                  thisReader = saxSource.getXMLReader();
+                  if (thisReader != null) {
+                     reader.setContentHandler(contH);
+                     try {
+                        reader.setProperty(
+                           "http://xml.org/sax/properties/lexical-handler", 
+                           lexH);
+                     }
+                     catch (SAXException ex) {
+                        if (log != null)
+                           log.warn("Accessing " + reader + ": " + ex);
+                        context.errorHandler.warning(
+                           "Accessing " + reader + ": " + ex,
+                           publicId, systemId, lineNo, colNo);
+                     }
+                  }
+                  iSource = saxSource.getInputSource();
+               }
+               else {
+                  iSource = 
+                     new InputSource(new URL(new URL(base), hrefURI)
+                                         .toExternalForm());
+               }
+               if (thisReader == null)
+                  thisReader = reader;
+
+               thisReader.parse(iSource);
                v = next;
             } while (v != null);
          }
@@ -209,6 +246,9 @@ public class PDocumentFactory extends FactoryBase
             context.errorHandler.error(
                new SAXParseException(ex.toString(), 
                                      publicId, systemId, lineNo, colNo));
+         }
+         catch (TransformerException te) {
+            context.errorHandler.error(te);
          }
          proc.endInnerProcessing();
          context.locator = prevLoc;
