@@ -10,6 +10,8 @@ Changes since 20030502
   SAX TransformerHandlers 
   (see API doc for this interface, as well as the samples.NSFilter example)
 - added filter-available()
+- renamed attribute 'default-stxpath-namespace' to 
+  'stxpath-default-namespace' in stx:transform (spec change 2003-05-27)
 - added (partial) support for TrAX output properties
 - added support for Java extension functions
 - added Joost extension function sequence(), which converts a Java array or

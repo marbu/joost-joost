@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 2.5 2003/06/03 14:30:26 obecker Exp $
+ * $Id: TransformFactory.java,v 2.6 2003/06/13 09:00:14 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.Processor;
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 2.5 $ $Date: 2003/06/03 14:30:26 $
+ * @version $Revision: 2.6 $ $Date: 2003/06/13 09:00:14 $
  * @author Oliver Becker
  */
 
@@ -59,7 +59,7 @@ public class TransformFactory extends FactoryBase
       attrNames = new HashSet();
       attrNames.add("version");
       attrNames.add("output-encoding");
-      attrNames.add("default-stxpath-namespace");
+      attrNames.add("stxpath-default-namespace");
       attrNames.add("pass-through");
       attrNames.add("recognize-cdata");
       attrNames.add("strip-space");
@@ -89,7 +89,7 @@ public class TransformFactory extends FactoryBase
                                      context.locator); 
 
       String encodingAtt = attrs.getValue("output-encoding");
-      String defStxpNsAtt = attrs.getValue("default-stxpath-namespace");
+      String defStxpNsAtt = attrs.getValue("stxpath-default-namespace");
 
       // default is "none"
       byte passThrough = 0;
@@ -132,7 +132,7 @@ public class TransformFactory extends FactoryBase
 
       // stx:transform attributes (options)
       public String outputEncoding;
-      public String defaultSTXPathNamespace;
+      public String stxpathDefaultNamespace;
 
       // used to transfer the list of compilable nodes from an included
       // STX sheet to the calling Parser object
@@ -141,7 +141,7 @@ public class TransformFactory extends FactoryBase
       // Constructor
       public Instance(NodeBase parent, String qName, ParseContext context,
                       String outputEncoding,
-                      String defaultSTXPathNamespace, byte passThrough,
+                      String stxpathDefaultNamespace, byte passThrough,
                       boolean stripSpace, boolean recognizeCdata)
       {
          super(qName, parent, context,
@@ -153,8 +153,8 @@ public class TransformFactory extends FactoryBase
          this.outputEncoding = 
             (outputEncoding != null) ? outputEncoding 
                                      : DEFAULT_ENCODING; // in Constants
-         this.defaultSTXPathNamespace = 
-            (defaultSTXPathNamespace != null) ? defaultSTXPathNamespace : "";
+         this.stxpathDefaultNamespace = 
+            (stxpathDefaultNamespace != null) ? stxpathDefaultNamespace : "";
       }
 
 

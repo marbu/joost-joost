@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 2.6 2003/06/03 14:28:45 obecker Exp $
+ * $Id: Tree.java,v 2.7 2003/06/13 09:00:11 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 2.6 $ $Date: 2003/06/03 14:28:45 $
+ * @version $Revision: 2.7 $ $Date: 2003/06/13 09:00:11 $
  * @author Oliver Becker
  */
 final public class Tree
@@ -187,8 +187,8 @@ final public class Tree
          switch (type) {
          case NAME_TEST:
             // no qualified name: uri depends on the value of
-            // <stx:transform default-stxpath-namespace="..." />
-            uri = context.transformNode.defaultSTXPathNamespace;
+            // <stx:transform stxpath-default-namespace="..." />
+            uri = context.transformNode.stxpathDefaultNamespace;
             break;
          case FUNCTION:
             // use the fixed default function namespace
