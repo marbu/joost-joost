@@ -1,5 +1,5 @@
 /*
- * $Id: PIFactory.java,v 1.2 2002/11/27 10:03:12 obecker Exp $
+ * $Id: PIFactory.java,v 1.3 2002/12/17 16:46:41 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>processing-instruction</code> elements, which are 
  * represented by the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2002/11/27 10:03:12 $
+ * @version $Revision: 1.3 $ $Date: 2002/12/17 16:46:41 $
  * @author Oliver Becker
  */
 
@@ -126,7 +126,7 @@ final public class PIFactory extends FactoryBase
             buffer.setLength(0);
             emitter.pushEmitter(strEmitter);
 
-            context.stylesheetNode = this;
+            context.currentInstruction = this;
             Value v = name.evaluate(context, eventStack, eventStack.size());
             piName = v.string;
 

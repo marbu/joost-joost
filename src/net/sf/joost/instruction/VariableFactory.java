@@ -1,5 +1,5 @@
 /*
- * $Id: VariableFactory.java,v 1.6 2002/12/15 17:00:13 obecker Exp $
+ * $Id: VariableFactory.java,v 1.7 2002/12/17 16:46:42 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>variable</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.6 $ $Date: 2002/12/15 17:00:13 $
+ * @version $Revision: 1.7 $ $Date: 2002/12/17 16:46:42 $
  * @author Oliver Becker
  */
 
@@ -160,7 +160,7 @@ final public class VariableFactory extends FactoryBase
             }
             else if (select != null) {
                // select attribute present
-               context.stylesheetNode = this;
+               context.currentInstruction = this;
                v = select.evaluate(context, 
                                    eventStack, eventStack.size());
             }

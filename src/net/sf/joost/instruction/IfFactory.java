@@ -1,5 +1,5 @@
 /*
- * $Id: IfFactory.java,v 1.5 2002/11/27 10:03:11 obecker Exp $
+ * $Id: IfFactory.java,v 1.6 2002/12/17 16:46:41 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.grammar.EvalException;
 /** 
  * Factory for <code>if</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.5 $ $Date: 2002/11/27 10:03:11 $
+ * @version $Revision: 1.6 $ $Date: 2002/12/17 16:46:41 $
  * @author Oliver Becker
  */
 
@@ -104,7 +104,7 @@ final public class IfFactory extends FactoryBase
       {
          boolean testResult = false;
          if ((processStatus & ST_PROCESSING) != 0) {
-            context.stylesheetNode = this;
+            context.currentInstruction = this;
             try {
                testResult = test.evaluate(context, 
                                           eventStack, eventStack.size())

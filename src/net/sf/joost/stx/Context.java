@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 1.4 2002/12/15 17:11:08 obecker Exp $
+ * $Id: Context.java,v 1.5 2002/12/17 16:46:42 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import java.util.Hashtable;
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 1.4 $ $Date: 2002/12/15 17:11:08 $
+ * @version $Revision: 1.5 $ $Date: 2002/12/17 16:46:42 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
@@ -48,7 +48,7 @@ public final class Context implements Cloneable
    public long position;
 
    /** The currently processed statement in the stylesheet */
-   public NodeBase stylesheetNode;
+   public NodeBase currentInstruction;
 
    /** The group, the current template is a child of */
    public GroupBase currentGroup;

@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 1.6 2002/11/27 09:50:31 obecker Exp $
+ * $Id: Tree.java,v 1.7 2002/12/17 16:46:35 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 1.6 $ $Date: 2002/11/27 09:50:31 $
+ * @version $Revision: 1.7 $ $Date: 2002/12/17 16:46:35 $
  * @author Oliver Becker
  */
 public class Tree
@@ -426,10 +426,10 @@ public class Tree
       }
       catch (EvalException e) {
          context.errorHandler.error(e.getMessage(),
-                                     context.stylesheetNode.publicId,
-                                     context.stylesheetNode.systemId,
-                                     context.stylesheetNode.lineNo,
-                                     context.stylesheetNode.colNo);
+                                     context.currentInstruction.publicId,
+                                     context.currentInstruction.systemId,
+                                     context.currentInstruction.lineNo,
+                                     context.currentInstruction.colNo);
          return false; // if the errorHandler decides to continue ...
       }
    }
@@ -645,10 +645,10 @@ public class Tree
       }
       catch (EvalException e) {
          context.errorHandler.error(e.getMessage(),
-                                     context.stylesheetNode.publicId,
-                                     context.stylesheetNode.systemId,
-                                     context.stylesheetNode.lineNo,
-                                     context.stylesheetNode.colNo);
+                                     context.currentInstruction.publicId,
+                                     context.currentInstruction.systemId,
+                                     context.currentInstruction.lineNo,
+                                     context.currentInstruction.colNo);
          return new Value(""); // if the errorHandler decides to continue ...
       }
    }
