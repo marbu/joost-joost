@@ -1,5 +1,5 @@
 #!/bin/csh -f
-# $Id: runerrortest.sh,v 1.4 2003/06/17 12:23:32 obecker Exp $
+# $Id: runerrortest.sh,v 1.5 2004/09/17 17:51:33 obecker Exp $
 # Runs a set of error cases and checks the expected error message
 # (This error message is always in line 3 of the input file)
 
@@ -19,7 +19,7 @@ endif
 
 foreach i ( ${files} )
   echo -n `basename ${i}`: 
-  run.sh build.xml ${i} |& sed -e 's/^[^:]*://; s/:-\?[0-9]*:/:/' | tee ${tmp}
+  run.sh build.xml ${i} |& sed -e '/^[^/]/d; /^$/d; s/^[^:]*://; s/:-\?[0-9]*:/:/' | tee ${tmp}
   sed -e '1,2d; 4,$d' < ${i} | diff ${tmp} -
   rm -f ${tmp}
 end
