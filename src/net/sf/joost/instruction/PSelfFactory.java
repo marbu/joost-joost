@@ -1,5 +1,5 @@
 /*
- * $Id: PSelfFactory.java,v 1.7 2002/12/23 08:25:24 obecker Exp $
+ * $Id: PSelfFactory.java,v 1.8 2003/01/27 17:59:53 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.Context;
 /**
  * Factory for <code>process-self</code> elements, which are represented by 
  * the inner Instance class.
- * @version $Revision: 1.7 $ $Date: 2002/12/23 08:25:24 $
+ * @version $Revision: 1.8 $ $Date: 2003/01/27 17:59:53 $
  * @author Oliver Becker
  */
 
@@ -125,6 +125,7 @@ public class PSelfFactory extends FactoryBase
          // ST_PROCESSING on, other bits off
          else if (processStatus == ST_PROCESSING) {
             // is there a target group?
+            context.nextProcessGroup = null;
             if (groupExpName != null) {
                if (context.currentGroup.namedGroups.get(groupExpName) 
                       == null) {
@@ -132,10 +133,12 @@ public class PSelfFactory extends FactoryBase
                      "Unknown target group `" + groupQName + 
                      "' specified for `" + qName + "'", 
                      publicId, systemId, lineNo, colNo);
-                  return processStatus; // if the errorHandler returns
+                  // recover: ignore group attribute
                }
-               // change to a new base group for matching
-               context.nextProcessGroup = groupExpName;
+               else {
+                  // change to a new base group for matching
+                  context.nextProcessGroup = groupExpName;
+               }
             }
             // ST_PROCESSING off, ST_SELF on
             return ST_SELF;

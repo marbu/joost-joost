@@ -1,5 +1,5 @@
 /*
- * $Id: PChildrenFactory.java,v 1.9 2003/01/16 14:08:30 obecker Exp $
+ * $Id: PChildrenFactory.java,v 1.10 2003/01/27 17:59:51 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.SAXEvent;
 /** 
  * Factory for <code>process-children</code> elements, which are represented 
  * by the inner Instance class. 
- * @version $Revision: 1.9 $ $Date: 2003/01/16 14:08:30 $
+ * @version $Revision: 1.10 $ $Date: 2003/01/27 17:59:51 $
  * @author Oliver Becker
  */
 
@@ -140,6 +140,7 @@ public class PChildrenFactory extends FactoryBase
          // ST_PROCESSING on, other bits off
          else if (processStatus == ST_PROCESSING) {
             // is there a target group?
+            context.nextProcessGroup = null;
             if (groupExpName != null) {
                if (context.currentGroup.namedGroups.get(groupExpName) 
                      == null) {
@@ -147,10 +148,12 @@ public class PChildrenFactory extends FactoryBase
                      "Unknown target group `" + groupQName + 
                      "' specified for `" + qName + "'" ,
                      publicId, systemId, lineNo, colNo);
-                  return processStatus; // if the errorHandler returns
+                  // recover: ignore group attribute, use current group
                }
-               // change to a new base group for matching
-               context.nextProcessGroup = groupExpName;
+               else {
+                  // change to a new base group for matching
+                  context.nextProcessGroup = groupExpName;
+               }
             }
 
             SAXEvent event = (SAXEvent)eventStack.peek();
@@ -161,8 +164,10 @@ public class PChildrenFactory extends FactoryBase
                return ST_CHILDREN;
             }
             else {
-               // Have to call this here, because the processing will *not*
-               // be suspended. This cleans up the parameter stack.
+               // These nodes don't have children, keep processing.
+               // That means the parameter stack (stx:with-param) must be
+               // cleaned up, because this stx:process-children won't be 
+               // called a second time.
                super.process(emitter, eventStack, context, ST_CHILDREN);
                // stay in processing mode, ST_CHILDREN on
                return (short)(processStatus | ST_CHILDREN);

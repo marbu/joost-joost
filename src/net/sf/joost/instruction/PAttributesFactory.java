@@ -1,5 +1,5 @@
 /*
- * $Id: PAttributesFactory.java,v 1.6 2003/01/27 08:24:25 obecker Exp $
+ * $Id: PAttributesFactory.java,v 1.7 2003/01/27 17:59:50 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-attributes</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.6 $ $Date: 2003/01/27 08:24:25 $
+ * @version $Revision: 1.7 $ $Date: 2003/01/27 17:59:50 $
  * @author Oliver Becker
  */
 
@@ -123,13 +123,14 @@ public class PAttributesFactory extends FactoryBase
          super.process(emitter, eventStack, context, processStatus);
 
          // Check group attribute
+         context.nextProcessGroup = null;
          if (groupExpName != null && (processStatus & ST_PROCESSING) != 0) {
             if (context.currentGroup.namedGroups.get(groupExpName) == null) {
                context.errorHandler.error(
                   "Unknown target group `" + groupQName + 
                   "' specified for `" + qName + "'", 
                   publicId, systemId, lineNo, colNo);
-               // recover: ignore group attribute
+               // recover: ignore group attribute, use current group
             }
             else {
                // change to a new base group for matching
@@ -140,8 +141,8 @@ public class PAttributesFactory extends FactoryBase
          SAXEvent event = (SAXEvent)eventStack.peek();
 
          if (event.type != SAXEvent.ELEMENT || event.attrs.getLength() == 0) {
-            // current event is not an element or no attributes present:
-            // nothing to do ...
+            // current event is not an element, or it has no attributes:
+            // nothing to do (keep processing)
             // almost: first clean up the parameter stack
             super.process(emitter, eventStack, context, ST_ATTRIBUTES);
             return processStatus;

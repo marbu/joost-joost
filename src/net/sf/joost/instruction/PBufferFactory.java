@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 1.10 2002/12/23 08:25:24 obecker Exp $
+ * $Id: PBufferFactory.java,v 1.11 2003/01/27 17:59:51 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.10 $ $Date: 2002/12/23 08:25:24 $
+ * @version $Revision: 1.11 $ $Date: 2003/01/27 17:59:51 $
  * @author Oliver Becker
  */
 
@@ -138,16 +138,19 @@ public class PBufferFactory extends FactoryBase
             return processStatus; // if the errorHandler returns
          }
 
+         context.nextProcessGroup = null;
          if (groupExpName != null) {
             if (context.currentGroup.namedGroups.get(groupExpName) == null) {
                context.errorHandler.error(
                   "Unknown target group `" + groupQName + 
                   "' specified for `" + qName + "'", 
                   publicId, systemId, lineNo, colNo);
-               return processStatus; // if the errorHandler returns
+               // recover: ignore group attribute
             }
-            // change to a new base group for matching
-            context.nextProcessGroup = groupExpName;
+            else {
+               // change to a new base group for matching
+               context.nextProcessGroup = groupExpName;
+            }
          }
 
          // process stx:with-param
@@ -198,7 +201,8 @@ public class PBufferFactory extends FactoryBase
          }
          proc.endInnerProcessing();
 
-         // process stx:with-param after processing
+         // process stx:with-param after processing; clean up the
+         // parameter stack
          super.process(emitter, eventStack, context, (short)0);
 
          return processStatus;
