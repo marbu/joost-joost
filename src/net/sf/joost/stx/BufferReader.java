@@ -1,5 +1,5 @@
 /*
- * $Id: BufferReader.java,v 1.1 2003/05/16 14:59:36 obecker Exp $
+ * $Id: BufferReader.java,v 1.2 2004/09/19 13:45:08 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.instruction.GroupBase;
 
 /**
  * An XMLReader object that uses the events from a buffer.
- * @version $Revision: 1.1 $ $Date: 2003/05/16 14:59:36 $
+ * @version $Revision: 1.2 $ $Date: 2004/09/19 13:45:08 $
  * @author Oliver Becker
  */
 
@@ -78,8 +78,7 @@ public class BufferReader implements XMLReader, Constants
                        int lineNo, int colNo)
       throws SAXException
    {
-      Object buffer = null;
-      buffer = context.localVars.get(bufExpName);
+      Object buffer = context.localVars.get(bufExpName);
       if (buffer == null) {
          GroupBase group = context.currentGroup;
          while (buffer == null && group != null) {
