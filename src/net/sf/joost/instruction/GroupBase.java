@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 1.8 2003/01/30 17:18:16 obecker Exp $
+ * $Id: GroupBase.java,v 1.9 2003/02/02 14:09:30 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,6 +29,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
@@ -44,7 +45,7 @@ import net.sf.joost.stx.Value;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 1.8 $ $Date: 2003/01/30 17:18:16 $
+ * @version $Revision: 1.9 $ $Date: 2003/02/02 14:09:30 $
  * @author Oliver Becker
  */
 
@@ -62,11 +63,18 @@ abstract public class GroupBase extends NodeBase
     */
    public TemplateFactory.Instance[] visibleTemplates;
 
-   public Hashtable visibleProcedures;
+   /** Table of all contained public and global procedures in this group */
    public Hashtable containedPublicProcedures;
+
+   /** Table of all contained global procedures in this group */
    public Hashtable globalProcedures;
 
-   
+   /**
+    * Visible procedures:
+    * procedures from this group and public templates from subgroups
+    */
+   public Hashtable visibleProcedures;
+
    /** Contained groups in this group */
    protected GroupFactory.Instance[] containedGroups;
 
@@ -121,12 +129,12 @@ abstract public class GroupBase extends NodeBase
    {
       Object[] objs = children.toArray();
       int length = children.size();
+      // template vector
+      Vector tvec = new Vector();
       // group vector
       Vector gvec = new Vector();
       // variable vector
       Vector vvec = new Vector();
-      // template vector
-      Vector tvec = new Vector();
 
       for (int i=0; i<length; i++) {
          if (objs[i] instanceof TemplateFactory.Instance) {
@@ -143,6 +151,7 @@ abstract public class GroupBase extends NodeBase
                   isGlobal = true;
                }
             }
+            // split templates with unions (|) in their match pattern
             TemplateFactory.Instance s;
             while((s = t.split()) != null) {
                tvec.addElement(s);
@@ -193,6 +202,22 @@ abstract public class GroupBase extends NodeBase
       // plus public templates/procedures from child groups
       for (int i=0; i<containedGroups.length; i++) {
          tvec.addAll(containedGroups[i].containedPublicTemplates);
+         Hashtable pubProc = containedGroups[i].containedPublicProcedures;
+         for (Enumeration e=pubProc.keys();
+              e.hasMoreElements(); ) {
+            Object o;
+            if (visibleProcedures.containsKey(o = e.nextElement())) {
+               ProcedureFactory.Instance p1 = 
+                  (ProcedureFactory.Instance)pubProc.get(o);
+               NodeBase p2 = (NodeBase)visibleProcedures.get(o);
+               throw new SAXParseException(
+                  "Public procedure `" + p1.procName + 
+                  "' conflicts with the procedure definition in the " +
+                  "parent group in line " + 
+                  p2.lineNo,
+                  p1.publicId, p1.systemId, p1.lineNo, p1.colNo);
+            }
+         }
          visibleProcedures.putAll(
             containedGroups[i].containedPublicProcedures);
       }
