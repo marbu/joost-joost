@@ -1,5 +1,5 @@
 /*
- * $Id: ParamFactory.java,v 1.1 2002/11/06 16:45:19 obecker Exp $
+ * $Id: ParamFactory.java,v 1.2 2002/11/07 11:06:42 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>params</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.1 $ $Date: 2002/11/06 16:45:19 $
+ * @version $Revision: 1.2 $ $Date: 2002/11/07 11:06:42 $
  * @author Oliver Becker
  */
 
@@ -162,8 +162,6 @@ final public class ParamFactory extends FactoryBase
                ((TransformFactory.Instance)parent).globalParams.get(expName);
             if (globalParam != null) { // value set from the outside
                varTable.put(expName, globalParam);
-               ((TransformFactory.Instance)parent).globalParams
-                                                  .remove(expName);
             }
             else if (select != null) {
                context.stylesheetNode = this;
