@@ -1,5 +1,5 @@
 /*
- * $Id: CopyFactory.java,v 1.13 2003/01/27 17:57:45 obecker Exp $
+ * $Id: CopyFactory.java,v 1.14 2003/02/02 15:11:26 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,7 +30,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import java.io.StringReader;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Stack;
@@ -44,7 +43,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>copy</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.13 $ $Date: 2003/01/27 17:57:45 $
+ * @version $Revision: 1.14 $ $Date: 2003/02/02 15:11:26 $
  * @author Oliver Becker
  */
 

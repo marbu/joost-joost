@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateFactory.java,v 1.11 2003/01/30 17:15:51 obecker Exp $
+ * $Id: TemplateFactory.java,v 1.12 2003/02/02 15:11:26 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,21 +29,18 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import java.io.StringReader;
 import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.Stack;
 
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
-import net.sf.joost.stx.SAXEvent;
 
 
 /**
  * Factory for <code>template</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 1.11 $ $Date: 2003/01/30 17:15:51 $
+ * @version $Revision: 1.12 $ $Date: 2003/02/02 15:11:26 $
  * @author Oliver Becker
  */
 
@@ -174,7 +171,6 @@ public final class TemplateFactory extends FactoryBase
       //
       // Constructor
       //
-      
       protected Instance(String qName, NodeBase parent, Locator locator,
                          Tree match, double priority, int visibility,
                          boolean newScope)
