@@ -1,5 +1,5 @@
 /*
- * $Id: CopyFactory.java,v 2.6 2003/06/16 13:24:37 obecker Exp $
+ * $Id: CopyFactory.java,v 2.7 2004/02/05 11:41:48 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>copy</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.6 $ $Date: 2003/06/16 13:24:37 $
+ * @version $Revision: 2.7 $ $Date: 2004/02/05 11:41:48 $
  * @author Oliver Becker
  */
 
@@ -100,6 +100,9 @@ final public class CopyFactory extends FactoryBase
           (<code>@*</code>) */
       boolean attrWildcard = false;
 
+      /** instruction pointers */
+      AbstractInstruction contents, successor;
+
       //
       // Constructor
       //
@@ -114,18 +117,32 @@ final public class CopyFactory extends FactoryBase
       }
 
 
+      /** Store pointers to the contents and the successor */
+      public boolean compile(int pass)
+      {
+         if (pass == 0)
+            return true; // successor not available yet
+
+         contents = next;
+         successor = nodeEnd.next;
+         return false;
+      }
+
+
       /**
        * Copy the begin of the current node to the result stream.
        */
       public short process(Context context)
          throws SAXException
       {
-         super.process(context);
          SAXEvent event = (SAXEvent)context.ancestorStack.peek();
          switch(event.type) {
          case SAXEvent.ROOT:
+            super.process(context);
+            next = contents;
             break;
          case SAXEvent.ELEMENT: {
+            super.process(context);
             Attributes attList = attrWildcard ? event.attrs : emptyAttList;
             context.emitter.startElement(event.uri, event.lName, event.qName,
                                          attList, event.namespaces,
@@ -151,32 +168,38 @@ final public class CopyFactory extends FactoryBase
                   context.ancestorStack.pop();
                }
             }
+            next = contents;
             break;
          }
          case SAXEvent.TEXT:
             context.emitter.characters(event.value.toCharArray(), 
                                        0, event.value.length());
+            next = successor;
             break;
          case SAXEvent.CDATA:
             context.emitter.startCDATA(publicId, systemId, lineNo, colNo);
             context.emitter.characters(event.value.toCharArray(), 
                                        0, event.value.length());
             context.emitter.endCDATA();
+            next = successor;
             break;
          case SAXEvent.PI:
             context.emitter.processingInstruction(event.qName, event.value,
                                                   publicId, systemId, 
                                                   lineNo, colNo);
+            next = successor;
             break;
          case SAXEvent.COMMENT:
             context.emitter.comment(event.value.toCharArray(), 
                                     0, event.value.length(),
                                     publicId, systemId, lineNo, colNo);
+            next = successor;
             break;
          case SAXEvent.ATTRIBUTE:
             context.emitter.addAttribute(event.uri, event.qName, event.lName,
                                          event.value,
                                          publicId, systemId, lineNo, colNo);
+            next = successor;
             break;
          default:
             if (log != null)
