@@ -9,7 +9,7 @@ Changes since 20030914
   * renamed get-in-scope-namespaces() to get-in-scope-prefixes()
   * swapped arguments of get-namespace-uri-for-prefix()
   * don't drop NaNs in sum(), avg(), min(), max()
-  * return "" instead of the empty sequence of the empty sequence is passed
+  * return "" instead of the empty sequence if the empty sequence is passed
     to name(), local-name(), namespace-uri()
 - command line: allow '-' for stdin; support multiple STX sheets to form a
   transformation chain
