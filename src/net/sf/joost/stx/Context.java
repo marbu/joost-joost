@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 2.3 2003/04/30 05:51:20 obecker Exp $
+ * $Id: Context.java,v 2.4 2003/04/30 14:49:25 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import java.util.Stack;
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 2.3 $ $Date: 2003/04/30 05:51:20 $
+ * @version $Revision: 2.4 $ $Date: 2003/04/30 14:49:25 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
@@ -77,22 +77,6 @@ public final class Context implements Cloneable
 
    /** Parameters passed to the next template */
    public Hashtable passedParameters = new Hashtable();
-
-   /** The default namespace for matching patterns 
-       (from <code>stx:options' default-stxpath-namespace</code>) */
-   public String defaultSTXPathNamespace = "";
-
-   /** The rule how to process unmatched events 
-       (from <code>stx:options' pass-through</code>) */
-   public byte passThrough = Processor.PASS_THROUGH_NONE;
-
-   /** Should white-space only text nodes be stripped 
-       (from <code>stx:options' strip-space</code>)? */
-   public boolean stripSpace = false;
-
-   /** Should CDATA section be recognized
-       (from <code>stx:options' recognize-cdata</code>)? */
-   public boolean recognizeCdata = true;
 
    /** An ErrorHandler for reporting errors and warnings */
    public ErrorHandlerImpl errorHandler = new ErrorHandlerImpl();

@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 2.1 2003/04/29 15:03:17 obecker Exp $
+ * $Id: TransformFactory.java,v 2.2 2003/04/30 14:47:17 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -34,17 +34,22 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.Processor;
 
 
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 2.1 $ $Date: 2003/04/29 15:03:17 $
+ * @version $Revision: 2.2 $ $Date: 2003/04/30 14:47:17 $
  * @author Oliver Becker
  */
 
 public class TransformFactory extends FactoryBase
 {
+   /** allowed values for the <code>pass-through</code> attribute */
+   private static final String[] PASS_THROUGH_VALUES =
+   { "none", "text", "all" };
+
    /** allowed attributes for this element. */
    private HashSet attrNames;
 
@@ -53,6 +58,11 @@ public class TransformFactory extends FactoryBase
    {
       attrNames = new HashSet();
       attrNames.add("version");
+      attrNames.add("output-encoding");
+      attrNames.add("default-stxpath-namespace");
+      attrNames.add("pass-through");
+      attrNames.add("recognize-cdata");
+      attrNames.add("strip-space");
    }
 
    /** @return <code>"transform"</code> */
@@ -77,9 +87,37 @@ public class TransformFactory extends FactoryBase
                                      "'. The only supported version is 1.0.",
                                      locator); 
 
+      String encodingAtt = attrs.getValue("output-encoding");
+      String defStxpNsAtt = attrs.getValue("default-stxpath-namespace");
+
+      // default is "none"
+      byte passThrough = 0;
+      switch (getEnumAttValue("pass-through", attrs,
+                              PASS_THROUGH_VALUES, locator)) {
+      case -1:
+      case 0: passThrough = Processor.PASS_THROUGH_NONE;     break;
+      case 1: passThrough = Processor.PASS_THROUGH_TEXT;     break;
+      case 2: passThrough = Processor.PASS_THROUGH_ALL;      break;
+      default:
+         // mustn't happen 
+         throw new SAXParseException(
+            "Unexpected return value from getEnumAttValue", locator);
+      }
+
+      // default is "no" (false)
+      boolean stripSpace = 
+         getEnumAttValue("strip-space", attrs, YESNO_VALUES, 
+                         locator) == YES_VALUE;
+
+      // default is "yes" (true)
+      boolean recognizeCdata =
+         getEnumAttValue("recognize-cdata", attrs, YESNO_VALUES, 
+                         locator) != NO_VALUE;
+
       checkAttributes(qName, attrs, attrNames, locator);
 
-      return new Instance(qName, locator);
+      return new Instance(qName, locator, encodingAtt, defStxpNsAtt,
+                          passThrough, stripSpace, recognizeCdata);
    }
 
 
@@ -88,19 +126,27 @@ public class TransformFactory extends FactoryBase
    /** Represents an instance of the <code>transform</code> element. */
    final public class Instance extends GroupBase
    {
-      /** the <code>stx:options</code> object */
-      public OptionsFactory.Instance options;
-
       /** names of global parameters (<code>stx:param</code>) */
       public Hashtable globalParams = new Hashtable();
 
+      // stx:transform attributes (options)
+      public String outputEncoding;
+      public String defaultSTXPathNamespace;
 
       // Constructor
-      public Instance(String qName, Locator locator)
+      public Instance(String qName, Locator locator, String outputEncoding,
+                      String defaultSTXPathNamespace, byte passThrough,
+                      boolean stripSpace, boolean recognizeCdata)
       {
-         super(qName, null /* parent */, locator);
+         super(qName, null /* parent */, locator, 
+               passThrough, stripSpace, recognizeCdata);
          namedGroups = new Hashtable(); // shared with all sub-groups
          globalProcedures = new Hashtable(); // also shared
+         this.outputEncoding = 
+            (outputEncoding != null) ? outputEncoding 
+                                     : DEFAULT_ENCODING; // in Constants
+         this.defaultSTXPathNamespace = 
+            (defaultSTXPathNamespace != null) ? defaultSTXPathNamespace : "";
       }
 
 
@@ -114,17 +160,9 @@ public class TransformFactory extends FactoryBase
       public void insert(NodeBase node)
          throws SAXParseException
       {
-         if (node instanceof OptionsFactory.Instance) {
-            if (options != null)
-               throw new SAXParseException("Found second `" + node.qName + 
-                                           "'",
-                                           node.publicId, node.systemId, 
-                                           node.lineNo, node.colNo);
-            options = (OptionsFactory.Instance)node;
-         }
-         else if (node instanceof TemplateBase || // template, procedure
-                  node instanceof GroupFactory.Instance ||
-                  node instanceof VariableBase) // param, variable, buffer
+         if (node instanceof TemplateBase || // template, procedure
+             node instanceof GroupFactory.Instance ||
+             node instanceof VariableBase) // param, variable, buffer
             super.insert(node);
          else
             throw new SAXParseException("`" + node.qName + 

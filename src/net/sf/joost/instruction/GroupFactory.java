@@ -1,5 +1,5 @@
 /*
- * $Id: GroupFactory.java,v 2.1 2003/04/29 15:02:59 obecker Exp $
+ * $Id: GroupFactory.java,v 2.2 2003/04/30 14:47:17 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,16 +32,27 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.HashSet;
 
+import net.sf.joost.stx.Processor;
+
 
 /** 
  * Factory for <code>group</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.1 $ $Date: 2003/04/29 15:02:59 $
+ * @version $Revision: 2.2 $ $Date: 2003/04/30 14:47:17 $
  * @author Oliver Becker
  */
 
 final public class GroupFactory extends FactoryBase
 {
+   /** allowed values for the <code>pass-through</code> attribute */
+   private static final String[] PASS_THROUGH_VALUES =
+   { "none", "text", "all", "inherit" };
+
+   /** allowed values for the <code>recognize-cdata</cdata> and
+    * <code>strip-space</code> attributes */
+   private static final String[] YESNO_INHERIT_VALUES =
+   { "yes", "no", "inherit" };
+
    /** allowed attributes for this element */
    private HashSet attrNames;
 
@@ -50,6 +61,9 @@ final public class GroupFactory extends FactoryBase
    {
       attrNames = new HashSet();
       attrNames.add("name");
+      attrNames.add("pass-through");
+      attrNames.add("recognize-cdata");
+      attrNames.add("strip-space");
    }
 
    /** @return <code>"group"</code> */
@@ -85,8 +99,53 @@ final public class GroupFactory extends FactoryBase
             // it will be replaced in GroupBase.compile()
       }
 
+      GroupBase pg = (GroupBase)parent; // parent group
+
+      // default is "inherit" for the following three attributes
+      byte passThrough = 0;
+      switch (getEnumAttValue("pass-through", attrs,
+                              PASS_THROUGH_VALUES, locator)) {
+      case 0: passThrough = Processor.PASS_THROUGH_NONE;     break;
+      case 1: passThrough = Processor.PASS_THROUGH_TEXT;     break;
+      case 2: passThrough = Processor.PASS_THROUGH_ALL;      break;
+      case -1:
+      case 3: passThrough = pg.passThrough;                  break;
+      default:
+         // mustn't happen 
+         throw new SAXParseException(
+            "Unexpected return value from getEnumAttValue", locator);
+      }
+
+      boolean stripSpace = false;
+      switch(getEnumAttValue("strip-space", attrs,
+                             YESNO_INHERIT_VALUES, locator)) {
+      case YES_VALUE: stripSpace = true;            break;
+      case NO_VALUE:  stripSpace = false;           break;
+      case -1:
+      case 3:         stripSpace = pg.stripSpace;   break;
+      default:
+         // mustn't happen 
+         throw new SAXParseException(
+            "Unexpected return value from getEnumAttValue", locator);
+      }
+
+      boolean recognizeCdata = false;
+      switch(getEnumAttValue("recognize-cdata", attrs,
+                             YESNO_INHERIT_VALUES, locator)) {
+      case YES_VALUE: recognizeCdata = true;                break;
+      case NO_VALUE:  recognizeCdata = false;               break;
+      case -1:
+      case 3:         recognizeCdata = pg.recognizeCdata;   break;
+      default:
+         // mustn't happen 
+         throw new SAXParseException(
+            "Unexpected return value from getEnumAttValue", locator);
+      }
+
+
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, groupName);
+      return new Instance(qName, parent, locator, groupName,
+                          passThrough, stripSpace, recognizeCdata);
    }
 
 
@@ -98,9 +157,11 @@ final public class GroupFactory extends FactoryBase
    {
       // Constructor
       protected Instance(String qName, NodeBase parent, Locator locator, 
-                         String groupName)
+                         String groupName, byte passThrough,
+                         boolean stripSpace, boolean recognizeCdata)
       {
-         super(qName, parent, locator);
+         super(qName, parent, locator, 
+               passThrough, stripSpace, recognizeCdata);
          this.groupName = groupName;
       }
 

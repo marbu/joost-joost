@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 2.1 2003/04/29 15:02:58 obecker Exp $
+ * $Id: GroupBase.java,v 2.2 2003/04/30 14:47:16 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -35,6 +35,7 @@ import java.util.Stack;
 import java.util.Vector;
 
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.Processor;
 import net.sf.joost.stx.Value;
 
 
@@ -44,12 +45,28 @@ import net.sf.joost.stx.Value;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 2.1 $ $Date: 2003/04/29 15:02:58 $
+ * @version $Revision: 2.2 $ $Date: 2003/04/30 14:47:16 $
  * @author Oliver Becker
  */
 
 abstract public class GroupBase extends NodeBase
 {
+   // attributes from stx:transform / stx:group
+
+   /** The rule how to process unmatched events 
+       (from <code>stx:options' pass-through</code>) */
+   public byte passThrough = Processor.PASS_THROUGH_NONE;
+
+   /** Should white-space only text nodes be stripped 
+       (from <code>stx:options' strip-space</code>)? */
+   public boolean stripSpace = false;
+
+   /** Should CDATA section be recognized
+       (from <code>stx:options' recognize-cdata</code>)? */
+   public boolean recognizeCdata = true;
+
+
+
    /** Vector of all contained public and global templates in this group */
    public Vector containedPublicTemplates;
 
@@ -101,10 +118,15 @@ abstract public class GroupBase extends NodeBase
 
 
    // Constructor
-   protected GroupBase(String qName, NodeBase parent, Locator locator)
+   protected GroupBase(String qName, NodeBase parent, Locator locator,
+                       byte passThrough, boolean stripSpace, 
+                       boolean recognizeCdata)
    {
       super(qName, parent, locator, true);
       this.parentGroup = (GroupBase)parent;
+      this.passThrough = passThrough;
+      this.stripSpace = stripSpace;
+      this.recognizeCdata = recognizeCdata;
       containedPublicTemplates = new Vector();
       containedGlobalTemplates = new Vector();
       visibleProcedures = new Hashtable();
