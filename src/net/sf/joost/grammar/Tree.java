@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 1.12 2003/01/18 10:41:27 obecker Exp $
+ * $Id: Tree.java,v 1.13 2003/01/20 17:31:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 1.12 $ $Date: 2003/01/18 10:41:27 $
+ * @version $Revision: 1.13 $ $Date: 2003/01/20 17:31:01 $
  * @author Oliver Becker
  */
 public class Tree
@@ -454,63 +454,57 @@ public class Tree
          Value v1, v2;
          switch (type) {
 
-         // Arithmetic expressions
          case NUMBER:
             return new Value(((Double)value).doubleValue());
 
          case STRING:
             return new Value((String)value);
 
+         // Arithmetic expressions
          case ADD:
-            if (left == null)
-               return right.evaluate(context, events, top).convertToNumber();
-            v1 = left.evaluate(context, events, top);
-            v2 = right.evaluate(context, events, top);
-            if (v1.type == Value.EMPTY || v2.type == Value.EMPTY)
-               return v1;
-            v1.convertToNumber().number += v2.convertToNumber().number;
-            return v1;
-
          case SUB:
-            if (left == null) {
-               v1 = right.evaluate(context, events, top);
+         case MULT:
+         case DIV:
+         case MOD:
+            // check if one of the operands evaluates to the empty sequence
+            if (left != null) {
+               v1 = left.evaluate(context, events, top);
                if (v1.type == Value.EMPTY)
                   return v1;
                v1.convertToNumber();
-               v1.number = -v1.number;
+            }
+            else 
+               v1 = null; // unary operator (to make the compiler happy)
+            v2 = right.evaluate(context, events, top);
+            if (v2.type == Value.EMPTY)
+               return v2;
+            v2.convertToNumber();
+            // none of the operands is empty, ok: perform the operation
+            switch (type) {
+            case ADD:
+               if (left == null) // positive sign
+                  return v2;
+               v1.number += v2.number;
+               return v1;
+            case SUB:
+               if (left == null) { // negative sign
+                  v2.number = -v2.number;
+                  return v2;
+               }
+               v1.number -= v2.number;
+               return v1;
+            case MULT:
+               v1.number *= v2.number;
+               return v1;
+            case DIV:
+               v1.number /= v2.number;
+               return v1;
+            case MOD:
+               v1.number %= v2.number;
                return v1;
             }
-            v1 = left.evaluate(context, events, top);
-            v2 = right.evaluate(context, events, top);
-            if (v1.type == Value.EMPTY || v2.type == Value.EMPTY)
-               return v1;
-            v1.convertToNumber().number -= v2.convertToNumber().number;
-            return v1;
-
-         case MULT:
-            v1 = left.evaluate(context, events, top);
-            v2 = right.evaluate(context, events, top);
-            if (v1.type == Value.EMPTY || v2.type == Value.EMPTY)
-               return v1;
-            v1.convertToNumber().number *= v2.convertToNumber().number;
-            return v1;
-
-         case DIV:
-            v1 = left.evaluate(context, events, top);
-            v2 = right.evaluate(context, events, top);
-            if (v1.type == Value.EMPTY || v2.type == Value.EMPTY)
-               return v1;
-            v1.convertToNumber().number /= v2.convertToNumber().number;
-            return v1;
-
-         case MOD:
-            v1 = left.evaluate(context, events, top);
-            v2 = right.evaluate(context, events, top);
-            if (v1.type == Value.EMPTY || v2.type == Value.EMPTY)
-               return v1;
-            v1.convertToNumber().number %= v2.convertToNumber().number;
-            return v1;
-
+            log4j.fatal("Mustn't reach this line");
+            return new Value();
 
          // Comparison expressions
          case EQ:
