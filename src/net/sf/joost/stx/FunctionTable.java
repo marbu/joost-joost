@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 1.10 2003/01/12 16:44:47 obecker Exp $
+ * $Id: FunctionTable.java,v 1.11 2003/01/16 16:10:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 1.10 $ $Date: 2003/01/12 16:44:47 $
+ * @version $Revision: 1.11 $ $Date: 2003/01/16 16:10:37 $
  * @author Oliver Becker
  */
 public final class FunctionTable
@@ -219,7 +219,7 @@ public final class FunctionTable
          int arg = (int)args.evaluate(context, events, top)
                             .convertToNumber().number;
          if (arg < 0 || arg > top-1)
-            return new Value(null, 0);
+            return new Value();
          else
             return new Value((SAXEvent)events.elementAt(arg), arg+1);
       }
@@ -266,13 +266,13 @@ public final class FunctionTable
          SAXEvent e;
          if (args != null) { // one parameter
             Value v = args.evaluate(context, events, top);
+            if (v.type == Value.EMPTY)
+               return v;
             if (v.type != Value.NODE) 
                throw new EvalException("The parameter passed to the name " + 
                                        "function must be a node (found " + 
                                        v +")");
             e = v.event;
-            if (e == null)
-               return new Value("");
          }
          else if (top > 0) // use current node (last event)
             e = (SAXEvent)events.elementAt(top-1);
@@ -310,13 +310,13 @@ public final class FunctionTable
          SAXEvent e;
          if (args != null) { // one parameter
             Value v = args.evaluate(context, events, top);
+            if (v.type == Value.EMPTY)
+               return v;
             if (v.type != Value.NODE) 
                throw new EvalException("The parameter passed to the " +
                                        "local-name function must be a " +
                                        "node (found " + v +")");
             e = v.event;
-            if (e == null)
-               return new Value("");
          }
          else if (top > 0) // use current node (last event)
             e = (SAXEvent)events.elementAt(top-1);
@@ -355,13 +355,13 @@ public final class FunctionTable
          SAXEvent e;
          if (args != null) { // one parameter
             Value v = args.evaluate(context, events, top);
+            if (v.type == Value.EMPTY)
+               return v;
             if (v.type != Value.NODE) 
                throw new EvalException("The parameter passed to the " + 
                                        "namespace-uri function must be a " +
                                        "node (found " + v +")");
             e = v.event;
-            if (e == null)
-               return new Value("");
          }
          else if (top > 0) // use current node (last event)
             e = (SAXEvent)events.elementAt(top-1);
@@ -395,13 +395,13 @@ public final class FunctionTable
          SAXEvent e;
          if (args != null) { // one parameter
             Value v = args.evaluate(context, events, top);
+            if (v.type == Value.EMPTY)
+               return v;
             if (v.type != Value.NODE) 
                throw new EvalException("The parameter passed to the " +
                                        "prefix function must be a " +
                                        "node (found " + v +")");
             e = v.event;
-            if (e == null)
-               return new Value("");
          }
          else if (top > 0) // use current node (last event)
             e = (SAXEvent)events.elementAt(top-1);
@@ -849,7 +849,7 @@ public final class FunctionTable
          throws SAXException, EvalException
       {
          Value v = args.evaluate(context, events, top);
-         if (v.type == Value.NODE && v.event == null) // empty sequence
+         if (v.type == Value.EMPTY) // empty sequence
             return v;
          double sum = 0;
          while (v != null) {
