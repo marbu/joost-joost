@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 2.0 2003/04/25 16:46:34 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 2.1 2003/04/29 15:04:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,17 +46,18 @@ import net.sf.joost.stx.Context;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:34 $
+ * @version $Revision: 2.1 $ $Date: 2003/04/29 15:04:32 $
  * @author Oliver Becker
  */
 
 final public class ResultDocumentFactory extends FactoryBase
 {
-   // Log4J initialization
-   private static org.apache.log4j.Logger log;
+   private static org.apache.commons.logging.Log log;
    static {
       if (DEBUG)
-         log = org.apache.log4j.Logger.getLogger(ResultDocumentFactory.class);
+         // Log initialization
+         log = org.apache.commons.logging.
+               LogFactory.getLog(ResultDocumentFactory.class);
    }
 
 
