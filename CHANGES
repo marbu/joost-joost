@@ -6,6 +6,7 @@ Changes since 20030623
 - added stx:namespace-alias (in the result the original prefix, aka
   stylesheet-prefix will be used, but mapped to the new namespace)
 - added min(), max(), avg()
+- added URIResolver support for stx:process-document and stx:include
 - Internal: added XMLReader parameter to Processor constructor;
   Fixed SAXSource usage in TransformerFactory.newTransformer(...)
 - Bugfix: 765301
