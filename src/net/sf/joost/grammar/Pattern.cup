@@ -1,5 +1,5 @@
 /*
- * $Id: Pattern.cup,v 1.6 2003/02/03 15:52:03 obecker Exp $
+ * $Id: Pattern.cup,v 1.7 2003/03/20 13:18:15 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -60,9 +60,8 @@ parser code {:
 #include "terminals.inc"
 
 /* Non-Terminals */
-non terminal Tree Pattern, MatchPath, RelativePath;
-non terminal Tree Step, NodeTest, NameTest;
-non terminal Tree KindTest, Predicate;
+non terminal Tree Pattern, MatchPath, RelativePath,
+                  Step, NodeTest, NameTest, Predicate;
 
 
 /* Shared expression grammar (with Expr.cup) */
@@ -134,19 +133,4 @@ NameTest ::=
       {: RESULT = t; :}
  | AttributeNameTest:t
       {: RESULT = t; :}
- ;
-
-KindTest ::=
-   COMMENT
-      {: RESULT = new Tree(Tree.COMMENT_TEST, null); :}
- | NODE
-      {: RESULT = new Tree(Tree.NODE_TEST, null); :}
- | PI_START RPAR
-      {: RESULT = new Tree(Tree.PI_TEST, ""); :}
- | PI_START STRING:s RPAR
-      {: RESULT = new Tree(Tree.PI_TEST, s); :}
- | TEXT
-      {: RESULT = new Tree(Tree.TEXT_TEST, null); :}
- | CDATA
-      {: RESULT = new Tree(Tree.CDATA_TEST, null); :}
  ;
