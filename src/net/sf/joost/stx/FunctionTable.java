@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.10 2003/06/10 08:43:49 obecker Exp $
+ * $Id: FunctionTable.java,v 2.11 2003/06/10 13:02:04 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -36,6 +36,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Stack;
 
 import net.sf.joost.Constants;
@@ -45,7 +46,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.10 $ $Date: 2003/06/10 08:43:49 $
+ * @version $Revision: 2.11 $ $Date: 2003/06/10 13:02:04 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -1405,7 +1406,8 @@ final public class FunctionTable implements Constants
 
    /**
     * The <code>sequence</code> extension function.
-    * Converts a Java array to a sequence.
+    * Converts a Java array or a {@link List} object to a sequence.
+    * Any other value will be returned unchanged.
     */
    final public class ExtSequence implements Instance
    {
@@ -1420,23 +1422,31 @@ final public class FunctionTable implements Constants
          throws SAXException, EvalException
       {
          Value v = args.evaluate(context, top);
-         // in case there's no array
-         if (v.type != Value.OBJECT || !(v.object instanceof Object[]))
+         // in case there's no object
+         if (v.type != Value.OBJECT)
             return v;
 
-         Object[] objs = (Object[])v.object;
-         // an empty array
-         if (objs.length == 0)
-            return v.setEmpty();
+         Object[] objs = null;
+         if (v.object instanceof Object[])
+            objs = (Object[])v.object;
+         else if (v.object instanceof List)
+            objs = ((List)v.object).toArray();
 
-         // ok, there's at least one element
-         v = new Value(objs[0]);
-         // create the rest of the sequence
-         Value last = v;
-         for (int i=1; i<objs.length; i++) {
-            last.next = new Value(objs[i]);
-            last = last.next;
+         if (objs != null) {
+            // an empty array
+            if (objs.length == 0)
+               return v.setEmpty();
+
+            // ok, there's at least one element
+            v = new Value(objs[0]);
+            // create the rest of the sequence
+            Value last = v;
+            for (int i=1; i<objs.length; i++) {
+               last.next = new Value(objs[i]);
+               last = last.next;
+            }
          }
+
          return v;
       }
    }
