@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXConstants.java,v 1.5 2002/10/22 13:05:26 obecker Exp $
+ * $Id: TrAXConstants.java,v 1.6 2003/01/18 10:29:18 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -42,6 +42,6 @@ public interface TrAXConstants extends Constants {
         "<?xml version='1.0'?>" +
         "<stx:transform " + "xmlns:stx='" + STX_NS + "'" +
         " version='1.0'>" +
-        "<stx:options no-match-events='copy' />" +
+        "<stx:options pass-through='all' />" +
         "</stx:transform>";
 }
