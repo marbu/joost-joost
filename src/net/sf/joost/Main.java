@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.18 2004/02/10 12:12:37 obecker Exp $
+ * $Id: Main.java,v 1.19 2004/03/30 08:25:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.18 $ $Date: 2004/02/10 12:12:37 $
+ * @version $Revision: 1.19 $ $Date: 2004/03/30 08:25:44 $
  * @author Oliver Becker
  */
 public class Main implements Constants
@@ -331,21 +331,19 @@ public class Main implements Constants
   "Usage:\n"
 + "java net.sf.joost.Main [options] xml-src stx-src [params] {stx-src [params]}\n\n"
 + "Options:\n"
-+ "  -help      print this message\n"
-+ "  -version   print the version information and exit\n"
-+ "  -o <filename>\n"
-+ "             write result to the file <filename>\n"
-+ "  -m <classname>\n"
-+ "             use a <classname> object for stx:message output\n"
-+ "  -time      print timing information on standard error output\n"
-+ "  -pdf       pass the result to FOP for PDF generation (requires -o)\n"
++ "  -help            print this message\n"
++ "  -version         print the version information and exit\n"
++ "  -o <filename>    write the result to the file <filename>\n"
++ "  -m <classname>   use a <classname> object for stx:message output\n"
++ "  -time            print timing information on standard error output\n"
++ "  -pdf             pass the result to FOP for PDF generation (requires -o)\n"
 + (DEBUG ?
   "  -log-properties <properties-file>\n"
-+ "             use the file <properties-file> for log4j initialization\n"
-+ "             (default is the embedded file log4j.properties)\n"
++ "                   use the file <properties-file> for log4j initialization\n"
++ "                   (default is the embedded file log4j.properties)\n"
 + "  -log-level all|debug|info|warn|error|fatal|all\n"
-+ "             set the log level for the root logger object\n"
-+ "             (default is specified in the properties file being used)\n\n"
++ "                   set the log level for the root logger object\n"
++ "                   (default is specified in the properties file being used)\n\n"
 : "\n")
 + "The '-' for the xml-src parameter denotes the standard input\n"
 + "Parameters for the transformation (e.g. <stx:param name=\"par\"/>) must be"
