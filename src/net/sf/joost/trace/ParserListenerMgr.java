@@ -1,5 +1,5 @@
 /*
- * $Id: ParserListenerMgr.java,v 1.3 2004/09/19 13:36:42 obecker Exp $
+ * $Id: ParserListenerMgr.java,v 1.4 2004/09/28 20:54:58 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -39,10 +39,6 @@ import net.sf.joost.trax.TransformerImpl;
  * @author Zubow
  */
 public class ParserListenerMgr implements ParserListener {
-
-    /** logger */
-    private static org.apache.commons.logging.Log log =
-            org.apache.commons.logging.LogFactory.getLog(ParserListenerMgr.class);
 
     /** list of all registered {@link ParserListener} */
     private List parserListeners = null;
