@@ -1,5 +1,5 @@
 /*
- * $Id: IncludeFactory.java,v 2.6 2004/01/23 09:48:39 obecker Exp $
+ * $Id: IncludeFactory.java,v 2.7 2004/09/17 18:45:23 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,13 +24,6 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
-
 import java.net.URL;
 import java.util.HashSet;
 
@@ -44,11 +37,17 @@ import net.sf.joost.stx.Parser;
 import net.sf.joost.stx.Processor;
 import net.sf.joost.trax.TrAXHelper;
 
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
+
 
 /** 
  * Factory for <code>include</code> elements, which will be replaced by
  * groups for the included transformation sheet
- * @version $Revision: 2.6 $ $Date: 2004/01/23 09:48:39 $
+ * @version $Revision: 2.7 $ $Date: 2004/09/17 18:45:23 $
  * @author Oliver Becker
  */
 

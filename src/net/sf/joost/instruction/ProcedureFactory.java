@@ -1,5 +1,5 @@
 /*
- * $Id: ProcedureFactory.java,v 2.5 2004/01/07 10:04:36 obecker Exp $
+ * $Id: ProcedureFactory.java,v 2.6 2004/09/17 18:45:23 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,22 +24,21 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
 import java.util.HashSet;
 import java.util.Hashtable;
 
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
-import net.sf.joost.stx.SAXEvent;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 
 /**
  * Factory for <code>procedure</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.5 $ $Date: 2004/01/07 10:04:36 $
+ * @version $Revision: 2.6 $ $Date: 2004/09/17 18:45:23 $
  * @author Oliver Becker
  */
 
