@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 2.8 2003/07/23 16:26:47 obecker Exp $
+ * $Id: PBufferFactory.java,v 2.9 2004/09/27 21:57:46 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,11 +24,8 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
 import java.util.HashSet;
+
 import javax.xml.transform.sax.TransformerHandler;
 
 import net.sf.joost.stx.BufferReader;
@@ -37,11 +34,15 @@ import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Processor;
 import net.sf.joost.stx.SAXEvent;
 
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+
 
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.8 $ $Date: 2003/07/23 16:26:47 $
+ * @version $Revision: 2.9 $ $Date: 2004/09/27 21:57:46 $
  * @author Oliver Becker
  */
 
@@ -49,14 +50,6 @@ public class PBufferFactory extends FactoryBase
 {
    /** allowed attributes for this element */
    private HashSet attrNames;
-
-   private static org.apache.commons.logging.Log log;
-   static {
-      if (DEBUG)
-         // Log initialization
-         log = org.apache.commons.logging.
-               LogFactory.getLog(PBufferFactory.class);
-   }
 
 
    // 
