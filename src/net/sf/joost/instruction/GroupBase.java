@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 1.3 2002/11/05 13:09:28 obecker Exp $
+ * $Id: GroupBase.java,v 1.4 2002/11/27 09:56:34 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.stx.Value;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 1.3 $ $Date: 2002/11/05 13:09:28 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/27 09:56:34 $
  * @author Oliver Becker
  */
 
@@ -73,7 +73,7 @@ abstract public class GroupBase extends NodeBase
    protected GroupFactory.Instance[] containedGroups;
 
    /** parent group */
-   public GroupBase parent;
+   public GroupBase parentGroup;
    
    /** Group variables  */
    private VariableBase[] groupVariables;
@@ -87,12 +87,12 @@ abstract public class GroupBase extends NodeBase
 
 
    // Constructor
-   protected GroupBase(String qName, Locator locator, short mode, 
-                       GroupBase parent)
+   protected GroupBase(String qName, NodeBase parent, Locator locator, 
+                       short mode)
    {
-      super(qName, locator, false);
+      super(qName, parent, locator, false);
       this.mode = mode;
-      this.parent = parent;
+      this.parentGroup = (GroupBase)parent;
       containedTemplates = new Vector();
       containedPublicTemplates = new Vector();
       containedGlobalTemplates = new Vector();

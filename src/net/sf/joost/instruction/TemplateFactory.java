@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateFactory.java,v 1.5 2002/11/14 13:15:44 obecker Exp $
+ * $Id: TemplateFactory.java,v 1.6 2002/11/27 09:57:46 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,15 +45,12 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>template</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 1.5 $ $Date: 2002/11/14 13:15:44 $
+ * @version $Revision: 1.6 $ $Date: 2002/11/27 09:57:46 $
  * @author Oliver Becker
  */
 
 public final class TemplateFactory extends FactoryBase
 {
-   /** The local element name. */
-   private static final String name = "template";
-
    /** allowed attributes for this element. */
    private HashSet attrNames;
 
@@ -83,9 +80,10 @@ public final class TemplateFactory extends FactoryBase
       attrNames.add("recursion-entry-point");
    }
 
+   /** @return <code>"template"</code> */
    public String getName()
    {
-      return name;
+      return "template";
    }
 
    public NodeBase createNode(NodeBase parent, String uri, String lName, 
@@ -146,7 +144,7 @@ public final class TemplateFactory extends FactoryBase
 
       checkAttributes(qName, attrs, attrNames, locator);
 
-      return new Instance(qName, locator, parentGroup,
+      return new Instance(qName, parent, locator,
                           matchPattern, priority, visibility, recursionEntry);
    }
 
@@ -204,24 +202,23 @@ public final class TemplateFactory extends FactoryBase
       /** Is this template a recursion entry point? */
       private boolean recursionEntryPoint;
 
-      /** The parent of this template */
-      public GroupBase parent;
-
       /** stack for local variables */
       private Stack localVarStack = new Stack();
 
+      /** The parent of this template */
+      public GroupBase parentGroup;
 
       //
       // Constructor
       //
       
-      protected Instance(String qName, Locator locator, GroupBase parent,
+      protected Instance(String qName, NodeBase parent, Locator locator,
                          Tree match, double priority, int visibility,
                          boolean recursionEntryPoint)
          throws SAXParseException
       {
-         super(qName, locator, false);
-         this.parent = parent;
+         super(qName, parent, locator, false);
+         parentGroup = (GroupBase)parent;
          this.match = match;
          this.priority = priority;
          this.visibility = visibility;
@@ -303,13 +300,13 @@ public final class TemplateFactory extends FactoryBase
             log4j.debug(this + " status: " + processStatus);
 //           log4j.debug("size localVarStack: " + localVarStack.size());
 
-         context.currentGroup = parent;
+         context.currentGroup = parentGroup;
          if ((processStatus & ST_PROCESSING) != 0) {
             // template entered, remove existing local variables
             context.localVars.clear();
             if (recursionEntryPoint) {
                // initialize group variables
-               parent.enterRecursionLevel(emitter, eventStack, context);
+               parentGroup.enterRecursionLevel(emitter, eventStack, context);
             }
          }
          else {
@@ -328,7 +325,7 @@ public final class TemplateFactory extends FactoryBase
          else {
             // end of template encountered
             if (recursionEntryPoint)
-               parent.exitRecursionLevel();
+               parentGroup.exitRecursionLevel();
          }
 
          return newStatus;
