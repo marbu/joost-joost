@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.27 2003/12/17 11:41:27 obecker Exp $
+ * $Id: Processor.java,v 2.28 2003/12/28 12:31:08 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -56,7 +56,7 @@ import net.sf.joost.trace.DebugProcessor;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.27 $ $Date: 2003/12/17 11:41:27 $
+ * @version $Revision: 2.28 $ $Date: 2003/12/28 12:31:08 $
  * @author Oliver Becker
  */
 
@@ -152,7 +152,7 @@ public class Processor extends XMLFilterImpl
     * Objects of this class will be put on the instance stack
     * {@link #dataStack}.
     */
-   private final class Data
+   public final class Data
    {
       /** The last instantiated template */
       TemplateFactory.Instance template;
@@ -288,7 +288,7 @@ public class Processor extends XMLFilterImpl
          return stack[--objCount];
       }
 
-      int size()
+      public int size()
       {
          return objCount;
       }
@@ -297,6 +297,10 @@ public class Processor extends XMLFilterImpl
       {
          return stack[pos];
       }
+
+       public Data[] getStack() {
+           return stack;
+       }
 
       // for debugging
       public String toString()
@@ -531,7 +535,7 @@ public class Processor extends XMLFilterImpl
       outputProperties.setProperty(OutputKeys.ENCODING,
                                    transformNode.outputEncoding);
       outputProperties.setProperty(OutputKeys.MEDIA_TYPE, "text/xml");
-      outputProperties.setProperty(OutputKeys.METHOD, 
+      outputProperties.setProperty(OutputKeys.METHOD,
                                    transformNode.outputMethod);
       outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
       outputProperties.setProperty(OutputKeys.STANDALONE, "no");
@@ -1257,9 +1261,9 @@ public class Processor extends XMLFilterImpl
    {
       // replace top-most event and local variables
       Object topEvent = null;
-      // if clearLast==true then there's no event to remove, 
+      // if clearLast==true then there's no event to remove,
       // because the end of of the parent has been encountered
-      if (!clearLast) 
+      if (!clearLast)
          topEvent = eventStack.pop();
       Hashtable storedVars = context.localVars;
       Data data;
@@ -1280,7 +1284,8 @@ public class Processor extends XMLFilterImpl
                if (DEBUG)
                   if (log.isDebugEnabled())
                      log.debug(inst);
-               ret = inst.process(context);
+               //ret = inst.process(context);
+               ret = processInstruction(inst, (SAXEvent)topEvent);
                inst = inst.next;
             }
             if (DEBUG)
@@ -1444,12 +1449,18 @@ public class Processor extends XMLFilterImpl
          else if (prStatus == PR_CHILDREN || prStatus == PR_SELF) {
             context.position = data.contextPosition; // restore position
             AbstractInstruction inst = data.instruction;
-            short ret = PR_CONTINUE;
+            int ret = PR_CONTINUE;
             while (inst != null && ret == PR_CONTINUE) {
                if (DEBUG)
                   if (log.isDebugEnabled())
                      log.debug(inst);
-               ret = inst.process(context);
+               //ret = inst.process(context); // AZu
+               if (! (inst.getNode() instanceof ProcessBase) ) {
+                  ret = processInstruction(inst, null);
+               } else {
+                  ret = inst.process(context); // AZu
+               }
+
                inst = inst.next;
             }
             switch (ret) {
@@ -1585,7 +1596,14 @@ public class Processor extends XMLFilterImpl
                if (DEBUG)
                   if (log.isDebugEnabled())
                      log.debug(inst);
-               ret = inst.process(context);
+               //ret = inst.process(context); // AZu
+               if (! (inst.getNode() instanceof ProcessBase) ) {
+                  SAXEvent event = SAXEvent.newElement(uri, lName, qName, null, null);
+                  ret = processInstruction(inst, event);
+               } else {
+                  ret = inst.process(context); // AZu
+               }
+
                inst = inst.next;
                // if we encountered stx:process-attributes
                if (ret == PR_ATTRIBUTES) {
