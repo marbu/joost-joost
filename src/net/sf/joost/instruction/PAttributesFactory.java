@@ -1,5 +1,5 @@
 /*
- * $Id: PAttributesFactory.java,v 1.4 2002/12/17 16:38:03 obecker Exp $
+ * $Id: PAttributesFactory.java,v 1.5 2002/12/23 08:25:24 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-attributes</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.4 $ $Date: 2002/12/17 16:38:03 $
+ * @version $Revision: 1.5 $ $Date: 2002/12/23 08:25:24 $
  * @author Oliver Becker
  */
 
@@ -74,13 +74,20 @@ public class PAttributesFactory extends FactoryBase
       throws SAXParseException
    {
       // prohibit this instruction inside of group variables
+      // and stx:with-param instructions
       NodeBase ancestor = parent;
       while (ancestor != null &&
-             !(ancestor instanceof TemplateFactory.Instance))
+             !(ancestor instanceof TemplateFactory.Instance) &&
+             !(ancestor instanceof WithParamFactory.Instance))
          ancestor = ancestor.parent;
       if (ancestor == null)
          throw new SAXParseException(
             "`" + qName + "' must be a descendant of stx:template",
+            locator);
+      if (ancestor instanceof WithParamFactory.Instance)
+         throw new SAXParseException(
+            "`" + qName + "' must not be a descendant of `" +
+            ancestor.qName + "'",
             locator);
 
       String groupAtt = attrs.getValue("group");
@@ -95,14 +102,14 @@ public class PAttributesFactory extends FactoryBase
 
 
    /** The inner Instance class */
-   public class Instance extends NodeBase
+   public class Instance extends ProcessBase
    {
       String groupQName, groupExpName;
 
       public Instance(String qName, NodeBase parent, Locator locator,
                       String groupQName, String groupExpName)
       {
-         super(qName, parent, locator, true);
+         super(qName, parent, locator);
          this.groupQName = groupQName;
          this.groupExpName = groupExpName;
       }
@@ -112,6 +119,9 @@ public class PAttributesFactory extends FactoryBase
                               Context context, short processStatus)
          throws SAXException
       {
+         // process stx:with-param
+         super.process(emitter, eventStack, context, processStatus);
+
          // Check group attribute
          if (groupExpName != null && (processStatus & ST_PROCESSING) != 0) {
             if (context.currentGroup.namedGroups.get(groupExpName) == null) {

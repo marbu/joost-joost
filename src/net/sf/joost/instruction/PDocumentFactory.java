@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 1.1 2002/12/19 14:26:57 obecker Exp $
+ * $Id: PDocumentFactory.java,v 1.2 2002/12/23 08:25:24 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.Processor;
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.1 $ $Date: 2002/12/19 14:26:57 $
+ * @version $Revision: 1.2 $ $Date: 2002/12/23 08:25:24 $
  * @author Oliver Becker
  */
 
@@ -94,7 +94,7 @@ public class PDocumentFactory extends FactoryBase
 
 
    /** The inner Instance class */
-   public class Instance extends NodeBase
+   public class Instance extends ProcessBase
    {
       Tree hrefAVT;
       String groupQName, groupExpName;
@@ -102,7 +102,7 @@ public class PDocumentFactory extends FactoryBase
       public Instance(String qName, NodeBase parent, Locator locator, 
                       Tree hrefAVT, String groupQName, String groupExpName)
       {
-         super(qName, parent, locator, true);
+         super(qName, parent, locator);
          this.hrefAVT = hrefAVT;
          this.groupQName = groupQName;
          this.groupExpName = groupExpName;
@@ -141,6 +141,9 @@ public class PDocumentFactory extends FactoryBase
             log4j.warn("Accessing " + reader + ": " + ex);
          }
 
+         // process stx:with-param
+         super.process(emitter, eventStack, context, processStatus);
+
          Locator prevLoc = context.locator;
          context.locator = null;
          proc.startInnerProcessing();
@@ -161,6 +164,9 @@ public class PDocumentFactory extends FactoryBase
          }
          proc.endInnerProcessing();
          context.locator = prevLoc;
+
+         // process stx:with-param after processing
+         super.process(emitter, eventStack, context, (short)0);
 
          return processStatus;
       }

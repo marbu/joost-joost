@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 1.9 2002/12/19 14:23:52 obecker Exp $
+ * $Id: PBufferFactory.java,v 1.10 2002/12/23 08:25:24 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.9 $ $Date: 2002/12/19 14:23:52 $
+ * @version $Revision: 1.10 $ $Date: 2002/12/23 08:25:24 $
  * @author Oliver Becker
  */
 
@@ -94,7 +94,7 @@ public class PBufferFactory extends FactoryBase
 
 
    /** The inner Instance class */
-   public class Instance extends NodeBase
+   public class Instance extends ProcessBase
    {
       String bufName, expName, groupQName, groupExpName;
 
@@ -102,7 +102,7 @@ public class PBufferFactory extends FactoryBase
                       String bufName, String expName, String groupQName,
                       String groupExpName)
       {
-         super(qName, parent, locator, true);
+         super(qName, parent, locator);
          this.bufName = bufName;
          this.expName = expName;
          this.groupQName = groupQName;
@@ -150,6 +150,9 @@ public class PBufferFactory extends FactoryBase
             context.nextProcessGroup = groupExpName;
          }
 
+         // process stx:with-param
+         super.process(emitter, eventStack, context, processStatus);
+
          // walk through the buffer and emit events to the Processor object
          SAXEvent[] events = ((BufferEmitter)buffer).getEvents();
          Processor proc = context.currentProcessor;
@@ -194,6 +197,10 @@ public class PBufferFactory extends FactoryBase
             }
          }
          proc.endInnerProcessing();
+
+         // process stx:with-param after processing
+         super.process(emitter, eventStack, context, (short)0);
+
          return processStatus;
       }
    }
