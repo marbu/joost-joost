@@ -1,5 +1,5 @@
 /*
- * $Id: ParserListenerMgr.java,v 1.4 2004/09/28 20:54:58 obecker Exp $
+ * $Id: ParserListenerMgr.java,v 1.5 2004/11/07 13:48:04 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,7 +26,6 @@ package net.sf.joost.trace;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TooManyListenersException;
 
 import net.sf.joost.instruction.NodeBase;
 import net.sf.joost.stx.ParserListener;
@@ -58,11 +57,8 @@ public class ParserListenerMgr implements ParserListener {
     /**
      * Add a parserlistener (debugging and profiling).
      * @param newParserListener A parserlistener to be added.
-     *
-     * @throws TooManyListenersException if there are to many registered listeners
      */
-    public void addParseListener(ParserListener newParserListener)
-            throws TooManyListenersException {
+    public void addParseListener(ParserListener newParserListener) {
         // set Joost-Transformer in debug-mode
         // todo think about this ???
         TransformerImpl.DEBUG_MODE = true;
