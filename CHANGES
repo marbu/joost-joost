@@ -1,3 +1,6 @@
+Changes since 20021107
+- added stx:choose, stx:when, stx:otherwise
+
 Changes since 20021104
 - added support for global parameters
 - Bugfixes: 634388, 634440
