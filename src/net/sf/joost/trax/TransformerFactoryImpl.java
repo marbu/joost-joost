@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.14 2003/11/01 14:51:07 zubow Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.15 2003/12/28 12:33:38 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -82,6 +82,9 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     // indicates if the transformer is working in debug mode
     private boolean debugmode                       = false;
 
+    // indicates which Emitter class for stx:message output should be used
+    private String msgEmitterClass = "";
+
     // Synch object to guard against setting values from the TrAX interface
     // or reentry while the transform is going on.
     private Boolean reentryGuard = new Boolean(true);
@@ -133,6 +136,8 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
             return thResolver;
         } else if (name.equals(DEBUG_FEATURE)) {
             return new Boolean(debugmode);
+        } else if (name.equals(MESSAGE_EMITTER_CLASS)) {
+        	return msgEmitterClass;
         } else {
             log.warn("Feature not supported: " + name);
             throw new IllegalArgumentException("Feature not supported: " + name);
@@ -154,6 +159,11 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
             thResolver = (TransformerHandlerResolver)value;
         } else if (name.equals(DEBUG_FEATURE)) {
             this.debugmode = ((Boolean)value).booleanValue();
+        } else if (name.equals(MESSAGE_EMITTER_CLASS)) {
+        	if (!(value instanceof String)) {
+        		throw new IllegalArgumentException("Message Emitter class must be a String");
+        	}
+        	msgEmitterClass = (String)value;
         } else {
             log.warn("Feature not supported: " + name);
             throw new IllegalArgumentException("Feature not supported: " + name);
