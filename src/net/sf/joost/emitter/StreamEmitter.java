@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.21 2004/10/17 20:37:24 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.22 2004/10/22 08:04:43 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -37,21 +37,23 @@ import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
 
+import net.sf.joost.OptionalLog;
+
+import org.apache.commons.logging.Log;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
 
 /**
  * Base class for emitter classes that produce a character stream.
- * @version $Revision: 1.21 $ $Date: 2004/10/17 20:37:24 $
+ * @version $Revision: 1.22 $ $Date: 2004/10/22 08:04:43 $
  * @author Oliver Becker
  */
 public abstract class StreamEmitter
    implements StxEmitter
 {
    // Log initialization
-   private static org.apache.commons.logging.Log log = 
-      org.apache.commons.logging.LogFactory.getLog(StreamEmitter.class);
+   private static Object log = OptionalLog.getLog(StreamEmitter.class);
 
 
    /** Writer for the resulting text */
@@ -102,8 +104,12 @@ public abstract class StreamEmitter
             return new TextEmitter(writer, encoding);
          else if (outputMethod.equals("html"))
             return new HtmlEmitter(writer, encoding);
-         log.warn("Unsupported output method `" + outputMethod + 
-                  "', use default `xml' method instead");
+         String msg = "Unsupported output method `" + outputMethod + 
+                      "', use default `xml' method instead"; 
+         if (log != null)
+            ((Log)log).warn(msg);
+         else
+            System.err.println("Warning: " + msg);
       }
       // either outputProperties==null or unknown output method
       return new XmlEmitter(writer, encoding, outputProperties);
@@ -138,8 +144,12 @@ public abstract class StreamEmitter
          writer = new OutputStreamWriter(out, encoding);
       } 
       catch (java.io.UnsupportedEncodingException e) {
-         log.warn("Unsupported encoding " + encoding + ", using " +
-                  DEFAULT_ENCODING);
+         String msg = "Unsupported encoding " + encoding + ", using " +
+                      DEFAULT_ENCODING;
+         if (log != null)
+            ((Log)log).warn(msg);
+         else
+            System.err.println("Warning: " + msg);
          writer = new OutputStreamWriter(out, DEFAULT_ENCODING);
       }
 

@@ -1,5 +1,5 @@
 /*
- * $Id: TextEmitter.java,v 1.1 2004/10/17 20:37:24 obecker Exp $
+ * $Id: TextEmitter.java,v 1.2 2004/10/22 08:04:43 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -27,20 +27,22 @@ package net.sf.joost.emitter;
 import java.io.IOException;
 import java.io.Writer;
 
+import net.sf.joost.OptionalLog;
+
+import org.apache.commons.logging.Log;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 /**
  * This class implements an emitter that uses the <code>text</code> output
  * method for byte or character streams.
- * @version $Revision: 1.1 $ $Date: 2004/10/17 20:37:24 $
+ * @version $Revision: 1.2 $ $Date: 2004/10/22 08:04:43 $
  * @author Oliver Becker, Anatolij Zubow
  */
 public class TextEmitter extends StreamEmitter 
 {
    // Log initialization
-   private static org.apache.commons.logging.Log log = 
-      org.apache.commons.logging.LogFactory.getLog(TextEmitter.class);
+   private static Object log = OptionalLog.getLog(TextEmitter.class);
 
 
    /** Constructor */
@@ -64,7 +66,8 @@ public class TextEmitter extends StreamEmitter
          writer.flush();
       } 
       catch (IOException ex) {
-         log.error(ex);
+         if (log != null)
+            ((Log)log).error(ex);
          throw new SAXException(ex);
       }
    }
@@ -98,10 +101,11 @@ public class TextEmitter extends StreamEmitter
       try {
          writer.write(ch, start, length);
          if (DEBUG)
-            log.debug("`" + new String(ch, start, length) + "'");
+            ((Log)log).debug("`" + new String(ch, start, length) + "'");
       } 
       catch (IOException ex) {
-         log.error(ex);
+         if (log != null)
+            ((Log)log).error(ex);
          throw new SAXException(ex);
       }
    }

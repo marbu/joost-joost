@@ -1,5 +1,5 @@
 /*
- * $Id: XmlEmitter.java,v 1.1 2004/10/17 20:37:24 obecker Exp $
+ * $Id: XmlEmitter.java,v 1.2 2004/10/22 08:04:42 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -30,20 +30,22 @@ import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
 
+import net.sf.joost.OptionalLog;
+
+import org.apache.commons.logging.Log;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 /**
  * This class implements an emitter that uses the <code>xml</code> output
  * method for byte or character streams.
- * @version $Revision: 1.1 $ $Date: 2004/10/17 20:37:24 $
+ * @version $Revision: 1.2 $ $Date: 2004/10/22 08:04:42 $
  * @author Oliver Becker, Anatolij Zubow
  */
 public class XmlEmitter extends StreamEmitter 
 {
    // Log initialization
-   private static org.apache.commons.logging.Log log = 
-      org.apache.commons.logging.LogFactory.getLog(XmlEmitter.class);
+   private static Object log = OptionalLog.getLog(XmlEmitter.class);
 
    /** output property: omit-xml-declaration */
    private boolean propOmitXmlDeclaration = false;
@@ -154,10 +156,11 @@ public class XmlEmitter extends StreamEmitter
             // stream string to writer
             writer.write(out.toString());
             if (DEBUG)
-               log.debug(out);
+               ((Log)log).debug(out);
          } 
          catch (IOException ex) {
-            log.error(ex);
+            if (log != null)
+               ((Log)log).error(ex);
             throw new SAXException(ex);
          }
 
@@ -186,7 +189,8 @@ public class XmlEmitter extends StreamEmitter
          writer.write("\"?>\n");
       } 
       catch (IOException ex) {
-         log.error(ex);
+         if (log != null)
+            ((Log)log).error(ex);
          throw new SAXException(ex);
       }
    }
@@ -204,7 +208,8 @@ public class XmlEmitter extends StreamEmitter
          writer.flush();
       } 
       catch (IOException ex) {
-         log.error(ex);
+         if (log != null)
+            ((Log)log).error(ex);
          throw new SAXException(ex);
       }
    }
@@ -238,7 +243,8 @@ public class XmlEmitter extends StreamEmitter
             writer.write(">");
          } 
          catch (IOException ex) {
-            log.error(ex);
+            if (log != null)
+               ((Log)log).error(ex);
             throw new SAXException(ex);
          }
       }
@@ -284,10 +290,11 @@ public class XmlEmitter extends StreamEmitter
             writer.write(out.toString());
          }
          if (DEBUG)
-            log.debug("`" + new String(ch, start, length) + "'");
+            ((Log)log).debug("`" + new String(ch, start, length) + "'");
       } 
       catch (IOException ex) {
-         log.error(ex);
+         if (log != null)
+            ((Log)log).error(ex);
          throw new SAXException(ex);
       }
    }
@@ -329,7 +336,8 @@ public class XmlEmitter extends StreamEmitter
          writer.write("?>");
       }
       catch (IOException ex) {
-         log.error(ex);
+         if (log != null)
+            ((Log)log).error(ex);
          throw new SAXException(ex);
       }
    }
@@ -347,7 +355,8 @@ public class XmlEmitter extends StreamEmitter
          writer.write("<![CDATA[");
       } 
       catch (IOException ex) {
-         log.error(ex);
+         if (log != null)
+            ((Log)log).error(ex);
          throw new SAXException(ex);
       }
 
@@ -366,7 +375,8 @@ public class XmlEmitter extends StreamEmitter
          writer.write("]]>");
       }
       catch (IOException ex) {
-         log.error(ex);
+         if (log != null)
+            ((Log)log).error(ex);
          throw new SAXException(ex);
       }
    }
@@ -386,7 +396,8 @@ public class XmlEmitter extends StreamEmitter
          writer.write("-->");
       }
       catch (IOException ex) {
-         log.error(ex);
+         if (log != null)
+            ((Log)log).error(ex);
          throw new SAXException(ex);
       }
    }
