@@ -1,6 +1,8 @@
 Changes since 20021107
-- stx:choose, stx:when, stx:otherwise, stx:else
-- stx:comment, stx:processing-instruction
+- added stx:choose, stx:when, stx:otherwise, stx:else
+- added stx:comment, stx:processing-instruction
+- stx:cdata, stx:variable, stx:assign, stx:param 
+  may now contain arbitrary text producing instructions (aka "text template")
 
 Changes since 20021104
 - added support for global parameters
