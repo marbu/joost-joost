@@ -1,5 +1,5 @@
 /*
- * $Id: WithParamFactory.java,v 2.3 2003/06/03 14:30:27 obecker Exp $
+ * $Id: WithParamFactory.java,v 2.4 2004/09/29 06:15:47 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -19,14 +19,10 @@
  * are Copyright (C) ______ _______________________. 
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): Thomas Behrends.
  */
 
 package net.sf.joost.instruction;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
 import java.util.HashSet;
 import java.util.Vector;
@@ -35,14 +31,17 @@ import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
-import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.stx.Value;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 
 /** 
  * Factory for <code>with-param</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.3 $ $Date: 2003/06/03 14:30:27 $
+ * @version $Revision: 2.4 $ $Date: 2004/09/29 06:15:47 $
  * @author Oliver Becker
  */
 
@@ -97,27 +96,27 @@ final public class WithParamFactory extends FactoryBase
          selectExpr = null;
 
       checkAttributes(qName, attrs, attrNames, context);
-      return new Instance(qName, parent, context, nameAtt, expName, 
-                          selectExpr);
+      return new Instance(qName, parent, context, expName, selectExpr);
    }
 
 
    /** Represents an instance of the <code>with-param</code> element. */
    public class Instance extends NodeBase
    {
-      private String paraName, expName;
+      private String expName;
       private Tree select;
-
+      private String errorMessage;
 
       protected Instance(String qName, NodeBase parent, ParseContext context,
-                         String paraName, String expName, Tree select)
+                         String expName, Tree select)
       {
          super(qName, parent, context,
                // this element may have children if there is no select attr
                select == null);
-         this.paraName = paraName;
          this.expName = expName;
          this.select = select;
+         this.errorMessage = 
+            "(`" + qName + "' started in line " + lineNo + ")";
       }
 
 
@@ -128,10 +127,8 @@ final public class WithParamFactory extends FactoryBase
             super.process(context);
             // create a new StringEmitter for this instance and put it
             // on the emitter stack
-            context.emitter.pushEmitter(
-               new StringEmitter(new StringBuffer(),
-                                 "(`" + qName + "' started in line " +
-                                 lineNo + ")"));
+            context.pushEmitter(
+               new StringEmitter(new StringBuffer(), errorMessage));
          }
          else
             context.passedParameters.put(
@@ -147,7 +144,7 @@ final public class WithParamFactory extends FactoryBase
       {
          context.passedParameters.put(
             expName, 
-            new Value(((StringEmitter)context.emitter.popEmitter())
+            new Value(((StringEmitter)context.popEmitter())
                                              .getBuffer().toString()));
 
          return super.processEnd(context);

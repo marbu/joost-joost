@@ -1,5 +1,5 @@
 /*
- * $Id: VariableFactory.java,v 2.2 2003/06/03 14:30:27 obecker Exp $
+ * $Id: VariableFactory.java,v 2.3 2004/09/29 06:15:47 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -19,30 +19,30 @@
  * are Copyright (C) ______ _______________________. 
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): Thomas Behrends.
  */
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
-import java.util.Hashtable;
 import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Stack;
 
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
-import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.stx.Value;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 
 /** 
  * Factory for <code>variable</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2003/06/03 14:30:27 $
+ * @version $Revision: 2.3 $ $Date: 2004/09/29 06:15:47 $
  * @author Oliver Becker
  */
 
@@ -101,6 +101,7 @@ final public class VariableFactory extends FactoryBase
    {
       private String varName;
       private Tree select;
+      private String errorMessage;
 
 
       protected Instance(String qName, ParseContext context, String varName,
@@ -113,6 +114,8 @@ final public class VariableFactory extends FactoryBase
          this.varName = varName;
          this.select = select;
          this.keepValue = keepValue;
+         this.errorMessage = 
+            "(`" + qName + "' started in line " + lineNo + ")";
       }
 
 
@@ -130,10 +133,8 @@ final public class VariableFactory extends FactoryBase
             super.process(context);
             // create a new StringEmitter for this instance and put it
             // on the emitter stack
-            context.emitter.pushEmitter(
-               new StringEmitter(new StringBuffer(),
-                                 "(`" + qName + "' started in line " +
-                                 lineNo + ")"));
+            context.pushEmitter(
+               new StringEmitter(new StringBuffer(), errorMessage));
          }
          return PR_CONTINUE;
       }
@@ -142,7 +143,7 @@ final public class VariableFactory extends FactoryBase
       public short processEnd(Context context)
          throws SAXException
       {
-         Value v = new Value(((StringEmitter)context.emitter.popEmitter())
+         Value v = new Value(((StringEmitter)context.popEmitter())
                                                     .getBuffer().toString());
 
          processVar(v, context);
@@ -158,7 +159,8 @@ final public class VariableFactory extends FactoryBase
          // determine scope
          Hashtable varTable;
          if (parent instanceof GroupBase) // group variable
-            varTable = (Hashtable)((GroupBase)parent).groupVars.peek();
+            varTable = (Hashtable)((Stack)context.groupVars.get(parent))
+                                          .peek();
          else
             varTable = context.localVars;
 
@@ -166,7 +168,7 @@ final public class VariableFactory extends FactoryBase
             context.errorHandler.error(
                "Variable `" + varName + "' already declared",
                publicId, systemId, lineNo, colNo);
-            return;// if the errorHandler returns
+            return; // if the errorHandler returns
          }
          varTable.put(expName, v);
 
