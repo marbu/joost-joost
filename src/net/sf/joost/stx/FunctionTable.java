@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.20 2004/01/26 20:18:55 obecker Exp $
+ * $Id: FunctionTable.java,v 2.21 2004/03/29 09:40:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -51,7 +51,7 @@ import net.sf.joost.instruction.AnalyzeTextFactory;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.20 $ $Date: 2004/01/26 20:18:55 $
+ * @version $Revision: 2.21 $ $Date: 2004/03/29 09:40:37 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -1507,7 +1507,7 @@ final public class FunctionTable implements Constants
             end = -1; // special marker to speed up the evaluation
          }
 
-         Value ret = null;
+         Value ret = null, oseq = seq;
          while (seq != null) {
             if (ret == null && begin == 0) {
                ret = seq;
@@ -1527,7 +1527,7 @@ final public class FunctionTable implements Constants
             return ret;
          }
          else
-            return seq.setEmpty(); // reuse the Value object
+            return oseq.setEmpty(); // reuse the Value object
       }
    }
 
