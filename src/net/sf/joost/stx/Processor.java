@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.17 2003/07/04 07:14:29 obecker Exp $
+ * $Id: Processor.java,v 2.18 2003/07/27 10:48:44 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -69,7 +69,7 @@ import net.sf.joost.trace.DebugProcessor;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.17 $ $Date: 2003/07/04 07:14:29 $
+ * @version $Revision: 2.18 $ $Date: 2003/07/27 10:48:44 $
  * @author Oliver Becker
  */
 
@@ -461,19 +461,13 @@ public class Processor extends XMLFilterImpl
    {
       context = new Context();
 
-      if (this instanceof DebugProcessor) {
-         emitter = context.emitter = new DebugEmitter(context.errorHandler);
-      } else {
-         emitter = context.emitter = new Emitter(context.errorHandler);
-      }
-      //
-      //emitter = context.emitter = new Emitter(context.errorHandler);
+      emitter = context.emitter = new Emitter(context.errorHandler);
       eventStack = context.ancestorStack;
 
       setErrorHandler(context.errorHandler); // register error handler
 
       context.currentProcessor = this;
-      context.currentGroup = context.targetGroup = transformNode = 
+      context.currentGroup = context.targetGroup = transformNode =
          stxParser.getTransformNode();
 
       // the default group (stx:transform) is the first target group
