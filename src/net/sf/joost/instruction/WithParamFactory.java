@@ -1,5 +1,5 @@
 /*
- * $Id: WithParamFactory.java,v 2.4 2004/09/29 06:15:47 obecker Exp $
+ * $Id: WithParamFactory.java,v 2.5 2004/11/06 13:07:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>with-param</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.4 $ $Date: 2004/09/29 06:15:47 $
+ * @version $Revision: 2.5 $ $Date: 2004/11/06 13:07:32 $
  * @author Oliver Becker
  */
 
@@ -88,12 +88,7 @@ final public class WithParamFactory extends FactoryBase
                   ((NodeBase)siblings.elementAt(i)).lineNo,
                   context.locator);
 
-      String selectAtt = attrs.getValue("select");
-      Tree selectExpr;
-      if (selectAtt != null) 
-         selectExpr = parseExpr(selectAtt, context);
-      else
-         selectExpr = null;
+      Tree selectExpr = parseExpr(attrs.getValue("select"), context);
 
       checkAttributes(qName, attrs, attrNames, context);
       return new Instance(qName, parent, context, expName, selectExpr);

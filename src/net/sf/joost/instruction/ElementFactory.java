@@ -1,5 +1,5 @@
 /*
- * $Id: ElementFactory.java,v 2.5 2004/10/30 11:23:52 obecker Exp $
+ * $Id: ElementFactory.java,v 2.6 2004/11/06 13:07:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import org.xml.sax.helpers.AttributesImpl;
 /** 
  * Factory for <code>element</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.5 $ $Date: 2004/10/30 11:23:52 $
+ * @version $Revision: 2.6 $ $Date: 2004/11/06 13:07:32 $
  * @author Oliver Becker
  */
 
@@ -67,18 +67,12 @@ final public class ElementFactory extends FactoryBase
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String nameAtt = getAttribute(qName, attrs, "name", context);
-      Tree nameAVT = parseAVT(nameAtt, context);
+      Tree nameAVT = parseAVT(getAttribute(qName, attrs, "name", context), 
+                              context);
 
-      String namespaceAtt = attrs.getValue("namespace");
-      Tree namespaceAVT;
-      if (namespaceAtt != null)
-         namespaceAVT = parseAVT(namespaceAtt, context);
-      else
-         namespaceAVT = null;
+      Tree namespaceAVT = parseAVT(attrs.getValue("namespace"), context);
 
       checkAttributes(qName, attrs, attrNames, context);
-
       return new Instance(qName, parent, context, nameAVT, namespaceAVT);
    }
 

@@ -1,5 +1,5 @@
 /*
- * $Id: WhenFactory.java,v 2.4 2004/09/29 06:07:48 obecker Exp $
+ * $Id: WhenFactory.java,v 2.5 2004/11/06 13:07:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>when</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.4 $ $Date: 2004/09/29 06:07:48 $
+ * @version $Revision: 2.5 $ $Date: 2004/11/06 13:07:32 $
  * @author Oliver Becker
  */
 
@@ -72,8 +72,9 @@ final public class WhenFactory extends FactoryBase
             "`" + qName + "' must be child of stx:choose",
             context.locator);
 
-      String testAtt = getAttribute(qName, attrs, "test", context);
-      Tree testExpr = parseExpr(testAtt, context);
+      Tree testExpr = parseExpr(getAttribute(qName, attrs, "test", context), 
+                                context);
+      
       checkAttributes(qName, attrs, attrNames, context);
       return new Instance(qName, parent, context, testExpr);
    }

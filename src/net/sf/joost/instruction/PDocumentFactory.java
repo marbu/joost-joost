@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 2.13 2004/10/25 20:39:33 obecker Exp $
+ * $Id: PDocumentFactory.java,v 2.14 2004/11/06 13:07:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -54,7 +54,7 @@ import org.xml.sax.ext.LexicalHandler;
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.13 $ $Date: 2004/10/25 20:39:33 $
+ * @version $Revision: 2.14 $ $Date: 2004/11/06 13:07:32 $
  * @author Oliver Becker
  */
 
@@ -90,11 +90,10 @@ public class PDocumentFactory extends FactoryBase
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String hrefAtt = getAttribute(qName, attrs, "href", context);
-      Tree href = parseExpr(hrefAtt, context);
+      Tree href = parseExpr(getAttribute(qName, attrs, "href", context), 
+                            context);
 
-      String baseAtt = attrs.getValue("base");
-      Tree baseAVT = baseAtt != null ? parseAVT(baseAtt, context) : null;
+      Tree baseAVT = parseAVT(attrs.getValue("base"), context);
 
       String groupAtt = attrs.getValue("group");
 

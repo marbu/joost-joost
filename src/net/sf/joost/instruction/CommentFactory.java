@@ -1,5 +1,5 @@
 /*
- * $Id: CommentFactory.java,v 2.4 2004/10/30 11:23:51 obecker Exp $
+ * $Id: CommentFactory.java,v 2.5 2004/11/06 13:07:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>comment</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.4 $ $Date: 2004/10/30 11:23:51 $
+ * @version $Revision: 2.5 $ $Date: 2004/11/06 13:07:32 $
  * @author Oliver Becker
  */
 
@@ -64,9 +64,7 @@ public class CommentFactory extends FactoryBase
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String selectAtt = attrs.getValue("select");
-      Tree selectExpr = 
-         (selectAtt != null) ? parseExpr(selectAtt, context) : null;
+      Tree selectExpr = parseExpr(attrs.getValue("select"), context);
          
       checkAttributes(qName, attrs, attrNames, context);
       return new Instance(qName, parent, context, selectExpr);

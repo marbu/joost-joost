@@ -1,5 +1,5 @@
 /*
- * $Id: FactoryBase.java,v 2.8 2004/09/29 06:00:53 obecker Exp $
+ * $Id: FactoryBase.java,v 2.9 2004/11/06 13:07:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,7 +46,7 @@ import net.sf.joost.stx.ParseContext;
  * Abstract base class for all factory classes which produce nodes
  * ({@link NodeBase}) for the tree representation of an STX transformation
  * sheet.
- * @version $Revision: 2.8 $ $Date: 2004/09/29 06:00:53 $
+ * @version $Revision: 2.9 $ $Date: 2004/11/06 13:07:32 $
  * @author Oliver Becker
  */
 
@@ -258,12 +258,16 @@ public abstract class FactoryBase implements Constants
     * Parses the string given in <code>string</code> as an expression
     * @param string the string to be parsed
     * @param context the parse context
-    * @return a {@link Tree} representation of the expression
+    * @return a {@link Tree} representation of the expression or
+    *         <code>null</code> if <code>string</code> was <code>null</code>
     * @exception SAXParseException if a parse error occured
     */
    public static Tree parseExpr(String string, ParseContext context)
       throws SAXParseException
    {
+      if (string == null)
+         return null;
+
       StringReader sr = new StringReader(string);
       Yylex lexer = new Yylex(sr);
       ExprParser parser = new ExprParser(lexer, context);
@@ -319,12 +323,16 @@ public abstract class FactoryBase implements Constants
     * AVT nodes) which works similar to the concat function.
     * @param string the string to be parsed
     * @param context the parse context
-    * @return a {@link Tree} representation
+    * @return a {@link Tree} representation of the AVT or
+    *         <code>null</code> if <code>string</code> was <code>null</code>
     * @exception SAXParseException if a parse error occured
     */
    protected static Tree parseAVT(String string, ParseContext context)
       throws SAXParseException
    {
+      if (string == null)
+         return null;
+
       int length = string.length();
       StringBuffer buf = new StringBuffer();
       Tree tree = null;

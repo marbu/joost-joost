@@ -1,5 +1,5 @@
 /*
- * $Id: ParamFactory.java,v 2.6 2004/09/29 06:18:40 obecker Exp $
+ * $Id: ParamFactory.java,v 2.7 2004/11/06 13:07:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>params</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.6 $ $Date: 2004/09/29 06:18:40 $
+ * @version $Revision: 2.7 $ $Date: 2004/11/06 13:07:32 $
  * @author Oliver Becker
  */
 
@@ -85,17 +85,11 @@ final public class ParamFactory extends FactoryBase
       boolean required = getEnumAttValue("required", attrs, YESNO_VALUES, 
                                          context) == YES_VALUE;
 
-      String selectAtt = attrs.getValue("select");
-      Tree selectExpr;
-      if (selectAtt != null) {
-         if (required)
-            throw new SAXParseException(
-               "`" + qName + "' must not have a `select' attribute if it " +
-               "declares the parameter as required", context.locator);
-         selectExpr = parseExpr(selectAtt, context);
-      }
-      else
-         selectExpr = null;
+      Tree selectExpr = parseExpr(attrs.getValue("select"), context);
+      if (required && selectExpr != null)
+         throw new SAXParseException(
+            "`" + qName + "' must not have a `select' attribute if it " +
+            "declares the parameter as required", context.locator);
 
       checkAttributes(qName, attrs, attrNames, context);
       return new Instance(qName, parent, context, nameAtt, parName,
