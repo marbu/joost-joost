@@ -1,5 +1,5 @@
 /*
- * $Id: Constants.java,v 2.0 2003/04/25 16:54:10 obecker Exp $
+ * $Id: Constants.java,v 2.1 2003/04/30 15:02:35 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -27,13 +27,17 @@ package net.sf.joost;
 
 /**
  * This interface contains constants shared between different classes. 
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:54:10 $
+ * @version $Revision: 2.1 $ $Date: 2003/04/30 15:02:35 $
  * @author Oliver Becker
  */
 public interface Constants
 {
    /** The STX namespace */
    public static final String STX_NS = "http://stx.sourceforge.net/2002/ns";
+
+   /** The STX functions namespace */
+   public static final String FUNC_NS = 
+      "http://stx.sourceforge.net/2003/functions";
 
 
    /*

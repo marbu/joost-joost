@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.3 2003/04/29 15:06:42 obecker Exp $
+ * $Id: FunctionTable.java,v 2.4 2003/04/30 15:02:34 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,11 +39,15 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.3 $ $Date: 2003/04/29 15:06:42 $
+ * @version $Revision: 2.4 $ $Date: 2003/04/30 15:02:34 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
 {
+   // namespace to be prepended before function names
+   // (function namespace prefix)
+   private static String FNSP = "{" + FUNC_NS + "}";
+
    /** Contains one instance for each function. */
    private Hashtable functionHash;
 
@@ -201,7 +205,7 @@ final public class FunctionTable implements Constants
       /** @return 1 */
       public int getMaxParCount() { return 1; }
       /** @return "string" */
-      public String getName() { return "{}string"; }
+      public String getName() { return FNSP + "string"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -226,7 +230,7 @@ final public class FunctionTable implements Constants
       /** @return 1 */
       public int getMaxParCount() { return 1; }
       /** @return "number" */
-      public String getName() { return "{}number"; }
+      public String getName() { return FNSP + "number"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -251,7 +255,7 @@ final public class FunctionTable implements Constants
       /** @return 1 */
       public int getMaxParCount() { return 1; }
       /** @return "boolean" */
-      public String getName() { return "{}boolean"; }
+      public String getName() { return FNSP + "boolean"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -278,7 +282,7 @@ final public class FunctionTable implements Constants
       /** @return 0 */
       public int getMaxParCount() { return 0; }
       /** @return "position" */
-      public String getName() { return "{}position"; }
+      public String getName() { return FNSP + "position"; }
 
       public Value evaluate(Context context, int top, Tree args)
       {
@@ -298,7 +302,7 @@ final public class FunctionTable implements Constants
       /** @return 0 */
       public int getMaxParCount() { return 0; }
       /** @return "has-child-nodes" */
-      public String getName() { return "{}has-child-nodes"; }
+      public String getName() { return FNSP + "has-child-nodes"; }
 
       public Value evaluate(Context context, int top, Tree args)
       {
@@ -320,7 +324,7 @@ final public class FunctionTable implements Constants
       /** @return 1 */
       public int getMaxParCount() { return 1; }
       /** @return "node-kind" */
-      public String getName() { return "{}node-kind"; }
+      public String getName() { return FNSP + "node-kind"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -361,7 +365,7 @@ final public class FunctionTable implements Constants
       /** @return 1 */
       public int getMaxParCount() { return 1; }
       /** @return "name" */
-      public String getName() { return "{}name"; }
+      public String getName() { return FNSP + "name"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -400,7 +404,7 @@ final public class FunctionTable implements Constants
       /** @return 1 */
       public int getMaxParCount() { return 1; }
       /** @return "local-name" */
-      public String getName() { return "{}local-name"; }
+      public String getName() { return FNSP + "local-name"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -440,7 +444,7 @@ final public class FunctionTable implements Constants
       /** @return 1 */
       public int getMaxParCount() { return 1; }
       /** @return "namespace-uri" */
-      public String getName() { return "{}namespace-uri"; }
+      public String getName() { return FNSP + "namespace-uri"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -473,7 +477,7 @@ final public class FunctionTable implements Constants
       /** @return 1 */
       public int getMaxParCount() { return 1; }
       /** @return "prefix" */
-      public String getName() { return "{}prefix"; }
+      public String getName() { return FNSP + "prefix"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -514,7 +518,7 @@ final public class FunctionTable implements Constants
       /** @return 2 */
       public int getMaxParCount() { return 2; }
       /** @return "get-namespace-uri-for-prefix" */
-      public String getName() { return "{}get-namespace-uri-for-prefix"; }
+      public String getName() { return FNSP + "get-namespace-uri-for-prefix"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -556,7 +560,7 @@ final public class FunctionTable implements Constants
       /** @return 1 */
       public int getMaxParCount() { return 1; }
       /** @return "get-in-scope-namespaces" */
-      public String getName() { return "{}get-in-scope-namespaces"; }
+      public String getName() { return FNSP + "get-in-scope-namespaces"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -608,7 +612,7 @@ final public class FunctionTable implements Constants
       /** @return 1 */
       public int getMaxParCount() { return 1; }
       /** @return "not" */
-      public String getName() { return "{}not"; }
+      public String getName() { return FNSP + "not"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -634,7 +638,7 @@ final public class FunctionTable implements Constants
       /** @return 0 */
       public int getMaxParCount() { return 0; }
       /** @return "true" */
-      public String getName() { return "{}true"; }
+      public String getName() { return FNSP + "true"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -658,7 +662,7 @@ final public class FunctionTable implements Constants
       /** @return 0 */
       public int getMaxParCount() { return 0; }
       /** @return "false" */
-      public String getName() { return "{}false"; }
+      public String getName() { return FNSP + "false"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -687,7 +691,7 @@ final public class FunctionTable implements Constants
       /** @return 1 */
       public int getMaxParCount() { return 1; }
       /** @return "floor" */
-      public String getName() { return "{}floor"; }
+      public String getName() { return FNSP + "floor"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -716,7 +720,7 @@ final public class FunctionTable implements Constants
       /** @return 1 */
       public int getMaxParCount() { return 1; }
       /** @return "ceiling" */
-      public String getName() { return "{}ceiling"; }
+      public String getName() { return FNSP + "ceiling"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -745,7 +749,7 @@ final public class FunctionTable implements Constants
       /** @return 1 */
       public int getMaxParCount() { return 1; }
       /** @return "round" */
-      public String getName() { return "{}round"; }
+      public String getName() { return FNSP + "round"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -782,7 +786,7 @@ final public class FunctionTable implements Constants
       /** @return infinity (i.e. Integer.MAX_VALUE) */
       public int getMaxParCount() { return Integer.MAX_VALUE; }
       /** @return "concat" */
-      public String getName() { return "{}concat"; }
+      public String getName() { return FNSP + "concat"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -815,7 +819,7 @@ final public class FunctionTable implements Constants
       /** @return 1 */
       public int getMaxParCount() { return 1; }
       /** @return "string-length" */
-      public String getName() { return "{}string-length"; }
+      public String getName() { return FNSP + "string-length"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -841,7 +845,7 @@ final public class FunctionTable implements Constants
       /** @return 1 */
       public int getMaxParCount() { return 1; }
       /** @return "normalize-space" */
-      public String getName() { return "{}normalize-space"; }
+      public String getName() { return FNSP + "normalize-space"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -886,8 +890,8 @@ final public class FunctionTable implements Constants
       public int getMinParCount() { return 2; }
       /** @return 2 **/
       public int getMaxParCount() { return 2; }
-      /** @return "{}contains" */
-      public String getName() { return "{}contains"; }
+      /** @return "contains" */
+      public String getName() { return FNSP + "contains"; }
       
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -915,8 +919,8 @@ final public class FunctionTable implements Constants
       public int getMinParCount() { return 2; }
       /** @return 2 **/
       public int getMaxParCount() { return 2; }
-      /** @return "{}starts-with" */
-      public String getName() { return "{}starts-with"; }
+      /** @return "starts-with" */
+      public String getName() { return FNSP + "starts-with"; }
       
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -945,8 +949,8 @@ final public class FunctionTable implements Constants
       public int getMinParCount() { return 2; }
       /** @return 3 **/
       public int getMaxParCount() { return 3; }
-      /** @return "{}substring" */
-      public String getName() { return "{}substring"; }
+      /** @return "substring" */
+      public String getName() { return FNSP + "substring"; }
       
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -1022,8 +1026,8 @@ final public class FunctionTable implements Constants
       public int getMinParCount() { return 2; }
       /** @return 2 **/
       public int getMaxParCount() { return 2; }
-      /** @return "{}substring-before" */
-      public String getName() { return "{}substring-before"; }
+      /** @return "substring-before" */
+      public String getName() { return FNSP + "substring-before"; }
       
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -1055,8 +1059,8 @@ final public class FunctionTable implements Constants
       public int getMinParCount() { return 2; }
       /** @return 2 **/
       public int getMaxParCount() { return 2; }
-      /** @return "{}substring-after" */
-      public String getName() { return "{}substring-after"; }
+      /** @return "substring-after" */
+      public String getName() { return FNSP + "substring-after"; }
       
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -1089,8 +1093,8 @@ final public class FunctionTable implements Constants
       public int getMinParCount() { return 3; }
       /** @return 3 **/
       public int getMaxParCount() { return 3; }
-      /** @return "{}translate" */
-      public String getName() { return "{}translate"; }
+      /** @return "translate" */
+      public String getName() { return FNSP + "translate"; }
       
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -1134,7 +1138,7 @@ final public class FunctionTable implements Constants
       /** @return 1 */
       public int getMaxParCount() { return 1; }
       /** @return "empty" */
-      public String getName() { return "{}empty"; }
+      public String getName() { return FNSP + "empty"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -1160,7 +1164,7 @@ final public class FunctionTable implements Constants
       /** @return 2 */
       public int getMaxParCount() { return 2; }
       /** @return "item-at" */
-      public String getName() { return "{}item-at"; }
+      public String getName() { return FNSP + "item-at"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -1203,8 +1207,8 @@ final public class FunctionTable implements Constants
       public int getMinParCount() { return 2; }
       /** @return 3 **/
       public int getMaxParCount() { return 3; }
-      /** @return "{}subsequence" */
-      public String getName() { return "{}subsequence"; }
+      /** @return "subsequence" */
+      public String getName() { return FNSP + "subsequence"; }
       
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -1288,7 +1292,7 @@ final public class FunctionTable implements Constants
       /** @return 1 */
       public int getMaxParCount() { return 1; }
       /** @return "count" */
-      public String getName() { return "{}count"; }
+      public String getName() { return FNSP + "count"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
@@ -1320,7 +1324,7 @@ final public class FunctionTable implements Constants
       /** @return 1 */
       public int getMaxParCount() { return 1; }
       /** @return "sum" */
-      public String getName() { return "{}sum"; }
+      public String getName() { return FNSP + "sum"; }
 
       public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
