@@ -1,5 +1,5 @@
 /*
- * $Id: AssignFactory.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: AssignFactory.java,v 1.2 2002/11/27 09:53:24 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,32 +28,28 @@ import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.ext.LexicalHandler;
 
 import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.Stack;
-import java.util.Enumeration;
 
-import net.sf.joost.stx.SAXEvent;
-import net.sf.joost.stx.Emitter;
-import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Value;
+import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
+import net.sf.joost.stx.Context;
+import net.sf.joost.stx.Emitter;
+import net.sf.joost.stx.SAXEvent;
+import net.sf.joost.stx.Value;
 
 
 /** 
  * Factory for <code>assign</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2002/11/27 09:53:24 $
  * @author Oliver Becker
  */
 
 final public class AssignFactory extends FactoryBase
 {
-   /** The local element name. */
-   private static final String name = "assign";
-
    /** allowed attributes for this element */
    private HashSet attrNames;
 
@@ -65,9 +61,10 @@ final public class AssignFactory extends FactoryBase
       attrNames.add("select");
    }
 
+   /** @return <code>"assign"</code> */
    public String getName()
    {
-      return name;
+      return "assign";
    }
 
    public NodeBase createNode(NodeBase parent, String uri, String lName, 
@@ -92,10 +89,15 @@ final public class AssignFactory extends FactoryBase
          nameUri = ""; // no default namespace usage
       }
 
-      String selectAtt = getAttribute(qName, attrs, "select", locator);
-      Tree selectExpr = parseExpr(selectAtt, nsSet, locator);
+      String selectAtt = attrs.getValue("select");
+      Tree selectExpr;
+      if (selectAtt != null) 
+         selectExpr = parseExpr(selectAtt, nsSet, locator);
+      else
+         selectExpr = null;
+
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, locator, nameAtt,
+      return new Instance(qName, parent, locator, nameAtt,
                           "{" + nameUri + "}" + nameLocal, selectExpr);
    }
 
@@ -106,33 +108,68 @@ final public class AssignFactory extends FactoryBase
       private String varName, expName;
       private Tree select;
 
-      protected Instance(String qName, Locator locator, 
+      protected Instance(String qName, NodeBase parent, Locator locator, 
                          String varName, String expName, Tree select)
       {
-         super(qName, locator, true);
+         super(qName, parent, locator, 
+               // this element must be empty if there is a select attribute
+               select != null);
          this.varName = varName;
          this.expName = expName;
          this.select = select;
       }
       
       /**
-       * Evaluates the expression given in the select attribute and
-       * assigns its value to the associated variable.
+       * Evaluates the expression given in the select attribute or
+       * processes its contents resp. and
+       * assigns the computed value to the associated variable.
        *
        * @param emitter the Emitter
        * @param eventStack the ancestor event stack
        * @param context the Context object
        * @param processStatus the current processing status
-       * @return <code>processStatus</code>, value doesn't change
+       * @return the new <code>processStatus</code>
        */    
       protected short process(Emitter emitter, Stack eventStack,
                               Context context, short processStatus)
          throws SAXException
       {
-         SAXEvent event = (SAXEvent)eventStack.peek();
+         // pre process-...
+         if ((processStatus & ST_PROCESSING) !=0 ) {
 
-         Hashtable vars = null;
+            // does this variable has contents?
+            if (children != null) {
+               // create a new StringEmitter for this instance and put it
+               // on the emitter stack
+               emitter.pushEmitter(
+                  new StringEmitter(new StringBuffer(),
+                                    "(`" + qName + "' started in line " +
+                                    lineNo + ")"));
+            }
+         }
+
+         processStatus = super.process(emitter, eventStack, context, 
+                                       processStatus);
+
+         // post process-...
          if ((processStatus & ST_PROCESSING) != 0) {
+            Value v;
+            if (children != null) {
+               // contents present
+               v = new Value(((StringEmitter)emitter.popEmitter())
+                                                    .getBuffer().toString());
+            }
+            else if (select != null) {
+               // select attribute present
+               context.stylesheetNode = this;
+               v = select.evaluate(context, 
+                                   eventStack, eventStack.size());
+            }
+            else
+               v = new Value("");
+
+            // find variable
+            Hashtable vars = null;
             if (context.localVars.get(expName) != null)
                vars = context.localVars;
             else {
@@ -141,7 +178,7 @@ final public class AssignFactory extends FactoryBase
                   vars = (Hashtable)group.groupVars.peek();
                   if (vars.get(expName) == null) {
                      vars = null;
-                     group = group.parent;
+                     group = group.parentGroup;
                   }
                }
             }
@@ -149,12 +186,12 @@ final public class AssignFactory extends FactoryBase
                context.errorHandler.error(
                   "Can't assign to undeclared variable `" + varName + "'",
                   publicId, systemId, lineNo, colNo);
-               return processStatus;
+               return processStatus; // if the errorHandler returns
             }
 
-            context.stylesheetNode = this;
-            Value v = select.evaluate(context, 
-                                      eventStack, eventStack.size());
+//              context.stylesheetNode = this;
+//              Value v = select.evaluate(context, 
+//                                        eventStack, eventStack.size());
             vars.put(expName, v);
          }
          return processStatus;

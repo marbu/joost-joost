@@ -1,5 +1,5 @@
 /*
- * $Id: ParamFactory.java,v 1.2 2002/11/07 11:06:42 obecker Exp $
+ * $Id: ParamFactory.java,v 1.3 2002/11/27 09:53:24 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,24 +28,23 @@ import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.ext.LexicalHandler;
 
 import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.Stack;
-import java.util.Enumeration;
 
+import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
-import net.sf.joost.stx.SAXEvent;
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.Emitter;
+import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.stx.Value;
 
 
 /** 
  * Factory for <code>params</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2002/11/07 11:06:42 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/27 09:53:24 $
  * @author Oliver Becker
  */
 
@@ -67,7 +66,7 @@ final public class ParamFactory extends FactoryBase
       attrNames.add("select");
    }
 
-   /** @return "param" */
+   /** @return <code>"param"</code> */
    public String getName()
    {
       return "param";
@@ -109,9 +108,9 @@ final public class ParamFactory extends FactoryBase
          selectExpr = null;
 
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, locator, nameAtt,
+      return new Instance(qName, parent, locator, nameAtt,
                           "{" + nameUri + "}" + nameLocal, 
-                          selectExpr, parent);
+                          selectExpr);
    }
 
 
@@ -120,15 +119,16 @@ final public class ParamFactory extends FactoryBase
    {
       private String varName;
       private Tree select;
-      private NodeBase parent;
 
-      protected Instance(String qName, Locator locator, String varName,
-                         String expName, Tree select, NodeBase parent)
+      protected Instance(String qName, NodeBase parent, Locator locator, 
+                         String varName, String expName, Tree select)
       {
-         super(qName, locator, expName, false, true);
+         super(qName, parent, locator, expName, 
+               false, // keep-value has no meaning here
+               // this element must be empty if there is a select attribute
+               select != null);
          this.varName = varName;
          this.select = select;
-         this.parent = parent;
       }
       
       /**
@@ -144,37 +144,60 @@ final public class ParamFactory extends FactoryBase
                            Context context, short processStatus)
          throws SAXException
       {
+         // passed value from the outside
+         Value v = (Value)
+            ((TransformFactory.Instance)parent).globalParams.get(expName);
+
+         // pre process-...
          if ((processStatus & ST_PROCESSING) !=0 ) {
-            Hashtable varTable;
-//              if (parent instanceof GroupBase) // group (=stylesheet) parameter
-               varTable = (Hashtable)((GroupBase)parent).groupVars.peek();
-//              else
-//                 varTable = context.localVars;
+
+            // is there no value set from the outside and
+            // does this parameter has contents? (no select attribute present)
+            if (v == null && children != null) {
+               // create a new StringEmitter for this instance and put it
+               // on the emitter stack
+               emitter.pushEmitter(
+                  new StringEmitter(new StringBuffer(),
+                                    "(`" + qName + "' started in line " +
+                                    lineNo + ")"));
+            }
+         }
+
+         processStatus = super.process(emitter, eventStack, context, 
+                                       processStatus);
+
+         // post process-...
+         if ((processStatus & ST_PROCESSING) !=0 ) {
+            if (v == null) { // value not set from the outside
+               if (children != null) {
+                  // contents present
+                  v = new Value(((StringEmitter)emitter.popEmitter())
+                                                       .getBuffer()
+                                                       .toString());
+               }
+               else if (select != null) {
+                  // select attribute present
+                  context.stylesheetNode = this;
+                  v = select.evaluate(context, 
+                                      eventStack, eventStack.size());
+               }
+               else
+                  v = new Value("");
+            }
+
+            Hashtable varTable = 
+               (Hashtable)((GroupBase)parent).groupVars.peek();
 
             if (varTable.get(expName) != null) {
                context.errorHandler.error(
                   "Param `" + varName + "' already declared",
                   publicId, systemId, lineNo, colNo);
-               return processStatus;// if the errorHandler returns
+               return processStatus; // if the errorHandler returns
             }
 
-            Object globalParam = 
-               ((TransformFactory.Instance)parent).globalParams.get(expName);
-            if (globalParam != null) { // value set from the outside
-               varTable.put(expName, globalParam);
-            }
-            else if (select != null) {
-               context.stylesheetNode = this;
-               varTable.put(expName, 
-                            select.evaluate(context, 
-                                            eventStack, eventStack.size()));
-            }
-            else 
-               varTable.put(expName, new Value(""));
-
-//              if (varTable == context.localVars)
-//                 parent.declareVariable(expName);
+            varTable.put(expName, v);
          }
+
          return processStatus;
       }
    }

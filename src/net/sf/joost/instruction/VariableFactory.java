@@ -1,5 +1,5 @@
 /*
- * $Id: VariableFactory.java,v 1.3 2002/11/04 14:58:21 obecker Exp $
+ * $Id: VariableFactory.java,v 1.4 2002/11/27 09:53:24 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.Stack;
 import java.util.Enumeration;
 
+import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.stx.Emitter;
@@ -45,7 +46,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>variable</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.3 $ $Date: 2002/11/04 14:58:21 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/27 09:53:24 $
  * @author Oliver Becker
  */
 
@@ -63,7 +64,7 @@ final public class VariableFactory extends FactoryBase
       attrNames.add("keep-value");
    }
 
-   /** @return "variable" */
+   /** @return <code>"variable"</code> */
    public String getName()
    {
       return "variable";
@@ -120,18 +121,18 @@ final public class VariableFactory extends FactoryBase
    public class Instance extends VariableBase
    {
       private String varName;
-//       protected String expName;
       private Tree select;
-//       protected boolean keepValue;
       private NodeBase parent;
+
 
       protected Instance(String qName, Locator locator, String varName,
                          String expName, Tree select, boolean keepValue,
                          NodeBase parent)
       {
-         super(qName, locator, expName, keepValue, true);
+         super(qName, parent, locator, expName, keepValue, 
+               // this element must be empty if there is a select attribute
+               select != null);
          this.varName = varName;
-//          this.expName = expName;
          this.select = select;
          this.keepValue = keepValue;
          this.parent = parent;
@@ -144,13 +145,47 @@ final public class VariableFactory extends FactoryBase
        * @param eventStack the ancestor event stack
        * @param context the Context object
        * @param processStatus the current processing status
-       * @return <code>processStatus</code>, value doesn't change
+       * @return the new <code>processStatus</code>
        */    
       public short process(Emitter emitter, Stack eventStack,
                            Context context, short processStatus)
          throws SAXException
       {
+         // pre process-...
          if ((processStatus & ST_PROCESSING) !=0 ) {
+
+            // does this variable has contents?
+            if (children != null) {
+               // create a new StringEmitter for this instance and put it
+               // on the emitter stack
+               emitter.pushEmitter(
+                  new StringEmitter(new StringBuffer(),
+                                    "(`" + qName + "' started in line " +
+                                    lineNo + ")"));
+            }
+         }
+
+         processStatus = super.process(emitter, eventStack, context, 
+                                       processStatus);
+
+         // post process-...
+         if ((processStatus & ST_PROCESSING) != 0) {
+            Value v;
+            if (children != null) {
+               // contents present
+               v = new Value(((StringEmitter)emitter.popEmitter())
+                                                    .getBuffer().toString());
+            }
+            else if (select != null) {
+               // select attribute present
+               context.stylesheetNode = this;
+               v = select.evaluate(context, 
+                                   eventStack, eventStack.size());
+            }
+            else
+               v = new Value("");
+
+            // determine scope
             Hashtable varTable;
             if (parent instanceof GroupBase) // group variable
                varTable = (Hashtable)((GroupBase)parent).groupVars.peek();
@@ -163,19 +198,12 @@ final public class VariableFactory extends FactoryBase
                   publicId, systemId, lineNo, colNo);
                return processStatus;// if the errorHandler returns
             }
-
-            if (select != null) {
-               context.stylesheetNode = this;
-               varTable.put(expName, 
-                            select.evaluate(context, 
-                                            eventStack, eventStack.size()));
-            }
-            else
-               varTable.put(expName, new Value(""));
+            varTable.put(expName, v);
 
             if (varTable == context.localVars)
                parent.declareVariable(expName);
          }
+
          return processStatus;
       }
    }
