@@ -1,5 +1,5 @@
 /*
- * $Id: ForEachFactory.java,v 2.1 2003/04/27 15:34:45 obecker Exp $
+ * $Id: ForEachFactory.java,v 2.2 2003/04/29 11:36:07 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,6 +32,7 @@ import org.xml.sax.SAXParseException;
 import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.Stack;
+import java.util.Vector;
 
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Value;
@@ -39,9 +40,9 @@ import net.sf.joost.grammar.Tree;
 
 
 /** 
- * Factory for <code>for-each</code> elements, which are represented by
+ * Factory for <code>for-each-item</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.1 $ $Date: 2003/04/27 15:34:45 $
+ * @version $Revision: 2.2 $ $Date: 2003/04/29 11:36:07 $
  * @author Oliver Becker
  */
 
@@ -63,13 +64,14 @@ final public class ForEachFactory extends FactoryBase
    public ForEachFactory()
    {
       attrNames = new HashSet();
+      attrNames.add("name");
       attrNames.add("select");
    }
 
-   /** @return <code>"for-each"</code> */
+   /** @return <code>"for-each-item"</code> */
    public String getName()
    {
-      return "for-each";
+      return "for-each-item";
    }
 
    public NodeBase createNode(NodeBase parent, String uri, String lName, 
@@ -77,21 +79,28 @@ final public class ForEachFactory extends FactoryBase
                               Hashtable nsSet, Locator locator)
       throws SAXParseException
    {
+      String nameAtt = getAttribute(qName, attrs, "name", locator);
+      String expName = getExpandedName(nameAtt, nsSet, locator);
+
       String selectAtt = getAttribute(qName, attrs, "select", locator);
       Tree selectExpr = parseExpr(selectAtt, nsSet, locator);
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, selectExpr);
+
+      return new Instance(qName, parent, locator, nameAtt, expName,
+                          selectExpr);
    }
 
 
-   /** Represents an instance of the <code>for-each</code> element. */
+   /** Represents an instance of the <code>for-each-item</code> element. */
    final public class Instance extends NodeBase
    {
+      private String varName, expName;
       private Tree select;
 
       /** 
-       * Stack that stores intermediate states of the for-each, in case this
-       * for-each was interrupted via <code>stx:process-<em>xxx</em></code>
+       * Stack that stores the remaining sequence of the select attribute
+       * in case this for-each-item was interrupted via 
+       * <code>stx:process-<em>xxx</em></code>
        */
       private Stack resultStack = new Stack();
 
@@ -109,9 +118,12 @@ final public class ForEachFactory extends FactoryBase
 
       // Constructor
       protected Instance(final String qName, NodeBase parent, 
-                         Locator locator, Tree select)
+                         Locator locator, String varName, String expName,
+                         Tree select)
       {
          super(qName, parent, locator, true);
+         this.varName = varName;
+         this.expName = expName;
          this.select = select;
          me = this;
 
@@ -120,6 +132,7 @@ final public class ForEachFactory extends FactoryBase
             public NodeBase getNode() {
                return me;
             }
+            // Mustn't be called
             public short process(Context context) 
                throws SAXException {
                throw new SAXParseException(
@@ -127,6 +140,9 @@ final public class ForEachFactory extends FactoryBase
                   publicId, systemId, lineNo, colNo);
             }
          };
+
+         // this instruction declares a local variable
+         scopedVariables = new Vector(); 
       }
 
 
@@ -151,36 +167,36 @@ final public class ForEachFactory extends FactoryBase
          throws SAXException
       {
          Value selectResult;
-         long seqPos;
          super.process(context);
          if (firstTurn) {
-            // save current item and current position
-            resultStack.push(context.currentItem);
-            resultStack.push(new Long(context.position));
+            // perform this check only once per for-each-item
+            if (context.localVars.get(expName) != null) {
+               context.errorHandler.fatalError(
+                  "Variable `" + varName + "' already declared",
+                  publicId, systemId, lineNo, colNo);
+               return PR_ERROR;// if the errorHandler returns
+            }
 
-            seqPos = 0;
             selectResult = select.evaluate(context, this);
          }
          else {
-            seqPos = ((Long)resultStack.pop()).longValue();
             selectResult = (Value)resultStack.pop();
             firstTurn = true;
          }
 
          if (selectResult == null || selectResult.type == Value.EMPTY) {
-            // for-each finished (empty sequence left)
-            context.position = ((Long)resultStack.pop()).longValue();
-            context.currentItem = (Value)resultStack.pop();
+            // for-each-item finished (empty sequence left)
             next = nodeEnd.next;
             super.processEnd(context); // skip "normal" end
             return PR_CONTINUE;
          }
          else {
             resultStack.push(selectResult.next);
-            resultStack.push(new Long(++seqPos));
             selectResult.next = null;
-            context.currentItem = selectResult;
-            context.position = seqPos;
+
+            context.localVars.put(expName, selectResult);
+            declareVariable(expName);
+
             next = contents;
             return PR_CONTINUE;
          }
