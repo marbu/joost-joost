@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 1.7 2002/12/15 17:06:47 obecker Exp $
+ * $Id: TransformFactory.java,v 1.8 2003/01/30 17:16:26 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Emitter;
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 1.7 $ $Date: 2002/12/15 17:06:47 $
+ * @version $Revision: 1.8 $ $Date: 2003/01/30 17:16:26 $
  * @author Oliver Becker
  */
 
@@ -107,6 +107,7 @@ public class TransformFactory extends FactoryBase
       {
          super(qName, null /* parent */, locator);
          namedGroups = new Hashtable(); // shared with all sub-groups
+         globalProcedures = new Hashtable(); // also shared
       }
 
 
@@ -128,7 +129,7 @@ public class TransformFactory extends FactoryBase
                                            node.lineNo, node.colNo);
             options = (OptionsFactory.Instance)node;
          }
-         else if (node instanceof TemplateFactory.Instance ||
+         else if (node instanceof TemplateBase || // template, procedure
                   node instanceof GroupFactory.Instance ||
                   node instanceof VariableBase) // param, variable, buffer
             super.append(node);
