@@ -1,5 +1,5 @@
 /*
- * $Id: ValueOfFactory.java,v 1.2 2002/10/22 10:33:03 obecker Exp $
+ * $Id: ValueOfFactory.java,v 1.3 2002/11/14 13:38:46 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,14 +28,11 @@ import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.ext.LexicalHandler;
 
 import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.Stack;
-import java.util.Enumeration;
 
-import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Value;
@@ -46,7 +43,7 @@ import net.sf.joost.grammar.EvalException;
 /** 
  * Factory for <code>value-of</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2002/10/22 10:33:03 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/14 13:38:46 $
  * @author Oliver Becker
  */
 
@@ -107,20 +104,16 @@ final public class ValueOfFactory extends FactoryBase
                               Context context, short processStatus)
          throws SAXException
       {
-         SAXEvent event = (SAXEvent)eventStack.peek();
-         
-         if ((processStatus & ST_PROCESSING) != 0) {
-            try {
-               context.stylesheetNode = this;
-               Value v = select.evaluate(context, 
-                                         eventStack, eventStack.size());
-               String s = v.convertToString().string;
-               emitter.characters(s.toCharArray(), 0, s.length());
-            }
-            catch (EvalException e) {
-               context.errorHandler.error(e.getMessage(),
-                                          publicId, systemId, lineNo, colNo);
-            }
+         try {
+            context.stylesheetNode = this;
+            Value v = select.evaluate(context, 
+                                      eventStack, eventStack.size());
+            String s = v.convertToString().string;
+            emitter.characters(s.toCharArray(), 0, s.length());
+         }
+         catch (EvalException e) {
+            context.errorHandler.error(e.getMessage(),
+                                       publicId, systemId, lineNo, colNo);
          }
          return processStatus;
       }
