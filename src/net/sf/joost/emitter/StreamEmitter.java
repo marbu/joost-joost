@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.16 2004/02/24 15:02:12 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.17 2004/04/16 10:32:11 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -39,7 +39,7 @@ import javax.xml.transform.OutputKeys;
  *  Is is designed for using <code>StreamResult</code>.
  *  So this class outputs a StreamResult to the output target -
  *  {@link #outwriter} (e.g. a registered <code>FileWriter</code>).
- *  @version $Revision: 1.16 $ $Date: 2004/02/24 15:02:12 $
+ *  @version $Revision: 1.17 $ $Date: 2004/04/16 10:32:11 $
  *  @author Oliver Becker, Anatolij Zubow
  */
 public class StreamEmitter implements StxEmitter {
@@ -169,25 +169,34 @@ public class StreamEmitter implements StxEmitter {
 
     private void readOutputProperties(Properties outputProperties)
     {
-        propEncoding = outputProperties.getProperty(OutputKeys.ENCODING)
-                                       .toUpperCase();
-        propOmitXmlDeclaration = 
-            outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION)
-                            .equals("yes");
+        String val;
+        val = outputProperties.getProperty(OutputKeys.ENCODING);
+        if (val != null)
+            propEncoding = val.toUpperCase();
+
+        val = outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION);
+        if (val != null)
+            propOmitXmlDeclaration = val.equals("yes");
         if (!propEncoding.equals("UTF-8") && 
              !propEncoding.equals("UTF-16"))
              propOmitXmlDeclaration = false;
-        propStandalone = 
-            outputProperties.getProperty(OutputKeys.STANDALONE)
-                            .equals("yes");
-        propVersion = outputProperties.getProperty(OutputKeys.VERSION);
 
-        String methodProp = outputProperties.getProperty(OutputKeys.METHOD);
-        if (methodProp.equals("text"))
-            propTextOutput = true;
-        else if(!methodProp.equals("xml"))
-           log.warn("Unsupported output method `" + methodProp + 
-                    "', use default `xml' method instead");
+        val = outputProperties.getProperty(OutputKeys.STANDALONE);
+        if (val != null)
+        propStandalone = val.equals("yes");
+
+        val = outputProperties.getProperty(OutputKeys.VERSION);
+        if (val != null)
+            propVersion = val;
+
+        val = outputProperties.getProperty(OutputKeys.METHOD);
+        if (val != null) {
+            if (val.equals("text"))
+                propTextOutput = true;
+            else if(!val.equals("xml"))
+                log.warn("Unsupported output method `" + val + 
+                         "', use default `xml' method instead");
+        }
     }
 
 
