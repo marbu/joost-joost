@@ -1,5 +1,5 @@
 /*
- * $Id: ProfilerTestCases.java,v 1.7 2004/12/17 18:36:22 obecker Exp $
+ * $Id: ProfilerTestCases.java,v 1.8 2004/12/27 18:56:34 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -44,6 +44,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import junit.framework.TestCase;
 import net.sf.joost.emitter.StreamEmitter;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Processor;
 
 import org.apache.log4j.Logger;
@@ -313,7 +314,8 @@ public class ProfilerTestCases extends TestCase {
        // Create a new STX Processor object
        long delta = 0;
        try {
-           Processor pr = new Processor(new InputSource(stxFile), true);
+           Processor pr = new Processor(new InputSource(stxFile), 
+                                        new ParseContext());
            StreamEmitter em =
               StreamEmitter.newXMLEmitter(
                  new BufferedWriter(

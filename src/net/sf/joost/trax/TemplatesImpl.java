@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.24 2004/12/17 18:25:48 obecker Exp $
+ * $Id: TemplatesImpl.java,v 1.25 2004/12/27 18:55:23 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -32,6 +32,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 
 import net.sf.joost.OptionalLog;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Parser;
 import net.sf.joost.stx.Processor;
 import net.sf.joost.trace.DebugProcessor;
@@ -178,20 +179,18 @@ public class TemplatesImpl implements Templates, TrAXConstants {
             boolean debugmode =
                     ((Boolean)this.factory.getAttribute(DEBUG_FEATURE)).booleanValue();
 
+            ParseContext pContext = new ParseContext();
+            pContext.allowExternalFunctions = factory.allowExternalFunctions;
+            pContext.setErrorListener(factory.getErrorListener());
+            pContext.uriResolver = factory.getURIResolver();
             if (debugmode) {
                 if (DEBUG)
                     log.info("init transformer in debug mode");
-                processor = new DebugProcessor(reader, isource,
-                                               factory.getErrorListener(),
-                                               factory.getURIResolver(),
-                                               factory.getParserListenerMgr(),
-                                               factory.getMessageEmitter(),
-                                               factory.allowExternalFunctions);
+                pContext.parserListener = factory.getParserListenerMgr();
+                processor = new DebugProcessor(reader, isource, pContext,
+                                               factory.getMessageEmitter());
             } else {
-                processor = new Processor(reader, isource, 
-                                          factory.getErrorListener(),
-                                          factory.getURIResolver(),
-                                          factory.allowExternalFunctions);
+                processor = new Processor(reader, isource, pContext);
             }
             if (factory.thResolver != null)
                 processor.setTransformerHandlerResolver(factory.thResolver);

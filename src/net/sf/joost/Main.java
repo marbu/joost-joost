@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.25 2004/12/17 18:25:49 obecker Exp $
+ * $Id: Main.java,v 1.26 2004/12/27 18:55:23 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,6 +30,7 @@ import javax.xml.transform.TransformerException;
 import net.sf.joost.emitter.FOPEmitter;
 import net.sf.joost.emitter.StreamEmitter;
 import net.sf.joost.emitter.StxEmitter;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Processor;
 
 import org.apache.log4j.Level;
@@ -40,7 +41,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.25 $ $Date: 2004/12/17 18:25:49 $
+ * @version $Revision: 1.26 $ $Date: 2004/12/27 18:55:23 $
  * @author Oliver Becker
  */
 public class Main implements Constants
@@ -259,9 +260,12 @@ public class Main implements Constants
             }
             else {
                // xmlFile != null, i.e. this is an STX sheet
+               ParseContext pContext = new ParseContext();
+               pContext.allowExternalFunctions = !noext;
                if (measureTime)
                   timeStart = System.currentTimeMillis();
-               Processor proc = new Processor(new InputSource(args[i]), !noext);
+               Processor proc = 
+                  new Processor(new InputSource(args[i]), pContext);
                if (measureTime) {
                   timeEnd = System.currentTimeMillis();
                   System.err.println("Parsing " + args[i] + ": " +
