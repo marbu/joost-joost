@@ -1,5 +1,5 @@
 /*
- * $Id: ResultBufferFactory.java,v 1.4 2002/11/20 16:56:29 obecker Exp $
+ * $Id: ResultBufferFactory.java,v 1.5 2002/11/27 09:59:11 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Emitter;
 /** 
  * Factory for <code>result-buffer</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.4 $ $Date: 2002/11/20 16:56:29 $
+ * @version $Revision: 1.5 $ $Date: 2002/11/27 09:59:11 $
  * @author Oliver Becker
  */
 
@@ -58,6 +58,8 @@ final public class ResultBufferFactory extends FactoryBase
       attrNames.add("clear");
    }
 
+
+   /** @return <code>"result-buffer"</code> */
    public String getName()
    {
       return "result-buffer";
@@ -91,7 +93,7 @@ final public class ResultBufferFactory extends FactoryBase
 
 
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, locator, nameAtt,
+      return new Instance(qName, parent, locator, nameAtt,
                           "@{" + nameUri + "}" + nameLocal, clear);
       // buffers are special variables with an "@" prefix
    }
@@ -103,10 +105,10 @@ final public class ResultBufferFactory extends FactoryBase
       private String bufName, expName;
       private boolean clear;
 
-      protected Instance(String qName, Locator locator, 
+      protected Instance(String qName, NodeBase parent, Locator locator, 
                          String bufName, String expName, boolean clear)
       {
-         super(qName, locator, false);
+         super(qName, parent, locator, false);
          this.bufName = bufName;
          this.expName = expName;
          this.clear = clear;
@@ -133,7 +135,7 @@ final public class ResultBufferFactory extends FactoryBase
                GroupBase group = context.currentGroup;
                while (buffer == null && group != null) {
                   buffer = ((Hashtable)group.groupVars.peek()).get(expName);
-                  group = group.parent;
+                  group = group.parentGroup;
                }
             }
             if (buffer == null) {
