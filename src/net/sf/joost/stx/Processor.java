@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.4 2003/04/30 14:59:47 obecker Exp $
+ * $Id: Processor.java,v 2.5 2003/05/02 06:01:10 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -63,7 +63,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.4 $ $Date: 2003/04/30 14:59:47 $
+ * @version $Revision: 2.5 $ $Date: 2003/05/02 06:01:10 $
  * @author Oliver Becker
  */
 
@@ -173,12 +173,8 @@ public class Processor extends XMLFilterImpl
       /** The look ahead event for the current node (from {@link Context}) */
       SAXEvent lookAhead;
 
-      /**
-       * Currently visible templates (search space for templates). This array
-       * (the field in the top most element of {@link #dataStack}) will be
-       * used in {@link #findMatchingTemplate}.
-       */
-      TemplateFactory.Instance[] visibleTemplates;
+      /** Next group in the processing, contains the visible templates */
+      GroupBase targetGroup;
 
       /**
        * Last process status while processing this template.
@@ -205,8 +201,7 @@ public class Processor extends XMLFilterImpl
        * <code>stx:process-siblings</code>
        */
       Data(TemplateFactory.Instance t, AbstractInstruction i, GroupBase cg,
-           long cp, SAXEvent la,
-           TemplateFactory.Instance[] vt, short lps,
+           long cp, SAXEvent la, GroupBase tg, short lps,
            PSiblingsFactory.Instance ps, Hashtable lv, SAXEvent se)
       {
          template = t;
@@ -214,7 +209,7 @@ public class Processor extends XMLFilterImpl
          currentGroup = cg;
          contextPosition = cp;
          lookAhead = la;
-         visibleTemplates = vt;
+         targetGroup = tg;
          lastProcStatus = lps;
          psiblings = ps;
          localVars = (Hashtable)lv.clone();
@@ -223,26 +218,24 @@ public class Processor extends XMLFilterImpl
 
       /** Constructor for "descendant or self" processing */
       Data(TemplateFactory.Instance t, AbstractInstruction i, GroupBase cg, 
-           long cp, SAXEvent la,
-           TemplateFactory.Instance[] vt, short lps)
+           long cp, SAXEvent la, GroupBase tg, short lps)
       {
          template = t;
          instruction = i;
          currentGroup = cg;
          contextPosition = cp;
          lookAhead = la;
-         visibleTemplates = vt;
+         targetGroup = tg;
          lastProcStatus = lps;
       }
 
       /**
        * Constructor used when processing a built-in template
-       * @param vt visibleTemplates
+       * @param tg the target group
        */
-      Data(GroupBase cg, TemplateFactory.Instance[] vt)
+      Data(GroupBase tg)
       {
-         currentGroup = cg;
-         visibleTemplates = vt;
+         targetGroup = tg;
          // other field are default initialized with 0 or null resp.
       }
 
@@ -251,7 +244,7 @@ public class Processor extends XMLFilterImpl
       {
          return "Data{" + template + "," + contextPosition + "," +
                 lookAhead + "," +
-                java.util.Arrays.asList(visibleTemplates) + "," + 
+                java.util.Arrays.asList(targetGroup.visibleTemplates) + "," + 
                 lastProcStatus + "}";
       }
    } // inner class Data
@@ -408,11 +401,11 @@ public class Processor extends XMLFilterImpl
       setErrorHandler(context.errorHandler); // register error handler
 
       context.currentProcessor = this;
-      context.currentGroup = context.nextProcessGroup = transformNode = 
+      context.currentGroup = context.targetGroup = transformNode = 
          stxParser.getTransformNode();
 
-      // array of visible templates from the top-level group
-      dataStack.push(new Data(transformNode, transformNode.visibleTemplates));
+      // the default group (stx:transform) is the first target group
+      dataStack.push(new Data(transformNode));
 
       // array of global templates
       Vector tempVec = transformNode.getGlobalTemplates();
@@ -558,8 +551,7 @@ public class Processor extends XMLFilterImpl
       // possible jump to another group (changed visibleTemplates)
       dataStack.push(
          new Data(null, null, context.currentGroup, context.position, 
-                  context.lookAhead,
-                  context.nextProcessGroup.visibleTemplates,
+                  context.lookAhead, context.targetGroup,
                   PR_BUFFER));
    }
 
@@ -622,10 +614,11 @@ public class Processor extends XMLFilterImpl
       boolean notSelf = (top.lastProcStatus != PR_SELF);
 
       // first: lookup in the array of visible templates
-      for (i=0; i<top.visibleTemplates.length; i++)
-         if (top.visibleTemplates[i].matches(context, true) &&
-             (notSelf || foundUnprocessedTemplate(top.visibleTemplates[i]))) {
-            category = top.visibleTemplates;
+      TemplateFactory.Instance[] vt = top.targetGroup.visibleTemplates;
+      for (i=0; i<vt.length; i++)
+         if (vt[i].matches(context, true) &&
+             (notSelf || foundUnprocessedTemplate(vt[i]))) {
+            category = vt;
             break;
          }
 
@@ -711,15 +704,13 @@ public class Processor extends XMLFilterImpl
                dataStack.push(
                   new Data(temp, inst, context.currentGroup, 
                            context.position, context.lookAhead,
-                           context.nextProcessGroup.visibleTemplates,
-                           PR_CHILDREN));
+                           context.targetGroup, PR_CHILDREN));
                break;
             case PR_SELF: // stx:process-self encountered
                dataStack.push(
                   new Data(temp, inst, context.currentGroup, 
                            context.position, context.lookAhead,
-                           context.nextProcessGroup.visibleTemplates,
-                           PR_SELF));
+                           context.targetGroup, PR_SELF));
                processEvent(); // recurse
                if (event.type == SAXEvent.TEXT || 
                    event.type == SAXEvent.CDATA || 
@@ -755,8 +746,7 @@ public class Processor extends XMLFilterImpl
                      dataStack.push(
                         new Data(temp, inst, context.currentGroup, 
                                  context.position, context.lookAhead,
-                                 context.nextProcessGroup.visibleTemplates,
-                                 PR_SIBLINGS, 
+                                 context.targetGroup, PR_SIBLINGS, 
                                  context.psiblings,
                                  context.localVars, event));
                      break;
@@ -775,10 +765,8 @@ public class Processor extends XMLFilterImpl
                dataStack.push(
                   new Data(temp, inst, context.currentGroup, 
                            context.position, context.lookAhead,
-                           context.nextProcessGroup.visibleTemplates,
-                           PR_SIBLINGS, 
-                           context.psiblings,
-                           context.localVars, event));
+                           context.targetGroup, PR_SIBLINGS, 
+                           context.psiblings, context.localVars, event));
                break;
             case PR_ATTRIBUTES: // stx:process-attributes encountered
                // happens only for elements with attributes
@@ -797,56 +785,53 @@ public class Processor extends XMLFilterImpl
       }
       else {
          // no template found, default action
-         GroupBase npg = context.nextProcessGroup;
+         GroupBase tg = context.targetGroup;
          switch (event.type) {
          case SAXEvent.ROOT:
-            dataStack.push(
-               new Data(context.currentGroup,
-                        ((Data)dataStack.peek()).visibleTemplates));
+            dataStack.push(new Data(((Data)dataStack.peek()).targetGroup));
             break;
          case SAXEvent.ELEMENT:
-            if((npg.passThrough & PASS_THROUGH_ELEMENT) != 0)
+            if((tg.passThrough & PASS_THROUGH_ELEMENT) != 0)
                emitter.startElement(event.uri, event.lName, event.qName,
                                     event.attrs, event.namespaces,
-                                    npg.publicId, npg.systemId,
-                                    npg.lineNo, npg.colNo);
-            dataStack.push(
-               new Data(npg, ((Data)dataStack.peek()).visibleTemplates));
+                                    tg.publicId, tg.systemId,
+                                    tg.lineNo, tg.colNo);
+            dataStack.push(new Data(((Data)dataStack.peek()).targetGroup));
             break;
          case SAXEvent.TEXT:
-            if((npg.passThrough & PASS_THROUGH_TEXT) != 0) {
+            if((tg.passThrough & PASS_THROUGH_TEXT) != 0) {
                emitter.characters(event.value.toCharArray(), 
                                   0, event.value.length());
             }
             break;
          case SAXEvent.CDATA:
-            if((npg.passThrough & PASS_THROUGH_TEXT) != 0) {
-               emitter.startCDATA(npg.publicId, npg.systemId,
-                                  npg.lineNo, npg.colNo);
+            if((tg.passThrough & PASS_THROUGH_TEXT) != 0) {
+               emitter.startCDATA(tg.publicId, tg.systemId,
+                                  tg.lineNo, tg.colNo);
                emitter.characters(event.value.toCharArray(), 
                                   0, event.value.length());
                emitter.endCDATA();
             }
             break;
          case SAXEvent.COMMENT:
-            if((npg.passThrough & PASS_THROUGH_COMMENT) != 0)
+            if((tg.passThrough & PASS_THROUGH_COMMENT) != 0)
                emitter.comment(event.value.toCharArray(), 
                                0, event.value.length(),
-                               npg.publicId, npg.systemId,
-                               npg.lineNo, npg.colNo);
+                               tg.publicId, tg.systemId,
+                               tg.lineNo, tg.colNo);
             break;
          case SAXEvent.PI:
-            if((npg.passThrough & PASS_THROUGH_PI) != 0)
+            if((tg.passThrough & PASS_THROUGH_PI) != 0)
                emitter.processingInstruction(event.qName, event.value,
-                                             npg.publicId, npg.systemId,
-                                             npg.lineNo, npg.colNo);
+                                             tg.publicId, tg.systemId,
+                                             tg.lineNo, tg.colNo);
             break;
          case SAXEvent.ATTRIBUTE:
-            if((npg.passThrough & PASS_THROUGH_ATTRIBUTE) != 0)
+            if((tg.passThrough & PASS_THROUGH_ATTRIBUTE) != 0)
                emitter.addAttribute(event.uri, event.qName, event.lName,
                                     event.value,
-                                    npg.publicId, npg.systemId,
-                                    npg.lineNo, npg.colNo);
+                                    tg.publicId, tg.systemId,
+                                    tg.lineNo, tg.colNo);
             break;
          default:
             log.warn("no default action for " + event);
@@ -869,7 +854,7 @@ public class Processor extends XMLFilterImpl
       // determine if the look-ahead is a text node
       String s = collectedCharacters.toString();
       if (s.length() == 0 || 
-          (context.nextProcessGroup.stripSpace && s.trim().length() == 0)) {
+          (context.targetGroup.stripSpace && s.trim().length() == 0)) {
          context.lookAhead = currentEvent;
       }
       else {
@@ -904,7 +889,7 @@ public class Processor extends XMLFilterImpl
          if (log.isDebugEnabled())
             log.debug("`" + s + "'");
 
-      if (context.nextProcessGroup.stripSpace && s.trim().length() == 0) {
+      if (context.targetGroup.stripSpace && s.trim().length() == 0) {
          collectedCharacters.setLength(0);
          return; // white-space only characters found, do nothing
       }
@@ -935,12 +920,12 @@ public class Processor extends XMLFilterImpl
    private void processAttributes(Attributes attrs)
       throws SAXException
    {
-      // actually only the visible templates need to be put on this stack ..
+      // actually only the target group need to be put on this stack ..
+      // (for findMatchingTemplate)
       dataStack.push(
          new Data(null, null, context.currentGroup,
                   context.position, context.lookAhead,
-                  context.nextProcessGroup.visibleTemplates,
-                  PR_ATTRIBUTES));
+                  context.targetGroup, PR_ATTRIBUTES));
       for (int i=0; i<attrs.getLength(); i++) {
          if (DEBUG)
             if (log.isDebugEnabled())
@@ -1079,8 +1064,7 @@ public class Processor extends XMLFilterImpl
             // put back the last stx:process-siblings instruction
             stopData.instruction = inst;
             // there might have been a group attribute
-            stopData.visibleTemplates = 
-               context.nextProcessGroup.visibleTemplates;
+            stopData.targetGroup = context.targetGroup;
             stopData.psiblings = context.psiblings;
             stopData.localVars = context.localVars;
             context.localVars = storedVars;
@@ -1131,6 +1115,7 @@ public class Processor extends XMLFilterImpl
          clearProcessSiblings();
          Data data = (Data)dataStack.pop();
          context.currentGroup = data.currentGroup;
+         context.targetGroup = data.targetGroup;
          short prStatus = data.lastProcStatus;
          if (data.template == null) {
             // default action: nothing to do
@@ -1252,16 +1237,17 @@ public class Processor extends XMLFilterImpl
          clearProcessSiblings();
 
          Data data = (Data)dataStack.pop();
-         context.currentGroup = data.currentGroup;
          short prStatus = data.lastProcStatus;
+         context.currentGroup = data.currentGroup;
+         context.targetGroup = ((Data)dataStack.peek()).targetGroup;
          if (data.template == null) {
             // perform default action?
-            if ((data.currentGroup.passThrough & PASS_THROUGH_ELEMENT) != 0)
+            if ((data.targetGroup.passThrough & PASS_THROUGH_ELEMENT) != 0)
                emitter.endElement(uri, lName, qName,
-                                  data.currentGroup.publicId,
-                                  data.currentGroup.systemId,
-                                  data.currentGroup.lineNo, 
-                                  data.currentGroup.colNo);
+                                  data.targetGroup.publicId,
+                                  data.targetGroup.systemId,
+                                  data.targetGroup.lineNo, 
+                                  data.targetGroup.colNo);
          }
          else if (prStatus == PR_CHILDREN || prStatus == PR_SELF) {
             context.position = data.contextPosition; // restore position
@@ -1300,7 +1286,7 @@ public class Processor extends XMLFilterImpl
                dataStack.push(
                   new Data(data.template, inst, context.currentGroup, 
                            context.position, context.lookAhead,
-                           context.nextProcessGroup.visibleTemplates,
+                           context.targetGroup,
                            PR_SIBLINGS, context.psiblings, context.localVars,
                            (SAXEvent)eventStack.peek()));
                break;
@@ -1447,7 +1433,7 @@ public class Processor extends XMLFilterImpl
    public void startCDATA()
       throws SAXException
    {
-      if (skipDepth > 0 || !context.nextProcessGroup.recognizeCdata)
+      if (skipDepth > 0 || !context.targetGroup.recognizeCdata)
          return;
 
       if (DEBUG)
@@ -1470,7 +1456,7 @@ public class Processor extends XMLFilterImpl
    public void endCDATA()
       throws SAXException
    {
-      if (!context.nextProcessGroup.recognizeCdata)
+      if (!context.targetGroup.recognizeCdata)
          return;
 
       if (lastElement != null)
