@@ -8,6 +8,7 @@ Changes since 20030203
   (Changed in the STX spec on 2003-02-21)
 - Bugfix 687489: deleted variables
 - Bugfix 687628: position() gives wrong results
+- Bugfix 691652: process-children inside stx:choose may chrash
 
 Changes since 20030121
 - added floor(), ceiling(), round()
