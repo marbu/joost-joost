@@ -3,6 +3,7 @@ Changes since 20021128
 - removed strict-mode (stx:transform, stx:group)
 - added support for named groups
 - added stx:process-document
+- changed: buffers (stx:process-buffer) don't create their own ancestor stack
 
 Changes since 20021107
 - added stx:choose, stx:when, stx:otherwise, stx:else
