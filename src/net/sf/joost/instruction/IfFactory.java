@@ -1,5 +1,5 @@
 /*
- * $Id: IfFactory.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: IfFactory.java,v 1.2 2002/10/22 10:33:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,7 +46,7 @@ import net.sf.joost.grammar.EvalException;
 /** 
  * Factory for <code>if</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2002/10/22 10:33:03 $
  * @author Oliver Becker
  */
 
@@ -109,8 +109,6 @@ final public class IfFactory extends FactoryBase
          throws SAXException
       {
          SAXEvent event = (SAXEvent)eventStack.peek();
-         if (event == null) // ????
-            return processStatus;
 
          testResult = false;
          if ((processStatus & ST_PROCESSING) != 0) {
