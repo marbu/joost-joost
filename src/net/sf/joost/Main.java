@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.14 2003/07/30 15:16:00 obecker Exp $
+ * $Id: Main.java,v 1.15 2003/10/31 12:08:09 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.14 $ $Date: 2003/07/30 15:16:00 $
+ * @version $Revision: 1.15 $ $Date: 2003/10/31 12:08:09 $
  * @author Oliver Becker
  */
 public class Main implements Constants
@@ -60,8 +60,11 @@ public class Main implements Constants
     */
    public static void main(String[] args)
    {
-      // input filenames
-      String xmlFile = null, stxFile = null;
+      // input filename
+      String xmlFile = null;
+
+      // the currently last processor (as XMLFilter)
+      Processor processor = null;
 
       // output filename (optional)
       String outFile = null;
@@ -84,140 +87,155 @@ public class Main implements Constants
       // debugging
       boolean dontexit = false;
 
-      // parse command line argument list
-      for (int i=0; i<args.length; i++) {
-         // all options start with a '-'
-         if (args[i].charAt(0) == '-') {
-            if ("-help".equals(args[i])) {
-               printHelp = true;
-               continue;
-            }
-            else if ("-version".equals(args[i])) {
-               usage("", 0); // exits immediately
-               continue;
-            }
-            else if ("-pdf".equals(args[i])) {
-               doFOP = true;
-               continue;
-            }
-            else if ("-wait".equals(args[i])) {
-               dontexit = true; // undocumented
-               continue;
-            }
-            else if ("-o".equals(args[i])) {
-               // this option needs a parameter
-               if (++i < args.length && args[i].charAt(0) != '-') {
-                  outFile = args[i];
+      // needed for evaluating parameter assignments
+      int index;
+
+      try {
+
+         // parse command line argument list
+         for (int i=0; i<args.length; i++) {
+            // all options start with a '-', but a single '-' means stdin
+            if (args[i].charAt(0) == '-' && args[i].length() > 1) {
+               if ("-help".equals(args[i])) {
+                  printHelp = true;
                   continue;
                }
-               else {
-                  System.err.println("option -o requires a filename");
-                  wrongParameter = true;
-               }
-            }
-            else if(DEBUG && "-log-properties".equals(args[i])) {
-               // this option needs a parameter
-               if (++i < args.length && args[i].charAt(0) != '-') {
-                  log4jProperties = args[i];
+               else if ("-version".equals(args[i])) {
+                  usage(""); // exits immediately
                   continue;
                }
-               else {
-                  System.err.println("option -log-properties requires a filename");
-                  wrongParameter = true;
+               else if ("-pdf".equals(args[i])) {
+                  doFOP = true;
+                  continue;
                }
-            }
-            else if (DEBUG && "-log-level".equals(args[i])) {
-               // this option needs a parameter
-               if (++i < args.length && args[i].charAt(0) != '-') {
-                  if ("off".equals(args[i])) {
-                     log4jLevel = Level.OFF;
-                     continue;
-                  }
-                  else if ("debug".equals(args[i])) {
-                     log4jLevel = Level.DEBUG;
-                     continue;
-                  }
-                  else if ("info".equals(args[i])) {
-                     log4jLevel = Level.INFO;
-                     continue;
-                  }
-                  else if ("warn".equals(args[i])) {
-                     log4jLevel = Level.WARN;
-                     continue;
-                  }
-                  else if ("error".equals(args[i])) {
-                     log4jLevel = Level.ERROR;
-                     continue;
-                  }
-                  else if ("fatal".equals(args[i])) {
-                     log4jLevel = Level.FATAL;
-                     continue;
-                  }
-                  else if ("all".equals(args[i])) {
-                     log4jLevel = Level.ALL;
+               else if ("-wait".equals(args[i])) {
+                  dontexit = true; // undocumented
+                  continue;
+               }
+               else if ("-o".equals(args[i])) {
+                  // this option needs a parameter
+                  if (++i < args.length && args[i].charAt(0) != '-') {
+                     outFile = args[i];
                      continue;
                   }
                   else {
-                     System.err.println("Unknown parameter for -log-level: "
-                                        + args[i]);
+                     System.err.println("option -o requires a filename");
+                     i--;
                      wrongParameter = true;
+                  }
+               }
+               else if(DEBUG && "-log-properties".equals(args[i])) {
+                  // this option needs a parameter
+                  if (++i < args.length && args[i].charAt(0) != '-') {
+                     log4jProperties = args[i];
                      continue;
+                  }
+                  else {
+                     System.err.println("option -log-properties requires " + 
+                                        "a filename");
+                     wrongParameter = true;
+                  }
+               }
+               else if (DEBUG && "-log-level".equals(args[i])) {
+                  // this option needs a parameter
+                  if (++i < args.length && args[i].charAt(0) != '-') {
+                     if ("off".equals(args[i])) {
+                        log4jLevel = Level.OFF;
+                        continue;
+                     }
+                     else if ("debug".equals(args[i])) {
+                        log4jLevel = Level.DEBUG;
+                        continue;
+                     }
+                     else if ("info".equals(args[i])) {
+                        log4jLevel = Level.INFO;
+                        continue;
+                     }
+                     else if ("warn".equals(args[i])) {
+                        log4jLevel = Level.WARN;
+                        continue;
+                     }
+                     else if ("error".equals(args[i])) {
+                        log4jLevel = Level.ERROR;
+                        continue;
+                     }
+                     else if ("fatal".equals(args[i])) {
+                        log4jLevel = Level.FATAL;
+                        continue;
+                     }
+                     else if ("all".equals(args[i])) {
+                        log4jLevel = Level.ALL;
+                        continue;
+                     }
+                     else {
+                        System.err.println("Unknown parameter for -log-level: "
+                                           + args[i]);
+                        wrongParameter = true;
+                        continue;
+                     }
+                  }
+                  else {
+                     System.err.println("option -log-level requires a " + 
+                                        "parameter");
+                     wrongParameter = true;
                   }
                }
                else {
-                  System.err.println("option -log-level requires a parameter");
+                  System.err.println("Unknown option " + args[i]);
                   wrongParameter = true;
                }
             }
+            // command line argument is not an option with a leading '-'
+            else if (args[i].trim().length() == 0) {
+               // empty parameter? ingore 
+               // (causes otherwise an error on Windows 98 with joost.bat)
+            }
+            else if ((index = args[i].indexOf('=')) != -1) {
+               // parameter assignment 
+               if (processor != null)
+                  processor.setParameter(args[i].substring(0,index),
+                                        args[i].substring(index+1));
+               else {
+                  System.err.println("Assignment " + args[i] + 
+                                     " must follow an stx-sheet parameter");
+                  wrongParameter = true;
+               }
+               continue;
+            }
+            else if (xmlFile == null) {
+               xmlFile = args[i];
+               continue;
+            }
             else {
-               System.err.println("Unknown option " + args[i]);
-               wrongParameter = true;
+               // xmlFile != null, i.e. this is an STX sheet
+               Processor proc = new Processor(new InputSource(args[i]));
+               if (processor != null)
+                  proc.setParent(processor); // XMLFilter chain
+               processor = proc;
             }
          }
-         // command line argument doesn't have a leading '-'
-         else if (args[i].trim().length() == 0) {
-            // empty parameter? ingore 
-            // (causes otherwise an error on Windows 98 with joost.bat)
-         }
-         else if (args[i].indexOf('=') != -1) {
-            // parameter assignment, skip here, process later
-         }
-         else if (xmlFile == null) {
-            xmlFile = args[i];
-            continue;
-         }
-         else if (stxFile == null) {
-            stxFile = args[i];
-            continue;
-         }
-         else {
-            // supernumerary parameters
-            System.err.println("Unknown parameter `" + args[i] + "'");
+
+         // PDF creation requested
+         if (doFOP && outFile == null) {
+            System.err.println("Option -pdf requires option -o");
             wrongParameter = true;
          }
-      }
 
-      // PDF creation requested
-      if (doFOP && outFile == null) {
-         wrongParameter = true;
-         System.err.println("Option -pdf requires option -o");
-      }
+         // missing filenames
+         if (!printHelp && processor == null) {
+            if (xmlFile == null) 
+               System.err.println("Missing filenames for XML source and " + 
+                                  "STX transformation sheet");
+            else
+               System.err.println("Missing filename for STX transformation " + 
+                                  "sheet");
+            wrongParameter = true;
+         }
 
-      // missing filenames
-      if (!printHelp && stxFile == null) {
-         wrongParameter = true;
-         if (xmlFile == null) 
-            System.err.println("Missing filenames for XML source and " + 
-                               "STX transformation sheet");
-         else
-            System.err.println("Missing filename for STX transformation " + 
-                               "sheet");
-      }
-
-      if (printHelp || wrongParameter) {
-         usage(
+         if (printHelp) {
+            usage(
   "Usage:\n"
-+ "java net.sf.joost.Main [options] xml-source stx-sheet [parameters]\n\n"
++ "java net.sf.joost.Main [options] xml-src stx-src [params] {stx-src [params]}\n\n"
 + "Options:\n"
 + "  -help      print this message\n"
 + "  -version   print the version information and exit\n"
@@ -232,33 +250,25 @@ public class Main implements Constants
 + "             set the log level for the root logger object\n"
 + "             (default is specified in the properties file being used)\n\n"
 : "\n")
++ "The '-' for the xml-src parameter denotes the standard input\n"
 + "Parameters for the transformation (e.g. <stx:param name=\"par\"/>) must be"
-+ "\nspecified as par=value\n",
-printHelp ? 0 : 1);
-      }
++ "\nspecified as par=value\n");
+         }
 
-      if (DEBUG) {
-         // use specified log4j properties file
-         if (log4jProperties != null)
-            PropertyConfigurator.configure(log4jProperties);
+         if (wrongParameter) {
+            System.err.println("Specify -help to get a detailed help message");
+            System.exit(1);
+         }
 
-         // set log level specified on the the command line
-         if (log4jLevel != null)
-            log4j.getRootLogger().setLevel(log4jLevel);
-      }
+         if (DEBUG) {
+            // use specified log4j properties file
+            if (log4jProperties != null)
+               PropertyConfigurator.configure(log4jProperties);
 
-      try {
-         // Create a new STX Processor object
-         Processor processor = new Processor(new InputSource(stxFile));
-
-         // Set global parameters
-         int index;
-         for (int i=0; i<args.length; i++)
-            if (args[i].charAt(0) != '-' && 
-                (index = args[i].indexOf('=')) != -1) {
-               processor.setParameter(args[i].substring(0,index),
-                                      args[i].substring(index+1));
-            }
+            // set log level specified on the the command line
+            if (log4jLevel != null)
+               log4j.getRootLogger().setLevel(log4jLevel);
+         }
 
          // This processor re-uses its XMLReader for parsing the input xmlFile.
          // For a real XMLFilter usage you have to call 
@@ -295,7 +305,14 @@ printHelp ? 0 : 1);
          }
 
          // Ready for take-off
-         processor.parse(xmlFile);
+         if (xmlFile.equals("-")) {
+            InputSource is = new InputSource(System.in);
+            is.setSystemId("<stdin>");
+            is.setPublicId("");
+            processor.parse(is);
+         }
+         else
+            processor.parse(xmlFile);
 
 //           // check if the Processor copy constructor works
 //           Processor pr = new Processor(processor);
@@ -354,13 +371,12 @@ printHelp ? 0 : 1);
    /**
     * Output a message and exit when something failed during startup.
     * @param msg the message to be printed
-    * @param code exit code
     */
-   private static void usage(String msg, int code)
+   private static void usage(String msg)
    {
       System.err.print(
          "\nJoost alpha build @@@DATE@@@ by Oliver Becker\n" + 
          "(Joost is Oli's original streaming transformer)\n\n" + msg);
-      System.exit(code);
+      System.exit(0);
    }
 }
