@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.34 2003/02/02 15:06:21 obecker Exp $
+ * $Id: Processor.java,v 1.35 2003/02/18 17:13:29 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -63,7 +63,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.34 $ $Date: 2003/02/02 15:06:21 $
+ * @version $Revision: 1.35 $ $Date: 2003/02/18 17:13:29 $
  * @author Oliver Becker
  */
 
@@ -638,7 +638,7 @@ public class Processor extends XMLFilterImpl
 
       // first: lookup in the array of visible templates
       for (i=0; i<top.visibleTemplates.length; i++)
-         if (top.visibleTemplates[i].matches(context, eventStack) &&
+         if (top.visibleTemplates[i].matches(context, eventStack, true) &&
              (notSelf || foundUnprocessedTemplate(top.visibleTemplates[i]))) {
             category = top.visibleTemplates;
             break;
@@ -647,7 +647,7 @@ public class Processor extends XMLFilterImpl
       // second: if nothing was found, lookup in the array of global templates
       if (category == null)
          for (i=0; i<globalTemplates.length; i++)
-            if (globalTemplates[i].matches(context, eventStack) &&
+            if (globalTemplates[i].matches(context, eventStack, true) &&
                 (notSelf || foundUnprocessedTemplate(globalTemplates[i]))) {
                category = globalTemplates;
                break;
@@ -659,11 +659,9 @@ public class Processor extends XMLFilterImpl
          // look for more templates with the same priority in the same
          // category
          if (++i < category.length && priority == category[i].getPriority()) {
-            // need to store the computed position (from matches(...))
-            position = context.position;
             for (; i<category.length &&
                    priority == category[i].getPriority(); i++) {
-               if (category[i].matches(context, eventStack))
+               if (category[i].matches(context, eventStack, false))
                   context.errorHandler.error(
                      "Ambigous template rule with priority " + priority +
                      ", found matching template rule already in line " +
@@ -671,9 +669,6 @@ public class Processor extends XMLFilterImpl
                      category[i].publicId, category[i].systemId,
                      category[i].lineNo, category[i].colNo);
             }
-            // restore position
-            // (may have changed in one of the matches() tests)
-            context.position = position;
          }
       }
 
@@ -700,6 +695,7 @@ public class Processor extends XMLFilterImpl
          do {
             log4j.debug("status: " + procStatus);
             attributeLoop = false;
+            context.currentItem = null;
             procStatus = temp.process(emitter, eventStack, context,
                                       procStatus);
             if ((procStatus & ST_CHILDREN) != 0) {

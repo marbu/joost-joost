@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateFactory.java,v 1.13 2003/02/03 11:07:52 obecker Exp $
+ * $Id: TemplateFactory.java,v 1.14 2003/02/18 17:13:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.Context;
 /**
  * Factory for <code>template</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 1.13 $ $Date: 2003/02/03 11:07:52 $
+ * @version $Revision: 1.14 $ $Date: 2003/02/18 17:13:29 $
  * @author Oliver Becker
  */
 
@@ -183,17 +183,24 @@ public final class TemplateFactory extends FactoryBase
 
 
       /** 
+       * @param context the Context object
+       * @param eventStack the current event stack
+       * @param setPosition <code>true</code> if the context position 
+       *        ({@link Context#position}) should be set in case the 
+       *        event stack matches the pattern in {@link #match}.
        * @return true if the current event stack matches the pattern of
        *         this template
        * @exception SAXParseException if an error occured while evaluating
        * the match expression
        */
-      public boolean matches(Context context, Stack eventStack)
+      public boolean matches(Context context, Stack eventStack, 
+                             boolean setPosition)
          throws SAXException
       {
          context.currentInstruction = this;
          context.currentGroup = parentGroup;
-         return match.matches(context, eventStack, eventStack.size());
+         return match.matches(context, eventStack, eventStack.size(), 
+                              setPosition);
       }
       
 

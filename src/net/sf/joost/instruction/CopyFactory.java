@@ -1,5 +1,5 @@
 /*
- * $Id: CopyFactory.java,v 1.14 2003/02/02 15:11:26 obecker Exp $
+ * $Id: CopyFactory.java,v 1.15 2003/02/18 17:13:28 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>copy</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.14 $ $Date: 2003/02/02 15:11:26 $
+ * @version $Revision: 1.15 $ $Date: 2003/02/18 17:13:28 $
  * @author Oliver Becker
  */
 
@@ -143,7 +143,7 @@ final public class CopyFactory extends FactoryBase
                   // put attributes on the event stack for matching
                   eventStack.push(SAXEvent.newAttribute(event.attrs, i));
                   if (attPattern.matches(context, eventStack,
-                                         eventStack.size())) {
+                                         eventStack.size(), false)) {
                      SAXEvent attrEvent = (SAXEvent)eventStack.peek();
                      emitter.addAttribute(attrEvent.uri, attrEvent.qName,
                                           attrEvent.lName,

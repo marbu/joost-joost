@@ -1,5 +1,5 @@
 /*
- * $Id: PSiblingsFactory.java,v 1.4 2003/02/08 16:23:54 obecker Exp $
+ * $Id: PSiblingsFactory.java,v 1.5 2003/02/18 17:13:28 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.stx.SAXEvent;
 /** 
  * Factory for <code>process-siblings</code> elements, which are represented 
  * by the inner Instance class. 
- * @version $Revision: 1.4 $ $Date: 2003/02/08 16:23:54 $
+ * @version $Revision: 1.5 $ $Date: 2003/02/18 17:13:28 $
  * @author Oliver Becker
  */
 
@@ -175,13 +175,13 @@ public class PSiblingsFactory extends FactoryBase
       {
          context.currentInstruction = this;
          context.currentGroup = parentGroup;
-         // Note: matches() sets context.currentPosition
-         // but that is no problem here ...
          return 
             (whilePattern == null || 
-             whilePattern.matches(context, eventStack, eventStack.size())) &&
+             whilePattern.matches(context, eventStack, eventStack.size(),
+                                  false)) &&
             (untilPattern == null || 
-             !untilPattern.matches(context, eventStack, eventStack.size()));
+             !untilPattern.matches(context, eventStack, eventStack.size(),
+                                   false));
       }
    }
 }
