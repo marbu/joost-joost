@@ -1,10 +1,25 @@
 /*
- *	Datei: $RCSfile: MyContentHandler.java,v $
+ * $Id: MyContentHandler.java,v 1.4 2003/11/01 17:03:07 zubow Exp $
  *
- *	Example for a sax-contenthandler for TraX-Transformer
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
  *
- *	$Id: MyContentHandler.java,v 1.3 2002/11/11 21:33:38 zubow Exp $
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
+ * The Original Code is: this file
+ *
+ * The Initial Developer of the Original Code is Anatolij Zubow.
+ *
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
+ * All Rights Reserved.
+ *
+ * Contributor(s): ______________________________________.
  */
 
 package test.joost.trax.profiler;
@@ -19,7 +34,7 @@ import org.xml.sax.SAXException;
  * TestContentHandler for transformation over TraX with joost
  * acts as SAXResult
  *
- * @todo add cvs header
+ * @author Zubow
  */
 public class MyContentHandler implements ContentHandler {
 

@@ -1,11 +1,27 @@
 /*
- * Created by IntelliJ IDEA.
- * User: Gabriel
- * Date: 06.10.2002
- * Time: 10:00:35
- * To change template for new class use
- * Code Style | Class Templates options (Tools | IDE Options).
+ * $Id: ProfilerTestCases.java,v 1.5 2003/11/01 17:03:07 zubow Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is: this file
+ *
+ * The Initial Developer of the Original Code is Anatolij Zubow.
+ *
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
+ * All Rights Reserved.
+ *
+ * Contributor(s): ______________________________________.
  */
+
 package test.joost.trax.profiler;
 
 import junit.framework.TestCase;
@@ -31,6 +47,9 @@ import java.util.Properties;
 import net.sf.joost.stx.Processor;
 import net.sf.joost.emitter.StreamEmitter;
 
+/**
+ * @author Zubow
+ */
 public class ProfilerTestCases extends TestCase {
 
     // Logger instance named "ProfilerTestCases".
