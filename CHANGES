@@ -1,5 +1,7 @@
 Changes since 20030502
 - added 'separator' attribute to stx:value-of
+- added 'method', 'href', and 'use' attributes to stx:process-buffer;
+  enabled passing a buffer to a (JAXP conformant) XSLT engine
 
 Changes since 20030320
 - increased performance by switching to a new processing model
