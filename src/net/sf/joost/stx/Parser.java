@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 2.16 2004/12/17 18:25:42 obecker Exp $
+ * $Id: Parser.java,v 2.17 2004/12/27 18:49:43 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,14 +30,11 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.Vector;
 
-import javax.xml.transform.URIResolver;
-
 import net.sf.joost.Constants;
 import net.sf.joost.instruction.*;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -47,14 +44,14 @@ import org.xml.sax.helpers.NamespaceSupport;
 /** 
  * Creates the tree representation of an STX transformation sheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 2.16 $ $Date: 2004/12/17 18:25:42 $
+ * @version $Revision: 2.17 $ $Date: 2004/12/27 18:49:43 $
  * @author Oliver Becker
  */
 
 public class Parser implements Constants, ContentHandler // , ErrorHandler
 {
    /** The context object for parsing */
-   private ParseContext context;
+   private ParseContext pContext;
 
    /** Stack for opened elements, contains Node instances. */
    private Stack openedElements;
@@ -91,8 +88,11 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
    //
 
    /** Constructs a new Parser instance. */
-   public Parser(boolean allowExtFunc)
+   public Parser(ParseContext pContext)
    {
+      this.pContext = pContext;
+      this.parserListener = pContext.parserListener;
+      
       FactoryBase[] facs = {
          new TransformFactory(),
          new GroupFactory(),
@@ -144,9 +144,6 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
       openedElements = new Stack();
       inScopeNamespaces = new Hashtable();
       newNamespaces = new Hashtable();
-
-      context = new ParseContext();
-      context.allowExternalFunctions = allowExtFunc;
    }
 
 
@@ -159,41 +156,11 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
 
 
    /** 
-    * Registers a {@link ParserListener} for this parser 
-    * @param listener the listener to use
-    */
-   public void setParserListener(ParserListener listener)
-   {
-      parserListener = context.parserListener = listener;
-   }
-
-
-   /**
-    * Registers an {@link ErrorHandler} for this parser
-    * @param handler the handler to be used
-    */
-   public void setErrorHandler(ErrorHandler handler)
-   {
-      context.errorHandler = handler;
-   }
-
-
-   /**
-    * Registers a {@link URIResolver} for this parser
-    * @param resolver the resolver to use
-    */
-   public void setURIResolver(URIResolver resolver)
-   {
-      context.uriResolver = resolver;
-   }
-
-
-   /** 
     * @return the root node representing <code>stx:transform</code>. 
     */
    public TransformFactory.Instance getTransformNode()
    {
-      return context.transformNode;
+      return pContext.transformNode;
    }
 
 
@@ -209,11 +176,11 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
          if (currentNode instanceof GroupBase) {
             if (s.trim().length() != 0)
                throw new SAXParseException(
-                  "Text must not occur on group level", context.locator);
+                  "Text must not occur on group level", pContext.locator);
 
          }
          else {
-            NodeBase textNode = new TextNode(s, currentNode, context);
+            NodeBase textNode = new TextNode(s, currentNode, pContext);
             currentNode.insert(textNode);
             if (parserListener != null)
                parserListener.nodeCreated(textNode);
@@ -230,7 +197,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
 
    public void setDocumentLocator(Locator locator)
    {
-      context.locator = locator;
+      pContext.locator = locator;
    }
 
 
@@ -266,10 +233,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
             parserListener.parseFinished();
       }
       catch (SAXParseException ex) {
-         if (context.errorHandler != null)
-            context.errorHandler.error(ex);
-         else
-            throw ex;
+         pContext.getErrorHandler().error(ex);
       }
    }
 
@@ -283,24 +247,24 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
             processCharacters();
 
          NodeBase newNode;
-         context.nsSet = getInScopeNamespaces();
+         pContext.nsSet = getInScopeNamespaces();
          if (STX_NS.equals(uri)) {
             FactoryBase fac = (FactoryBase)stxFactories.get(lName);
             if (fac == null) 
                throw new SAXParseException("Unknown statement `" + qName + 
-                                           "'", context.locator);
+                                           "'", pContext.locator);
             newNode = fac.createNode(currentNode != null 
                                         ? currentNode : includingGroup, 
-                                     qName, attrs, context);
-            if (context.transformNode == null) 
+                                     qName, attrs, pContext);
+            if (pContext.transformNode == null) 
                try {
-                  context.transformNode = (TransformFactory.Instance)newNode;
+                  pContext.transformNode = (TransformFactory.Instance)newNode;
                }
                catch (ClassCastException cce) {
                   throw new SAXParseException(
                      "Found `" + qName + "' as root element, " + 
                      "file is not an STX transformation sheet",
-                     context.locator);
+                     pContext.locator);
                }
             // if this is an instruction that may create a new namespace,
             // use the full set of namespaces in the next literal element
@@ -311,7 +275,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
          }
          else {
             newNode = litFac.createNode(currentNode, uri, lName, qName, attrs,
-                                        context, newNamespaces);
+                                        pContext, newNamespaces);
             // reset these newly declared namespaces
             // newNode "consumes" the old value (without copy)
             newNamespaces = new Hashtable();
@@ -327,7 +291,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
                throw new SAXParseException(
                   "Value of attribute `" + attrs.getQName(spaceIndex) + 
                   "' must be either `preserve' or `default' (found `" +
-                  spaceAtt + "')", context.locator);
+                  spaceAtt + "')", pContext.locator);
             // "default" means false -> nothing to do
          }
          else if (newNode instanceof TextFactory.Instance ||
@@ -347,10 +311,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
             parserListener.nodeCreated(newNode);
       }
       catch (SAXParseException ex) {
-         if (context.errorHandler != null)
-            context.errorHandler.error(ex);
-         else
-            throw ex;
+         pContext.getErrorHandler().error(ex);
       }
    }
 
@@ -362,7 +323,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
          if (collectedCharacters.length() != 0)
             processCharacters();
 
-         currentNode.setEndLocation(context);
+         currentNode.setEndLocation(pContext);
 
          if (currentNode instanceof LitElementFactory.Instance)
             // restore the newly declared namespaces from this element
@@ -372,23 +333,20 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
 
          // Don't call compile for an included stx:transform, because
          // the including Parser will call it
-         if (!(currentNode == context.transformNode && 
+         if (!(currentNode == pContext.transformNode && 
                includingGroup != null))
             if ((currentNode).compile(0))
                // need another invocation
                compilableNodes.addElement(currentNode); 
          // add the compilable nodes from an included stx:transform
          if (currentNode instanceof TransformFactory.Instance && 
-             currentNode != context.transformNode)
+             currentNode != pContext.transformNode)
             compilableNodes.addAll(
                ((TransformFactory.Instance)currentNode).compilableNodes);
          currentNode = (NodeBase)openedElements.pop();
       }
       catch (SAXParseException ex) {
-         if (context.errorHandler != null)
-            context.errorHandler.error(ex);
-         else
-            throw ex;
+         pContext.getErrorHandler().error(ex);
       }
    }
 
@@ -413,10 +371,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
             processCharacters();
       }
       catch (SAXParseException ex) {
-         if (context.errorHandler != null)
-            context.errorHandler.error(ex);
-         else
-            throw ex;
+         pContext.getErrorHandler().error(ex);
       }
    }
 
