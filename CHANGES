@@ -1,4 +1,9 @@
 Changes since 20031219
+- added first incomplete versions for stx:analyze-text, stx:match, stx:no-match
+  (currently without regex functionality, this version performs just a simple
+  substring lookup)
+- added regex-group() 
+  (which gives at the moment useful results only for the argument 0 of course)
 - Bugfix: 869207
 
 Changes since 20030914
