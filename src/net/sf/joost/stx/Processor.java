@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.30 2003/01/18 10:34:03 obecker Exp $
+ * $Id: Processor.java,v 1.31 2003/01/21 10:21:37 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -61,7 +61,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.30 $ $Date: 2003/01/18 10:34:03 $
+ * @version $Revision: 1.31 $ $Date: 2003/01/21 10:21:37 $
  * @author Oliver Becker
  */
 
@@ -810,11 +810,15 @@ public class Processor extends XMLFilterImpl
       // determine if the look-ahead is a text node
       String s = collectedCharacters.toString();
       if (s.length() == 0 || 
-          (context.stripSpace && s.trim().length() == 0))
+          (context.stripSpace && s.trim().length() == 0)) {
          context.lookAhead = currentEvent;
-      else
+      }
+      else {
          context.lookAhead = insideCDATA ? SAXEvent.newCDATA(s) 
                                          : SAXEvent.newText(s);
+         // text look-ahead is the string value of elements
+         lastElement.value = s;
+      }
 
       // put last element on the event stack
       ((SAXEvent)eventStack.peek()).countElement(lastElement.uri, 
