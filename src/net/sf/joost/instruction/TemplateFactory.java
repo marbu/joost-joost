@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateFactory.java,v 2.3 2003/05/02 05:58:09 obecker Exp $
+ * $Id: TemplateFactory.java,v 2.4 2003/06/01 19:37:02 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.Context;
 /**
  * Factory for <code>template</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.3 $ $Date: 2003/05/02 05:58:09 $
+ * @version $Revision: 2.4 $ $Date: 2003/06/01 19:37:02 $
  * @author Oliver Becker
  */
 
@@ -104,10 +104,14 @@ public final class TemplateFactory extends FactoryBase
       if (visibility == -1)
          visibility =  TemplateBase.LOCAL_VISIBLE; // default value
 
-      // default is "no" (false)
-      boolean isPublic =
-         getEnumAttValue("public", attrs, YESNO_VALUES, locator) 
-         == YES_VALUE;
+      int publicAttVal =
+         getEnumAttValue("public", attrs, YESNO_VALUES, locator);
+      // default value depends on the parent:
+      // "yes" (true) for top-level templates,
+      // "no" (false) for others
+      boolean isPublic = parent instanceof TransformFactory.Instance 
+         ? (publicAttVal != NO_VALUE)   // default is true
+         : (publicAttVal == YES_VALUE); // default is false
 
       // default is "no" (false)
       boolean newScope = 
