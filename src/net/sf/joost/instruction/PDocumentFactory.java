@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 2.2 2003/04/30 15:08:16 obecker Exp $
+ * $Id: PDocumentFactory.java,v 2.3 2003/05/23 11:04:47 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.stx.Value;
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.2 $ $Date: 2003/04/30 15:08:16 $
+ * @version $Revision: 2.3 $ $Date: 2003/05/23 11:04:47 $
  * @author Oliver Becker
  */
 
@@ -89,13 +89,10 @@ public class PDocumentFactory extends FactoryBase
       String baseAtt = attrs.getValue("base");
 
       String groupAtt = attrs.getValue("group");
-      String groupName = null;
-      if (groupAtt != null)
-         groupName = getExpandedName(groupAtt, nsSet, locator);
 
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, href, baseAtt,
-                          groupAtt, groupName);
+      return new Instance(qName, parent, nsSet, locator, href, baseAtt,
+                          groupAtt);
    }
 
 
@@ -106,12 +103,13 @@ public class PDocumentFactory extends FactoryBase
       String baseUri;
 
       // Constructor
-      public Instance(String qName, NodeBase parent, Locator locator, 
+      public Instance(String qName, NodeBase parent, 
+                      Hashtable nsSet, Locator locator, 
                       Tree href, String baseUri, 
-                      String groupQName, String groupExpName)
+                      String groupQName)
          throws SAXParseException
       {
-         super(qName, parent, locator, groupQName, groupExpName);
+         super(qName, parent, nsSet, locator, groupQName, null, null);
          this.baseUri = baseUri;
          this.href = href;
       }

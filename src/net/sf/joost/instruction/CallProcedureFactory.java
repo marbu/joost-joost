@@ -1,5 +1,5 @@
 /*
- * $Id: CallProcedureFactory.java,v 2.4 2003/05/02 10:42:06 obecker Exp $
+ * $Id: CallProcedureFactory.java,v 2.5 2003/05/23 11:04:47 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.stx.Context;
 /**
  * Factory for <code>call-procedure</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.4 $ $Date: 2003/05/02 10:42:06 $
+ * @version $Revision: 2.5 $ $Date: 2003/05/23 11:04:47 $
  * @author Oliver Becker
  */
 
@@ -73,13 +73,10 @@ public class CallProcedureFactory extends FactoryBase
       String procName = getExpandedName(nameAtt, nsSet, locator);
 
       String groupAtt = attrs.getValue("group");
-      String groupName = (groupAtt != null)
-         ? groupName = getExpandedName(groupAtt, nsSet, locator)
-         : null;
 
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, nameAtt, procName,
-                          groupAtt, groupName);
+      return new Instance(qName, parent, nsSet, locator, nameAtt, procName,
+                          groupAtt);
    }
 
 
@@ -90,12 +87,14 @@ public class CallProcedureFactory extends FactoryBase
       ProcedureFactory.Instance procedure = null;
 
       // Constructor
-      public Instance(String qName, NodeBase parent, Locator locator, 
+      public Instance(String qName, NodeBase parent, 
+                      Hashtable nsSet, Locator locator, 
                       String procQName, String procExpName,
-                      String groupQName, String groupExpName)
+                      String groupQName)
          throws SAXParseException
       {
-         super(qName, parent, locator, groupQName, groupExpName);
+         super(qName, parent, nsSet, locator, groupQName, null, null);
+         // external filter not possible here (last two params = null)
          this.procQName = procQName;
          this.procExpName = procExpName;
       }

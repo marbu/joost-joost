@@ -1,5 +1,5 @@
 /*
- * $Id: PSiblingsFactory.java,v 2.1 2003/04/30 15:08:16 obecker Exp $
+ * $Id: PSiblingsFactory.java,v 2.2 2003/05/23 11:04:47 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.SAXEvent;
 /** 
  * Factory for <code>process-siblings</code> elements, which are represented 
  * by the inner Instance class. 
- * @version $Revision: 2.1 $ $Date: 2003/04/30 15:08:16 $
+ * @version $Revision: 2.2 $ $Date: 2003/05/23 11:04:47 $
  * @author Oliver Becker
  */
 
@@ -71,9 +71,6 @@ public class PSiblingsFactory extends FactoryBase
       throws SAXParseException
    {
       String groupAtt = attrs.getValue("group");
-      String groupName = groupAtt != null
-         ? groupName = getExpandedName(groupAtt, nsSet, locator)
-         : null;
 
       String whileAtt = attrs.getValue("while");
       Tree whilePattern = whileAtt != null
@@ -87,7 +84,7 @@ public class PSiblingsFactory extends FactoryBase
 
       checkAttributes(qName, attrs, attrNames, locator);
 
-      return new Instance(qName, parent, locator, groupAtt, groupName,
+      return new Instance(qName, parent, nsSet, locator, groupAtt,
                           whilePattern, untilPattern);
    }
 
@@ -98,12 +95,13 @@ public class PSiblingsFactory extends FactoryBase
       Tree whilePattern, untilPattern;
       GroupBase parentGroup;
 
-      public Instance(String qName, NodeBase parent, Locator locator,
-                      String groupQName, String groupExpName,
+      public Instance(String qName, NodeBase parent, 
+                      Hashtable nsSet, Locator locator,
+                      String groupQName, 
                       Tree whilePattern, Tree untilPattern)
          throws SAXParseException
       {
-         super(qName, parent, locator, groupQName, groupExpName);
+         super(qName, parent, nsSet, locator, groupQName, null, null);
          this.whilePattern = whilePattern;
          this.untilPattern = untilPattern;
 
