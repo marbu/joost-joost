@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 1.6 2003/02/02 15:16:29 obecker Exp $
+ * $Id: PDocumentFactory.java,v 1.7 2003/02/08 16:21:00 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,7 +46,7 @@ import net.sf.joost.stx.Value;
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.6 $ $Date: 2003/02/02 15:16:29 $
+ * @version $Revision: 1.7 $ $Date: 2003/02/08 16:21:00 $
  * @author Oliver Becker
  */
 
@@ -108,6 +108,7 @@ public class PDocumentFactory extends FactoryBase
       public Instance(String qName, NodeBase parent, Locator locator, 
                       Tree href, String baseUri, 
                       String groupQName, String groupExpName)
+         throws SAXParseException
       {
          super(qName, parent, locator, groupQName, groupExpName);
          this.baseUri = baseUri;
