@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.57 2003/09/10 09:33:43 obecker Exp $ -->
+<!-- $Id: index.html,v 1.58 2003/09/10 14:13:14 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -182,14 +182,13 @@
       <p>
       <strong>Supported STXPath functions</strong>
       <ul>
-      <li>string(obj?)</li>
-      <li>number(obj?)</li>
-      <li>boolean(obj)</li>
+      <li>string(object?)</li>
+      <li>number(object?)</li>
+      <li>boolean(object)</li>
       <li>position()</li>
       <li>name(node?)</li>
       <li>local-name(node?)</li>
       <li>namespace-uri(node?)</li>
-      <li>prefix(node?)</li>
       <li>get-namespace-uri-for-prefix(node, string)</li>
       <li>get-in-scope-namespaces(node)</li>
       <li>node-kind(node)</li>
@@ -200,18 +199,25 @@
       <li>ceiling(number)</li>
       <li>round(number)</li>
       <li>concat(string, string+)</li>
+      <li>string-join(sequence, string)</li>
       <li>string-length(string?)</li>
       <li>normalize-space(string?)</li>
       <li>contains(string, string)</li>
       <li>starts-with(string, string)</li>
+      <li>ends-with(string, string)</li>
       <li>substring(string, string, string?)</li>
       <li>substring-before(string, string)</li>
       <li>substring-after(string, string)</li>
       <li>translate(string, string, string)</li>
+      <li>string-pad(string, number)</li>
       <li>has-child-nodes()</li>
       <li>empty(sequence)</li>
+      <li>exists(sequence)</li>
       <li>item-at(sequence, number)</li>
+      <li>index-of(sequence, object)</li>
       <li>subsequence(sequence, number, number?)</li>
+      <li>insert-before(sequence, number, sequence)</li>
+      <li>remove(sequence, number)</li>
       <li>count(sequence)</li>
       <li>sum(sequence)</li>
       <li>min(sequence)</li>

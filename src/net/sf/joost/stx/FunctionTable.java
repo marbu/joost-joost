@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.14 2003/09/02 17:03:28 obecker Exp $
+ * $Id: FunctionTable.java,v 2.15 2003/09/10 14:13:14 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,7 +46,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.14 $ $Date: 2003/09/02 17:03:28 $
+ * @version $Revision: 2.15 $ $Date: 2003/09/10 14:13:14 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -74,7 +74,6 @@ final public class FunctionTable implements Constants
          new Name(),
          new LocalName(),
          new NamespaceURI(),
-         new Prefix(),
          new GetNamespaceUriForPrefix(),
          new GetInScopeNamespaces(),
          new Not(),
@@ -84,17 +83,24 @@ final public class FunctionTable implements Constants
          new Ceiling(),
          new Round(),
          new Concat(),
+         new StringJoin(),
          new StringLength(),
          new NormalizeSpace(),
          new Contains(),
          new StartsWith(),
+         new EndsWith(),
          new Substring(),
          new SubstringBefore(),
          new SubstringAfter(),
          new Translate(),
+         new StringPad(),
          new Empty(),
+         new Exists(),
          new ItemAt(),
+         new IndexOf(),
          new Subsequence(),
+         new InsertBefore(),
+         new Remove(),
          new Count(),
          new Sum(),
          new Min(),
@@ -355,8 +361,9 @@ final public class FunctionTable implements Constants
          if (v.type == Value.EMPTY)
             return v;
          if (v.type != Value.NODE) 
-            throw new EvalException("The parameter passed to the node-" + 
-                                    "kind function must be a node (got " + 
+            throw new EvalException("The parameter passed to the `" +
+                                    getName().substring(FNSP.length()) + 
+                                    "' function must be a node (got " + 
                                     v + ")");
 
          switch (v.event.type) {
@@ -396,8 +403,9 @@ final public class FunctionTable implements Constants
          if (v.type == Value.EMPTY)
             return v;
          if (v.type != Value.NODE) 
-            throw new EvalException("The parameter passed to the name " + 
-                                    "function must be a node (got " + 
+            throw new EvalException("The parameter passed to the `" + 
+                                    getName().substring(FNSP.length()) + 
+                                    "' function must be a node (got " + 
                                     v + ")");
 
          switch (v.event.type) {
@@ -435,8 +443,9 @@ final public class FunctionTable implements Constants
          if (v.type == Value.EMPTY)
             return v;
          if (v.type != Value.NODE) 
-            throw new EvalException("The parameter passed to the local-" + 
-                                    "name function must be a node (got " + 
+            throw new EvalException("The parameter passed to the `" + 
+                                    getName().substring(FNSP.length()) + 
+                                    "' function must be a node (got " + 
                                     v + ")");
 
          switch (v.event.type) {
@@ -475,54 +484,16 @@ final public class FunctionTable implements Constants
          if (v.type == Value.EMPTY)
             return v;
          if (v.type != Value.NODE) 
-            throw new EvalException("The parameter passed to the " + 
-                                    "namespace-uri function must be a " + 
-                                    "node (got " + v + ")");
+            throw new EvalException("The parameter passed to the `" + 
+                                    getName().substring(FNSP.length()) + 
+                                    "' function must be a node (got " + 
+                                    v + ")");
 
          if (v.event.type == SAXEvent.ELEMENT || 
              v.event.type == SAXEvent.ATTRIBUTE)
             return v.setString(v.event.uri);
          else
             return v.setString("");
-      }
-   }
-
-
-   /**
-    * The <code>prefix</code> function.
-    * Returns the prefix of the qualified name of this node.
-    */
-   final public class Prefix implements Instance
-   {
-      /** @return 0 */
-      public int getMinParCount() { return 0; }
-      /** @return 1 */
-      public int getMaxParCount() { return 1; }
-      /** @return "prefix" */
-      public String getName() { return FNSP + "prefix"; }
-
-      public Value evaluate(Context context, int top, Tree args)
-         throws SAXException, EvalException
-      {
-         Value v = getOptionalValue(context, top, args);
-         if (v.type == Value.EMPTY)
-            return v;
-         if (v.type != Value.NODE) 
-            throw new EvalException("The parameter passed to the prefix " + 
-                                    "function must be a node (got " + v + 
-                                    ")");
-
-         switch (v.event.type) {
-         case SAXEvent.ELEMENT:
-         case SAXEvent.ATTRIBUTE: {
-            int colon = v.event.qName.indexOf(':');
-            return v.setString(colon == -1 
-                               ? "" 
-                               : v.event.qName.substring(0, colon));
-         }
-         default:
-            return v.setString("");
-         }
       }
    }
 
@@ -548,9 +519,9 @@ final public class FunctionTable implements Constants
       {
          Value v = args.left.evaluate(context, top);
          if (v.type != Value.NODE) 
-            throw new EvalException("The parameter passed to the " +
-                                    "get-namespace-uri-for-prefix " +
-                                    "function must be a node (got " + 
+            throw new EvalException("The parameter passed to the `" +
+                                    getName().substring(FNSP.length()) + 
+                                    "' function must be a node (got " + 
                                     v + ")");
          SAXEvent e = v.event;
 
@@ -590,9 +561,10 @@ final public class FunctionTable implements Constants
       {
          Value v = args.evaluate(context, top);
          if (v.type != Value.NODE) 
-            throw new EvalException("The parameter passed to the " +
-                                    "get-in-scope-namespaces function " +
-                                    "must be a node (got " + v + ")");
+            throw new EvalException("The parameter passed to the `" +
+                                    getName().substring(FNSP.length()) + 
+                                    "' function must be a node (got " + 
+                                    v + ")");
          SAXEvent e = v.event;
 
          if (e.namespaces == null)
@@ -835,6 +807,44 @@ final public class FunctionTable implements Constants
 
 
    /**
+    * The <code>string-join</code> function.
+    * Returns a string that is the concatenation of all strings in the first
+    * sequence parameter, separated by the string in the second parameter.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-string-join">
+    * fn:string-join in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
+    */
+   final public class StringJoin implements Instance 
+   {
+      /** @return 2 **/
+      public int getMinParCount() { return 2; }
+      /** @return 2 **/
+      public int getMaxParCount() { return 2; }
+      /** @return "string-join" */
+      public String getName() { return FNSP + "string-join"; }
+      
+      public Value evaluate(Context context, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value seq = args.left.evaluate(context, top);
+         String sep = args.right.evaluate(context, top)
+                                .convertToString().string;
+         if (seq.type == Value.EMPTY)
+            return seq.setString("");
+         StringBuffer buf = new StringBuffer();
+         while (seq != null) {
+            Value next = seq.next;
+            buf.append(seq.convertToString().string);
+            if (next != null)
+               buf.append(sep);
+            seq = next;
+         }
+         return new Value(buf.toString());
+      }
+   }
+
+
+   /**
     * The <code>string-length</code> function.
     * Returns the length of its string parameter.
     * @see <a target="xq1xp2fo"
@@ -959,6 +969,35 @@ final public class FunctionTable implements Constants
          String s2 = args.right.evaluate(context, top)
                                .convertToString().string;
          return new Value(s1.startsWith(s2));
+      }
+   }
+
+
+   /**
+    * The <code>ends-with</code> function.
+    * Returns <code>true</code> if the string in the first parameter
+    * ends with the substring provided as second parameter.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-ends-with">
+    * fn:ends-with in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
+    */
+   final public class EndsWith implements Instance 
+   {
+      /** @return 2 **/
+      public int getMinParCount() { return 2; }
+      /** @return 2 **/
+      public int getMaxParCount() { return 2; }
+      /** @return "ends-with" */
+      public String getName() { return FNSP + "ends-with"; }
+      
+      public Value evaluate(Context context, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         String s1 = args.left.evaluate(context, top)
+                              .convertToString().string;
+         String s2 = args.right.evaluate(context, top)
+                               .convertToString().string;
+         return new Value(s1.endsWith(s2));
       }
    }
 
@@ -1148,6 +1187,45 @@ final public class FunctionTable implements Constants
    }
 
 
+   /**
+    * The <code>string-pad</code> function.
+    * Returns a string composed of as many copies of its first argument as 
+    * specified in its second argument.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-string-pad">
+    * fn:string-pad in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
+    */
+   final public class StringPad implements Instance 
+   {
+      /** @return 2 **/
+      public int getMinParCount() { return 2; }
+      /** @return 2 **/
+      public int getMaxParCount() { return 2; }
+      /** @return "string-pad" */
+      public String getName() { return FNSP + "string-pad"; }
+      
+      public Value evaluate(Context context, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         String str = args.left.evaluate(context, top)
+                               .convertToString().string;
+         Value arg2 = args.right.evaluate(context, top);
+
+         double dcount = arg2.convertToNumber().number;
+         long count = Math.round(dcount);
+         if (Double.isNaN(dcount) || count < 0)
+            throw new EvalException("Invalid string-pad count " + 
+                                    arg2.convertToString().string);
+
+         StringBuffer buffer = new StringBuffer();
+         while (count-- > 0)
+            buffer.append(str);
+
+         return arg2.setString(buffer.toString()); // reuse Value object
+      }
+   }
+
+
 
    // ***********************************************************************
 
@@ -1182,6 +1260,32 @@ final public class FunctionTable implements Constants
 
 
    /**
+    * The <code>exists</code> function.
+    * Returns <code>false</code> if the argument is the empty sequence
+    * and <code>true</code> otherwise.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-exists">
+    * fn:exists in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
+    */
+   final public class Exists implements Instance
+   {
+      /** @return 1 */
+      public int getMinParCount() { return 1; }
+      /** @return 1 */
+      public int getMaxParCount() { return 1; }
+      /** @return "exists" */
+      public String getName() { return FNSP + "exists"; }
+
+      public Value evaluate(Context context, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value v = args.evaluate(context, top);
+         return v.setBoolean(v.type != Value.EMPTY);
+      }
+   }
+
+
+   /**
     * The <code>item-at</code> function.
     * Returns the item in the sequence (first parameter) at the specified
     * position (second parameter).
@@ -1202,24 +1306,78 @@ final public class FunctionTable implements Constants
          throws SAXException, EvalException
       {
          Value seq = args.left.evaluate(context, top);
-         double pos = args.right.evaluate(context, top)
-                                .convertToNumber().number;
+         double dpos = args.right.evaluate(context, top)
+                                 .convertToNumber().number;
 
-         if (seq.type == Value.EMPTY || Double.isNaN(pos))
+         if (seq.type == Value.EMPTY || Double.isNaN(dpos))
             return seq.setEmpty(); // reuse the Value object
 
-         int ipos = (int)Math.round(pos);
-         while (seq != null && --ipos != 0)
+         long position = Math.round(dpos);
+         while (seq != null && --position != 0)
             seq = seq.next;
 
          if (seq == null)
-            throw new EvalException("Position " + pos + 
+            throw new EvalException("Position " + dpos + 
                                     " out of bounds in call to function `" + 
-                                    getName().substring(2) + "'");
+                                    getName().substring(FNSP.length()) + "'");
          else {
             seq.next = null;
             return seq;
          }
+      }
+   }
+
+
+   /**
+    * The <code>index-of</code> function.
+    * Returns a sequence of integer numbers, each of which is the index of 
+    * a member of the specified sequence that is equal to the item that is 
+    * the value of the second argument.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-index-of">
+    * fn:index-of in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
+    */
+   final public class IndexOf implements Instance
+   {
+      /** @return 2 */
+      public int getMinParCount() { return 2; }
+      /** @return 2 */
+      public int getMaxParCount() { return 2; }
+      /** @return "index-of" */
+      public String getName() { return FNSP + "index-of"; }
+
+      public Value evaluate(Context context, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value seq = args.left.evaluate(context, top);
+         Value item = args.right.evaluate(context, top);
+
+         if (seq.type == Value.EMPTY)
+            return seq; // reuse the Value object
+
+         Tree tSeq = new Tree(seq);
+         item.next = null;
+         Tree tItem = new Tree(item);
+         // use the implemented = semantics
+         Tree equals = new Tree(Tree.EQ, tSeq, tItem);
+
+         Value next, last = null, result = new Value();
+         long index = 1;
+
+         while (seq != null) {
+            next = seq.next;
+            seq.next = null; // compare items, not sequences
+            if (equals.evaluate(context, top).bool) {
+               if (last == null)
+                  last = result = new Value(index);
+               else
+                  last = last.next = new Value(index);
+            }
+            tSeq.value = seq = next;
+            index++;
+         }
+
+         return result;
       }
    }
 
@@ -1306,6 +1464,126 @@ final public class FunctionTable implements Constants
          }
          else
             return seq.setEmpty(); // reuse the Value object
+      }
+   }
+
+
+   /**
+    * The <code>insert-before</code> function.
+    * Inserts an item or sequence of items into a specified position of a 
+    * sequence.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-insert-before">
+    * fn:insert-before in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
+    */
+   final public class InsertBefore implements Instance
+   {
+      /** @return 3 */
+      public int getMinParCount() { return 3; }
+      /** @return 3 */
+      public int getMaxParCount() { return 3; }
+      /** @return "insert-before" */
+      public String getName() { return FNSP + "insert-before"; }
+
+      public Value evaluate(Context context, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value target = args.left.left.evaluate(context, top);
+         Value arg2 = args.left.right.evaluate(context, top);
+         Value inserts = args.right.evaluate(context, top);
+
+         // make sure that the second parameter is a valid number
+         Value arg2copy = arg2.copy(); // original value for an error message
+         double dPos = arg2.convertToNumber().number;
+         if (Double.isNaN(dPos))
+            throw new EvalException("Parameter `" + 
+                                    arg2copy.convertToString().string + 
+                                    "' is not a valid index for function `" + 
+                                    getName().substring(FNSP.length()) + "'");
+         long position = Math.round(dPos);
+
+         if (inserts.type == Value.EMPTY)
+            return target;
+         if (target.type == Value.EMPTY)
+            return inserts;
+
+         Value result;
+         if (position <= 1)
+            // insert before the first item of target
+            result = inserts;
+         else {
+            result = target;
+            // determine position
+            while (target.next != null && --position > 1)
+               target = target.next;
+            Value rest = target.next;
+            target.next = inserts;
+            target = rest;
+         }
+         // append rest of target 
+         while (inserts.next != null)
+            inserts = inserts.next;
+         inserts.next = target;
+
+         return result;
+      }
+   }
+
+
+   /**
+    * The <code>remove</code> function.
+    * Removes the item in the sequence (first parameter) at the specified
+    * position (second parameter).
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-remove">
+    * fn:remove in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
+    */
+   final public class Remove implements Instance
+   {
+      /** @return 2 */
+      public int getMinParCount() { return 2; }
+      /** @return 2 */
+      public int getMaxParCount() { return 2; }
+      /** @return "remove" */
+      public String getName() { return FNSP + "remove"; }
+
+      public Value evaluate(Context context, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value seq = args.left.evaluate(context, top);
+         Value arg2 = args.right.evaluate(context, top);
+
+         // make sure that the second parameter is a valid number
+         Value arg2copy = arg2.copy(); // original value for an error message
+         double dPos = arg2.convertToNumber().number;
+         if (Double.isNaN(dPos))
+            throw new EvalException("Parameter `" + 
+                                    arg2copy.convertToString().string + 
+                                    "' is not a valid index for function `" + 
+                                    getName().substring(FNSP.length()) + "'");
+         long position = Math.round(dPos);
+
+         if (seq.type == Value.EMPTY || position < 1)
+            return seq;
+
+         Value last = null, result = seq;
+         while (seq != null && --position != 0) {
+            last = seq;
+            seq = seq.next;
+         }
+
+         if (seq == null) // position greater than sequence length
+            return result;
+
+         if (last == null) { // remove the first item
+            if (result.next == null) // the one and only item
+               return result.setEmpty();
+            else
+               return result.next;
+         }
+
+         last.next = seq.next;
+         return result;
       }
    }
 
