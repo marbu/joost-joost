@@ -2,3 +2,5 @@ Changes since 20020828
 
 - added stx:process-attributes, 
   implemented attribute patterns (<stx:template match="foo/@bar"> etc.)
+- changed STX namespace to "http://stx.sourceforge.net/2002/ns"
+- made up the TrAX implementation
