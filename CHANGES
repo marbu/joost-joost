@@ -1,12 +1,17 @@
 Changes since 20030224
-- added 'encoding' attribute to stx:result-document,
-  missing directories will be created automatically now
+- added 'encoding' attribute to stx:result-document;
+  missing directories will now be created automatically
 - added stx:while
 - change for buffers: allow stx:process-buffer inside of stx:result-buffer
   for the same buffer; its new contents is available not before the buffer
   has been completely filled (stx:result-buffer has finished)
 - change for stx:process-self: if no group is specified then the base
   group for matching is the current group, not the previous group
+- removed current(), added current-item() for accessing the current item
+  inside of stx:for-each; a location path accesses *always* the ancestor stack
+- added node-kind()
+- made level() and get-node() deprecated
+- removed deprecated location path components
 - Bugfixes: 697408, 699541, 702885, 703059, 705697
 
 Changes since 20030203
