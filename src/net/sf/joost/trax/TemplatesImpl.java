@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.5 2003/04/29 15:09:10 obecker Exp $
+ * $Id: TemplatesImpl.java,v 1.6 2003/05/19 14:45:33 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -72,10 +72,11 @@ public class TemplatesImpl implements Templates, TrAXConstants {
      *
      * @param stxParser A parsed stylesheet in form of <code>Parser</code>
      */
-    protected TemplatesImpl(Parser stxParser)
+    protected TemplatesImpl(Parser stxParser, TransformerFactoryImpl factory)
         throws TransformerConfigurationException {
 
         log.debug("calling constructor with existing Parser");
+        this.factory = factory;
         try {
             //configure the template
             init(stxParser);
@@ -133,6 +134,8 @@ public class TemplatesImpl implements Templates, TrAXConstants {
         try {
             //new Processor
             processor = new Processor(stxParser);
+            if (factory.thResolver != null)
+                processor.setTransformerHandlerResolver(factory.thResolver);
         } catch (org.xml.sax.SAXException sE) {
             log.fatal(sE);
             throw new TransformerConfigurationException(sE.getMessage());
@@ -160,6 +163,8 @@ public class TemplatesImpl implements Templates, TrAXConstants {
              * if available.
              */
             processor = new Processor(isource, factory.getErrorListener());
+            if (factory.thResolver != null)
+                processor.setTransformerHandlerResolver(factory.thResolver);
         } catch (java.io.IOException iE) {
             log.debug(iE);
             throw new TransformerConfigurationException(iE.getMessage(), iE);
