@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 1.3 2003/02/20 09:25:30 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 1.4 2003/03/09 18:56:14 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,6 +29,10 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Stack;
@@ -43,7 +47,7 @@ import net.sf.joost.stx.Emitter;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.3 $ $Date: 2003/02/20 09:25:30 $
+ * @version $Revision: 1.4 $ $Date: 2003/03/09 18:56:14 $
  * @author Oliver Becker
  */
 
@@ -57,6 +61,7 @@ final public class ResultDocumentFactory extends FactoryBase
    {
       attrNames = new HashSet();
       attrNames.add("href");
+      attrNames.add("encoding");
    }
 
 
@@ -74,8 +79,10 @@ final public class ResultDocumentFactory extends FactoryBase
       String hrefAtt = getAttribute(qName, attrs, "href", locator);
       Tree href = parseExpr(hrefAtt, nsSet, locator);
 
+      String encodingAtt = attrs.getValue("encoding");
+
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, href);
+      return new Instance(qName, parent, locator, href, encodingAtt);
    }
 
 
@@ -83,12 +90,14 @@ final public class ResultDocumentFactory extends FactoryBase
    final public class Instance extends NodeBase
    {
       private Tree href;
+      private String encoding;
 
       protected Instance(String qName, NodeBase parent, Locator locator, 
-                         Tree href)
+                         Tree href, String encoding)
       {
          super(qName, parent, locator, false);
          this.href = href;
+         this.encoding = encoding;
       }
       
       /**
@@ -106,15 +115,35 @@ final public class ResultDocumentFactory extends FactoryBase
       {
          if ((processStatus & ST_PROCESSING) != 0) {
 
+            if (encoding == null) // no encoding attribute specified
+               // use global encoding att
+               encoding = context.currentProcessor.getOutputEncoding();
+
             String filename = 
                href.evaluate(context, eventStack, this).string;
-
+            
             // Note: currently we don't check if a file is already open.
             // Opening a file twice may lead to unexpected results.
             StreamEmitter se = null;
             try {
-               se = new StreamEmitter(
-                  filename, context.currentProcessor.getOutputEncoding());
+               FileOutputStream fos;
+               try {
+                  fos = new FileOutputStream(filename);
+               }
+               catch (java.io.FileNotFoundException fnfe) {
+                  int sepPos;
+                  if ((sepPos = filename.lastIndexOf('/')) == -1)
+                     throw fnfe;
+                  // else: filename contains directory parts,
+                  // possibly this directoty doesn't exist yet
+                  File dir = new File(filename.substring(0, sepPos));
+                  // create it
+                  dir.mkdirs();
+                  // try again
+                  fos = new FileOutputStream(filename);
+               }
+               se = new StreamEmitter(new OutputStreamWriter(fos), 
+                                      encoding);
             }
             catch (java.io.IOException ex) {
                context.errorHandler.error(ex.toString(), 
