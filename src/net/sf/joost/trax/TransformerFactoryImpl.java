@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.7 2003/06/02 11:34:13 zubow Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.8 2003/06/12 11:33:27 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -129,6 +129,8 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
 
         if (name.equals(KEY_TH_RESOLVER)) {
             return thResolver;
+        } else if (name.equals(KEY_XSLT_FACTORY)) {
+            return System.getProperty(name);
         } else if (name.equals(DEBUG_FEATURE)) {
             return new Boolean(debugmode);
         } else
@@ -148,6 +150,8 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
 
         if (name.equals(KEY_TH_RESOLVER)) {
             thResolver = (TransformerHandlerResolver)value;
+        } else if (name.equals(KEY_XSLT_FACTORY)) {
+            System.setProperty(name, (String)value);
         } else if (name.equals(DEBUG_FEATURE)) {
             this.debugmode = ((Boolean)value).booleanValue();
         } else {
