@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEvent.java,v 1.7 2003/01/18 10:34:03 obecker Exp $
+ * $Id: SAXEvent.java,v 1.8 2003/01/21 10:20:58 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -34,7 +34,7 @@ import java.util.Hashtable;
 
 /** 
  * SAXEvent stores all information attached to an incoming SAX event 
- * @version $Revision: 1.7 $ $Date: 2003/01/18 10:34:03 $
+ * @version $Revision: 1.8 $ $Date: 2003/01/21 10:20:58 $
  * @author Oliver Becker
  */
 final public class SAXEvent
@@ -57,7 +57,9 @@ final public class SAXEvent
    public String qName; // PI->target, MAPPING->prefix
    public Attributes attrs;
    public Hashtable namespaces;
-   public String value; // PI->data, MAPPING->uri, TEXT, ATTRIBUTES as usual
+   public String value = ""; 
+      // PI->data, MAPPING->uri, TEXT, ATTRIBUTES as usual
+      // ELEMENT->text look-ahead
 
    private Hashtable posHash;
 
