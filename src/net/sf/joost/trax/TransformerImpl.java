@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.23 2004/10/25 20:36:50 obecker Exp $
+ * $Id: TransformerImpl.java,v 1.24 2004/11/07 12:18:43 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -105,7 +105,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
     /**
     * The trace manager.
     */
-    private TraceManager traceManager = new TraceManager(this);
+    private TraceManager traceManager = new TraceManager();
 
     /**
      * Constructor

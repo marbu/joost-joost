@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.24 2004/10/30 15:22:08 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.25 2004/11/07 12:18:43 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -47,7 +47,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Base class for emitter classes that produce a character stream.
- * @version $Revision: 1.24 $ $Date: 2004/10/30 15:22:08 $
+ * @version $Revision: 1.25 $ $Date: 2004/11/07 12:18:43 $
  * @author Oliver Becker
  */
 public abstract class StreamEmitter
@@ -73,7 +73,7 @@ public abstract class StreamEmitter
    // Base constructor
    //
 
-   protected StreamEmitter(Writer writer, String encoding)
+   public StreamEmitter(Writer writer, String encoding)
    {
       this.writer = writer;
       this.encoding = encoding;

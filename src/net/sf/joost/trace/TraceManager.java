@@ -1,5 +1,5 @@
 /*
- * $Id: TraceManager.java,v 1.6 2004/09/19 13:36:42 obecker Exp $
+ * $Id: TraceManager.java,v 1.7 2004/11/07 12:18:43 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -34,13 +34,10 @@ import net.sf.joost.trax.TransformerImpl;
 /**
  * This class manages a collection of {@link TraceListener}, and acts as an
  * interface for the tracing functionality in Joost.
- * @version $Revision: 1.6 $ $Date: 2004/09/19 13:36:42 $
+ * @version $Revision: 1.7 $ $Date: 2004/11/07 12:18:43 $
  * @author Zubow
  */
 public class TraceManager {
-
-    /** Reference to a transformer instance */
-    private TransformerImpl transformer;
 
     /**
      * Collection of registered listeners (must be synchronized).
@@ -49,12 +46,8 @@ public class TraceManager {
 
     /**
      * Default constructor for the tracemanager.
-     *
-     * @param transformer a instance of a <code>TransformerImpl</code>
      */
-    public TraceManager(TransformerImpl transformer) {
-        this.transformer = transformer;
-    }
+    public TraceManager() {}
 
     /**
      * Check if tracelisteners are available.
@@ -68,11 +61,8 @@ public class TraceManager {
     /**
      * Add a tracelistener (debugging and profiling).
      * @param newTraceListener A tracelistener to be added.
-     *
-     * @throws TooManyListenersException if there are to many registered listeners
      */
-    public void addTraceListener(TraceListener newTraceListener)
-            throws TooManyListenersException {
+    public void addTraceListener(TraceListener newTraceListener) {
         // set Joost-Transformer in debug-mode
         TransformerImpl.DEBUG_MODE = true;
         if (traceListeners == null) {
