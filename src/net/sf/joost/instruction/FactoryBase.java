@@ -1,5 +1,5 @@
 /*
- * $Id: FactoryBase.java,v 2.0 2003/04/25 16:46:32 obecker Exp $
+ * $Id: FactoryBase.java,v 2.1 2003/04/30 15:08:15 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.grammar.PatternParser;
  * Abstract base class for all factory classes which produce nodes
  * ({@link NodeBase}) for the tree representation of an STX transformation
  * sheet.
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:32 $
+ * @version $Revision: 2.1 $ $Date: 2003/04/30 15:08:15 $
  * @author Oliver Becker
  */
 
@@ -212,12 +212,17 @@ public abstract class FactoryBase implements Constants
     * @exception SAXParseException if a parse error occured
     */
    protected static Tree parsePattern(String string, Hashtable nsSet, 
-                                      Locator locator)
+                                      NodeBase parent, Locator locator)
       throws SAXParseException
    {
+      while (!(parent instanceof TransformFactory.Instance))
+         parent = parent.parent;
+
       StringReader sr = new StringReader(string);
       Yylex lexer = new Yylex(sr);
-      PatternParser parser = new PatternParser(lexer, nsSet, locator);
+      PatternParser parser = 
+         new PatternParser(lexer, nsSet, (TransformFactory.Instance)parent, 
+                           locator);
       Tree pattern;
       try {
          pattern = (Tree)parser.parse().value;
@@ -255,12 +260,17 @@ public abstract class FactoryBase implements Constants
     * @exception SAXParseException if a parse error occured
     */
    protected static Tree parseExpr(String string, Hashtable nsSet, 
-                                   Locator locator)
+                                   NodeBase parent, Locator locator)
       throws SAXParseException
    {
+      while (!(parent instanceof TransformFactory.Instance))
+         parent = parent.parent;
+
       StringReader sr = new StringReader(string);
       Yylex lexer = new Yylex(sr);
-      ExprParser parser = new ExprParser(lexer, nsSet, locator);
+      ExprParser parser = 
+         new ExprParser(lexer, nsSet, (TransformFactory.Instance)parent, 
+                        locator);
       Tree expr;
       try {
          expr = (Tree)parser.parse().value;
@@ -308,9 +318,12 @@ public abstract class FactoryBase implements Constants
     * @exception SAXParseException if a parse error occured
     */
    protected static Tree parseAVT(String string, Hashtable nsSet, 
-                                  Locator locator)
+                                  NodeBase parent, Locator locator)
       throws SAXParseException
    {
+      while (!(parent instanceof TransformFactory.Instance))
+         parent = parent.parent;
+
       int length = string.length();
       StringBuffer buf = new StringBuffer();
       Tree tree = null;
@@ -364,7 +377,8 @@ public abstract class FactoryBase implements Constants
             switch (c) {
             case '}':
                tree = new Tree(Tree.AVT, tree, 
-                               parseExpr(buf.toString(), nsSet, locator));
+                               parseExpr(buf.toString(), nsSet, parent, 
+                                         locator));
                buf.setLength(0);
                state = ATT_STATE;
                continue;

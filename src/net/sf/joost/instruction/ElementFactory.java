@@ -1,5 +1,5 @@
 /*
- * $Id: ElementFactory.java,v 2.0 2003/04/25 16:46:32 obecker Exp $
+ * $Id: ElementFactory.java,v 2.1 2003/04/30 15:08:15 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>element</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:32 $
+ * @version $Revision: 2.1 $ $Date: 2003/04/30 15:08:15 $
  * @author Oliver Becker
  */
 
@@ -70,12 +70,12 @@ final public class ElementFactory extends FactoryBase
       throws SAXParseException
    {
       String nameAtt = getAttribute(qName, attrs, "name", locator);
-      Tree nameAVT = parseAVT(nameAtt, nsSet, locator);
+      Tree nameAVT = parseAVT(nameAtt, nsSet, parent, locator);
 
       String namespaceAtt = attrs.getValue("namespace");
       Tree namespaceAVT;
       if (namespaceAtt != null)
-         namespaceAVT = parseAVT(namespaceAtt, nsSet, locator);
+         namespaceAVT = parseAVT(namespaceAtt, nsSet, parent, locator);
       else
          namespaceAVT = null;
 

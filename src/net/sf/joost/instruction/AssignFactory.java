@@ -1,5 +1,5 @@
 /*
- * $Id: AssignFactory.java,v 2.0 2003/04/25 16:46:29 obecker Exp $
+ * $Id: AssignFactory.java,v 2.1 2003/04/30 15:08:14 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>assign</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:29 $
+ * @version $Revision: 2.1 $ $Date: 2003/04/30 15:08:14 $
  * @author Oliver Becker
  */
 
@@ -76,7 +76,7 @@ final public class AssignFactory extends FactoryBase
       String selectAtt = attrs.getValue("select");
       Tree selectExpr;
       if (selectAtt != null) 
-         selectExpr = parseExpr(selectAtt, nsSet, locator);
+         selectExpr = parseExpr(selectAtt, nsSet, parent, locator);
       else
          selectExpr = null;
 

@@ -1,5 +1,5 @@
 /*
- * $Id: ParamFactory.java,v 2.2 2003/04/29 15:03:12 obecker Exp $
+ * $Id: ParamFactory.java,v 2.3 2003/04/30 15:08:17 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>params</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2003/04/29 15:03:12 $
+ * @version $Revision: 2.3 $ $Date: 2003/04/30 15:08:17 $
  * @author Oliver Becker
  */
 
@@ -101,7 +101,7 @@ final public class ParamFactory extends FactoryBase
             throw new SAXParseException(
                "`" + qName + "' must not have a `select' attribute if it " +
                "declares the parameter as required", locator);
-         selectExpr = parseExpr(selectAtt, nsSet, locator);
+         selectExpr = parseExpr(selectAtt, nsSet, parent, locator);
       }
       else
          selectExpr = null;
