@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 2.10 2004/01/21 11:12:45 obecker Exp $
+ * $Id: Parser.java,v 2.11 2004/01/21 12:36:13 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -47,7 +47,7 @@ import net.sf.joost.instruction.*;
 /** 
  * Creates the tree representation of an STX transformation sheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 2.10 $ $Date: 2004/01/21 11:12:45 $
+ * @version $Revision: 2.11 $ $Date: 2004/01/21 12:36:13 $
  * @author Oliver Becker
  */
 
@@ -81,6 +81,9 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
    /** Group which had an <code>stx:include</code>, which in turn created
        this Parser object */
    public GroupBase includingGroup;
+
+   /** An optional ParserListener */
+   private ParserListener parserListener;
 
 
    //
@@ -166,6 +169,16 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
 
 
    /** 
+    * Registers a {@link ParserListener} for this parser 
+    * @param listener the listener to be used
+    */
+   public void setParserListener(ParserListener listener)
+   {
+      parserListener = listener;
+   }
+
+
+   /** 
     * @return the root node representing <code>stx:transform</code>. 
     */
    public TransformFactory.Instance getTransformNode()
@@ -189,8 +202,12 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
                   "Text must not occur on group level", context.locator);
 
          }
-         else
-            currentNode.insert(new TextNode(s, currentNode, context));
+         else {
+            NodeBase textNode = new TextNode(s, currentNode, context);
+            currentNode.insert(textNode);
+            if (parserListener != null)
+               parserListener.nodeParsed(textNode);
+         }
       }
       collectedCharacters.setLength(0);
    }
@@ -312,6 +329,9 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
             currentNode.insert(newNode);
          openedElements.push(currentNode);
          currentNode = newNode;
+
+         if (parserListener != null)
+            parserListener.nodeParsed(newNode);
       }
       catch (SAXParseException ex) {
          if (context.errorHandler != null)
@@ -329,7 +349,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
          if (collectedCharacters.length() != 0)
             processCharacters();
 
-         currentNode.setEndLocation(context);
+         currentNode.setEndLocation(context, parserListener);
 
          if (currentNode instanceof LitElementFactory.Instance)
             // restore the newly declared namespaces from this element

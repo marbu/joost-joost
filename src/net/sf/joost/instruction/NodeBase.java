@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 2.7 2004/01/21 11:22:58 obecker Exp $
+ * $Id: NodeBase.java,v 2.8 2004/01/21 12:36:11 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,12 +33,13 @@ import java.util.Vector;
 import net.sf.joost.Constants;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
+import net.sf.joost.stx.ParserListener;
 
 
 /** 
  * Abstract base class for all instances of nodes in the STX transformation 
  * sheet
- * @version $Revision: 2.7 $ $Date: 2004/01/21 11:22:58 $
+ * @version $Revision: 2.8 $ $Date: 2004/01/21 12:36:11 $
  * @author Oliver Becker
  */
 public abstract class NodeBase 
@@ -223,12 +224,17 @@ public abstract class NodeBase
     * Notify this node about its end location (taken from
     * {@link ParseContext#locator} in the <code>context</code> parameter)
     * @param context the current parse context
+    * @param listener an optional <code>ParserListener</code> to notify
     */
-   public void setEndLocation(ParseContext context)
+   public void setEndLocation(ParseContext context, ParserListener listener)
    {
-      if (nodeEnd != null && context.locator != null) {
-         nodeEnd.lineNo = context.locator.getLineNumber();
-         nodeEnd.colNo = context.locator.getColumnNumber();
+      if (nodeEnd != null) {
+         if (context.locator != null) {
+            nodeEnd.lineNo = context.locator.getLineNumber();
+            nodeEnd.colNo = context.locator.getColumnNumber();
+         }
+         if (listener != null)
+            listener.nodeParsed(nodeEnd);
       }
    }
 
