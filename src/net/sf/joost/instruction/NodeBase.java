@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 1.2 2002/10/22 13:05:26 obecker Exp $
+ * $Id: NodeBase.java,v 1.3 2002/11/14 17:57:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.stx.Emitter;
 
 /**
  * Abstract base class for all instances of nodes in a STX stylesheet.
- * @version $Revision: 1.2 $ $Date: 2002/10/22 13:05:26 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/14 17:57:33 $
  * @author Oliver Becker
  */
 public abstract class NodeBase implements Constants
@@ -75,6 +75,9 @@ public abstract class NodeBase implements Constants
    /** Stack for local fields within the Instance objects. */
    protected Stack localFieldStack = new Stack();
 
+   /** Set to true, if an <code>stx:else</code> has been appended as child */
+   protected boolean containsElse = false;
+
    // Log4J initialization
    private static org.apache.log4j.Logger log4j = 
       org.apache.log4j.Logger.getLogger(NodeBase.class);
@@ -95,6 +98,16 @@ public abstract class NodeBase implements Constants
       this.mustBeEmpty = mustBeEmpty;
    }
 
+   protected NodeBase(NodeBase obj)
+   {
+      qName = obj.qName;
+      publicId = obj.publicId;
+      systemId = obj.systemId;
+      lineNo = obj.lineNo;
+      colNo = obj.colNo;
+      mustBeEmpty = obj.mustBeEmpty; // not needed actually
+   }
+
 
    /** Adds the given node to the children of this node. */
    public void append(NodeBase node)
@@ -109,13 +122,30 @@ public abstract class NodeBase implements Constants
       children.addElement(node);
    }
 
+   /** needed in {@link #parsed} */
+   static private ChooseFactory chooseFac = new ChooseFactory();
 
    /** 
     * Called after all children of this node have been parsed
     * (after the end-tag of this node has been detected).
+    * This method replaces all <code>stx:if</code> / <code>stx:else</code>
+    * pairs with an equivalent <cide>stx:choose</code> instruction.
     */
    public void parsed() throws SAXException
    {
+      if (containsElse) {
+         int len = children.size();
+         for (int i=0; i<len; i++) {
+            if (children.elementAt(i) instanceof ElseFactory.Instance) {
+               children.setElementAt(
+                  chooseFac.cloneIfElse(children.elementAt(i-1),
+                                        children.elementAt(i)), i-1);
+               children.removeElementAt(i);
+               i--; 
+               len--;
+            }
+         }
+      }
    }
 
 

@@ -1,5 +1,5 @@
 /*
- * $Id: IfFactory.java,v 1.3 2002/11/14 13:33:00 obecker Exp $
+ * $Id: IfFactory.java,v 1.4 2002/11/14 17:57:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.grammar.EvalException;
 /** 
  * Factory for <code>if</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.3 $ $Date: 2002/11/14 13:33:00 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/14 17:57:33 $
  * @author Oliver Becker
  */
 
@@ -79,7 +79,7 @@ final public class IfFactory extends FactoryBase
    /** Represents an instance of the <code>if</code> element. */
    final public class Instance extends NodeBase
    {
-      private Tree test;
+      protected Tree test;
 
       protected Instance(String qName, Locator locator, Tree test)
       {

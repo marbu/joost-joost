@@ -1,5 +1,5 @@
 /*
- * $Id: WhenFactory.java,v 1.1 2002/11/14 13:17:28 obecker Exp $
+ * $Id: WhenFactory.java,v 1.2 2002/11/14 17:57:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.grammar.EvalException;
 /** 
  * Factory for <code>when</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.1 $ $Date: 2002/11/14 13:17:28 $
+ * @version $Revision: 1.2 $ $Date: 2002/11/14 17:57:33 $
  * @author Oliver Becker
  */
 
@@ -76,6 +76,16 @@ final public class WhenFactory extends FactoryBase
    }
 
 
+   /** 
+    * Creates an instance from an <code>stx:if</code> object, needed for
+    * <code>stx:else</code>
+    */
+   protected NodeBase cloneFromIf(IfFactory.Instance ifNode)
+   {
+      return new Instance(ifNode);
+   }
+
+
    /** Represents an instance of the <code>when</code> element. */
    final public class Instance extends NodeBase
    {
@@ -85,6 +95,14 @@ final public class WhenFactory extends FactoryBase
       {
          super(qName, locator, false);
          this.test = test;
+      }
+
+      /** for {@link #cloneFromIf} */
+      protected Instance(IfFactory.Instance ifObj)
+      {
+         super(ifObj);
+         test = ifObj.test;
+         children = ifObj.children;
       }
       
       /**

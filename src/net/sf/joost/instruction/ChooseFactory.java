@@ -1,5 +1,5 @@
 /*
- * $Id: ChooseFactory.java,v 1.2 2002/11/14 16:09:13 obecker Exp $
+ * $Id: ChooseFactory.java,v 1.3 2002/11/14 17:57:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.stx.Context;
 /** 
  * Factory for <code>choose</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2002/11/14 16:09:13 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/14 17:57:33 $
  * @author Oliver Becker
  */
 
@@ -66,6 +66,27 @@ final public class ChooseFactory extends FactoryBase
    }
 
 
+   /** needed in {@link #cloneIfElse} */
+   private WhenFactory whenFac = new WhenFactory();
+
+   /** needed in {@link #cloneIfElse} */
+   private OtherwiseFactory otherwFac = new OtherwiseFactory();
+
+   /**
+    * Creates an <code>stx:choose</code> from an <code>stx:if</code> /
+    * <code>stx:else</code> pair.
+    */
+   protected Instance cloneIfElse(Object ifObj, Object elseObj)
+      throws SAXParseException
+   {
+      IfFactory.Instance ifNode = (IfFactory.Instance)ifObj;
+      Instance choose = new Instance (ifNode);
+      choose.append(whenFac.cloneFromIf(ifNode));
+      choose.append(otherwFac.cloneFromElse((ElseFactory.Instance)elseObj));
+      return choose;
+   }
+
+
    /** Represents an instance of the <code>choose</code> element. */
    final public class Instance extends NodeBase
    {
@@ -75,6 +96,12 @@ final public class ChooseFactory extends FactoryBase
       {
          super(qName, locator, false);
          otherwisePresent = false;
+      }
+
+
+      protected Instance(IfFactory.Instance ifObj)
+      {
+         super(ifObj);
       }
 
 
