@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 2.4 2003/06/03 14:30:23 obecker Exp $
+ * $Id: NodeBase.java,v 2.5 2003/08/28 16:08:28 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Abstract base class for all instances of nodes in the STX transformation 
  * sheet
- * @version $Revision: 2.4 $ $Date: 2003/06/03 14:30:23 $
+ * @version $Revision: 2.5 $ $Date: 2003/08/28 16:08:28 $
  * @author Oliver Becker
  */
 public abstract class NodeBase 
@@ -168,10 +168,16 @@ public abstract class NodeBase
    {
       this.qName = qName;
       this.parent = parent;
-      publicId = context.locator.getPublicId();
-      systemId = context.locator.getSystemId();
-      lineNo = context.locator.getLineNumber();
-      colNo = context.locator.getColumnNumber();
+      if (context.locator != null) {
+         publicId = context.locator.getPublicId();
+         systemId = context.locator.getSystemId();
+         lineNo = context.locator.getLineNumber();
+         colNo = context.locator.getColumnNumber();
+      }
+      else {
+         publicId = systemId = "";
+         lineNo = colNo = -1;
+      }
 
       if (mayHaveChildren) {
          next = nodeEnd = new End(this);
