@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.26 2005/03/25 17:39:48 obecker Exp $
+ * $Id: TransformerImpl.java,v 1.27 2005/03/25 18:30:05 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -316,7 +316,9 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
 
         IllegalArgumentException iE;
         if (supportedProperties.contains(name)) {
-            if (OutputKeys.METHOD.equals(name) && !"xml".equals(value)) {
+            if (OutputKeys.METHOD.equals(name)
+                    && !value.startsWith("{") // no qualified name
+                    && !"xml".equals(value) && !"text".equals(value)) {
                 iE = new IllegalArgumentException(
                               "Unsupported output method " + value);
                 if (log != null)
