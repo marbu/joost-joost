@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 2.10 2003/09/10 14:10:34 obecker Exp $
+ * $Id: Tree.java,v 2.11 2004/01/15 10:36:06 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 2.10 $ $Date: 2003/09/10 14:10:34 $
+ * @version $Revision: 2.11 $ $Date: 2004/01/15 10:36:06 $
  * @author Oliver Becker
  */
 final public class Tree
@@ -179,14 +179,14 @@ final public class Tree
          return;
       }
 
-      String qName = (String)value;
-      int colon = qName.indexOf(":");
+      // value contains the qualified name
+      int colon = value.indexOf(":");
       if (colon != -1) {
-         uri = (String)context.nsSet.get(qName.substring(0, colon));
-         lName = qName.substring(colon+1);
+         uri = (String)context.nsSet.get(value.substring(0, colon));
+         lName = value.substring(colon+1);
          if (uri == null) {
             throw new SAXParseException("Undeclared prefix `" + 
-                                   qName.substring(0, colon) + "'",
+                                   value.substring(0, colon) + "'",
                                    context.locator);
 
          }
@@ -206,7 +206,7 @@ final public class Tree
             uri = "";
             break;
          }
-         lName = qName;
+         lName = value;
       }
    }
 
@@ -232,7 +232,6 @@ final public class Tree
          uri = "*";
       else {
          uri = (String)context.nsSet.get(prefix);
-         this.lName = lName;
          if (uri == null) 
             throw new SAXParseException("Undeclared prefix `" + prefix + "'",
                                         context.locator);

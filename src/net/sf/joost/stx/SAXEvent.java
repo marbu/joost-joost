@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEvent.java,v 1.17 2004/01/08 12:08:12 obecker Exp $
+ * $Id: SAXEvent.java,v 1.18 2004/01/15 10:36:08 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -36,7 +36,7 @@ import java.util.Hashtable;
 /** 
  * SAXEvent stores all information attached to an incoming SAX event,
  * it is the representation of a node in STX.
- * @version $Revision: 1.17 $ $Date: 2004/01/08 12:08:12 $
+ * @version $Revision: 1.18 $ $Date: 2004/01/15 10:36:08 $
  * @author Oliver Becker
  */
 final public class SAXEvent
@@ -92,7 +92,6 @@ final public class SAXEvent
       event.uri = uri;
       event.lName = lName;
       event.qName = qName;
-      event.uri = uri;
       if (attrs != null) {
          // Note: addAttribute() will block if this.attrs was created
          // via the constructor with an empty attrs parameter (Bug?)
