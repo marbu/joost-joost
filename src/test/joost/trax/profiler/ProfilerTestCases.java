@@ -54,16 +54,16 @@ public class ProfilerTestCases extends TestCase {
 //*****************************************************************************
 //some Tests
 
-    private String xmlId = "test/small.xml";
+    private String xmlId = "test/middle2.xml";
 
     //small
-    private static int count    = 42650;
+    //private static int count    = 42650;
     //middle
     //private static int count    = 218248;
     //big
     //private static int count    = 419327;
     //extrem
-    //private static int count    = 4193270;
+    private static int count    = 4193270;
 
 
 //****************** X2StreamResult ************************
@@ -88,7 +88,11 @@ public class ProfilerTestCases extends TestCase {
    */
     public void atestRunTests1() {
 
-        long delta = exampleStreamSourceAndResult(xmlId);
+      try {
+          Thread.sleep(5000);
+      } catch (InterruptedException e) {}
+
+      long delta = exampleStreamSourceAndResult(xmlId);
         log.info("1. Stream2Stream Transformation length : " + delta + " ms");
 
         delta = exampleStreamSourceAndResult(xmlId);
@@ -100,6 +104,10 @@ public class ProfilerTestCases extends TestCase {
    * Show the Identity-transformation with SaxSource and StreamResult
    */
     public void atestRunTests2() {
+
+        try {
+          Thread.sleep(5000);
+        } catch (InterruptedException e) {}
 
         long delta = exampleSAXSourceAndStreamResult();
 
@@ -114,6 +122,10 @@ public class ProfilerTestCases extends TestCase {
    * Show the Identity-transformation with DOMSource and StreamResult
    */
     public void atestRunTests3() {
+
+        try {
+          Thread.sleep(5000);
+        } catch (InterruptedException e) {}
 
         long delta = exampleDOMSourceAndStreamResult(xmlId);
 
@@ -131,6 +143,10 @@ public class ProfilerTestCases extends TestCase {
    */
     public void atestRunTests4() {
 
+        try {
+          Thread.sleep(5000);
+        } catch (InterruptedException e) {}
+
         long delta = exampleStreamSourceAndSAXResult(xmlId);
 
         log.info("1. Stream2SAX Transformation length : " + delta + " ms");
@@ -143,6 +159,10 @@ public class ProfilerTestCases extends TestCase {
    * Show the Identity-transformation with SAXSource and SAXResult
    */
     public void testRunTests5() {
+
+        try {
+          Thread.sleep(5000);
+        } catch (InterruptedException e) {}
 
         long delta = exampleSAXSourceAndSAXResult();
 
@@ -157,6 +177,10 @@ public class ProfilerTestCases extends TestCase {
    * Show the Identity-transformation with DOMSource and SAXResult
    */
     public void atestRunTests6() {
+
+        try {
+          Thread.sleep(5000);
+        } catch (InterruptedException e) {}
 
         long delta = exampleDOMSourceAndSAXResult(xmlId);
 
@@ -173,6 +197,10 @@ public class ProfilerTestCases extends TestCase {
    */
     public void atestRunTests7() {
 
+        try {
+          Thread.sleep(5000);
+        } catch (InterruptedException e) {}
+
         long delta = exampleStreamSourceAndDOMResult(xmlId);
 
         log.info("1. Stream2DOM Transformation length : " + delta + " ms");
@@ -186,6 +214,10 @@ public class ProfilerTestCases extends TestCase {
    */
     public void atestRunTests8() {
 
+        try {
+          Thread.sleep(5000);
+        } catch (InterruptedException e) {}
+
         long delta = exampleSAXSourceAndDOMResult();
 
         log.info("1. SAX2DOM Transformation length : " + delta + " ms");
@@ -198,6 +230,10 @@ public class ProfilerTestCases extends TestCase {
    * Show the Identity-transformation with DOMSource and DOMResult
    */
     public void atestRunTests9() {
+
+        try {
+          Thread.sleep(5000);
+        } catch (InterruptedException e) {}
 
         long delta = exampleDOMSourceAndDOMResult(xmlId);
 
@@ -218,6 +254,9 @@ public class ProfilerTestCases extends TestCase {
         String key = "javax.xml.transform.TransformerFactory";
         String value = "net.sf.joost.trax.TransformerFactoryImpl";
 
+        // test with Apache Xalan
+        //value = "org.apache.xalan.processor.TransformerFactoryImpl";
+
         //log.debug("Setting key " + key + " to " + value);
 
         //setting xerces as parser
@@ -230,6 +269,8 @@ public class ProfilerTestCases extends TestCase {
         //log.debug("Setting key " + key2 + " to " + value2);
 
         Properties props = System.getProperties();
+
+
         props.put(key, value);
         props.put(key2, value2);
         props.put(key3, value3);
@@ -417,7 +458,7 @@ public class ProfilerTestCases extends TestCase {
 
             XMLFilter myFilter = new MyXMLFilter(count);
             // @todo : fixing
-            myFilter.setFeature("namespace.uri", true);
+            //myFilter.setFeature("namespace.uri", true);
 
             long start = System.currentTimeMillis();
 
@@ -428,6 +469,7 @@ public class ProfilerTestCases extends TestCase {
             delta = System.currentTimeMillis() - start;
 
         } catch (Exception e) {
+            e.printStackTrace();
             return 0;
         }
         return delta;

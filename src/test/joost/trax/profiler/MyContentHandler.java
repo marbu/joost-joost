@@ -3,7 +3,7 @@
  *
  *	Example for a sax-contenthandler for TraX-Transformer
  *
- *	$Id: MyContentHandler.java,v 1.2 2002/10/15 19:03:47 zubow Exp $
+ *	$Id: MyContentHandler.java,v 1.3 2002/11/11 21:33:38 zubow Exp $
  *
  */
 
@@ -28,11 +28,11 @@ public class MyContentHandler implements ContentHandler {
     }
 
     public void startDocument() throws SAXException {
-        System.out.println("startDocument");
+        //System.out.println("startDocument");
     }
 
     public void endDocument() throws SAXException {
-        System.out.println("endDocument");
+        //System.out.println("endDocument");
     }
 
     public void startPrefixMapping(String prefix, String uri)
