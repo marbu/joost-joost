@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.22 2002/11/25 13:38:56 obecker Exp $
+ * $Id: Processor.java,v 1.23 2002/11/27 09:46:37 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -61,7 +61,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.22 $ $Date: 2002/11/25 13:38:56 $
+ * @version $Revision: 1.23 $ $Date: 2002/11/27 09:46:37 $
  * @author Oliver Becker
  */
 
@@ -736,7 +736,7 @@ public class Processor extends XMLFilterImpl
                   // processing suspended due to a stx:process-children
                   dataStack.push(
                      new Data(temp, context.position, context.lookAhead,
-                              temp.parent.precedenceCategories,
+                              temp.parentGroup.precedenceCategories,
                               procStatus));
                   if (log4j.isDebugEnabled())
                      log4j.debug("children - dataStack.push " + 
@@ -768,7 +768,7 @@ public class Processor extends XMLFilterImpl
                // stx:process-attributes, just for elements
                dataStack.push(
                   new Data(temp, context.position, context.lookAhead,
-                           temp.parent.precedenceCategories,
+                           temp.parentGroup.precedenceCategories,
                            procStatus));
                processAttributes(event.attrs);
                dataStack.pop();
