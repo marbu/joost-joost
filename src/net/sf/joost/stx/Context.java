@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 2.9 2003/09/03 15:03:02 obecker Exp $
+ * $Id: Context.java,v 2.10 2004/01/25 17:34:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import javax.xml.transform.sax.TransformerHandler;
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 2.9 $ $Date: 2003/09/03 15:03:02 $
+ * @version $Revision: 2.10 $ $Date: 2004/01/25 17:34:44 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
@@ -63,14 +63,14 @@ public final class Context implements Cloneable
    /** The group, the current template is a child of */
    public GroupBase currentGroup;
 
-   /** The Processor object (needed by <code>process-buffer</code>) */
+   /** The Processor object (needed by <code>stx:process-buffer</code>) */
    public Processor currentProcessor;
 
-   /** The target group, set by <code>process-<em>xxx</em></code>
+   /** The target group, set by <code>stx:process-<em>xxx</em></code>
        instructions */
    public GroupBase targetGroup;
 
-   /** Encountered <code>process-siblings</code> instruction */
+   /** Encountered <code>stx:process-siblings</code> instruction */
    public PSiblingsFactory.Instance psiblings;
 
    /** Local defined variables of a template. */
@@ -86,11 +86,11 @@ public final class Context implements Cloneable
    public TransformerHandlerResolverImpl defaultTransformerHandlerResolver = 
       new TransformerHandlerResolverImpl();
 
-   /** The target handler, set by <code>process-<em>xxx</em></code>
+   /** The target handler, set by <code>stx:process-<em>xxx</em></code>
        instructions */
    public TransformerHandler targetHandler;
 
-   /** The URIResolver for <code>process-document</code> */
+   /** The URIResolver for <code>stx:process-document</code> */
    public URIResolver uriResolver;
 
    /**
