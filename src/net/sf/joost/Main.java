@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.8 2003/01/21 12:13:34 obecker Exp $
+ * $Id: Main.java,v 1.9 2003/03/20 13:27:49 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.8 $ $Date: 2003/01/21 12:13:34 $
+ * @version $Revision: 1.9 $ $Date: 2003/03/20 13:27:49 $
  * @author Oliver Becker
  */
 public class Main
@@ -54,7 +54,7 @@ public class Main
    /** 
     * Entry point 
     * @param args array of strings containing the parameter for Joost and
-    * at least two URLs addressing xml-source and stx-stylesheet
+    * at least two URLs addressing xml-source and stx-sheet
     */
    public static void main(String[] args)
    {
@@ -201,16 +201,17 @@ public class Main
       if (!printHelp && stxFile == null) {
          wrongParameter = true;
          if (xmlFile == null) 
-            System.err.println(
-               "Missing filenames for XML source and STX stylesheet");
+            System.err.println("Missing filenames for XML source and " + 
+                               "STX transformation sheet");
          else
-            System.err.println("Missing filename for STX stylesheet");
+            System.err.println("Missing filename for STX transformation " + 
+                               "sheet");
       }
 
       if (printHelp || wrongParameter) {
          usage(
   "Usage:\n"
-+ "java net.sf.joost.Main [options] xml-source stx-stylesheet [parameters]\n\n"
++ "java net.sf.joost.Main [options] xml-source stx-sheet [parameters]\n\n"
 + "Options:\n"
 + "  -help      print this message\n"
 + "  -version   print the version information and exit\n"
