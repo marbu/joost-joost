@@ -1,5 +1,5 @@
 /*
- * $Id: expr.inc,v 1.5 2003/01/21 10:19:50 obecker Exp $
+ * $Id: expr.inc,v 1.6 2003/03/20 13:14:40 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,8 +31,7 @@
 non terminal Tree   Expr, AndExpr, GeneralComp,
                     AdditiveExpr, MultiplicativeExpr, UnaryExpr, BasicExpr, 
                     Accessor, NodeAccessor, RelativeAccessor, AccessorStep,
-                    AccessorAxis, NodeNameTest, PropAccessor, 
-                    AttributeNameTest, NamespaceNameTest, 
+                    NodeNameTest, KindTest, AttributeNameTest, 
                     FunctionCall, ExprSeq, ParaSeq;
 non terminal String Name;
 
@@ -111,46 +110,48 @@ BasicExpr ::=
       {: RESULT = new Tree(Tree.NUMBER, n); :}
  | LPAR ExprSeq:t RPAR  /* ParenthesizedExpr */
       {: RESULT = (t == null ? new Tree(Tree.LIST, null, null) : t); :}
+ | DOT
+      {: RESULT = new Tree(Tree.DOT, null); :}
  ;
 
 Accessor ::= 
-   NodeAccessor:n SLASH PropAccessor:p
-      {: p.left = n; 
-         RESULT = p; :} 
+   NodeAccessor:n SLASH AttributeNameTest:a
+      {: a.left = n; 
+         RESULT = a; :} 
  | NodeAccessor:n
       {: RESULT = n; :}
- | RelativeAccessor:n SLASH PropAccessor:p
-      {: p.left = n.reverseAssociativity(); 
-         RESULT = p; :} 
+ | RelativeAccessor:n SLASH AttributeNameTest:a
+      {: a.left = n.reverseAssociativity(); 
+         RESULT = a; :} 
  | RelativeAccessor:n
       {: RESULT = n.reverseAssociativity(); :}
- | SLASH RelativeAccessor:n SLASH PropAccessor:p
-      {: p.left = new Tree(Tree.ROOT, n.reverseAssociativity(), null); 
-         RESULT = p; :} 
+ | SLASH RelativeAccessor:n SLASH AttributeNameTest:a
+      {: a.left = new Tree(Tree.ROOT, n.reverseAssociativity(), null); 
+         RESULT = a; :} 
  | SLASH RelativeAccessor:n
       {: RESULT = new Tree(Tree.ROOT, n.reverseAssociativity(), null); :}
- | DSLASH RelativeAccessor:n SLASH PropAccessor:p
-      {: p.left = new Tree(Tree.ROOT, 
+ | DSLASH RelativeAccessor:n SLASH AttributeNameTest:a
+      {: a.left = new Tree(Tree.ROOT, 
                            new Tree(Tree.DESC, null, 
                                                n.reverseAssociativity()), 
                            null);
-         RESULT = p; :} 
+         RESULT = a; :} 
  | DSLASH RelativeAccessor:n
       {: RESULT = new Tree(Tree.ROOT, 
                            new Tree(Tree.DESC, null, 
                                                n.reverseAssociativity()), 
                            null); :}
- | PropAccessor:p
-      {: RESULT = p; :}
+ | AttributeNameTest:a
+      {: RESULT = a; :}
  ;
 
 /* 
 I'd rather specify something along the lines
 
 Accessor ::=
-   NodeAccessor SLASH PropAccessor
+   NodeAccessor SLASH AttributeNameTest
  | NodeAccessor
- | PropAccessor
+ | AttributeNameTest
  ;
 
 NodeAccessor ::=
@@ -168,7 +169,6 @@ PathAccessor ::=
 Unfortunately this results in shift/reduce conflicts in CUP.
 */
 
-
 NodeAccessor ::= 
    DOLLAR Name:n  /* Variable */
       {: RESULT = new Tree(Tree.VAR, n, 
@@ -179,8 +179,7 @@ NodeAccessor ::=
 
 RelativeAccessor ::=
    RelativeAccessor:r SLASH AccessorStep:a
-      {: if (a.type == Tree.DOT || a.type == Tree.DDOT || 
-             a.type == Tree.PARENT || a.type == Tree.ANC) {
+      {: if (a.type == Tree.DDOT) {
             a.left = r;
             RESULT = a;
          }
@@ -189,8 +188,7 @@ RelativeAccessor ::=
       :}
  | RelativeAccessor:r DSLASH AccessorStep:a
       {: Tree d = new Tree(Tree.DESC, r, null);
-         if (a.type == Tree.DOT || a.type == Tree.DDOT || 
-             a.type == Tree.PARENT || a.type == Tree.ANC) {
+         if (a.type == Tree.DDOT) {
             a.left = d;
             RESULT = a;
          }
@@ -198,8 +196,7 @@ RelativeAccessor ::=
             RESULT = new Tree(Tree.CHILD, d, a);
       :}
  | AccessorStep:a
-      {: if (a.type == Tree.DOT || a.type == Tree.DDOT || 
-             a.type == Tree.PARENT || a.type == Tree.ANC)
+      {: if (a.type == Tree.DDOT)
             RESULT = a;
          else
             RESULT = new Tree(Tree.CHILD, null, a);
@@ -207,21 +204,12 @@ RelativeAccessor ::=
  ;
 
 AccessorStep ::=
-   AccessorAxis:a NodeNameTest:n 
-      {: a.right = n; RESULT = a; :}
- | NodeNameTest:n
+   NodeNameTest:n
       {: RESULT = n; :}
+ | KindTest:k
+      {: RESULT = k; :}
  | DDOT
       {: RESULT = new Tree(Tree.DDOT, null); :}
- | DOT
-      {: RESULT = new Tree(Tree.DOT, null); :}
- ;
-
-AccessorAxis ::=
-   PARENT
-      {: RESULT = new Tree(Tree.PARENT, null); :}
- | ANCESTOR
-      {: RESULT = new Tree(Tree.ANC, null); :}
  ;
 
 NodeNameTest ::=
@@ -238,14 +226,19 @@ NodeNameTest ::=
                            parser.j_nsSet, parser.j_locator); :}
  ;
 
-/* Property Accessor */
-PropAccessor ::= 
-   AttributeNameTest:t
-      {: RESULT = t; :}
- | NamespaceNameTest:t
-      {: RESULT = t; :}
+KindTest ::=
+   COMMENT
+      {: RESULT = new Tree(Tree.COMMENT_TEST, null); :}
+ | NODE
+      {: RESULT = new Tree(Tree.NODE_TEST, null); :}
+ | PI_START RPAR
+      {: RESULT = new Tree(Tree.PI_TEST, ""); :}
+ | PI_START STRING:s RPAR
+      {: RESULT = new Tree(Tree.PI_TEST, s); :}
  | TEXT
       {: RESULT = new Tree(Tree.TEXT_TEST, null); :}
+ | CDATA
+      {: RESULT = new Tree(Tree.CDATA_TEST, null); :}
  ;
 
 AttributeNameTest ::=
@@ -260,13 +253,6 @@ AttributeNameTest ::=
  | AT NCNAME:n COLON STAR
       {: RESULT = new Tree(Tree.ATTR_LOCAL_WILDCARD, n, "*",
                            parser.j_nsSet, parser.j_locator); :}
- ;
-
-NamespaceNameTest ::=
-   NAMESPACE NCNAME:n
-      {: RESULT = new Tree(Tree.NAMESPACE, n); :}
- | NAMESPACE STAR
-      {: RESULT = new Tree(Tree.NAMESPACE, "*"); :}
  ;
 
 FunctionCall ::=
