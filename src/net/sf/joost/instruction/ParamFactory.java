@@ -1,5 +1,5 @@
 /*
- * $Id: ParamFactory.java,v 1.8 2003/01/16 15:56:27 obecker Exp $
+ * $Id: ParamFactory.java,v 1.9 2003/02/02 15:12:12 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>params</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.8 $ $Date: 2003/01/16 15:56:27 $
+ * @version $Revision: 1.9 $ $Date: 2003/02/02 15:12:12 $
  * @author Oliver Becker
  */
 
@@ -80,7 +80,7 @@ final public class ParamFactory extends FactoryBase
    {
       if (parent == null || 
           !(parent instanceof TransformFactory.Instance ||
-            parent instanceof TemplateFactory.Instance))
+            parent instanceof TemplateBase)) // template, procedure
          throw new SAXParseException(
             "`" + qName + "' must be a top level element " +
             "or a child of stx:template",
