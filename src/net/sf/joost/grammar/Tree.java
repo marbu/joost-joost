@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 1.17 2003/02/18 17:13:23 obecker Exp $
+ * $Id: Tree.java,v 1.18 2003/02/20 09:25:22 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,6 +33,7 @@ import java.util.Hashtable;
 import java.util.Stack;
 
 import net.sf.joost.instruction.GroupBase;
+import net.sf.joost.instruction.NodeBase;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.FunctionTable;
 import net.sf.joost.stx.SAXEvent;
@@ -41,7 +42,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 1.17 $ $Date: 2003/02/18 17:13:23 $
+ * @version $Revision: 1.18 $ $Date: 2003/02/20 09:25:22 $
  * @author Oliver Becker
  */
 public class Tree
@@ -464,7 +465,24 @@ public class Tree
     * Evaluates the current Tree if it represents an expression. 
     * @param context the current Context
     * @param events the full event ancestor stack
-    * @param top the part of the stack to be considered while matching
+    * @param instruction the current instruction, needed for providing
+    *        locator information in the event of an error
+    * @return a new computed Value object containing the result
+    */
+   public Value evaluate(Context context, Stack events, NodeBase instruction)
+      throws SAXException
+   {
+      context.currentInstruction = instruction;
+      return evaluate(context, events, events.size());
+   }
+
+
+
+   /** 
+    * Evaluates the current Tree if it represents an expression. 
+    * @param context the current Context
+    * @param events the full event ancestor stack
+    * @param top the part of the stack to be considered for the evaluation
     *            (the upper most element is at position top-1)
     * @return a new computed Value object containing the result
     */

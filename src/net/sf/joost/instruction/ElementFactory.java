@@ -1,5 +1,5 @@
 /*
- * $Id: ElementFactory.java,v 1.4 2002/12/17 16:46:41 obecker Exp $
+ * $Id: ElementFactory.java,v 1.5 2003/02/20 09:25:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>element</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.4 $ $Date: 2002/12/17 16:46:41 $
+ * @version $Revision: 1.5 $ $Date: 2003/02/20 09:25:29 $
  * @author Oliver Becker
  */
 
@@ -119,17 +119,14 @@ final public class ElementFactory extends FactoryBase
          throws SAXException
       {
          // determine qualified name, local name and namespace uri
-         context.currentInstruction = this;
-         Value v = name.evaluate(context, eventStack, eventStack.size());
          String elName, elUri, elLocal;
-         elName = v.string;
+         elName = name.evaluate(context, eventStack, this).string;
          int colon = elName.indexOf(':');
          if (colon != -1) { // prefixed name
             String prefix = elName.substring(0, colon);
             elLocal = elName.substring(colon+1);
             if (namespace != null) { // namespace attribute present
-               elUri = namespace.evaluate(context, eventStack,
-                                          eventStack.size()).string;
+               elUri = namespace.evaluate(context, eventStack, this).string;
                if (elUri.equals("")) {
                   context.errorHandler.fatalError(
                      "Can't create element `" + elName + 
@@ -154,8 +151,7 @@ final public class ElementFactory extends FactoryBase
          else { // unprefixed name
             elLocal = elName;
             if (namespace != null) // namespace attribute present
-               elUri = namespace.evaluate(context, eventStack,
-                                          eventStack.size()).string;
+               elUri = namespace.evaluate(context, eventStack, this).string;
             else {
                // no namespace attribute, see above
                elUri = (String)nsSet.get("");

@@ -1,5 +1,5 @@
 /*
- * $Id: ForEachFactory.java,v 1.1 2003/02/18 17:06:57 obecker Exp $
+ * $Id: ForEachFactory.java,v 1.2 2003/02/20 09:25:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>for-each</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.1 $ $Date: 2003/02/18 17:06:57 $
+ * @version $Revision: 1.2 $ $Date: 2003/02/20 09:25:29 $
  * @author Oliver Becker
  */
 
@@ -115,11 +115,8 @@ final public class ForEachFactory extends FactoryBase
 
          Value selectResult;
          long seqPos = 0;
-         if ((processStatus & ST_PROCESSING) != 0) {
-            context.currentInstruction = this;
-            selectResult = select.evaluate(context, 
-                                           eventStack, eventStack.size());
-         }
+         if ((processStatus & ST_PROCESSING) != 0)
+            selectResult = select.evaluate(context, eventStack, this);
          else {
             // re-entered: restore last sequence and position
             seqPos = ((Long)resultStack.pop()).longValue();

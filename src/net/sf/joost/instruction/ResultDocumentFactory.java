@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 1.2 2003/01/18 15:52:07 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 1.3 2003/02/20 09:25:30 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.stx.Emitter;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2003/01/18 15:52:07 $
+ * @version $Revision: 1.3 $ $Date: 2003/02/20 09:25:30 $
  * @author Oliver Becker
  */
 
@@ -106,9 +106,8 @@ final public class ResultDocumentFactory extends FactoryBase
       {
          if ((processStatus & ST_PROCESSING) != 0) {
 
-            context.currentInstruction = this;
             String filename = 
-               href.evaluate(context, eventStack, eventStack.size()).string;
+               href.evaluate(context, eventStack, this).string;
 
             // Note: currently we don't check if a file is already open.
             // Opening a file twice may lead to unexpected results.

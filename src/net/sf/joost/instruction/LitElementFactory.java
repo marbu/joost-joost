@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 1.7 2003/02/03 13:14:29 obecker Exp $
+ * $Id: LitElementFactory.java,v 1.8 2003/02/20 09:25:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for literal result elements, which are represented by the
  * inner Instance class. 
- * @version $Revision: 1.7 $ $Date: 2003/02/03 13:14:29 $
+ * @version $Revision: 1.8 $ $Date: 2003/02/20 09:25:29 $
  * @author Oliver Becker
 */
 
@@ -124,11 +124,10 @@ final public class LitElementFactory extends FactoryBase
          throws SAXException
       {
          if ((processStatus & ST_PROCESSING) != 0) {
-            context.currentInstruction = this;
             for (int i=0; i<avtList.length; i++)
                attrs.setValue(i, 
-                              avtList[i].evaluate(context, eventStack, 
-                                                  eventStack.size()).string);
+                              avtList[i].evaluate(context, eventStack, this)
+                                        .string);
             emitter.startElement(uri, lName, qName, attrs, namespaces,
                                  publicId, systemId, lineNo, colNo);
          }

@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 1.7 2003/02/08 16:21:00 obecker Exp $
+ * $Id: PDocumentFactory.java,v 1.8 2003/02/20 09:25:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,7 +46,7 @@ import net.sf.joost.stx.Value;
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.7 $ $Date: 2003/02/08 16:21:00 $
+ * @version $Revision: 1.8 $ $Date: 2003/02/20 09:25:29 $
  * @author Oliver Becker
  */
 
@@ -132,8 +132,7 @@ public class PDocumentFactory extends FactoryBase
             log4j.warn("Accessing " + reader + ": " + ex);
          }
 
-         context.currentInstruction = this;
-         Value v = href.evaluate(context, eventStack, eventStack.size());
+         Value v = href.evaluate(context, eventStack, this);
 
          String base;
          if (baseUri == null) { // determine default base URI

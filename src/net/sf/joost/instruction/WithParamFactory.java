@@ -1,5 +1,5 @@
 /*
- * $Id: WithParamFactory.java,v 1.3 2003/02/03 13:14:29 obecker Exp $
+ * $Id: WithParamFactory.java,v 1.4 2003/02/20 09:25:30 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>with-param</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.3 $ $Date: 2003/02/03 13:14:29 $
+ * @version $Revision: 1.4 $ $Date: 2003/02/20 09:25:30 $
  * @author Oliver Becker
  */
 
@@ -170,9 +170,7 @@ final public class WithParamFactory extends FactoryBase
             }
             else if (select != null) {
                // select attribute present
-               context.currentInstruction = this;
-               v = select.evaluate(context, 
-                                   eventStack, eventStack.size());
+               v = select.evaluate(context, eventStack, this);
             }
             else
                v = new Value();

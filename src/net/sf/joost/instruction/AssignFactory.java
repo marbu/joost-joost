@@ -1,5 +1,5 @@
 /*
- * $Id: AssignFactory.java,v 1.5 2003/01/29 08:27:12 obecker Exp $
+ * $Id: AssignFactory.java,v 1.6 2003/02/20 09:25:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>assign</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.5 $ $Date: 2003/01/29 08:27:12 $
+ * @version $Revision: 1.6 $ $Date: 2003/02/20 09:25:29 $
  * @author Oliver Becker
  */
 
@@ -147,9 +147,7 @@ final public class AssignFactory extends FactoryBase
             }
             else if (select != null) {
                // select attribute present
-               context.currentInstruction = this;
-               v = select.evaluate(context, 
-                                   eventStack, eventStack.size());
+               v = select.evaluate(context, eventStack, this);
             }
             else
                v = new Value("");
