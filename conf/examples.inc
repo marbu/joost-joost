@@ -1,13 +1,15 @@
-bubble.*
+bubble*
 challenge.*
 dmoz.*
 el2att*
 example1.*
 flat.*
 group-fsm.*
+html2docbook.*
 join.*
 order*
 play*
 rename.*
+ulornotul.*
 utm.*
 xmlverbatim.*
