@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 2.14 2004/11/06 13:07:32 obecker Exp $
+ * $Id: PDocumentFactory.java,v 2.15 2004/11/06 22:48:04 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -54,7 +54,7 @@ import org.xml.sax.ext.LexicalHandler;
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.14 $ $Date: 2004/11/06 13:07:32 $
+ * @version $Revision: 2.15 $ $Date: 2004/11/06 22:48:04 $
  * @author Oliver Becker
  */
 
@@ -166,14 +166,14 @@ public class PDocumentFactory extends FactoryBase
                // TODO: take the node's base. The result differs if the
                // node in v comes from a different document
                // (for example, it was stored in a variable)
-            else // use #stylesheet
+            else // use #sheet
                base = systemId;
          }
          else { // use specified base URI
             base = baseUri.evaluate(context, this).getString();
             if ("#input".equals(base) && context.locator != null)
                base = context.locator.getSystemId();
-            else if ("#stylesheet".equals(base))
+            else if ("#sheet".equals(base))
                base = systemId;
          }
 
@@ -218,11 +218,10 @@ public class PDocumentFactory extends FactoryBase
                   iSource = saxSource.getInputSource();
                }
                else {
-                  // construct the base URI relatively to systemId
-                  // and then href relatively to base
-                  iSource = 
-                     new InputSource(new URL(new URL(new URL(systemId), base), 
-                                             hrefURI).toExternalForm());
+                  // construct href relatively to base
+                  // (base must be an absolut URI)
+                  iSource = new InputSource(
+                     new URL(new URL(base), hrefURI).toExternalForm());
                   reader = defaultReader;
                }
 
