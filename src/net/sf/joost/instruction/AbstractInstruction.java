@@ -1,5 +1,5 @@
 /*
- * $Id: AbstractInstruction.java,v 2.1 2003/04/27 15:34:44 obecker Exp $
+ * $Id: AbstractInstruction.java,v 2.2 2004/01/21 11:22:14 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -35,7 +35,7 @@ import net.sf.joost.stx.Context;
  * <code>AbstractInstruction</code>) will be created: the first to be 
  * processed at the beginning of the element, the second to be processed 
  * at the end (see {@link NodeBase}).
- * @version $Revision: 2.1 $ $Date: 2003/04/27 15:34:44 $
+ * @version $Revision: 2.2 $ $Date: 2004/01/21 11:22:14 $
  * @author Oliver Becker
  */
 public abstract class AbstractInstruction
@@ -45,6 +45,20 @@ public abstract class AbstractInstruction
     * template or procedure will be represented as a linked list.
     */
    public AbstractInstruction next;
+
+   /** 
+    * The line number of this instruction in the transformation sheet.
+    * Normally this corresponds to the position of a start tag or an 
+    * end tag resp. 
+    */
+   public int lineNo = -1;
+
+   /** 
+    * The column number of this instruction in the transformation sheet.
+    * Normally this corresponds to the position of a start tag or an 
+    * end tag resp. 
+    */
+   public int colNo = -1;
 
 
    /**
