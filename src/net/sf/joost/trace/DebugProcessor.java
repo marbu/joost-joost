@@ -1,5 +1,5 @@
 /*
- * $Id: DebugProcessor.java,v 1.1 2003/06/02 11:29:07 zubow Exp $
+ * $Id: DebugProcessor.java,v 1.2 2003/07/27 10:54:27 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -37,13 +37,16 @@ import java.io.IOException;
 
 /**
  * Extends the {@link net.sf.joost.stx.Processor} with debug features.
- * @version $Revision: 1.1 $ $Date: 2003/06/02 11:29:07 $
+ * @version $Revision: 1.2 $ $Date: 2003/07/27 10:54:27 $
  * @author Zubow
  */
 public class DebugProcessor extends Processor {
 
     // for tracing
     private TraceManager tmgr;
+
+    // testing
+    public Parser stxparser;
 
     /**
      * See {@link net.sf.joost.stx.Processor#Processor(org.xml.sax.InputSource, javax.xml.transform.ErrorListener)}
@@ -94,8 +97,14 @@ public class DebugProcessor extends Processor {
      * overloaded method of ContentHandler for debug information
      */
     public void startDocument() throws SAXException {
+        TraceMetaInfo meta = new TraceMetaInfo();
+        meta.eventStack = getEventStack();
+        meta.dataStack = getDataStack();
+        meta.innerProcessStack = getInnerProcessStack();
+        meta.context = getContext();
+
         // fire startprocessing event to tracelistener
-        this.tmgr.fireStartProcessingEvent(getEventStack(), getDataStack(), getInnerProcessStack(), getContext());
+        this.tmgr.fireStartProcessingEvent(meta);
         super.startDocument();
     }
 
@@ -103,8 +112,14 @@ public class DebugProcessor extends Processor {
      * overloaded method of ContentHandler for debug information
      */
     public void endDocument() throws SAXException {
+        TraceMetaInfo meta = new TraceMetaInfo();
+        meta.eventStack = getEventStack();
+        meta.dataStack = getDataStack();
+        meta.innerProcessStack = getInnerProcessStack();
+        meta.context = getContext();
+
         // fire endprocessing event to tracelistener
-        this.tmgr.fireEndProcessingEvent(getEventStack(), getDataStack(), getInnerProcessStack(), getContext());
+        this.tmgr.fireEndProcessingEvent(meta);
         super.endDocument();
     }
 
@@ -116,7 +131,16 @@ public class DebugProcessor extends Processor {
             throws SAXException {
         // todo - namespace support - remove null value
         SAXEvent saxevent = SAXEvent.newElement(uri, lName, qName, attrs, null);
-        this.tmgr.fireStartElementEvent(saxevent, getEventStack(), getDataStack(), getInnerProcessStack(), getContext());
+
+        TraceMetaInfo meta = new TraceMetaInfo();
+        meta.saxEvent = saxevent;
+        meta.eventStack = getEventStack();
+        meta.dataStack = getDataStack();
+        meta.innerProcessStack = getInnerProcessStack();
+        meta.context = getContext();
+        meta.lastElement = getLastElement();
+
+        this.tmgr.fireStartElementEvent(meta);
         super.startElement(uri, lName, qName, attrs);
     }
 
@@ -127,7 +151,16 @@ public class DebugProcessor extends Processor {
             throws SAXException {
         // todo - namespace support - remove null value
         SAXEvent saxevent = SAXEvent.newElement(uri, lName, qName, null, null);
-        this.tmgr.fireEndElementEvent(saxevent, getEventStack(), getDataStack(), getInnerProcessStack(), getContext());
+
+        TraceMetaInfo meta = new TraceMetaInfo();
+        meta.saxEvent = saxevent;
+        meta.eventStack = getEventStack();
+        meta.dataStack = getDataStack();
+        meta.innerProcessStack = getInnerProcessStack();
+        meta.context = getContext();
+        meta.lastElement = getLastElement();
+
+        this.tmgr.fireEndElementEvent(meta);
         super.endElement(uri, lName, qName);
     }
 
@@ -138,7 +171,11 @@ public class DebugProcessor extends Processor {
     public void characters(char[] ch, int start, int length) throws SAXException {
         String text = new String(ch, start, length);
         SAXEvent saxevent = SAXEvent.newText(text);
-        this.tmgr.fireTextEvent(saxevent, getContext());
+        TraceMetaInfo meta = new TraceMetaInfo();
+        meta.saxEvent = saxevent;
+        meta.context = getContext();
+
+        this.tmgr.fireTextEvent(meta);
         super.characters(ch, start, length);
     }
 
@@ -148,7 +185,11 @@ public class DebugProcessor extends Processor {
      */
     public void processingInstruction(String target, String data) throws SAXException {
         SAXEvent saxevent = SAXEvent.newPI(target, data);
-        this.tmgr.firePIEvent(saxevent, getContext());
+        TraceMetaInfo meta = new TraceMetaInfo();
+        meta.saxEvent = saxevent;
+        meta.context = getContext();
+
+        this.tmgr.firePIEvent(meta);
         super.processingInstruction(target, data);
     }
 
@@ -157,7 +198,11 @@ public class DebugProcessor extends Processor {
      */
     public void startPrefixMapping(String prefix, String uri) throws SAXException {
         SAXEvent saxevent = SAXEvent.newMapping(prefix, uri);
-        this.tmgr.fireMappingEvent(saxevent, getContext());
+        TraceMetaInfo meta = new TraceMetaInfo();
+        meta.saxEvent = saxevent;
+        meta.context = getContext();
+
+        this.tmgr.fireMappingEvent(meta);
         super.startPrefixMapping(prefix, uri);
     }
 
@@ -167,7 +212,11 @@ public class DebugProcessor extends Processor {
     public void comment(char[] ch, int start, int length) throws SAXException {
         String comvalue = new String(ch, start, length);
         SAXEvent saxevent = SAXEvent.newComment(comvalue);
-        this.tmgr.fireCommentEvent(saxevent, getContext());
+        TraceMetaInfo meta = new TraceMetaInfo();
+        meta.saxEvent = saxevent;
+        meta.context = getContext();
+
+        this.tmgr.fireCommentEvent(meta);
         super.comment(ch, start, length);
     }
 

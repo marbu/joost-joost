@@ -1,5 +1,5 @@
 /*
- * $Id: TraceManager.java,v 1.2 2003/06/02 11:30:27 zubow Exp $
+ * $Id: TraceManager.java,v 1.3 2003/07/27 10:54:27 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -36,11 +36,12 @@ import java.util.Hashtable;
 import org.xml.sax.Attributes;
 
 import net.sf.joost.stx.Processor;
+import net.sf.joost.instruction.AbstractInstruction;
 
 /**
  * This class manages a collection of {@link TraceListener}, and acts as an
  * interface for the tracing functionality in Joost.
- * @version $Revision: 1.2 $ $Date: 2003/06/02 11:30:27 $
+ * @version $Revision: 1.3 $ $Date: 2003/07/27 10:54:27 $
  * @author Zubow
  */
 public class TraceManager {
@@ -105,10 +106,7 @@ public class TraceManager {
     /**
      * Fire a start processing event (open).
      */
-    public void fireStartProcessingEvent(Stack eventStack,
-                                         Processor.DataStack dataStack,
-                                         Stack innerProcessStack,
-                                         Context context) {
+    public void fireStartProcessingEvent(TraceMetaInfo meta) {
         if (hasTraceListeners()) {
             // count of registered tracelisteners
             int countListener = traceListeners.size();
@@ -116,7 +114,7 @@ public class TraceManager {
                 TraceListener currentListener =
                         (TraceListener) traceListeners.elementAt(i);
                 // call the according method on tracelistener
-                currentListener.open(eventStack, dataStack, innerProcessStack, context);
+                currentListener.open(meta);
             }
         }
     }
@@ -124,10 +122,7 @@ public class TraceManager {
     /**
      * Fire at the end of processing (close).
      */
-    public void fireEndProcessingEvent(Stack eventStack,
-                                       Processor.DataStack dataStack,
-                                       Stack innerProcessStack,
-                                       Context context) {
+    public void fireEndProcessingEvent(TraceMetaInfo meta) {
         if (hasTraceListeners()) {
             // count of registered tracelisteners
             int countListener = traceListeners.size();
@@ -135,7 +130,7 @@ public class TraceManager {
                 TraceListener currentListener =
                         (TraceListener) traceListeners.elementAt(i);
                 // call the according method on tracelistener
-                currentListener.close(eventStack, dataStack, innerProcessStack, context);
+                currentListener.close(meta);
             }
         }
     }
@@ -164,11 +159,7 @@ public class TraceManager {
     /**
      * Fire if a startelement event of the source gets processed.
      */
-    public void fireStartElementEvent(SAXEvent event,
-                                      Stack eventStack,
-                                      Processor.DataStack dataStack,
-                                      Stack innerProcessStack,
-                                      Context context) {
+    public void fireStartElementEvent(TraceMetaInfo meta) {
         if (hasTraceListeners()) {
             // count of registered tracelisteners
             int countListener = traceListeners.size();
@@ -176,7 +167,7 @@ public class TraceManager {
                 TraceListener currentListener =
                         (TraceListener) traceListeners.elementAt(i);
                 // call the according method on tracelistener
-                currentListener.startElementEvent(event, eventStack, dataStack, innerProcessStack, context);
+                currentListener.startElementEvent(meta);
             }
         }
     }
@@ -184,11 +175,7 @@ public class TraceManager {
     /**
      * Fire after a node of the source tree got processed.
      */
-    public void fireEndElementEvent(SAXEvent event,
-                                    Stack eventStack,
-                                    Processor.DataStack dataStack,
-                                    Stack innerProcessStack,
-                                    Context context) {
+    public void fireEndElementEvent(TraceMetaInfo meta) {
         if (hasTraceListeners()) {
             // count of registered tracelisteners
             int countListener = traceListeners.size();
@@ -196,7 +183,7 @@ public class TraceManager {
                 TraceListener currentListener =
                         (TraceListener) traceListeners.elementAt(i);
                 // call the according method on tracelistener
-                currentListener.endElementEvent(event, eventStack, dataStack, innerProcessStack, context);
+                currentListener.endElementEvent(meta);
             }
         }
     }
@@ -204,7 +191,7 @@ public class TraceManager {
     /**
      * Fire when a text event of the source was received.
      */
-    public void fireTextEvent(SAXEvent event, Context context) {
+    public void fireTextEvent(TraceMetaInfo meta) {
         if (hasTraceListeners()) {
             // count of registered tracelisteners
             int countListener = traceListeners.size();
@@ -212,7 +199,7 @@ public class TraceManager {
                 TraceListener currentListener =
                         (TraceListener) traceListeners.elementAt(i);
                 // call the according method on tracelistener
-                currentListener.textEvent(event, context);
+                currentListener.textEvent(meta);
             }
         }
     }
@@ -220,7 +207,7 @@ public class TraceManager {
     /**
      * Fire when a PI-Event of the source was received.
      */
-    public void firePIEvent(SAXEvent event, Context context) {
+    public void firePIEvent(TraceMetaInfo meta) {
         if (hasTraceListeners()) {
             // count of registered tracelisteners
             int countListener = traceListeners.size();
@@ -228,7 +215,7 @@ public class TraceManager {
                 TraceListener currentListener =
                         (TraceListener) traceListeners.elementAt(i);
                 // call the according method on tracelistener
-                currentListener.PIEvent(event, context);
+                currentListener.PIEvent(meta);
             }
         }
     }
@@ -236,7 +223,7 @@ public class TraceManager {
     /**
      * Called when a namespace mapping event of the source was received.
      */
-    public void fireMappingEvent(SAXEvent event, Context context) {
+    public void fireMappingEvent(TraceMetaInfo meta) {
         if (hasTraceListeners()) {
             // count of registered tracelisteners
             int countListener = traceListeners.size();
@@ -244,7 +231,7 @@ public class TraceManager {
                 TraceListener currentListener =
                         (TraceListener) traceListeners.elementAt(i);
                 // call the according method on tracelistener
-                currentListener.mappingEvent(event, context);
+                currentListener.mappingEvent(meta);
             }
         }
     }
@@ -252,7 +239,7 @@ public class TraceManager {
     /**
      * Called when a comment event of the source was received.
      */
-    public void fireCommentEvent(SAXEvent event, Context context) {
+    public void fireCommentEvent(TraceMetaInfo meta) {
         if (hasTraceListeners()) {
             // count of registered tracelisteners
             int countListener = traceListeners.size();
@@ -260,7 +247,7 @@ public class TraceManager {
                 TraceListener currentListener =
                         (TraceListener) traceListeners.elementAt(i);
                 // call the according method on tracelistener
-                currentListener.commentEvent(event, context);
+                currentListener.commentEvent(meta);
             }
         }
     }
@@ -305,8 +292,7 @@ public class TraceManager {
     /**
      * Fire when an element of the stylesheet gets processed.
      */
-/*
-    public void fireEnterStylesheetNode(NodeBase node, Context context) {
+    public void fireEnterStylesheetNode(TraceMetaInfo meta) {
         if (hasTraceListeners()) {
             // count of registered tracelisteners
             int countListener = traceListeners.size();
@@ -314,17 +300,15 @@ public class TraceManager {
                 TraceListener currentListener =
                         (TraceListener) traceListeners.elementAt(i);
                 // call the according method on tracelistener
-                //currentListener.enter(node, context);
+                currentListener.enterStxNode(meta);
             }
         }
     }
-*/
 
     /**
      * Fire after an element of the stylesheet got processed.
      */
-/*
-    public void fireLeaveStylesheetNode(NodeBase node, Context context) {
+    public void fireLeaveStylesheetNode(TraceMetaInfo meta) {
         if (hasTraceListeners()) {
             // count of registered tracelisteners
             int countListener = traceListeners.size();
@@ -332,11 +316,10 @@ public class TraceManager {
                 TraceListener currentListener =
                         (TraceListener) traceListeners.elementAt(i);
                 // call the according method on tracelistener
-                //currentListener.leave(node, context);
+                currentListener.leaveStxNode(meta);
             }
         }
     }
-*/
 
     // *************************************************************************
     // Information about emitter events
