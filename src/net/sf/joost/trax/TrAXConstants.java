@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXConstants.java,v 1.3 2002/10/19 23:53:33 zubow Exp $
+ * $Id: TrAXConstants.java,v 1.4 2002/10/21 13:35:29 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -49,8 +49,9 @@ public interface TrAXConstants {
      * support a true value for the namespaces property and a false
      * value for the namespace-prefixes property.
      */
-    public static String NSURI              = "http://xml.org/sax/features/namespaces";
-    public static String NSURIPREFIX        = "http://xml.org/sax/features/namespace-prefixes";
+    static String FEATURE_URI               = "http://xml.org/sax/features/";
+    public static String FEAT_NS            = FEATURE_URI + "namespaces";
+    public static String FEAT_NSPREFIX      = FEATURE_URI + "namespace-prefixes";
 
 
     /*
