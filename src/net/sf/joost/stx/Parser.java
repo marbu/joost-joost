@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 2.11 2004/01/21 12:36:13 obecker Exp $
+ * $Id: Parser.java,v 2.12 2004/01/23 09:56:42 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -47,7 +47,7 @@ import net.sf.joost.instruction.*;
 /** 
  * Creates the tree representation of an STX transformation sheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 2.11 $ $Date: 2004/01/21 12:36:13 $
+ * @version $Revision: 2.12 $ $Date: 2004/01/23 09:56:42 $
  * @author Oliver Becker
  */
 
@@ -146,20 +146,6 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
    }
 
 
-   /** 
-    * Constructs a new Parser instance.
-    * @param errorHandler a handler object for reporting errors while
-    *        parsing the transformation sheet.
-    * @param uriResolver a resolver for <code>stx:include</code> instructions
-    */
-   public Parser(ErrorHandlerImpl errorHandler, URIResolver uriResolver)
-   {
-      this();
-      context.errorHandler = errorHandler;
-      context.uriResolver = uriResolver;
-   }
-
-
    /**
     * @return the STX node factories, indexed by local name
     */
@@ -170,11 +156,31 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
 
    /** 
     * Registers a {@link ParserListener} for this parser 
-    * @param listener the listener to be used
+    * @param listener the listener to use
     */
    public void setParserListener(ParserListener listener)
    {
-      parserListener = listener;
+      parserListener = context.parserListener = listener;
+   }
+
+
+   /**
+    * Registers an {@link ErrorHandler} for this parser
+    * @param handler the handler to be used
+    */
+   public void setErrorHandler(ErrorHandler handler)
+   {
+      context.errorHandler = handler;
+   }
+
+
+   /**
+    * Registers a {@link URIResolver} for this parser
+    * @param resolver the resolver to use
+    */
+   public void setURIResolver(URIResolver resolver)
+   {
+      context.uriResolver = resolver;
    }
 
 
@@ -206,7 +212,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
             NodeBase textNode = new TextNode(s, currentNode, context);
             currentNode.insert(textNode);
             if (parserListener != null)
-               parserListener.nodeParsed(textNode);
+               parserListener.nodeCreated(textNode);
          }
       }
       collectedCharacters.setLength(0);
@@ -251,6 +257,9 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
                   compilableNodes.addElement(nodes[i]);
          }
          compilableNodes = null; // for garbage collection
+
+         if (parserListener != null)
+            parserListener.parseFinished();
       }
       catch (SAXParseException ex) {
          if (context.errorHandler != null)
@@ -331,7 +340,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
          currentNode = newNode;
 
          if (parserListener != null)
-            parserListener.nodeParsed(newNode);
+            parserListener.nodeCreated(newNode);
       }
       catch (SAXParseException ex) {
          if (context.errorHandler != null)
@@ -349,7 +358,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
          if (collectedCharacters.length() != 0)
             processCharacters();
 
-         currentNode.setEndLocation(context, parserListener);
+         currentNode.setEndLocation(context);
 
          if (currentNode instanceof LitElementFactory.Instance)
             // restore the newly declared namespaces from this element
