@@ -1,5 +1,5 @@
 /*
- * $Id: StxTest.java,v 1.1 2004/12/30 18:33:16 obecker Exp $
+ * $Id: StxTest.java,v 1.2 2005/01/07 10:29:51 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,12 +24,12 @@
 package test.joost.stx;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.StringTokenizer;
 
 import javax.xml.transform.Transformer;
@@ -43,7 +43,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 /**
- * @version $Revision: 1.1 $ $Date: 2004/12/30 18:33:16 $
+ * @version $Revision: 1.2 $ $Date: 2005/01/07 10:29:51 $
  * @author Oliver Becker
  */
 public class StxTest extends TestCase
@@ -56,6 +56,11 @@ public class StxTest extends TestCase
       // The default Xalan of Java 1.4 doesn't work
       factory.setAttribute(net.sf.joost.trax.TrAXConstants.KEY_XSLT_FACTORY,
                            "net.sf.saxon.TransformerFactoryImpl");
+   }
+
+   public StxTest(String name)
+   {
+      super(name);
    }
 
    public static Test suite()
@@ -81,13 +86,10 @@ public class StxTest extends TestCase
          System.out.println(fName);
 
          File resFile = new File(testDir, fName);
-         int dot = fName.indexOf(".res");
-         File stxFile = new File(testDir, 
-                                 fName.substring(0, dot) + ".stx");
-         File parFile = new File(testDir, 
-                                 fName.substring(0, dot) + ".par");
-         File xmlFile = new File(testDir, 
-                                 fName.substring(0, dot) + ".xml");
+         String baseName = fName.substring(0, fName.indexOf(".res"));
+         File stxFile = new File(testDir, baseName + ".stx");
+         File parFile = new File(testDir, baseName + ".par");
+         File xmlFile = new File(testDir, baseName + ".xml");
          if (!xmlFile.exists()) {
             int hyphen = fName.indexOf('-');
             if (hyphen != -1)
@@ -109,14 +111,14 @@ public class StxTest extends TestCase
                                  parSpec.substring(equalsIndex+1));
                }
             }
-            
-            StringWriter sw = new StringWriter();
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();            
             t.transform(new StreamSource(xmlFile),
-                        new StreamResult(sw));
+                        new StreamResult(baos));
             BufferedReader brExpected = 
                new BufferedReader(new FileReader(resFile));
             BufferedReader brReceived =
-               new BufferedReader(new StringReader(sw.toString()));
+               new BufferedReader(new StringReader(baos.toString()));
             
             String lineExpected = brExpected.readLine();
             String lineReceived = brReceived.readLine();
