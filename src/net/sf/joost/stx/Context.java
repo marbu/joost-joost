@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 1.5 2002/12/17 16:46:42 obecker Exp $
+ * $Id: Context.java,v 1.6 2002/12/19 14:24:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,10 +28,6 @@ import net.sf.joost.instruction.GroupBase;
 import net.sf.joost.instruction.NodeBase;
 
 import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-
-import javax.xml.transform.ErrorListener;
-import javax.xml.transform.TransformerException;
 
 import java.util.Hashtable;
 
@@ -39,11 +35,14 @@ import java.util.Hashtable;
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 1.5 $ $Date: 2002/12/17 16:46:42 $
+ * @version $Revision: 1.6 $ $Date: 2002/12/19 14:24:44 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
 {
+   /** The locator object for the input stream */
+   public Locator locator;
+
    /** The position of the current node. */
    public long position;
 
