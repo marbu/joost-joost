@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 1.6 2002/12/15 17:06:47 obecker Exp $
+ * $Id: GroupBase.java,v 1.7 2002/12/15 17:10:08 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.Value;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 1.6 $ $Date: 2002/12/15 17:06:47 $
+ * @version $Revision: 1.7 $ $Date: 2002/12/15 17:10:08 $
  * @author Oliver Becker
  */
 
@@ -170,13 +170,8 @@ abstract public class GroupBase extends NodeBase
       Arrays.sort(visibleTemplates); // in descending priority order
 
       if (groupName != null) {
-         // register group in the transform object
-//          GroupBase transformGroup = this;
-//          while (transformGroup.parentGroup != null)
-//             transformGroup = transformGroup.parentGroup;
-
-//          ((TransformFactory.Instance)transformGroup).
-            namedGroups.put(groupName, visibleTemplates);
+         // register group
+         namedGroups.put(groupName, visibleTemplates);
       }
 
       for (int i=0; i<containedGroups.length; i++) {
