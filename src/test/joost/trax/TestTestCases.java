@@ -3,16 +3,19 @@
  *
  *	Used by JUnit
  *
- *	$Id: TestTestCases.java,v 1.2 2002/10/08 19:20:27 zubow Exp $
+ *	$Id: TestTestCases.java,v 1.3 2002/11/11 18:57:42 zubow Exp $
  *
  */
 
 package test.joost.trax;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
-import java.util.*;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Properties;
 
 
 public class TestTestCases extends TestCase {

@@ -3,33 +3,36 @@
  *
  *	TestCases for TraX-Transformer
  *
- *	$Id: TestCases.java,v 1.2 2002/10/08 19:20:27 zubow Exp $
+ *	$Id: TestCases.java,v 1.3 2002/11/11 18:57:42 zubow Exp $
  *
  */
 
 package test.joost.trax;
 
-import javax.xml.transform.*;
-import javax.xml.transform.sax.*;
-import javax.xml.transform.dom.*;
-import javax.xml.transform.stream.*;
-import javax.xml.*;
-import javax.xml.parsers.*;
-
+import org.apache.log4j.Logger;
+import org.apache.xml.serialize.XMLSerializer;
+import org.apache.xml.serialize.SerializerFactory;
+import org.apache.xml.serialize.OutputFormat;
+import org.w3c.dom.Node;
+import org.w3c.dom.Element;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLFilter;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.*;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import java.io.*;
-import java.util.*;
-
-import org.xml.sax.*;
-import org.w3c.dom.*;
-import org.apache.xml.serialize.*;
-
-import net.sf.joost.trax.*;
-
-
-// Import log4j classes.
-import org.apache.log4j.Logger;
+import java.util.Properties;
 
 
 public class TestCases {
@@ -325,9 +328,7 @@ public class TestCases {
 
             if(nodeResult != null) {
 
-                XMLSerializer serial = new XMLSerializer();
-
-                String result = serial.writeToString(nodeResult);
+                String result = serializeDOM2String((Document)nodeResult);
 
                 log.info("*** print out DOM-document - DOMResult ***");
                 log.info(result);
@@ -439,7 +440,7 @@ public class TestCases {
 
         if ((xmlsrc == null) || (stx == null)) {
             xmlsrc  = DEFXML;
-            stx     = DEFSTX4;
+            stx     = DEFSTX1;
         }
 
         log.debug("\n\n==== exampleContentHandler2DOM ====");
@@ -1400,7 +1401,7 @@ public class TestCases {
 
         log.debug("\n=========");
 
-        transformer2.setOutputProperty(OutputKeys.INDENT, "yes");
+        //transformer2.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer2.transform(new StreamSource(sourceID),
                                new StreamResult(System.out));
 
@@ -1434,7 +1435,7 @@ public class TestCases {
 
         transformer.setParameter("a-param", "hello to me!");
 
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        //transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 
         // Transform the source XML to System.out.
         transformer.transform( new StreamSource(sourceID),
@@ -1458,11 +1459,11 @@ public class TestCases {
 
         Properties oprops = templates.getOutputProperties();
 
-        oprops.put(OutputKeys.INDENT, "yes");
+        //oprops.put(OutputKeys.INDENT, "yes");
 
         Transformer transformer = templates.newTransformer();
 
-        transformer.setOutputProperties(oprops);
+        //transformer.setOutputProperties(oprops);
 
         transformer.transform(new StreamSource(sourceID),
                               new StreamResult(System.out));
@@ -1593,46 +1594,15 @@ public class TestCases {
    */
 
   public static void exampleSerializeNode(DOMResult result)
-
     throws TransformerException, TransformerConfigurationException, SAXException, IOException,
-
     ParserConfigurationException
-
-  {
-/*
-
-    TransformerFactory tfactory = TransformerFactory.newInstance();
-
-
-
-    // This creates a transformer that does a simple identity transform,
-    // and thus can be used for all intents and purposes as a serializer.
-
-    Transformer serializer = tfactory.newTransformer();
-
-
-    serializer.setOutputProperty(OutputKeys.INDENT, "yes");
-    serializer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-
-
-    DOMSource domsource = new DOMSource(result.getNode());
-
-    serializer.transform(domsource,
-                         new StreamResult(System.out));
-
-*/
-
-            if(result != null) {
-
-                XMLSerializer serial = new XMLSerializer();
-
-                String str = serial.writeToString(result.getNode());
-
-                log.info("*** print out DOM-document - DOMResult ***");
-                log.info(str);
-            }
-
-  }
+    {
+        if(result != null) {
+            String str = serializeDOM2String((Document)result.getNode());
+            log.info("*** print out DOM-document - DOMResult ***");
+            log.info(str);
+        }
+    }
 
 
 
@@ -1668,7 +1638,7 @@ public class TestCases {
 
         oprops.put("indent-amount", "2");
 
-        serializer.setOutputProperties(oprops);
+        //serializer.setOutputProperties(oprops);
 
 
         DOMSource domInSource = new DOMSource(doc);
@@ -1718,11 +1688,12 @@ public class TestCases {
 
         if(nodeResult != null) {
 
-            XMLSerializer serial = new XMLSerializer();
+            String result = serializeDOM2String((Document)nodeResult);
 
-            String result = serial.writeToString(nodeResult);
+            log.info("*** print out DOM-document - DOMResultt ***");
+            log.info(result);
 
-            return result;
+            return "";
         } else {
             return null;
         }
@@ -1757,13 +1728,10 @@ public class TestCases {
         //check
         if(doc != null) {
 
-            XMLSerializer serial = new XMLSerializer();
+            String result = serializeDOM2String((Document)doc);
 
-            String result = serial.writeToString(doc);
-
-            //System.out.println();
-            //System.out.println("*** STX-sheet ***");
-            //System.out.println(result);
+            log.debug("*** STX-sheet ***");
+            log.debug(result);
         } else {
             return false;
         }
@@ -1812,13 +1780,11 @@ public class TestCases {
         //check
         if(doc != null) {
 
-            XMLSerializer serial = new XMLSerializer();
+            String result = serializeDOM2String((Document)doc);
 
-            String result = serial.writeToString(doc);
+            log.debug("*** STX-sheet ***");
+            log.debug(result);
 
-            //System.out.println();
-            //System.out.println("*** STX-sheet ***");
-            //System.out.println(result);
         } else {
             return false;
         }
@@ -1905,12 +1871,10 @@ public class TestCases {
 
         if(nodeResult != null) {
 
-            XMLSerializer serial = new XMLSerializer();
+            String result = serializeDOM2String((Document)nodeResult);
 
-            String result = serial.writeToString(nodeResult);
-
-            log.debug("*** print out DOM-document - DOMResult ***");
-            log.debug(result);
+            log.info("*** print out DOM-document - DOMResult ***");
+            log.info(result);
 
             return true;
         } else {
@@ -2161,6 +2125,30 @@ public class TestCases {
         return true;
     }
 
+    /**
+     * Helpermethod to serialize a DOM-Document into a string.
+     * @param doc DOM-Document
+     * @return Serialized DOM-Document to String
+     * @throws IOException
+     */
+    public static String serializeDOM2String(Document doc) throws IOException {
+
+        StringWriter sWriter = new StringWriter();
+        // XERCES 1 or 2 additionnal classes.
+        OutputFormat of = new OutputFormat("XML","ISO-8859-1",true);
+        of.setIndent(1);
+        of.setIndenting(true);
+        //of.setDoctype(null,"users.dtd");
+        XMLSerializer serializer = new XMLSerializer(sWriter,of);
+        // As a DOM Serializer
+        serializer.asDOMSerializer();
+        serializer.serialize( doc );
+        sWriter.close();
+
+        return sWriter.toString();
+
+    }
+
 
     /**
      * Exceptionhandling
@@ -2168,9 +2156,9 @@ public class TestCases {
      */
     private static void  handleException( Exception ex ) {
 
-        //log.error("EXCEPTION: ");
+        log.error("EXCEPTION: ");
 
-        //ex.printStackTrace();
+        ex.printStackTrace();
 
         if( ex instanceof TransformerConfigurationException ) {
 

@@ -3,19 +3,17 @@
  *
  *	Example for a sax-contenthandler for TraX-Transformer
  *
- *	$Id: ExampleContentHandler.java,v 1.2 2002/10/08 19:20:26 zubow Exp $
+ *	$Id: ExampleContentHandler.java,v 1.3 2002/11/11 18:57:25 zubow Exp $
  *
  */
 
 package test.joost.trax;
 
-import org.xml.sax.ContentHandler;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.Locator;
-
-// Import log4j classes.
 import org.apache.log4j.Logger;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
 
 /**
  * TestContentHandler for transformation over TraX with joost

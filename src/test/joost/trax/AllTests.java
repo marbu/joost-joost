@@ -3,15 +3,14 @@
  *
  *	JUnit-Test-Suite for TraX-Transformers
  *
- *	$Id: AllTests.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ *	$Id: AllTests.java,v 1.2 2002/11/11 18:57:10 zubow Exp $
  *
  */
 
 package test.joost.trax;
 
-import junit.framework.*;
-
-// Import log4j classes.
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 

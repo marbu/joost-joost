@@ -12,6 +12,8 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLFilter;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -23,11 +25,11 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.*;
 import java.util.Properties;
+
+import net.sf.joost.stx.Processor;
+import net.sf.joost.emitter.StreamEmitter;
 
 public class ProfilerTestCases extends TestCase {
 
@@ -68,8 +70,23 @@ public class ProfilerTestCases extends TestCase {
 
   /**
    * Show the Identity-transformation with StreamSource and StreamResult
+   * without TrAX.
+   *
    */
-    public void testRunTests1() {
+    public void atestRunTests0() {
+
+        long delta = exampleWithoutTrAX(xmlId);
+        log.info("1. Stream2Stream Transformation without TrAX length : " + delta + " ms");
+
+        delta = exampleWithoutTrAX(xmlId);
+        log.info("2. Stream2Stream Transformation without TrAX length : " + delta + " ms");
+
+    }
+
+  /**
+   * Show the Identity-transformation with StreamSource and StreamResult
+   */
+    public void atestRunTests1() {
 
         long delta = exampleStreamSourceAndResult(xmlId);
         log.info("1. Stream2Stream Transformation length : " + delta + " ms");
@@ -82,7 +99,7 @@ public class ProfilerTestCases extends TestCase {
   /**
    * Show the Identity-transformation with SaxSource and StreamResult
    */
-    public void testRunTests2() {
+    public void atestRunTests2() {
 
         long delta = exampleSAXSourceAndStreamResult();
 
@@ -96,7 +113,7 @@ public class ProfilerTestCases extends TestCase {
   /**
    * Show the Identity-transformation with DOMSource and StreamResult
    */
-    public void testRunTests3() {
+    public void atestRunTests3() {
 
         long delta = exampleDOMSourceAndStreamResult(xmlId);
 
@@ -112,7 +129,7 @@ public class ProfilerTestCases extends TestCase {
   /**
    * Show the Identity-transformation with StreamSource and SAXResult
    */
-    public void testRunTests4() {
+    public void atestRunTests4() {
 
         long delta = exampleStreamSourceAndSAXResult(xmlId);
 
@@ -139,7 +156,7 @@ public class ProfilerTestCases extends TestCase {
   /**
    * Show the Identity-transformation with DOMSource and SAXResult
    */
-    public void testRunTests6() {
+    public void atestRunTests6() {
 
         long delta = exampleDOMSourceAndSAXResult(xmlId);
 
@@ -154,7 +171,7 @@ public class ProfilerTestCases extends TestCase {
   /**
    * Show the Identity-transformation with StreamSource and DOMResult
    */
-    public void testRunTests7() {
+    public void atestRunTests7() {
 
         long delta = exampleStreamSourceAndDOMResult(xmlId);
 
@@ -180,7 +197,7 @@ public class ProfilerTestCases extends TestCase {
   /**
    * Show the Identity-transformation with DOMSource and DOMResult
    */
-    public void testRunTests9() {
+    public void atestRunTests9() {
 
         long delta = exampleDOMSourceAndDOMResult(xmlId);
 
@@ -223,6 +240,37 @@ public class ProfilerTestCases extends TestCase {
 
 // *******************************************************
 // Testimplementierungen
+
+    public static long exampleWithoutTrAX(String sourceID){
+
+       String stxFile =  "test/nomatch1.stx";
+
+       // Create a new STX Processor object
+       long delta = 0;
+        try {
+            Processor pr = new Processor(new InputSource(stxFile));
+            StreamEmitter em =
+              new StreamEmitter(new BufferedWriter(new FileWriter("testdata/profiler/0.xml")));
+
+           pr.setContentHandler(em);
+
+           pr.setLexicalHandler(em);
+
+           long start = System.currentTimeMillis();
+
+           pr.parse(sourceID);
+
+           delta = System.currentTimeMillis() - start;
+
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use Options | File Templates.
+        } catch (SAXException e) {
+            e.printStackTrace();  //To change body of catch statement use Options | File Templates.
+        }
+
+        return delta;
+    }
+
     /**
     * Show the Identity-transformation with StreamSource and StreamResult
     */
@@ -367,10 +415,14 @@ public class ProfilerTestCases extends TestCase {
             // Create a transformer for the stylesheet.
             Transformer transformer = tfactory.newTransformer();
 
+            XMLFilter myFilter = new MyXMLFilter(count);
+            // @todo : fixing
+            myFilter.setFeature("namespace.uri", true);
+
             long start = System.currentTimeMillis();
 
             transformer.transform(
-                new SAXSource(new MyXMLFilter(count), new InputSource()),
+                new SAXSource(myFilter, new InputSource()),
                new SAXResult(new MyContentHandler()));
 
             delta = System.currentTimeMillis() - start;

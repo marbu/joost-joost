@@ -3,41 +3,17 @@
  *
  *	Tests without junit
  *
- *	$Id: RunTests.java,v 1.2 2002/10/08 19:20:26 zubow Exp $
+ *	$Id: RunTests.java,v 1.3 2002/11/11 18:57:40 zubow Exp $
  *
  */
 
 package test.joost.trax;
 
 
-import java.util.*;
-import java.io.*;
-
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
-
-import net.sf.joost.stx.Parser;
-import net.sf.joost.stx.Processor;
-import net.sf.joost.stx.Emitter;
-import net.sf.joost.trax.TransformerFactoryImpl;
-
-import javax.xml.transform.*;
-import javax.xml.transform.sax.*;
-import javax.xml.transform.dom.*;
-import javax.xml.transform.stream.*;
-import javax.xml.*;
-import javax.xml.parsers.*;
-
-import org.xml.sax.*;
-import org.w3c.dom.*;
-
-//run testcases
-import test.joost.trax.TestCases;
-
-
-// Import log4j classes.
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+
+import java.util.Properties;
 
 
 /**
@@ -119,8 +95,8 @@ public class RunTests {
             //log.info("Try to run runTest0 - Identity");
             //TestCases.runTests0("test/error.xml");
 
-            log.info("Try to run runTest1");
-            TestCases.runTests1("test/error.xml", "test/error.stx");
+            //log.info("Try to run runTest1");
+            //TestCases.runTests1("test/error.xml", "test/error.stx");
             //log.info("Try to run runTest1 again");
             //TestCases.runTests1("testdata/temp.xml", "test/sum3.stx");
 
@@ -138,7 +114,7 @@ public class RunTests {
             //TestCases.runTests2("testdata/temp4.xml", "test/flat.stx", "testdata/temp5.xml");
 
 
-            //TestCases.runTests1(null,null);
+            //TestCases.runTests15(null, null);
             //TestCases.runTests2(null,null,null);
             //TestCases.runTests3(null,null);
             //TestCases.runTests4(null,null);
@@ -159,7 +135,7 @@ public class RunTests {
             //reverse order
             //TestCases.runTests9("test/flat.xml", "test/sum3.stx", "test/flat.stx");
 
-            //TestCases.runTests19(null, null);
+            TestCases.runTests19(null, null);
 
             //TestCases.runTests18(null,null,null,null);
 
