@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 2.2 2003/04/30 14:49:25 obecker Exp $
+ * $Id: Parser.java,v 2.3 2003/06/01 19:39:05 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,7 +46,7 @@ import net.sf.joost.instruction.*;
 /** 
  * Creates the tree representation of an STX transformation sheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 2.2 $ $Date: 2003/04/30 14:49:25 $
+ * @version $Revision: 2.3 $ $Date: 2003/06/01 19:39:05 $
  * @author Oliver Becker
  */
 
@@ -77,8 +77,11 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
    private Hashtable inScopeNamespaces;
 
    /** List of nodes that need another call to {@link NodeBase#compile} */
-   private Vector compilableNodes = new Vector();
+   public Vector compilableNodes = new Vector();
 
+   /** Group which had an <code>stx:include</code>, which in turn created
+       this Parser object */
+   public GroupBase includingGroup;
 
 
    //
@@ -91,6 +94,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
       FactoryBase[] facs = {
          new TransformFactory(),
          new GroupFactory(),
+         new IncludeFactory(),
          new TemplateFactory(),
          new ProcedureFactory(),
          new CallProcedureFactory(),
@@ -206,6 +210,8 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
    public void endDocument()
       throws SAXException
    {
+      if (includingGroup != null)
+         return;
       try {
          // call compile() method for those nodes that have requested to
          int pass = 0;
@@ -245,7 +251,9 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
             if (fac == null) 
                throw new SAXParseException("Unknown statement `" + qName + 
                                            "'", locator);
-            newNode = fac.createNode(currentNode, uri, lName, qName, attrs, 
+            newNode = fac.createNode(currentNode != null 
+                                        ? currentNode : includingGroup, 
+                                     uri, lName, qName, attrs, 
                                      nsSet, locator);
             if (transformNode == null) 
                try {
@@ -304,9 +312,17 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
          if (collectedCharacters.length() != 0)
             processCharacters();
 
-         if ((currentNode).compile(0))
-            // need another invocation
-            compilableNodes.addElement(currentNode); 
+         // Don't call compile for an included stx:transform, because
+         // the including Parser will call it
+         if (!(currentNode == transformNode && includingGroup != null))
+            if ((currentNode).compile(0))
+               // need another invocation
+               compilableNodes.addElement(currentNode); 
+         // add the compilable nodes from an included stx:transform
+         if (currentNode instanceof TransformFactory.Instance && 
+             currentNode != transformNode)
+            compilableNodes.addAll(
+               ((TransformFactory.Instance)currentNode).compilableNodes);
          currentNode = (NodeBase)openedElements.pop();
       }
       catch (SAXParseException ex) {

@@ -1,8 +1,8 @@
 Changes since 20030502
-- added (partial) support for TrAX output properties
 - added 'separator' attribute to stx:value-of; 
   since @separator defaults to " ", the default behaviour changed if 
   @select evaluates to a sequence
+- implemented stx:include
 - added 'filter' and 'src' attributes to stx:process-buffer, 
   stx:process-children, and stx:process-self;
   enabled built-in passing of SAX events to a (JAXP conformant) XSLT engine
@@ -10,6 +10,7 @@ Changes since 20030502
   SAX TransformerHandlers 
   (see API doc for this interface, as well as the samples.NSFilter example)
 - added filter-available()
+- added (partial) support for TrAX output properties
 
 Changes since 20030320
 - increased performance by switching to a new processing model

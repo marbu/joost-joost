@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 2.4 2003/05/02 10:37:31 obecker Exp $
+ * $Id: GroupBase.java,v 2.5 2003/06/01 19:39:04 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.Value;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 2.4 $ $Date: 2003/05/02 10:37:31 $
+ * @version $Revision: 2.5 $ $Date: 2003/06/01 19:39:04 $
  * @author Oliver Becker
  */
 
@@ -102,7 +102,7 @@ abstract public class GroupBase extends NodeBase
    public Hashtable visibleProcedures;
 
    /** Contained groups in this group */
-   protected GroupFactory.Instance[] containedGroups;
+   protected GroupBase[] containedGroups;
 
    /** 
     * Table of named groups: key = group name, value = group object.
@@ -209,7 +209,11 @@ abstract public class GroupBase extends NodeBase
             if (node != null) {
                throw new SAXParseException(
                   "Procedure `" + p.procName + "' already defined in line " +
-                  node.lineNo,
+                  node.lineNo + 
+                     (p.systemId.equals(node.systemId) 
+                         ? (node.lineNo == p.lineNo 
+                            ? " (possibly several times included)" : "")
+                         : (" of " + node.systemId)),
                   p.publicId, p.systemId, p.lineNo, p.colNo);
             }
             else
@@ -224,7 +228,11 @@ abstract public class GroupBase extends NodeBase
                if (node != null) {
                   throw new SAXParseException(
                      "Global procedure `" + p.procName + 
-                     "' already defined in line " + node.lineNo,
+                     "' already defined in line " + node.lineNo +
+                        (p.systemId.equals(node.systemId) 
+                            ? (node.lineNo == p.lineNo 
+                               ? " (possibly several times included)" : "")
+                            : (" of " + node.systemId)),
                      p.publicId, p.systemId, p.lineNo, p.colNo);
                }
                else
@@ -233,14 +241,14 @@ abstract public class GroupBase extends NodeBase
                groupProcedures.put(p.expName, p);
             }
          }
-         else if (objs[i] instanceof GroupFactory.Instance) 
+         else if (objs[i] instanceof GroupBase) 
             gvec.addElement(objs[i]);
          else if (objs[i] instanceof VariableBase) 
             vvec.addElement(objs[i]);
       }
       
       // create group array
-      containedGroups = new GroupFactory.Instance[gvec.size()];
+      containedGroups = new GroupBase[gvec.size()];
       gvec.toArray(containedGroups);
 
       // visible templates/procedures: from this group

@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 2.2 2003/04/30 14:47:17 obecker Exp $
+ * $Id: TransformFactory.java,v 2.3 2003/06/01 19:39:05 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.Processor;
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 2.2 $ $Date: 2003/04/30 14:47:17 $
+ * @version $Revision: 2.3 $ $Date: 2003/06/01 19:39:05 $
  * @author Oliver Becker
  */
 
@@ -76,7 +76,7 @@ public class TransformFactory extends FactoryBase
                               Hashtable nsSet, Locator locator)
       throws SAXParseException
    {
-      if (parent != null)
+      if (parent != null && parent.systemId.equals(locator.getSystemId()))
          throw new SAXParseException("`" + qName + 
                                      "' is allowed only as root element",
                                      locator);
@@ -116,7 +116,7 @@ public class TransformFactory extends FactoryBase
 
       checkAttributes(qName, attrs, attrNames, locator);
 
-      return new Instance(qName, locator, encodingAtt, defStxpNsAtt,
+      return new Instance(parent, qName, locator, encodingAtt, defStxpNsAtt,
                           passThrough, stripSpace, recognizeCdata);
    }
 
@@ -133,15 +133,22 @@ public class TransformFactory extends FactoryBase
       public String outputEncoding;
       public String defaultSTXPathNamespace;
 
+      // used to transfer the list of compilable nodes from an included
+      // STX sheet to the calling Parser object
+      public Vector compilableNodes;
+
       // Constructor
-      public Instance(String qName, Locator locator, String outputEncoding,
+      public Instance(NodeBase parent,
+                      String qName, Locator locator, String outputEncoding,
                       String defaultSTXPathNamespace, byte passThrough,
                       boolean stripSpace, boolean recognizeCdata)
       {
-         super(qName, null /* parent */, locator, 
+         super(qName, parent, locator, 
                passThrough, stripSpace, recognizeCdata);
-         namedGroups = new Hashtable(); // shared with all sub-groups
-         globalProcedures = new Hashtable(); // also shared
+         if (parent == null) {
+            namedGroups = new Hashtable(); // shared with all sub-groups
+            globalProcedures = new Hashtable(); // also shared
+         }
          this.outputEncoding = 
             (outputEncoding != null) ? outputEncoding 
                                      : DEFAULT_ENCODING; // in Constants
@@ -160,9 +167,16 @@ public class TransformFactory extends FactoryBase
       public void insert(NodeBase node)
          throws SAXParseException
       {
+         if (compilableNodes != null)
+            // will only happen after this transform element was inserted by
+            // an stx:include instruction
+            throw new SAXParseException("stx:include must be empty",
+                                        node.publicId, node.systemId, 
+                                        node.lineNo, node.colNo);
+
          if (node instanceof TemplateBase || // template, procedure
-             node instanceof GroupFactory.Instance ||
-             node instanceof VariableBase) // param, variable, buffer
+             node instanceof GroupBase ||    // group, transform (= include)
+             node instanceof VariableBase)   // param, variable, buffer
             super.insert(node);
          else
             throw new SAXParseException("`" + node.qName + 
