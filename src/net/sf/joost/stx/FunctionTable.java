@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 1.15 2003/01/25 08:12:40 obecker Exp $
+ * $Id: FunctionTable.java,v 1.16 2003/02/18 17:07:49 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 1.15 $ $Date: 2003/01/25 08:12:40 $
+ * @version $Revision: 1.16 $ $Date: 2003/02/18 17:07:49 $
  * @author Oliver Becker
  */
 public final class FunctionTable
@@ -58,6 +58,7 @@ public final class FunctionTable
          new NumberConv(),
          new BooleanConv(),
          new Position(), 
+         new Current(),
          new Level(),
          new GetNode(),
          new HasChildNodes(),
@@ -255,6 +256,26 @@ public final class FunctionTable
       public Value evaluate(Context context, Stack events, int top, Tree args)
       {
          return new Value(context.position);
+      }
+   }
+
+
+   /**
+    * The <code>current</code> function.
+    * Returns the current node from the ancestor stack
+    */
+   public class Current implements Instance
+   {
+      /** @return 0 */
+      public int getMinParCount() { return 0; }
+      /** @return 0 */
+      public int getMaxParCount() { return 0; }
+      /** @return "current" */
+      public String getName() { return "{}current"; }
+
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+      {
+         return new Value((SAXEvent)events.elementAt(top-1), top);
       }
    }
 
