@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.26 2003/12/03 07:32:14 obecker Exp $
+ * $Id: Processor.java,v 2.27 2003/12/17 11:41:27 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -56,7 +56,7 @@ import net.sf.joost.trace.DebugProcessor;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.26 $ $Date: 2003/12/03 07:32:14 $
+ * @version $Revision: 2.27 $ $Date: 2003/12/17 11:41:27 $
  * @author Oliver Becker
  */
 
@@ -1256,7 +1256,11 @@ public class Processor extends XMLFilterImpl
       throws SAXException
    {
       // replace top-most event and local variables
-      Object event = eventStack.pop();
+      Object topEvent = null;
+      // if clearLast==true then there's no event to remove, 
+      // because the end of of the parent has been encountered
+      if (!clearLast) 
+         topEvent = eventStack.pop();
       Hashtable storedVars = context.localVars;
       Data data;
       do {
@@ -1315,8 +1319,9 @@ public class Processor extends XMLFilterImpl
          // remove this event
          eventStack.pop();
       } while (data != stopData); // last object
-      // restore old event stack and local variables
-      eventStack.push(event);
+      // restore old event stack
+      if (!clearLast)
+         eventStack.push(topEvent);
    }
 
 
