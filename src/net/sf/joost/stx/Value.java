@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.16 2003/06/11 08:15:56 obecker Exp $
+ * $Id: Value.java,v 1.17 2003/06/16 13:24:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,7 +32,7 @@ import java.util.ArrayList;
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.16 $ $Date: 2003/06/11 08:15:56 $
+ * @version $Revision: 1.17 $ $Date: 2003/06/16 13:24:37 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -113,7 +113,7 @@ public class Value implements Cloneable
    public Value(SAXEvent e)
    {
       type = NODE;
-      event = e.addRef();
+      event = e;
    }
 
 
@@ -221,7 +221,6 @@ public class Value implements Cloneable
          break;
       case NODE:
          string = event.value;
-         removeRefs();
          break;
       case BOOLEAN:
          string = bool ? "true" : "false";
@@ -254,7 +253,6 @@ public class Value implements Cloneable
          break;
       case NODE:
          bool = true;
-         removeRefs();
          break;
       case BOOLEAN:
          break;
@@ -279,8 +277,6 @@ public class Value implements Cloneable
 
    public Value setBoolean(boolean value)
    {
-      if (type == NODE || next != null)
-         removeRefs();
       type = BOOLEAN;
       bool = value;
       next = null;
@@ -289,8 +285,6 @@ public class Value implements Cloneable
 
    public Value setNumber(double value)
    {
-      if (type == NODE || next != null)
-         removeRefs();
       type = NUMBER;
       number = value;
       next = null;
@@ -299,8 +293,6 @@ public class Value implements Cloneable
 
    public Value setString(String value)
    {
-      if (type == NODE || next != null)
-         removeRefs();
       type = STRING;
       string = value;
       next = null;
@@ -309,22 +301,9 @@ public class Value implements Cloneable
 
    public Value setEmpty()
    {
-      if (type == NODE || next != null)
-         removeRefs();
       type = EMPTY;
       next = null;
       return this;
-   }
-
-
-   private void removeRefs()
-   {
-      Value seq = this;
-      do {
-         if (seq.type == NODE)
-            seq.event.removeRef();
-         seq = seq.next;
-      } while (seq != null);
    }
 
 
@@ -335,8 +314,6 @@ public class Value implements Cloneable
    {
       try {
          Value ret = (Value)clone();
-         if (type == NODE)
-            event.addRef();
          if (next != null)
             ret.next = next.copy();
          return ret;

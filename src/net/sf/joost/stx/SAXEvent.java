@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEvent.java,v 1.11 2003/05/14 11:53:08 obecker Exp $
+ * $Id: SAXEvent.java,v 1.12 2003/06/16 13:24:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -35,7 +35,7 @@ import java.util.Hashtable;
 /** 
  * SAXEvent stores all information attached to an incoming SAX event,
  * it is the representation of a node in STX.
- * @version $Revision: 1.11 $ $Date: 2003/05/14 11:53:08 $
+ * @version $Revision: 1.12 $ $Date: 2003/06/16 13:24:37 $
  * @author Oliver Becker
  */
 final public class SAXEvent
@@ -68,7 +68,6 @@ final public class SAXEvent
 
 
 
-
    //
    // private constructor
    //
@@ -77,80 +76,17 @@ final public class SAXEvent
    { }
 
 
-   // object pool
-   private static SAXEvent objectPool[] = new SAXEvent[32];
-
-   // number of objects in the pool
-   private static int objectCount = 0;
-
-   // reference counter
-   private int instances = 1;
-
-
-   /** 
-    * Increases the internal reference counter 
-    * @return the object itself
-    **/
-   public SAXEvent addRef()
-   {
-      instances++;
-      return this;
-   }
-
-
-   /** 
-    * Decreases the internal reference counter. When the counter drops to 0
-    * then the object will be returned to the object pool.
-    */
-   public void removeRef()
-   {
-      if (--instances > 0) // still instances in use
-         return;
-
-      if (instances < 0) 
-         // mustn't happen
-         throw new RuntimeException("Already destroyed: " + this);
-
-      // put back the object
-      synchronized (objectPool) {
-         if (objectCount == objectPool.length) { // pool size exhausted
-            SAXEvent[] tmp = new SAXEvent[2*objectCount];
-            System.arraycopy(objectPool, 0, tmp, 0, objectCount);
-            tmp[objectCount++] = this;
-            objectPool = tmp;
-         }
-         else
-            objectPool[objectCount++] = this;
-      }
-   }
-
-
 
    //
    // Factory methods
    //
-
-   /**
-    * Returns a new object, either from the object pool or a new
-    * created one.
-    */
-   private static SAXEvent newEvent()
-   {
-      synchronized (objectPool) {
-         if (objectCount == 0)
-            return new SAXEvent();
-         else
-            return objectPool[--objectCount].addRef();
-      }
-   }
-
 
    /** Create a new element node */
    public static SAXEvent newElement(String uri, String lName, String qName,
                                      Attributes attrs, 
                                      NamespaceSupport nsSupport)
    {
-      SAXEvent event = newEvent();
+      SAXEvent event = new SAXEvent();
       event.type = attrs != null ? ELEMENT : ELEMENT_END;
       event.uri = uri;
       event.lName = lName;
@@ -188,7 +124,7 @@ final public class SAXEvent
    /** Create a new text node */
    public static SAXEvent newText(String value)
    {
-      SAXEvent event = newEvent();
+      SAXEvent event = new SAXEvent();
       event.type = TEXT;
       event.value = value;
       return event;
@@ -198,7 +134,7 @@ final public class SAXEvent
    /** Create a new CDATA node */
    public static SAXEvent newCDATA(String value)
    {
-      SAXEvent event = newEvent();
+      SAXEvent event = new SAXEvent();
       event.type = CDATA;
       event.value = value;
       return event;
@@ -208,7 +144,7 @@ final public class SAXEvent
    /** Create a root node */
    public static SAXEvent newRoot()
    {
-      SAXEvent event = newEvent();
+      SAXEvent event = new SAXEvent();
       event.type = ROOT;
       event.enableChildNodes(true);
       return event;
@@ -218,7 +154,7 @@ final public class SAXEvent
    /** Create a new comment node */
    public static SAXEvent newComment(String value)
    {
-      SAXEvent event = newEvent();
+      SAXEvent event = new SAXEvent();
       event.type = COMMENT;
       event.value = value;
       return event;
@@ -228,7 +164,7 @@ final public class SAXEvent
    /** Create a new processing instruction node */
    public static SAXEvent newPI(String target, String data)
    {
-      SAXEvent event = newEvent();
+      SAXEvent event = new SAXEvent();
       event.type = PI;
       event.qName = target;
       event.value = data;
@@ -239,7 +175,7 @@ final public class SAXEvent
    /** Create a new attribute node */
    public static SAXEvent newAttribute(Attributes attrs, int index)
    {
-      SAXEvent event = newEvent();
+      SAXEvent event = new SAXEvent();
       event.type = ATTRIBUTE;
       event.uri = attrs.getURI(index);
       event.lName = attrs.getLocalName(index);
@@ -252,19 +188,13 @@ final public class SAXEvent
    /** Create a new representation for a namespace mapping */
    public static SAXEvent newMapping(String prefix, String uri)
    {
-      SAXEvent event = newEvent();
+      SAXEvent event = new SAXEvent();
       event.type = uri != null ? MAPPING : MAPPING_END;
       event.qName = prefix;
       event.value = uri;
       return event;
    }
 
-
-
-//     public void finalize()
-//     {
-//        System.err.println("Forgot " + this + " / " + instances);
-//     }
 
 
    /**
@@ -276,19 +206,17 @@ final public class SAXEvent
    public void enableChildNodes(boolean hasChildNodes)
    {
       if (hasChildNodes) {
+         posHash = new Hashtable();
          this.hasChildNodes = true;
-         if (posHash == null)
-            posHash = new Hashtable();
-         else
-            posHash.clear();
       }
       else
-         // this.hasChildNodes remains unchanged
          if (posHash == null)
             posHash = new Hashtable();
    }
 
 
+
+   // *******************************************************************
 
    /** 
     * This class replaces java.lang.Long for counting because I need to 

@@ -1,5 +1,5 @@
 /*
- * $Id: AssignFactory.java,v 2.3 2003/06/03 14:30:18 obecker Exp $
+ * $Id: AssignFactory.java,v 2.4 2003/06/16 13:24:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>assign</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.3 $ $Date: 2003/06/03 14:30:18 $
+ * @version $Revision: 2.4 $ $Date: 2003/06/16 13:24:37 $
  * @author Oliver Becker
  */
 
@@ -173,14 +173,6 @@ final public class AssignFactory extends FactoryBase
                publicId, systemId, lineNo, colNo);
             return; // if the errorHandler returns
          }
-
-         // release stored SAXEvent objects
-         Value val = (Value)obj;
-         do {
-            if (val.type == Value.NODE)
-               val.event.removeRef();
-            val = val.next;
-         } while (val != null);
 
          // assign new value
          vars.put(expName, v);

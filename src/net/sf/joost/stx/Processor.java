@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.13 2003/06/15 11:48:47 obecker Exp $
+ * $Id: Processor.java,v 2.14 2003/06/16 13:24:37 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -69,7 +69,7 @@ import net.sf.joost.trace.DebugProcessor;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.13 $ $Date: 2003/06/15 11:48:47 $
+ * @version $Revision: 2.14 $ $Date: 2003/06/16 13:24:37 $
  * @author Oliver Becker
  */
 
@@ -218,7 +218,7 @@ public class Processor extends XMLFilterImpl
          lastProcStatus = lps;
          psiblings = ps;
          localVars = (Hashtable)lv.clone();
-         sibEvent = se.addRef();
+         sibEvent = se;
       }
 
       /** Constructor for "descendant or self" processing */
@@ -1081,7 +1081,6 @@ public class Processor extends XMLFilterImpl
       eventStack.push(ev);
       processEvent();
       eventStack.pop();
-      ev.removeRef();
 
       collectedCharacters.setLength(0);
    }
@@ -1109,7 +1108,6 @@ public class Processor extends XMLFilterImpl
          eventStack.push(ev);
          processEvent();
          eventStack.pop();
-         ev.removeRef();
          if (DEBUG)
             if (log.isDebugEnabled())
                log.debug("done " + attrs.getQName(i));
@@ -1246,8 +1244,6 @@ public class Processor extends XMLFilterImpl
             context.localVars = storedVars;
             dataStack.push(stopData);
          }
-         else
-            data.sibEvent.removeRef();
          // remove this event
          eventStack.pop();
       } while (data != stopData); // last object
@@ -1531,7 +1527,7 @@ public class Processor extends XMLFilterImpl
             endElement(uri, lName, qName); // recurse (process-self)
          }
          else {
-            ((SAXEvent)eventStack.pop()).removeRef();
+            eventStack.pop();
             nsSupport.popContext();
          }
       }
@@ -1578,13 +1574,11 @@ public class Processor extends XMLFilterImpl
       // don't modify the event stack after process-self
       ((SAXEvent)eventStack.peek()).countPI(target);
 
-      SAXEvent me = SAXEvent.newPI(target, data);
-      eventStack.push(me);
+      eventStack.push(SAXEvent.newPI(target, data));
 
       processEvent();
 
       eventStack.pop();
-      me.removeRef();
    }
 
 
@@ -1730,13 +1724,11 @@ public class Processor extends XMLFilterImpl
       // don't modify the event stack after process-self
       ((SAXEvent)eventStack.peek()).countComment();
 
-      SAXEvent me = SAXEvent.newComment(new String(ch, start, length));
-      eventStack.push(me);
+      eventStack.push(SAXEvent.newComment(new String(ch, start, length)));
 
       processEvent();
 
       eventStack.pop();
-      me.removeRef();
    }
 
 
