@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 2.12 2004/01/23 09:51:31 obecker Exp $
+ * $Id: GroupBase.java,v 2.13 2004/09/29 06:22:17 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,9 +24,6 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -38,6 +35,9 @@ import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Processor;
 import net.sf.joost.stx.Value;
 
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+
 
 /** 
  * Base class for <code>stx:group</code> 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.Value;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 2.12 $ $Date: 2004/01/23 09:51:31 $
+ * @version $Revision: 2.13 $ $Date: 2004/09/29 06:22:17 $
  * @author Oliver Becker
  */
 
@@ -116,14 +116,11 @@ abstract public class GroupBase extends NodeBase
    /** Group variables  */
    private VariableBase[] groupVariables;
 
-   /** Group variable values */
-   public Stack groupVars = new Stack();
-
    /** Expanded name of this group */
    public String groupName;
 
    /** Vector of the children */
-   public Vector children = new Vector(); // AZu : protected --> public
+   public Vector children = new Vector();
 
 
 
@@ -337,20 +334,20 @@ abstract public class GroupBase extends NodeBase
    {
       // shadowed variables, needed if keep-value="yes"
       Hashtable shadowed = null;
-      if (!groupVars.isEmpty())
-         shadowed = (Hashtable)groupVars.peek();
+      if (context.ancestorStack.isEmpty())
+         context.groupVars.put(this, new Stack());
+      else
+         shadowed = (Hashtable)((Stack)context.groupVars.get(this)).peek();
 
       // new variable instances
       Hashtable varTable = new Hashtable();
-      groupVars.push(varTable);
+      ((Stack)context.groupVars.get(this)).push(varTable);
 
       context.currentGroup = this;
       for (int i=0; i<groupVariables.length; i++)
          if (groupVariables[i].keepValue && shadowed !=null)
-            // copy old value
             varTable.put(groupVariables[i].expName, 
-                         ((Value)shadowed.get(groupVariables[i].expName))
-                                         .copy());
+                         ((Value)shadowed.get(groupVariables[i].expName)));
          else {
             for (AbstractInstruction inst = groupVariables[i];
                  inst != null; inst = inst.next)
@@ -363,9 +360,9 @@ abstract public class GroupBase extends NodeBase
     * Exits a recursion level by removing the current group variable
     * instances.
     */
-   public void exitRecursionLevel()
+   public void exitRecursionLevel(Context context)
    {
-      groupVars.pop();
+      ((Stack)context.groupVars.get(this)).pop();
    }
 
 
@@ -392,7 +389,7 @@ abstract public class GroupBase extends NodeBase
       throws SAXParseException
    {
       // compute the real groupProcedures table
-      for(Enumeration e = pTable.keys(); e.hasMoreElements(); ) {
+      for (Enumeration e = pTable.keys(); e.hasMoreElements(); ) {
          Object key = e.nextElement();
          if (groupProcedures.containsKey(key)) {
             ProcedureFactory.Instance p1 =
