@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.19 2005/02/27 21:08:21 obecker Exp $
+ | $Id: build.xml,v 1.20 2005/02/28 08:29:34 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -146,6 +146,7 @@
     <!-- update version file -->
     <property name="version" location="${classes}/net/sf/joost/version.txt" />
     <replace file="${version}" token="@@@DATE@@@" value="${date.today}" />
+    <replace file="${version}" token="@@@USER@@@" value="${user.name}" />
   </target>
 
 
