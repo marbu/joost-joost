@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.6 2003/01/05 21:14:31 obecker Exp $
+ | $Id: build.xml,v 1.7 2003/01/06 16:17:49 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -69,8 +69,10 @@
   <target name="mk.grammar">
     <preprocess infile="${grammar.dir}/${grammar}.cup"
                 outfile="${grammar.dir}/${grammar}Parser.cup" />
+    <!-- property needed here to prevent CVS from keyword processing (Id) -->
+    <property name="dollar" value="$" />
     <replace file="${grammar.dir}/${grammar}Parser.cup"
-             token="* $Id: build.xml,v 1.6 2003/01/05 21:14:31 obecker Exp ${grammar}.cup,v">
+             token="* ${dollar}Id: ${grammar}.cup,v">
       <replacevalue>* This file was generated automatically - do not edit!
  *
  * $</replacevalue>
