@@ -1,5 +1,5 @@
 /*
- * $Id: ParamFactory.java,v 1.6 2002/12/23 08:25:24 obecker Exp $
+ * $Id: ParamFactory.java,v 1.7 2002/12/30 11:55:22 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>params</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.6 $ $Date: 2002/12/23 08:25:24 $
+ * @version $Revision: 1.7 $ $Date: 2002/12/30 11:55:22 $
  * @author Oliver Becker
  */
 
@@ -63,6 +63,7 @@ final public class ParamFactory extends FactoryBase
    {
       attrNames = new HashSet();
       attrNames.add("name");
+      attrNames.add("required");
       attrNames.add("select");
    }
 
@@ -94,21 +95,28 @@ final public class ParamFactory extends FactoryBase
             "children of `" + parent.qName + "'",
             locator);
 
-
-
       String nameAtt = getAttribute(qName, attrs, "name", locator);
       String parName = getExpandedName(nameAtt, nsSet, locator);
 
+      // default is false
+      boolean required = getEnumAttValue("required", attrs, YESNO_VALUES, 
+                                         locator) == YES_VALUE;
+
       String selectAtt = attrs.getValue("select");
       Tree selectExpr;
-      if (selectAtt != null) 
+      if (selectAtt != null) {
+         if (required)
+            throw new SAXParseException(
+               "`" + qName + "' must not have a `select' attribute if it " +
+               "declares the parameter as required", locator);
          selectExpr = parseExpr(selectAtt, nsSet, locator);
+      }
       else
          selectExpr = null;
 
       checkAttributes(qName, attrs, attrNames, locator);
       return new Instance(qName, parent, locator, nameAtt, parName,
-                          selectExpr);
+                          selectExpr, required);
    }
 
 
@@ -117,16 +125,20 @@ final public class ParamFactory extends FactoryBase
    {
       private String varName;
       private Tree select;
+      private boolean required;
 
       protected Instance(String qName, NodeBase parent, Locator locator, 
-                         String varName, String expName, Tree select)
+                         String varName, String expName, Tree select,
+                         boolean required)
       {
          super(qName, parent, locator, expName, 
                false, // keep-value has no meaning here
                // this element must be empty if there is a select attribute
-               select != null);
+               // or the parameter was declared as required
+               select != null || required);
          this.varName = varName;
          this.select = select;
+         this.required = required;
       }
       
       /**
@@ -185,6 +197,12 @@ final public class ParamFactory extends FactoryBase
                   context.currentInstruction = this;
                   v = select.evaluate(context, 
                                       eventStack, eventStack.size());
+               }
+               else if (required) {
+                  context.errorHandler.error(
+                     "Missing value for required parameter `" + varName + "'",
+                     publicId, systemId, lineNo, colNo);
+                  return processStatus; // if the errorHandler returns
                }
                else
                   v = new Value("");
