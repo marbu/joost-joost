@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 2.2 2003/04/30 15:08:17 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 2.3 2003/05/28 13:20:13 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -35,6 +35,8 @@ import java.io.OutputStreamWriter;
 
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Properties;
+import javax.xml.transform.OutputKeys;
 
 import net.sf.joost.Constants;
 import net.sf.joost.emitter.StreamEmitter;
@@ -46,7 +48,7 @@ import net.sf.joost.stx.Context;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2003/04/30 15:08:17 $
+ * @version $Revision: 2.3 $ $Date: 2003/05/28 13:20:13 $
  * @author Oliver Becker
  */
 
@@ -172,7 +174,10 @@ final public class ResultDocumentFactory extends FactoryBase
                osw = new OutputStreamWriter(fos, 
                                             encoding = DEFAULT_ENCODING);
             }
-            se = new StreamEmitter(osw, encoding);
+            Properties props = (Properties)context.currentProcessor
+                                                  .outputProperties.clone();
+            props.setProperty(OutputKeys.ENCODING, encoding);
+            se = new StreamEmitter(osw, props);
          }
          catch (java.io.IOException ex) {
             context.errorHandler.error(ex.toString(), 

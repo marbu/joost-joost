@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXHelper.java,v 1.5 2003/04/29 15:09:11 obecker Exp $
+ * $Id: TrAXHelper.java,v 1.6 2003/05/28 13:20:13 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -159,17 +159,7 @@ public class TrAXHelper {
     public static StxEmitter initStxEmitter(Result result, Processor processor)
         throws TransformerException {
 
-        String encoding = null;
-
         log.debug("init STXEmitter");
-    	// Try to get the encoding from the stx-Parser <class>Parser</class>
-        //String encFromStx = stx.getEncoding();
-        String encFromStx = processor.getOutputEncoding();
-        if (encFromStx != null) {
-            encoding = encFromStx;
-        } else {
-            encoding = TrAXConstants.DEFAULT_ENCODING; // default output encoding
-        }
         // Return the content handler for this Result object
         try {
             // Result object could be SAXResult, DOMResult, or StreamResult
@@ -204,7 +194,8 @@ public class TrAXHelper {
                 final OutputStream ostream = target.getOutputStream();
                 if (ostream != null) {
                     log.debug("get an OutputStream from Result object");
-                    return new StreamEmitter(ostream, encoding);
+                    return new StreamEmitter(ostream, 
+                                             processor.outputProperties);
                 }
                 // or try to get just a systemId string from Result object
                 String systemId = result.getSystemId();
@@ -221,20 +212,22 @@ public class TrAXHelper {
                 if (systemId.startsWith("file:")) {
                     url = new URL(systemId);
                     os = new FileOutputStream(url.getFile());
-                    return new StreamEmitter(os, encoding);
+                    return new StreamEmitter(os, processor.outputProperties);
                 }
                     else if (systemId.startsWith("http:")) {
                         url = new URL(systemId);
                         URLConnection connection = url.openConnection();
                         os = connection.getOutputStream();
-                        return new StreamEmitter(os, encoding);
+                        return new StreamEmitter(os, 
+                                                 processor.outputProperties);
                     }
                     else {
                         // system id is just a filename
                         File tmp    = new File(systemId);
                         url         = tmp.toURL();
                         os          = new FileOutputStream(url.getFile());
-                        return new StreamEmitter(os, encoding);
+                        return new StreamEmitter(os, 
+                                                 processor.outputProperties);
                     }
             }
          // If we cannot create the file specified by the SystemId

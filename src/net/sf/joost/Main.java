@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.10 2003/04/29 15:15:15 obecker Exp $
+ * $Id: Main.java,v 1.11 2003/05/28 13:20:04 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.10 $ $Date: 2003/04/29 15:15:15 $
+ * @version $Revision: 1.11 $ $Date: 2003/05/28 13:20:04 $
  * @author Oliver Becker
  */
 public class Main implements Constants
@@ -280,10 +280,10 @@ printHelp ? 0 : 1);
             // Create XML output
             if (outFile != null)
                emitter = new StreamEmitter(outFile, 
-                                           processor.getOutputEncoding());
+                                           processor.outputProperties);
             else
                emitter = new StreamEmitter(System.out, 
-                                           processor.getOutputEncoding());
+                                           processor.outputProperties);
             processor.setContentHandler(emitter);
             processor.setLexicalHandler(emitter);
             // the last line is a short-cut for
