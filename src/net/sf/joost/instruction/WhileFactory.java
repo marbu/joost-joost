@@ -1,5 +1,5 @@
 /*
- * $Id: WhileFactory.java,v 2.0 2003/04/25 16:46:35 obecker Exp $
+ * $Id: WhileFactory.java,v 2.1 2003/04/27 15:34:45 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>while</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:35 $
+ * @version $Revision: 2.1 $ $Date: 2003/04/27 15:34:45 $
  * @author Oliver Becker
  */
 
@@ -79,6 +79,7 @@ final public class WhileFactory extends FactoryBase
    {
       private Tree test;
       private AbstractInstruction contents;
+      private NodeBase me;
 
       // Constructor
       protected Instance(final String qName, NodeBase parent, 
@@ -86,8 +87,13 @@ final public class WhileFactory extends FactoryBase
       {
          super(qName, parent, locator, true);
          this.test = test;
+         me = this;
+
          // dummy node, needed as store for the next node
          next.next = nodeEnd = new AbstractInstruction() {
+            public NodeBase getNode() {
+               return me;
+            }
             public short process(Context context) 
                throws SAXException {
                throw new SAXParseException(

@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 2.0 2003/04/25 16:46:33 obecker Exp $
+ * $Id: NodeBase.java,v 2.1 2003/04/27 15:34:45 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.stx.Context;
 /** 
  * Abstract base class for all instances of nodes in the STX transformation 
  * sheet
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:33 $
+ * @version $Revision: 2.1 $ $Date: 2003/04/27 15:34:45 $
  * @author Oliver Becker
  */
 public abstract class NodeBase 
@@ -54,7 +54,7 @@ public abstract class NodeBase
     * simply calls {@link #processEnd} in the appropriate {@link NodeBase}
     * object.
     */
-   protected final class End extends AbstractInstruction
+   private final class End extends AbstractInstruction
    {
       /** 
        * The appropriate start tag.
@@ -69,7 +69,7 @@ public abstract class NodeBase
       /*
        * @return {@link #start}
        */
-      public NodeBase getStart()
+      public NodeBase getNode()
       {
          return start;
       }
@@ -101,7 +101,7 @@ public abstract class NodeBase
    //
 
    /** The qualified name of this node */
-   protected String qName;
+   public String qName;
 
    /** The parent of this node */
    protected NodeBase parent;
@@ -194,6 +194,14 @@ public abstract class NodeBase
    //
    // Methods
    //
+
+
+
+   public NodeBase getNode()
+   {
+      return this;
+   }
+
 
    /** 
     * Insert a new node as a child of this element 

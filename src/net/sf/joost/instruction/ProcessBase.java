@@ -1,5 +1,5 @@
 /*
- * $Id: ProcessBase.java,v 2.0 2003/04/25 16:46:34 obecker Exp $
+ * $Id: ProcessBase.java,v 2.1 2003/04/27 15:34:45 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -52,6 +52,7 @@ public class ProcessBase extends NodeBase
    // base group for the next processing; set in the first call
    protected GroupBase nextProcessGroup = null;
 
+   private NodeBase me;
 
    // Constructor
    public ProcessBase(String qName, NodeBase parent, Locator locator,
@@ -59,10 +60,14 @@ public class ProcessBase extends NodeBase
       throws SAXParseException
    {
       super(qName, parent, locator, true);
+      me = this;
 
       // insert instruction that clears the parameter stack when
       // continuing the processing
       next.next = new AbstractInstruction() {
+         public NodeBase getNode() {
+            return me;
+         }
          public short process(Context context) {
             context.passedParameters = (Hashtable)paramStack.pop();
             return PR_CONTINUE;

@@ -1,5 +1,5 @@
 /*
- * $Id: ElseFactory.java,v 2.0 2003/04/25 16:46:32 obecker Exp $
+ * $Id: ElseFactory.java,v 2.1 2003/04/27 15:34:45 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -34,7 +34,7 @@ import java.util.Hashtable;
 /** 
  * Factory for <code>else</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:32 $
+ * @version $Revision: 2.1 $ $Date: 2003/04/27 15:34:45 $
  * @author Oliver Becker
  */
 
@@ -54,9 +54,7 @@ public class ElseFactory extends FactoryBase
    {
       checkAttributes(qName, attrs, null, locator);
 
-      if (!(parent.lastChild instanceof NodeBase.End &&
-            ((NodeBase.End)parent.lastChild).getStart() instanceof 
-             IfFactory.Instance))
+      if (!(parent.lastChild.getNode() instanceof IfFactory.Instance))
          throw new SAXParseException(
             "Found `" + qName + "' without stx:if", locator);
 

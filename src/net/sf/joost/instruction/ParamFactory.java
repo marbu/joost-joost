@@ -1,5 +1,5 @@
 /*
- * $Id: ParamFactory.java,v 2.0 2003/04/25 16:46:34 obecker Exp $
+ * $Id: ParamFactory.java,v 2.1 2003/04/27 15:34:45 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>params</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:34 $
+ * @version $Revision: 2.1 $ $Date: 2003/04/27 15:34:45 $
  * @author Oliver Becker
  */
 
@@ -86,15 +86,11 @@ final public class ParamFactory extends FactoryBase
 
       if(parent instanceof TemplateBase &&
          parent != parent.lastChild && // not the first
-         !(parent.lastChild instanceof Instance) && // not an empty stx:param
-         !(parent.lastChild instanceof NodeBase.End &&
-           ((NodeBase.End)parent.lastChild).getStart()
-                instanceof Instance)) { // not a non-empty stx:param
+         !(parent.lastChild.getNode() instanceof Instance)) // not a stx:param
          throw new SAXParseException(
             "`" + qName + "' instructions must always occur as first " +
             "children of `" + parent.qName + "'",
             locator);
-      }
 
       String nameAtt = getAttribute(qName, attrs, "name", locator);
       String parName = getExpandedName(nameAtt, nsSet, locator);
