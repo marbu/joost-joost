@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.22 2003/11/01 14:43:21 zubow Exp $
+ * $Id: Emitter.java,v 1.23 2004/01/15 15:32:57 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,6 +30,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
+import org.xml.sax.helpers.NamespaceSupport;
 
 import java.util.EmptyStackException;
 import java.util.Enumeration;
@@ -44,7 +45,7 @@ import net.sf.joost.emitter.StxEmitter;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.22 $ $Date: 2003/11/01 14:43:21 $
+ * @version $Revision: 1.23 $ $Date: 2004/01/15 15:32:57 $
  * @author Oliver Becker
  */
 
@@ -54,8 +55,10 @@ public class Emitter
    private LexicalHandler lexH;
    private ErrorHandlerImpl errorHandler;  // set in the constructor
 
-   private Hashtable inScopeNamespaces;
-   private Stack namespaceStack;
+   // for namespace handling
+   private NamespaceSupport nsSupport;
+   private Stack nsStack;
+   private String nsDefault;
 
    /** Stack for emitted start events, allows well-formedness check */
    private Stack openedElements;
@@ -73,13 +76,12 @@ public class Emitter
    private boolean insideCDATA = false;
 
 
-   public Emitter(ErrorHandlerImpl errorHandler) //Azu
+   public Emitter(ErrorHandlerImpl errorHandler)
    {
-      inScopeNamespaces = new Hashtable();
-      inScopeNamespaces.put("", "");
-      inScopeNamespaces.put("xml", "http://www.w3.org/XML/1998/namespace");
-      namespaceStack = new Stack();
-      namespaceStack.push(inScopeNamespaces.clone());
+      nsSupport = new NamespaceSupport();
+      nsDefault = "";
+      nsStack = new Stack();
+
       openedElements = new Stack();
       emitterStack = new Stack();
       this.errorHandler = errorHandler;
@@ -102,43 +104,6 @@ public class Emitter
    private void processLastElement()
       throws SAXException
    {
-      Hashtable lastNs = (Hashtable)namespaceStack.peek();
-         
-      // Check, if the element is in some namespace
-      if (!lastUri.equals("")) {
-         String prefix = "";
-         int colon = lastQName.indexOf(":");
-         if (colon != -1) 
-            prefix = lastQName.substring(0, colon);
-         inScopeNamespaces.put(prefix, lastUri);
-      }
-      else if(!"".equals(lastNs.get("")))
-         inScopeNamespaces.put("", "");
-
-      // Check, if the attributes are in some namespace
-      int attLen = lastAttrs.getLength();
-      for (int i=0; i<attLen; i++) {
-         String attUri = lastAttrs.getURI(i);
-         if (!attUri.equals("")) {
-            String attQName = lastAttrs.getQName(i);
-            int colon = attQName.indexOf(":");
-            inScopeNamespaces.put(attQName.substring(0, colon), attUri);
-         }
-      }
-         
-      // Iterate through the namespaces in scope and send an event
-      // to the content handler for the new mappings
-      for (Enumeration e = inScopeNamespaces.keys(); 
-           e.hasMoreElements(); ) {
-         String prefix = (String)e.nextElement();
-         String ns = (String)inScopeNamespaces.get(prefix);
-         if (!ns.equals(lastNs.get(prefix)))
-            contH.startPrefixMapping(prefix, ns);
-      }
-         
-      // remember the current mapping
-      namespaceStack.push(inScopeNamespaces.clone());
-         
       try {
          contH.startElement(lastUri, lastLName, lastQName, lastAttrs);
       }
@@ -168,15 +133,29 @@ public class Emitter
          errorHandler.error("Can't create an attribute if there's " +
                             "no opened element", 
                             publicId, systemId, lineNo, colNo);
-         return; // if the errorHandler returns
+         return; // if #errorHandler returns
       }
 
-      int index = lastAttrs.getIndex(uri, lName);
-      if (index != -1) { // already there
-         lastAttrs.setValue(index, value);
-      }
-      else {
-         lastAttrs.addAttribute(uri, lName, qName, "CDATA", value);
+      if (contH != null) {
+
+         int index = lastAttrs.getIndex(uri, lName);
+         if (index != -1) { // already there
+            lastAttrs.setValue(index, value);
+         }
+         else {
+            lastAttrs.addAttribute(uri, lName, qName, "CDATA", value);
+         }
+
+         // is this attribute in an undeclared namespace?
+         int colon = qName.indexOf(":");
+         if (colon != -1) { // look only at prefixed attributes
+            String prefix = qName.substring(0, colon);
+            if (!uri.equals(nsSupport.getURI(prefix))) {
+               nsSupport.declarePrefix(prefix, uri);
+               nsStack.push(prefix);
+               contH.startPrefixMapping(prefix, uri);
+            }
+         }
       }
    }
 
@@ -215,18 +194,68 @@ public class Emitter
       if (contH != null) {
          if (lastAttrs != null)
             processLastElement();
+
+         nsSupport.pushContext();
+         nsStack.push(null); // marker
+
+         // is this element in an undeclared namespace?
+         int colon = qName.indexOf(":");
+         if (colon != -1) {
+            String prefix = qName.substring(0, colon);
+            if (!uri.equals(nsSupport.getURI(prefix))) {
+               nsSupport.declarePrefix(prefix, uri);
+               nsStack.push(prefix);
+               contH.startPrefixMapping(prefix, uri);
+            }
+         }
+         else {
+            if (!uri.equals(nsDefault)) {
+               nsSupport.declarePrefix("", uri);
+               nsDefault = uri;
+               nsStack.push("");
+               contH.startPrefixMapping("", uri);
+            }
+         }
+         // no need to check also the attributes
+         // their namespaces should appear in #namespaces
+         // (hopefully)
+
+
+         // We store the properties of this element, because following
+         // addAttribute() calls may create additional attributes. This
+         // element will be reported to the next emitter in processLastElement
          lastUri = uri;
          lastLName = lName;
          lastQName = qName;
-         // Note: addAttribute() blocks if lastAttrs was created via
-         // constructor with an empty attrs parameter (Bug?)
+         // Note: addAttribute() blocks if #lastAttrs was created via
+         // constructor with an empty #attrs parameter (Bug?)
          if (attrs.getLength() != 0)
             lastAttrs = new AttributesImpl(attrs);
          else
             lastAttrs = new AttributesImpl();
 
-         if (namespaces != null)
-            inScopeNamespaces.putAll(namespaces);
+         if (namespaces != null) {
+            // does #namespaces contain undeclared namespaces?
+            for (Enumeration e = namespaces.keys(); e.hasMoreElements(); ) {
+               String thePrefix = (String)e.nextElement();
+               String theUri = (String)namespaces.get(thePrefix);
+               if ("".equals(thePrefix)) { // default namespace
+                  if (!theUri.equals(nsDefault)) {
+                     contH.startPrefixMapping("", theUri);
+                     nsSupport.declarePrefix("", theUri);
+                     nsDefault = theUri;
+                     nsStack.push("");
+                  }
+               }
+               else if (!theUri.equals(nsSupport.getURI(thePrefix))) {
+                  contH.startPrefixMapping(thePrefix, theUri);
+                  nsSupport.declarePrefix(thePrefix, theUri);
+                  nsStack.push(thePrefix);
+               }
+            }
+         }
+         // else: happens for dynamically created elements
+         // e.g. <stx:start-element name="foo" />
 
          lastPublicId = publicId;
          lastSystemId = systemId;
@@ -251,7 +280,7 @@ public class Emitter
                (qName != null ? "`" + qName + "' " : "") +
                "(no element opened)",
                publicId, systemId, lineNo, colNo);
-            return; // if the errorHandler returns
+            return; // if #errorHandler returns
          }
          String elQName = (String)openedElements.pop();
          String elUri = (String)openedElements.pop();
@@ -260,35 +289,30 @@ public class Emitter
                "Attempt to emit unmatched end tag `"+
                qName + "' (`" + elQName + "' expected)",
                publicId, systemId, lineNo, colNo);
-            return; // if the errorHandler returns
+            return; // if #errorHandler returns
          }
          if (!uri.equals(elUri)) {
             errorHandler.fatalError(
                "Attempt to emit unmatched end tag `{" + uri + "}" + qName + 
                "' (`{" + elUri + "}" +           elQName + "' expected)",
                publicId, systemId, lineNo, colNo);
-            return; // if the errorHandler returns
+            return; // if #errorHandler returns
          }
 
          contH.endElement(uri, lName, qName);
 
-         // Recall the namespaces in scope
-         inScopeNamespaces = (Hashtable)namespaceStack.pop();
-         Hashtable lastNs = (Hashtable)namespaceStack.peek();
-
-         // Iterate through the namespaces in scope (of this element)
-         // and send an event to the content handler for the additional
-         // mappings
-         for (Enumeration e = inScopeNamespaces.keys(); 
-              e.hasMoreElements(); ) {
-            String prefix = (String)e.nextElement();
-            String ns = (String)inScopeNamespaces.get(prefix);
-            if (!ns.equals(lastNs.get(prefix)))
-               contH.endPrefixMapping(prefix);
+         // send endPrefixMapping events, prefixes are on #nsStack
+         nsSupport.popContext();
+         String thePrefix = (String)nsStack.pop();
+         while (thePrefix != null) { // null is the marker for a new context
+            contH.endPrefixMapping(thePrefix);
+            if (thePrefix == "") {
+               nsDefault = nsSupport.getURI("");
+               if (nsDefault == null)
+                  nsDefault = "";
+            }
+            thePrefix = (String)nsStack.pop();
          }
-
-         // Forget and reset the current namespace mapping
-         inScopeNamespaces = (Hashtable)lastNs.clone();
       }
    }
 
@@ -309,8 +333,8 @@ public class Emitter
                index += 2;
                contH.characters(str.substring(0,index).toCharArray(),
                                 0, index);
-               lexH.endCDATA();   // lexH will be != null,
-               lexH.startCDATA(); // because insideCDATA was true
+               lexH.endCDATA();   // #lexH will be != null,
+               lexH.startCDATA(); // because #insideCDATA was true
                str = str.substring(index);
                index = str.indexOf("]]>");
             }
@@ -397,10 +421,6 @@ public class Emitter
    public void pushEmitter(StxEmitter emitter)
       throws SAXException
    {
-      // put temporary empty namespace table on the stack;
-      // causes all current namespaces to be declared again
-      namespaceStack.push(namespaceStack.elementAt(0));
-
       // save old handlers
       emitterStack.push(contH);
       emitterStack.push(lexH);
@@ -414,6 +434,11 @@ public class Emitter
          emitterStack.push(null);
       contH = emitter;
       lexH = emitter;
+
+      // save and reset current namespaces
+      emitterStack.push(nsSupport);
+      nsSupport = new NamespaceSupport();
+      nsDefault = "";
    }
 
 
@@ -429,6 +454,13 @@ public class Emitter
       if (contH instanceof StxEmitter) {
          // save current emitter for returning
          ret = (StxEmitter)contH;
+
+         // restore previous namespaces
+         nsSupport = (NamespaceSupport)emitterStack.pop();
+         nsDefault = nsSupport.getURI("");
+         if (nsDefault == null)
+            nsDefault = "";
+
          // restore the previous unprocessed element
          Object obj = emitterStack.pop();
          if (obj != null) {
@@ -441,8 +473,6 @@ public class Emitter
          // restore previous handlers
          lexH = (LexicalHandler)emitterStack.pop();
          contH = (ContentHandler)emitterStack.pop();
-         // remove temporary empty namespace table
-         namespaceStack.pop();
       }
       else
          throw new SAXException("No StxEmitter on the emitter stack");
