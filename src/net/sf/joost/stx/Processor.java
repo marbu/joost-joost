@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.24 2002/12/13 17:52:56 obecker Exp $
+ * $Id: Processor.java,v 1.25 2002/12/15 17:12:32 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -61,7 +61,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.24 $ $Date: 2002/12/13 17:52:56 $
+ * @version $Revision: 1.25 $ $Date: 2002/12/15 17:12:32 $
  * @author Oliver Becker
  */
 
@@ -318,6 +318,10 @@ public class Processor extends XMLFilterImpl
    }
 
 
+   //
+   // Methods
+   //
+
    /** 
     * Create an <code>XMLReader</code> object (a SAX Parser)
     * @throws SAXException if a SAX Parser couldn't be created
@@ -498,6 +502,7 @@ public class Processor extends XMLFilterImpl
       transformNode.globalParams.put(name, new Value(value));
    }
 
+
    /**
     * Returns a global parameter of the STX stylesheet
     * @param name the (expanded) parameter name
@@ -513,12 +518,72 @@ public class Processor extends XMLFilterImpl
       return param != null ? param.string : null;
    }
 
+
    /**
     * Clear all preset parameters
     */
    public void clearParameters()
    {
       transformNode.globalParams.clear();
+   }
+
+
+   /**
+    * Starts the processing of a new buffer and creates a new ancestor
+    * stack.
+    */
+   public void startBuffer()
+      throws SAXException
+   {
+      bufferStack.push(eventStack);
+      eventStack = new Stack();
+      // there might be characters already read
+      bufferStack.push(collectedCharacters.toString());
+      collectedCharacters.setLength(0);
+      dataStack.push(
+         new Data(null, context.position, context.lookAhead,
+                  context.nextProcessGroup != null 
+                  ? (TemplateFactory.Instance[])
+                    transformNode.namedGroups.get(
+                       context.nextProcessGroup) 
+                  :((Data)dataStack.peek()).visibleTemplates,
+                  ST_BUFFER));
+      startDocument();
+   }
+
+
+   /**
+    * Ends the processing of a buffer by restoring the old ancestor stack.
+    */
+   public void endBuffer()
+      throws SAXException
+   {
+      endDocument();
+      dataStack.pop();
+      collectedCharacters.append(bufferStack.pop());
+      eventStack = (Stack)bufferStack.pop();
+   }
+
+
+   /*
+    * Check for the next best matching template after 
+    * <code>stx:process-self</code>
+    * @param a template matching the current node
+    * @return <code>true</code> if this template hasn't been processed before
+    */
+   private boolean foundUnprocessedTemplate(TemplateFactory.Instance temp)
+   {
+      for (int top=dataStack.size()-1; top >= 0; top--) {
+         Data d = (Data)dataStack.elementAt(top);
+         if ((d.lastProcStatus & ST_SELF) != 0) { // stx:process-self
+            if (d.lastTemplate == temp)
+               return false; // no, this template was already in use
+            // else continue
+         }
+         else
+            return true; // yes, no process-self on top of the stack
+      }
+      return true; // yes, reached bottom of the stack
    }
 
 
@@ -535,30 +600,25 @@ public class Processor extends XMLFilterImpl
       long position = 0;
       int i = 0;
 
-      // how many process-self are on the stack?
-      int selfcount = 0;
-      for (int top=dataStack.size();
-           top > 0 &&
-           (((Data)dataStack.elementAt(top-1)).lastProcStatus & ST_SELF) != 0;
-           top--)
-         selfcount++;
+      Data top = (Data)dataStack.peek();
+
+      // Is the previous instruction not an stx:process-self?
+      // used for performance (to prevent calling foundUnprocessedTemplate())
+      boolean notSelf = (top.lastProcStatus & ST_SELF) == 0;
 
       // first: lookup in the array of visible templates
-      TemplateFactory.Instance[] visibleTemplates =
-         ((Data)dataStack.peek()).visibleTemplates;
-      lookup:
-      for (i=0; i<visibleTemplates.length; i++)
-            if (visibleTemplates[i].matches(context, eventStack) &&
-                selfcount-- == 0) {
-               category = visibleTemplates;
-               break lookup;
-            }
+      for (i=0; i<top.visibleTemplates.length; i++)
+         if (top.visibleTemplates[i].matches(context, eventStack) &&
+             (notSelf || foundUnprocessedTemplate(top.visibleTemplates[i]))) {
+            category = top.visibleTemplates;
+            break;
+         }
 
       // second: if nothing was found, lookup in the array of global templates
       if (category == null)
          for (i=0; i<globalTemplates.length; i++)
             if (globalTemplates[i].matches(context, eventStack) &&
-                selfcount-- == 0) {
+                (notSelf || foundUnprocessedTemplate(globalTemplates[i]))) {
                category = globalTemplates;
                break;
             }
@@ -592,128 +652,6 @@ public class Processor extends XMLFilterImpl
 
 
    /**
-    * Process a text node (from several consecutive <code>characters</code>
-    * events)
-    */
-   private void processCharacters()
-      throws SAXException
-   {
-      String s = collectedCharacters.toString();
-
-      if (log4j.isDebugEnabled())
-         log4j.debug("`" + s + "'");
-
-      if (context.stripSpace && s.trim().length() == 0) {
-         collectedCharacters.setLength(0);
-         return; // white-space only characters found, do nothing
-      }
-
-      if (insideCDATA) {
-         ((SAXEvent)eventStack.peek()).countCDATA();
-         eventStack.push(SAXEvent.newCDATA(s));
-      }
-      else {
-         ((SAXEvent)eventStack.peek()).countText();
-         eventStack.push(SAXEvent.newText(s));
-      }
-      if (log4j.isDebugEnabled())
-         log4j.debug("eventStack.push " + eventStack.peek());
-      context.lookAhead = null;
-
-      processEvent();
-
-      if (log4j.isDebugEnabled())
-         log4j.debug("eventStack.pop " + eventStack.pop());
-      else
-         eventStack.pop();
-
-      collectedCharacters.setLength(0);
-      log4j.debug("return");
-   }
-
-
-   /** 
-    * Process last element start (stored as {@link #lastElement} in
-    * {@link #startElement startElement}) 
-    */
-   private void processLastElement(SAXEvent currentEvent)
-      throws SAXException
-   {
-      log4j.debug(lastElement);
-
-      // determine if the look-ahead is a text node
-      String s = collectedCharacters.toString();
-      if (s.length() == 0 || 
-          (context.stripSpace && s.trim().length() == 0))
-         context.lookAhead = currentEvent;
-      else
-         context.lookAhead = insideCDATA ? SAXEvent.newCDATA(s) 
-                                         : SAXEvent.newText(s);
-
-      // put last element on the event stack
-      ((SAXEvent)eventStack.peek()).countElement(lastElement.uri, 
-                                                 lastElement.lName);
-      eventStack.push(lastElement);
-      if (log4j.isDebugEnabled())
-         log4j.debug("eventStack.push " + lastElement);
-
-      lastElement = null;
-      processEvent();
-
-      context.lookAhead = null; // reset look-ahead
-   }
-
-
-   /**
-    * Simulate events for each of the attributes of the current element.
-    * This method will be called due to an <code>stx:process-attributes</code>
-    * instruction.
-    * @param attrs the attributes to be processed
-    */
-   private void processAttributes(Attributes attrs)
-      throws SAXException
-   {
-      for (int i=0; i<attrs.getLength(); i++) {
-         log4j.debug(attrs.getQName(i));
-//           ((SAXEvent)eventStack.peek()).countAttribute(attrs.getURI(i), 
-//                                                        attrs.getLocalName(i));
-         eventStack.push(SAXEvent.newAttribute(attrs, i));
-         processEvent();
-         eventStack.pop();
-         log4j.debug("done " + attrs.getQName(i));
-      }
-   }
-
-
-   /**
-    * Starts the processing of a new buffer and creates a new ancestor
-    * stack.
-    */
-   public void startBuffer()
-      throws SAXException
-   {
-      bufferStack.push(eventStack);
-      eventStack = new Stack();
-      // there might be characters already read
-      bufferStack.push(collectedCharacters.toString());
-      collectedCharacters.setLength(0);
-      startDocument();
-   }
-
-
-   /**
-    * Ends the processing of a buffer by restoring the old ancestor stack.
-    */
-   public void endBuffer()
-      throws SAXException
-   {
-      endDocument();
-      collectedCharacters.append(bufferStack.pop());
-      eventStack = (Stack)bufferStack.pop();
-   }
-
-
-   /**
     * Processes the upper most event on the event stack.
     */
    private void processEvent()
@@ -728,6 +666,7 @@ public class Processor extends XMLFilterImpl
          do {
             log4j.debug("status: " + procStatus);
             attributeLoop = false;
+            context.nextProcessGroup = null;
             procStatus = temp.process(emitter, eventStack, context,
                                       procStatus);
             if ((procStatus & ST_CHILDREN) != 0) {
@@ -735,7 +674,11 @@ public class Processor extends XMLFilterImpl
                   // processing suspended due to a stx:process-children
                   dataStack.push(
                      new Data(temp, context.position, context.lookAhead,
-                              temp.parentGroup.visibleTemplates,
+                              context.nextProcessGroup != null 
+                                ? (TemplateFactory.Instance[])
+                                  transformNode.namedGroups.get(
+                                     context.nextProcessGroup) 
+                                : temp.parentGroup.visibleTemplates,
                               procStatus));
                   if (log4j.isDebugEnabled())
                      log4j.debug("children - dataStack.push " + 
@@ -750,7 +693,11 @@ public class Processor extends XMLFilterImpl
                // marker for findMatchingTemplate()
                dataStack.push(
                   new Data(temp, context.position, context.lookAhead,
-                           ((Data)dataStack.peek()).visibleTemplates,
+                           context.nextProcessGroup != null 
+                              ? (TemplateFactory.Instance[])
+                                transformNode.namedGroups.get(
+                                   context.nextProcessGroup) 
+                              :((Data)dataStack.peek()).visibleTemplates,
                            procStatus));
                processEvent(); // recurse
                if (event.type == SAXEvent.TEXT || 
@@ -767,7 +714,11 @@ public class Processor extends XMLFilterImpl
                // stx:process-attributes, just for elements
                dataStack.push(
                   new Data(temp, context.position, context.lookAhead,
-                           temp.parentGroup.visibleTemplates,
+                           context.nextProcessGroup != null 
+                              ? (TemplateFactory.Instance[])
+                                transformNode.namedGroups.get(
+                                   context.nextProcessGroup) 
+                              : temp.parentGroup.visibleTemplates,
                            procStatus));
                processAttributes(event.attrs);
                dataStack.pop();
@@ -849,6 +800,99 @@ public class Processor extends XMLFilterImpl
       }
    }
 
+
+   /** 
+    * Process last element start (stored as {@link #lastElement} in
+    * {@link #startElement startElement}) 
+    */
+   private void processLastElement(SAXEvent currentEvent)
+      throws SAXException
+   {
+      log4j.debug(lastElement);
+
+      // determine if the look-ahead is a text node
+      String s = collectedCharacters.toString();
+      if (s.length() == 0 || 
+          (context.stripSpace && s.trim().length() == 0))
+         context.lookAhead = currentEvent;
+      else
+         context.lookAhead = insideCDATA ? SAXEvent.newCDATA(s) 
+                                         : SAXEvent.newText(s);
+
+      // put last element on the event stack
+      ((SAXEvent)eventStack.peek()).countElement(lastElement.uri, 
+                                                 lastElement.lName);
+      eventStack.push(lastElement);
+      if (log4j.isDebugEnabled())
+         log4j.debug("eventStack.push " + lastElement);
+
+      lastElement = null;
+      processEvent();
+
+      context.lookAhead = null; // reset look-ahead
+   }
+
+
+   /**
+    * Process a text node (from several consecutive <code>characters</code>
+    * events)
+    */
+   private void processCharacters()
+      throws SAXException
+   {
+      String s = collectedCharacters.toString();
+
+      if (log4j.isDebugEnabled())
+         log4j.debug("`" + s + "'");
+
+      if (context.stripSpace && s.trim().length() == 0) {
+         collectedCharacters.setLength(0);
+         return; // white-space only characters found, do nothing
+      }
+
+      if (insideCDATA) {
+         ((SAXEvent)eventStack.peek()).countCDATA();
+         eventStack.push(SAXEvent.newCDATA(s));
+      }
+      else {
+         ((SAXEvent)eventStack.peek()).countText();
+         eventStack.push(SAXEvent.newText(s));
+      }
+      if (log4j.isDebugEnabled())
+         log4j.debug("eventStack.push " + eventStack.peek());
+      context.lookAhead = null;
+
+      processEvent();
+
+      if (log4j.isDebugEnabled())
+         log4j.debug("eventStack.pop " + eventStack.pop());
+      else
+         eventStack.pop();
+
+      collectedCharacters.setLength(0);
+      log4j.debug("return");
+   }
+
+
+   /**
+    * Simulate events for each of the attributes of the current element.
+    * This method will be called due to an <code>stx:process-attributes</code>
+    * instruction.
+    * @param attrs the attributes to be processed
+    */
+   private void processAttributes(Attributes attrs)
+      throws SAXException
+   {
+      for (int i=0; i<attrs.getLength(); i++) {
+         log4j.debug(attrs.getQName(i));
+//           ((SAXEvent)eventStack.peek()).countAttribute(attrs.getURI(i), 
+//                                                        attrs.getLocalName(i));
+         eventStack.push(SAXEvent.newAttribute(attrs, i));
+         processEvent();
+         eventStack.pop();
+         log4j.debug("done " + attrs.getQName(i));
+      }
+   }
 
 
 
