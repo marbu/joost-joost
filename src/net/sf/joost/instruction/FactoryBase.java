@@ -1,5 +1,5 @@
 /*
- * $Id: FactoryBase.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: FactoryBase.java,v 1.2 2002/09/10 07:33:07 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.grammar.ExprParser;
 /**
  * Abstract base class for all factory classes which produce nodes
  * ({@link NodeBase}) for the tree representation of an STX stylesheet.
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2002/09/10 07:33:07 $
  * @author Oliver Becker
  */
 
@@ -106,7 +106,7 @@ public abstract class FactoryBase
       int len = attrs.getLength();
       for (int i=0; i<len; i++)
          if ("".equals(attrs.getURI(i)) && 
-             !attNames.contains(attrs.getQName(i)))
+             (attNames == null || !attNames.contains(attrs.getQName(i))))
             throw new SAXParseException("`" + elementName + 
                                         "' must not have a `" +
                                         attrs.getQName(i) + "' attribute",
