@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 2.6 2003/06/02 10:38:18 obecker Exp $
+ * $Id: GroupBase.java,v 2.7 2003/06/02 11:58:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.Value;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 2.6 $ $Date: 2003/06/02 10:38:18 $
+ * @version $Revision: 2.7 $ $Date: 2003/06/02 11:58:44 $
  * @author Oliver Becker
  */
 
@@ -151,6 +151,7 @@ abstract public class GroupBase extends NodeBase
    
 
    public void insert(NodeBase node)
+      throws SAXParseException
    {
       // no call of super.insert(node)
       children.addElement(node);
