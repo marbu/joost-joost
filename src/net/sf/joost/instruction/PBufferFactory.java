@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 1.6 2002/11/27 10:03:12 obecker Exp $
+ * $Id: PBufferFactory.java,v 1.7 2002/12/15 17:15:57 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.6 $ $Date: 2002/11/27 10:03:12 $
+ * @version $Revision: 1.7 $ $Date: 2002/12/15 17:15:57 $
  * @author Oliver Becker
  */
 
@@ -64,6 +64,7 @@ public class PBufferFactory extends FactoryBase
    {
       attrNames = new HashSet();
       attrNames.add("name");
+      attrNames.add("group");
    }
 
    /** @return <code>"process-buffer"</code> */
@@ -78,41 +79,34 @@ public class PBufferFactory extends FactoryBase
       throws SAXParseException
    {
       String nameAtt = getAttribute(qName, attrs, "name", locator);
+      // buffers are special variables with an "@" prefix
+      String bufName = "@" + getExpandedName(nameAtt, nsSet, locator);
 
-      String nameUri, nameLocal;
-      int colon = nameAtt.indexOf(':');
-      if (colon != -1) { // prefixed name
-         String prefix = nameAtt.substring(0, colon);
-         nameLocal = nameAtt.substring(colon+1);
-         nameUri = (String)nsSet.get(prefix);
-         if (nameUri == null)
-            throw new SAXParseException("Undeclared prefix `" + prefix + "'",
-                                        locator);
-      }
-      else {
-         nameLocal = nameAtt;
-         nameUri = ""; // no default namespace usage
-      }
+      String groupAtt = attrs.getValue("group");
+      String groupName = null;
+      if (groupAtt != null)
+         groupName = getExpandedName(groupAtt, nsSet, locator);
 
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, nameAtt, 
-                          "@{" + nameUri + "}" + nameLocal);
-      // buffers are special variables with an "@" prefix
+      return new Instance(qName, parent, locator, nameAtt, bufName, 
+                          groupAtt, groupName);
    }
 
 
    /** The inner Instance class */
    public class Instance extends NodeBase
    {
-      String bufName;
-      String expName;
+      String bufName, expName, groupQName, groupExpName;
 
       public Instance(String qName, NodeBase parent, Locator locator, 
-                      String bufName, String expName)
+                      String bufName, String expName, String groupQName,
+                      String groupExpName)
       {
          super(qName, parent, locator, true);
          this.bufName = bufName;
          this.expName = expName;
+         this.groupQName = groupQName;
+         this.groupExpName = groupExpName;
       }
 
 
@@ -142,6 +136,17 @@ public class PBufferFactory extends FactoryBase
                "Can't process active buffer `" + bufName + "'",
                publicId, systemId, lineNo, colNo);
             return processStatus; // if the errorHandler returns
+         }
+
+         if (groupExpName != null) {
+            if (context.currentGroup.namedGroups.get(groupExpName) == null) {
+               context.errorHandler.error(
+                  "Unknown group `" + groupQName + "'", 
+                  publicId, systemId, lineNo, colNo);
+               return processStatus; // if the errorHandler returns
+            }
+            // change to a new base group for matching
+            context.nextProcessGroup = groupExpName;
          }
 
          // walk through the buffer and emit events to the Processor object
