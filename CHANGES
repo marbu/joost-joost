@@ -1,3 +1,6 @@
+Changes since 20030623
+- Bugfix: 765301
+
 Changes since 20030502
 - added 'separator' attribute to stx:value-of; 
   since @separator defaults to " ", the default behaviour changed if 
