@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.10 2003/05/28 14:00:56 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.11 2003/06/19 10:50:48 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -40,7 +40,7 @@ import javax.xml.transform.OutputKeys;
  *  Is is designed for using <code>StreamResult</code>.
  *  So this class outputs a StreamResult to the output target -
  *  {@link #outwriter} (e.g. a registered <code>FileWriter</code>).
- *  @version $Revision: 1.10 $ $Date: 2003/05/28 14:00:56 $
+ *  @version $Revision: 1.11 $ $Date: 2003/06/19 10:50:48 $
  *  @author Oliver Becker, Anatolij Zubow
  */
 public class StreamEmitter implements StxEmitter {
@@ -239,8 +239,9 @@ public class StreamEmitter implements StxEmitter {
                         case '<':  out.append("&lt;");   break;
                         case '>':  out.append("&gt;");   break;
                         case '\"': out.append("&quot;"); break;
-                        case '\n': out.append("&#xA;");  break;
                         case '\t': out.append("&#x9;");  break;
+                        case '\n': out.append("&#xA;");  break;
+                        case '\r': out.append("&#xD;");  break;
                         default:   out.append(attChars[j]);
                     }
                 out.append('\"');
