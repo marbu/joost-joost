@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 2.4 2003/06/03 14:30:23 obecker Exp $
+ * $Id: PDocumentFactory.java,v 2.5 2003/06/11 15:51:16 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.stx.Value;
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.4 $ $Date: 2003/06/03 14:30:23 $
+ * @version $Revision: 2.5 $ $Date: 2003/06/11 15:51:16 $
  * @author Oliver Becker
  */
 
@@ -119,6 +119,10 @@ public class PDocumentFactory extends FactoryBase
       public short processEnd(Context context)
          throws SAXException
       {
+         Value v = href.evaluate(context, this);
+         if (v.type == Value.EMPTY) 
+            return PR_CONTINUE;
+
          Processor proc = context.currentProcessor;
          XMLReader reader = Processor.getXMLReader();
          reader.setErrorHandler(context.errorHandler);
@@ -133,8 +137,6 @@ public class PDocumentFactory extends FactoryBase
             context.errorHandler.warning("Accessing " + reader + ": " + ex,
                                          publicId, systemId, lineNo, colNo);
          }
-
-         Value v = href.evaluate(context, this);
 
          String base;
          if (baseUri == null) { // determine default base URI
@@ -158,11 +160,18 @@ public class PDocumentFactory extends FactoryBase
          Locator prevLoc = context.locator;
          context.locator = null;
          proc.startInnerProcessing();
+
          try {
-            String hrefURI = v.convertToString().string;
-            // TODO: use javax.xml.transform.URIResolver if present
-            // source = theURIResolver.resolve(hrefURI, base);
-            reader.parse(new URL(new URL(base), hrefURI).toExternalForm());
+            Value next;
+            do {
+               next = v.next;
+               v.next = null;
+               String hrefURI = v.convertToString().string;
+               // TODO: use javax.xml.transform.URIResolver if present
+               // source = theURIResolver.resolve(hrefURI, base);
+               reader.parse(new URL(new URL(base), hrefURI).toExternalForm());
+               v = next;
+            } while (v != null);
          }
          catch (java.io.IOException ex) {
             // TODO: better error handling
