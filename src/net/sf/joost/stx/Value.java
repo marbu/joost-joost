@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.17 2003/06/16 13:24:37 obecker Exp $
+ * $Id: Value.java,v 1.18 2004/08/26 14:21:25 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,7 +32,7 @@ import java.util.ArrayList;
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.17 $ $Date: 2003/06/16 13:24:37 $
+ * @version $Revision: 1.18 $ $Date: 2004/08/26 14:21:25 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -334,8 +334,8 @@ public class Value implements Cloneable
    public double getDistanceTo(Class target)
    {
       if (type == OBJECT) {
+         if (object == null || target == Object.class)   return 2;
          if (target == object.getClass())                return 0; 
-         if (target == Object.class)                     return 2;
          if (target.isAssignableFrom(object.getClass())) return 1;
          if (target == String.class)                     return 100;
       }
@@ -432,7 +432,8 @@ public class Value implements Cloneable
             throw new RuntimeException("Fatal: unexpected type " + type);
          }
       }
-      else if (type == OBJECT && target.isAssignableFrom(object.getClass())) {
+      else if (type == OBJECT && 
+            (object == null || target.isAssignableFrom(object.getClass()))) {
          // target is a superclass of object's class (or they are the same)
          return object;
       }
