@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateFactory.java,v 1.4 2002/11/02 15:11:18 obecker Exp $
+ * $Id: TemplateFactory.java,v 1.5 2002/11/14 13:15:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>template</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 1.4 $ $Date: 2002/11/02 15:11:18 $
+ * @version $Revision: 1.5 $ $Date: 2002/11/14 13:15:44 $
  * @author Oliver Becker
  */
 
@@ -299,7 +299,8 @@ public final class TemplateFactory extends FactoryBase
                            Context context, short processStatus)
          throws SAXException
       {
-//           log4j.debug(this);
+         if (log4j.isDebugEnabled())
+            log4j.debug(this + " status: " + processStatus);
 //           log4j.debug("size localVarStack: " + localVarStack.size());
 
          context.currentGroup = parent;

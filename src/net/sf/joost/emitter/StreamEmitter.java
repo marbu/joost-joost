@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.4 2002/11/03 11:32:50 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.5 2002/11/14 13:15:42 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -40,7 +40,7 @@ import java.util.Hashtable;
  *  Is is designed for using <code>StreamResult</code>.
  *  So this class outputs a StreamResult to the output target -
  *  {@link #outwriter} (e.g. a registered <code>FileWriter</code>).
- *  @version $Revision: 1.4 $ $Date: 2002/11/03 11:32:50 $
+ *  @version $Revision: 1.5 $ $Date: 2002/11/14 13:15:42 $
  *  @author Oliver Becker, Anatolij Zubow
  */
 public class StreamEmitter implements StxEmitter {
@@ -213,6 +213,7 @@ public class StreamEmitter implements StxEmitter {
 
                 //stream string to writer
                 outwriter.write(out.toString());
+                log4j.debug(out);
 
             } catch (IOException ex) {
 
@@ -316,13 +317,13 @@ public class StreamEmitter implements StxEmitter {
         throws SAXException {
 
         processLastElement(false);
-        StringBuffer out = new StringBuffer(length);
 
         try {
 
             if (insideCDATA) {
                 outwriter.write(ch, start, length);
             } else {
+                StringBuffer out = new StringBuffer(length);
                 // output escaping
                 for (int i=0; i<length; i++)
                     switch (ch[start+i]) {
@@ -331,9 +332,11 @@ public class StreamEmitter implements StxEmitter {
                         case '>': out.append("&gt;"); break;
                         default: out.append(ch[start+i]);
                     }
+                outwriter.write(out.toString());
             }
+            if (log4j.isDebugEnabled()) 
+               log4j.debug("`" + new String(ch, start, length) + "'");
             
-            outwriter.write(out.toString());
 
         } catch (IOException ex) {
 
