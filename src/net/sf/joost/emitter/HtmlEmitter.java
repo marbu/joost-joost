@@ -1,5 +1,5 @@
 /*
- * $Id: HtmlEmitter.java,v 1.2 2004/10/30 15:23:18 obecker Exp $
+ * $Id: HtmlEmitter.java,v 1.3 2004/11/07 12:30:38 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -33,7 +33,7 @@ import org.xml.sax.SAXException;
 
 /**
  *  This class implements an emitter for html code.
- *  @version $Revision: 1.2 $ $Date: 2004/10/30 15:23:18 $
+ *  @version $Revision: 1.3 $ $Date: 2004/11/07 12:30:38 $
  *  @author Thomas Behrends
  */
 public class HtmlEmitter extends StreamEmitter 
@@ -44,20 +44,23 @@ public class HtmlEmitter extends StreamEmitter
    private boolean insideCDATA = false;
 
    /** Empty HTML 4.01 elements according to
-       http://www.w3.org/TR/1999/REC-html401-19991224/sgml/dtd.html */
+       http://www.w3.org/TR/1999/REC-html401-19991224/index/elements.html */
    private static final HashSet emptyHTMLElements;
    static {
       emptyHTMLElements = new HashSet();
-      emptyHTMLElements.add("BR");
       emptyHTMLElements.add("AREA");
-      emptyHTMLElements.add("LINK");
-      emptyHTMLElements.add("IMG");
-      emptyHTMLElements.add("PARAM");
-      emptyHTMLElements.add("HR");
-      emptyHTMLElements.add("INPUT");
-      emptyHTMLElements.add("COL");
       emptyHTMLElements.add("BASE");
+      emptyHTMLElements.add("BASEFONT");
+      emptyHTMLElements.add("BR");
+      emptyHTMLElements.add("COL");
+      emptyHTMLElements.add("FRAME");
+      emptyHTMLElements.add("HR");
+      emptyHTMLElements.add("IMG");
+      emptyHTMLElements.add("INPUT");
+      emptyHTMLElements.add("ISINDEX");
+      emptyHTMLElements.add("LINK");
       emptyHTMLElements.add("META");
+      emptyHTMLElements.add("PARAM");
    }
 
    /** Constructor */
@@ -127,8 +130,27 @@ public class HtmlEmitter extends StreamEmitter
       int length = attrs.getLength();
       for (int i=0; i<length; i++) {
          out.append(' ').append(attrs.getQName(i)).append("=\"");
-         int startIndex = 0;
-         out.append(HtmlEncoder.encode(attrs.getValue(i)));
+            char[] attChars = attrs.getValue(i).toCharArray();
+
+            // perform output escaping
+            for (int j=0; j<attChars.length; j++)
+               switch (attChars[j]) {
+               case '&':  out.append("&amp;");  break;
+               case '<':  out.append("&lt;");   break;
+               case '>':  out.append("&gt;");   break;
+               case '\"': out.append("&quot;"); break;
+               case '\t': out.append("&#x9;");  break;
+               case '\n': out.append("&#xA;");  break;
+               case '\r': out.append("&#xD;");  break;
+               case 160: out.append("&nbsp;");  break;
+               default:
+                  if (charsetEncoder.canEncode(attChars[j]))
+                     out.append(attChars[j]);
+                  else // output character reference
+                     out.append("&#")
+                        .append((int)attChars[j])
+                        .append(";");
+               }
          out.append('\"');
       }
 
@@ -181,8 +203,25 @@ public class HtmlEmitter extends StreamEmitter
                                          + "'");
             writer.write(ch, start, length);
          }
-         else
-            writer.write(HtmlEncoder.encode(new String(ch, start, length)));
+         else {
+            StringBuffer out = new StringBuffer((int)(length * 1.3f));
+            // perform output escaping
+            for (int i=0; i<length; i++)
+               switch (ch[start+i]) {
+               case '&': out.append("&amp;");  break;
+               case '<': out.append("&lt;");   break;
+               case '>': out.append("&gt;");   break;
+               case 160: out.append("&nbsp;"); break;
+               default: 
+                  if (charsetEncoder.canEncode(ch[start+i]))
+                     out.append(ch[start+i]);
+                  else // output character reference
+                     out.append("&#")
+                        .append((int)ch[start+i])
+                        .append(";");
+               }
+            writer.write(out.toString());
+         }
       } 
       catch (IOException ex) {
          throw new SAXException(ex);
