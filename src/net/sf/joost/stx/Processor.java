@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.8 2003/05/14 13:08:44 obecker Exp $
+ * $Id: Processor.java,v 2.9 2003/05/16 14:55:52 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -51,6 +51,7 @@ import java.util.Vector;
 import java.io.IOException;
 
 import net.sf.joost.Constants;
+import net.sf.joost.TransformerHandlerResolver;
 import net.sf.joost.instruction.AbstractInstruction;
 import net.sf.joost.instruction.GroupBase;
 import net.sf.joost.instruction.GroupFactory;
@@ -63,7 +64,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.8 $ $Date: 2003/05/14 13:08:44 $
+ * @version $Revision: 2.9 $ $Date: 2003/05/16 14:55:52 $
  * @author Oliver Becker
  */
 
@@ -589,6 +590,17 @@ public class Processor extends XMLFilterImpl
    public void clearParameters()
    {
       transformNode.globalParams.clear();
+   }
+
+
+   /**
+    * Registers a custom {@link TransformerHandlerResolver} object.
+    * @param resolver the resolver to be registered
+    */
+   public void setTransformerHandlerResolver(
+      TransformerHandlerResolver resolver)
+   {
+      context.defaultTransformerHandlerResolver.customResolver = resolver;
    }
 
 

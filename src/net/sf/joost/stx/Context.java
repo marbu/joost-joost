@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 2.6 2003/05/14 11:54:15 obecker Exp $
+ * $Id: Context.java,v 2.7 2003/05/16 14:55:52 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,6 +24,7 @@
 
 package net.sf.joost.stx;
 
+import net.sf.joost.TransformerHandlerResolver;
 import net.sf.joost.instruction.GroupBase;
 import net.sf.joost.instruction.NodeBase;
 import net.sf.joost.instruction.PSiblingsFactory;
@@ -37,7 +38,7 @@ import java.util.Stack;
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 2.6 $ $Date: 2003/05/14 11:54:15 $
+ * @version $Revision: 2.7 $ $Date: 2003/05/16 14:55:52 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
@@ -79,6 +80,9 @@ public final class Context implements Cloneable
    /** An ErrorHandler for reporting errors and warnings */
    public ErrorHandlerImpl errorHandler = new ErrorHandlerImpl();
 
+   /** The default TransformerHandlerResolver */
+   public TransformerHandlerResolverImpl defaultTransformerHandlerResolver = 
+      new TransformerHandlerResolverImpl();
 
    /**
     * @return a copy of this object.
