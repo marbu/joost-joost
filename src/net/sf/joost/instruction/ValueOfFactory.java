@@ -1,5 +1,5 @@
 /*
- * $Id: ValueOfFactory.java,v 1.6 2003/02/20 09:25:30 obecker Exp $
+ * $Id: ValueOfFactory.java,v 1.7 2003/02/24 13:32:52 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,13 +37,12 @@ import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Value;
 import net.sf.joost.grammar.Tree;
-import net.sf.joost.grammar.EvalException;
 
 
 /** 
  * Factory for <code>value-of</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.6 $ $Date: 2003/02/20 09:25:30 $
+ * @version $Revision: 1.7 $ $Date: 2003/02/24 13:32:52 $
  * @author Oliver Becker
  */
 
@@ -103,15 +102,9 @@ final public class ValueOfFactory extends FactoryBase
                               Context context, short processStatus)
          throws SAXException
       {
-         try {
-            String s = select.evaluate(context, eventStack, this)
-                             .convertToString().string;
-            emitter.characters(s.toCharArray(), 0, s.length());
-         }
-         catch (EvalException e) {
-            context.errorHandler.error(e.getMessage(),
-                                       publicId, systemId, lineNo, colNo);
-         }
+         String s = select.evaluate(context, eventStack, this)
+                          .convertToString().string;
+         emitter.characters(s.toCharArray(), 0, s.length());
          return processStatus;
       }
    }

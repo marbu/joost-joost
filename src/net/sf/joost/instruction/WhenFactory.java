@@ -1,5 +1,5 @@
 /*
- * $Id: WhenFactory.java,v 1.6 2003/02/20 09:25:30 obecker Exp $
+ * $Id: WhenFactory.java,v 1.7 2003/02/24 13:32:52 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -36,13 +36,12 @@ import java.util.Stack;
 import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
 import net.sf.joost.grammar.Tree;
-import net.sf.joost.grammar.EvalException;
 
 
 /** 
  * Factory for <code>when</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.6 $ $Date: 2003/02/20 09:25:30 $
+ * @version $Revision: 1.7 $ $Date: 2003/02/24 13:32:52 $
  * @author Oliver Becker
  */
 
@@ -138,14 +137,8 @@ final public class WhenFactory extends FactoryBase
          boolean testResult = false;
          if ((processStatus & ST_PROCESSING) != 0) {
             // first entry, evaluate test expression
-            try {
-               testResult = test.evaluate(context, eventStack, this)
-                                .convertToBoolean().bool;
-            }
-            catch (EvalException e) {
-               context.errorHandler.error(e.getMessage(),
-                                          publicId, systemId, lineNo, colNo);
-            }
+            testResult = test.evaluate(context, eventStack, this)
+                             .convertToBoolean().bool;
          }
          else {
             // we must have been here before ...

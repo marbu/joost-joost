@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 1.8 2003/02/20 09:25:29 obecker Exp $
+ * $Id: PDocumentFactory.java,v 1.9 2003/02/24 13:32:52 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -35,7 +35,6 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Stack;
 
-import net.sf.joost.grammar.EvalException;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Emitter;
@@ -46,7 +45,7 @@ import net.sf.joost.stx.Value;
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.8 $ $Date: 2003/02/20 09:25:29 $
+ * @version $Revision: 1.9 $ $Date: 2003/02/24 13:32:52 $
  * @author Oliver Becker
  */
 
@@ -169,11 +168,6 @@ public class PDocumentFactory extends FactoryBase
             // TODO: better error handling
             context.errorHandler.error(
                new SAXParseException(ex.toString(), 
-                                     publicId, systemId, lineNo, colNo));
-         }
-         catch (EvalException eex) { // raised by convertToString()
-            context.errorHandler.error(
-               new SAXParseException(eex.getMessage(), 
                                      publicId, systemId, lineNo, colNo));
          }
          proc.endInnerProcessing();
