@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 1.5 2003/03/13 10:54:06 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 1.6 2003/03/13 14:59:21 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -47,7 +47,7 @@ import net.sf.joost.stx.Emitter;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.5 $ $Date: 2003/03/13 10:54:06 $
+ * @version $Revision: 1.6 $ $Date: 2003/03/13 14:59:21 $
  * @author Oliver Becker
  */
 
@@ -156,7 +156,7 @@ final public class ResultDocumentFactory extends FactoryBase
                // Note: both variants have the same average performance,
                // no matter whether directories have to be created or not.
 
-               se = new StreamEmitter(new OutputStreamWriter(fos), 
+               se = new StreamEmitter(new OutputStreamWriter(fos, encoding), 
                                       encoding);
             }
             catch (java.io.IOException ex) {
