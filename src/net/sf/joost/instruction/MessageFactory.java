@@ -1,5 +1,5 @@
 /*
- * $Id: MessageFactory.java,v 2.6 2004/09/29 06:17:16 obecker Exp $
+ * $Id: MessageFactory.java,v 2.7 2004/10/17 20:37:25 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>message</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.6 $ $Date: 2004/09/29 06:17:16 $
+ * @version $Revision: 2.7 $ $Date: 2004/10/17 20:37:25 $
  * @author Oliver Becker
  */
 
@@ -101,7 +101,7 @@ final public class MessageFactory extends FactoryBase
          if (context.messageEmitter == null) {
             // create StreamEmitter for stderr (only once)
             try {
-               StreamEmitter se = new StreamEmitter(
+               StreamEmitter se = StreamEmitter.newEmitter(
                   System.err, context.currentProcessor.outputProperties);
                se.setOmitXmlDeclaration(true);
                context.messageEmitter = se;

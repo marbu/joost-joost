@@ -1,5 +1,5 @@
 /*
- * $Id: TextFactory.java,v 2.3 2004/09/29 06:14:20 obecker Exp $
+ * $Id: TextFactory.java,v 2.4 2004/10/17 20:37:25 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>text</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.3 $ $Date: 2004/09/29 06:14:20 $
+ * @version $Revision: 2.4 $ $Date: 2004/10/17 20:37:25 $
  * @author Oliver Becker
  */
 
@@ -102,7 +102,7 @@ public class TextFactory extends FactoryBase
             // use our StreamEmitter with a StringWriter
             StringWriter w = new StringWriter();
             buffer = w.getBuffer();
-            stxEmitter = new StreamEmitter(w);
+            stxEmitter = StreamEmitter.newXMLEmitter(w);
          }
          else {
             // use our StringEmitter

@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXHelper.java,v 1.10 2003/09/08 09:22:24 obecker Exp $
+ * $Id: TrAXHelper.java,v 1.11 2004/10/17 20:37:25 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,13 +26,20 @@
 package net.sf.joost.trax;
 
 //JAXP
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
+import java.net.URL;
+import java.net.URLConnection;
 
-import org.xml.sax.InputSource;
-import org.xml.sax.ContentHandler;
-
-import javax.xml.transform.*;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.ErrorListener;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
@@ -41,16 +48,17 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
 
-import net.sf.joost.emitter.StxEmitter;
-import net.sf.joost.emitter.SAXEmitter;
 import net.sf.joost.emitter.DOMEmitter;
+import net.sf.joost.emitter.SAXEmitter;
 import net.sf.joost.emitter.StreamEmitter;
+import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.stx.Processor;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
 
 
 /**
@@ -203,15 +211,15 @@ public class TrAXHelper implements TrAXConstants {
                 if (writer != null) {
                     if (DEBUG)
                         log.debug("get a Writer object from Result object");
-                    return new StreamEmitter(writer);
+                    return StreamEmitter.newXMLEmitter(writer);
                 }
                 // or try to get an OutputStream from Result object
                 final OutputStream ostream = target.getOutputStream();
                 if (ostream != null) {
                     if (DEBUG)
                         log.debug("get an OutputStream from Result object");
-                    return new StreamEmitter(ostream, 
-                                             processor.outputProperties);
+                    return StreamEmitter.newEmitter(ostream, 
+                                                    processor.outputProperties);
                 }
                 // or try to get just a systemId string from Result object
                 String systemId = result.getSystemId();
@@ -230,23 +238,24 @@ public class TrAXHelper implements TrAXConstants {
                 if (systemId.startsWith("file:")) {
                     url = new URL(systemId);
                     os = new FileOutputStream(url.getFile());
-                    return new StreamEmitter(os, processor.outputProperties);
+                    return StreamEmitter.newEmitter(os, 
+                                                    processor.outputProperties);
                 }
-                    else if (systemId.startsWith("http:")) {
-                        url = new URL(systemId);
-                        URLConnection connection = url.openConnection();
-                        os = connection.getOutputStream();
-                        return new StreamEmitter(os, 
-                                                 processor.outputProperties);
-                    }
-                    else {
-                        // system id is just a filename
-                        File tmp    = new File(systemId);
-                        url         = tmp.toURL();
-                        os          = new FileOutputStream(url.getFile());
-                        return new StreamEmitter(os, 
-                                                 processor.outputProperties);
-                    }
+                else if (systemId.startsWith("http:")) {
+                    url = new URL(systemId);
+                    URLConnection connection = url.openConnection();
+                    os = connection.getOutputStream();
+                    return StreamEmitter.newEmitter(os, 
+                                                    processor.outputProperties);
+                }
+                else {
+                    // system id is just a filename
+                    File tmp    = new File(systemId);
+                    url         = tmp.toURL();
+                    os          = new FileOutputStream(url.getFile());
+                    return StreamEmitter.newEmitter(os, 
+                                                    processor.outputProperties);
+                }
             }
          // If we cannot create the file specified by the SystemId
         } catch (IOException iE) {

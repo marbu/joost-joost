@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 2.12 2004/09/29 06:17:16 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 2.13 2004/10/17 20:37:25 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.12 $ $Date: 2004/09/29 06:17:16 $
+ * @version $Revision: 2.13 $ $Date: 2004/10/17 20:37:25 $
  * @author Oliver Becker
  */
 
@@ -134,7 +134,7 @@ final public class ResultDocumentFactory extends FactoryBase
             props.setProperty(OutputKeys.ENCODING, encoding);
             if (method != null)
                props.setProperty(OutputKeys.METHOD, method);
-            se = new StreamEmitter(osw, props);
+            se = StreamEmitter.newEmitter(osw, encoding, props);
             localFieldStack.push(osw);
          }
          catch (java.io.IOException ex) {

@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.18 2004/10/03 19:05:38 zubow Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.19 2004/10/17 20:37:25 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,24 +25,16 @@
 
 package net.sf.joost.trax;
 
-import net.sf.joost.TransformerHandlerResolver;
-import net.sf.joost.emitter.StxEmitter;
-import net.sf.joost.emitter.StreamEmitter;
-import net.sf.joost.trace.ParserListenerMgr;
-import net.sf.joost.stx.Processor;
-
-//JAXP
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLFilter;
-import org.xml.sax.XMLReader;
+import java.io.IOException;
+import java.io.StringReader;
 
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.URIResolver;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
@@ -52,8 +44,16 @@ import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.io.StringReader;
-import java.io.IOException;
+
+import net.sf.joost.TransformerHandlerResolver;
+import net.sf.joost.emitter.StreamEmitter;
+import net.sf.joost.emitter.StxEmitter;
+import net.sf.joost.stx.Processor;
+import net.sf.joost.trace.ParserListenerMgr;
+
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLFilter;
+import org.xml.sax.XMLReader;
 
 
 /**
@@ -104,7 +104,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
      */
     public TransformerFactoryImpl() throws IOException {
         // initialize default messageEmitter
-        msgEmitter = new StreamEmitter(System.err, null);
+        msgEmitter = StreamEmitter.newEmitter(System.err, null);
         ((StreamEmitter)msgEmitter).setOmitXmlDeclaration(true);
     }
 

@@ -1,5 +1,5 @@
 /*
- * $Id: HttpPostHandler.java,v 2.1 2004/08/19 19:02:33 obecker Exp $
+ * $Id: HttpPostHandler.java,v 2.2 2004/10/17 20:37:25 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,7 +24,7 @@
 
 package net.sf.joost.stx;
 
-import net.sf.joost.emitter.StreamEmitter;
+import net.sf.joost.emitter.XmlEmitter;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -47,12 +47,12 @@ import org.xml.sax.XMLReader;
 /**
  * Implements an HTTP POST connection with a {@link TransformerHandler}
  * interface.
- * @version $Revision: 2.1 $ $Date: 2004/08/19 19:02:33 $
+ * @version $Revision: 2.2 $ $Date: 2004/10/17 20:37:25 $
  * @author Oliver Becker
  */
 
 public class HttpPostHandler
-   extends StreamEmitter implements TransformerHandler
+   extends XmlEmitter implements TransformerHandler
 {
    /** event sink for this transformer */
    private SAXResult saxResult;
@@ -67,14 +67,12 @@ public class HttpPostHandler
    // Constructor
    public HttpPostHandler(String targetURL)
    {
-      super((StringWriter)null); // postpone writer initialization
-      StringWriter w = new StringWriter();
-      setOutWriter(w);           // here
-
-      buffer = w.getBuffer();
-
+      super(null, DEFAULT_ENCODING, null); // postpone writer initialization
+      writer = new StringWriter();         // catch up here
+      buffer = ((StringWriter)writer).getBuffer();
       this.targetURL = targetURL;
    }
+
 
    // ---------------------------------------------------------------------
 

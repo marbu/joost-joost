@@ -1,5 +1,5 @@
 /*
- * $Id: ProfilerTestCases.java,v 1.5 2003/11/01 17:03:07 zubow Exp $
+ * $Id: ProfilerTestCases.java,v 1.6 2004/10/17 20:37:25 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,12 +24,12 @@
 
 package test.joost.trax.profiler;
 
-import junit.framework.TestCase;
-import org.apache.log4j.Logger;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLFilter;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -41,11 +41,16 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.io.*;
-import java.util.Properties;
 
-import net.sf.joost.stx.Processor;
+import junit.framework.TestCase;
 import net.sf.joost.emitter.StreamEmitter;
+import net.sf.joost.stx.Processor;
+
+import org.apache.log4j.Logger;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLFilter;
 
 /**
  * @author Zubow
@@ -307,10 +312,12 @@ public class ProfilerTestCases extends TestCase {
 
        // Create a new STX Processor object
        long delta = 0;
-        try {
-            Processor pr = new Processor(new InputSource(stxFile));
-            StreamEmitter em =
-              new StreamEmitter(new BufferedWriter(new FileWriter("testdata/profiler/0.xml")));
+       try {
+           Processor pr = new Processor(new InputSource(stxFile));
+           StreamEmitter em =
+              StreamEmitter.newXMLEmitter(
+                 new BufferedWriter(
+                    new FileWriter("testdata/profiler/0.xml")));
 
            pr.setContentHandler(em);
 

@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.21 2004/04/16 10:30:16 obecker Exp $
+ * $Id: Main.java,v 1.22 2004/10/17 20:37:19 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,25 +24,23 @@
 
 package net.sf.joost;
 
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.TransformerException;
 
-import net.sf.joost.stx.Processor;
 import net.sf.joost.emitter.FOPEmitter;
 import net.sf.joost.emitter.StreamEmitter;
 import net.sf.joost.emitter.StxEmitter;
+import net.sf.joost.stx.Processor;
 
-// log4j classes
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.21 $ $Date: 2004/04/16 10:30:16 $
+ * @version $Revision: 1.22 $ $Date: 2004/10/17 20:37:19 $
  * @author Oliver Becker
  */
 public class Main implements Constants
@@ -391,11 +389,11 @@ public class Main implements Constants
          else {
             // Create XML output
             if (outFile != null)
-               emitter = new StreamEmitter(outFile, 
-                                           processor.outputProperties);
+               emitter = StreamEmitter.newEmitter(outFile,
+                                                  processor.outputProperties);
             else
-               emitter = new StreamEmitter(System.out, 
-                                           processor.outputProperties);
+               emitter = StreamEmitter.newEmitter(System.out, 
+                                                  processor.outputProperties);
             processor.setContentHandler(emitter);
             processor.setLexicalHandler(emitter);
             // the last line is a short-cut for
@@ -427,7 +425,7 @@ public class Main implements Constants
 //           java.util.Properties props = new java.util.Properties();
 //           props.put("encoding", "ISO-8859-2");
 //           StreamEmitter em = 
-//              new StreamEmitter(System.err, props);
+//              StreamEmitter.newEmitter(System.err, props);
 //           pr.setContentHandler(em);
 //           pr.setLexicalHandler(em);
 //           pr.parse(is);
