@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.8 2003/02/24 16:26:55 obecker Exp $
+ | $Id: build.xml,v 1.9 2003/03/20 14:57:08 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -242,6 +242,7 @@
       <fileset dir="${dist}/${dist.name}">
         <include name="run*.sh" />
         <include name="README" />
+        <include name="ISSUES" />
         <include name="build.xml" />
         <include name="${src}/**" />
         <include name="conf/**" />
