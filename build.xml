@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.14 2004/03/30 08:24:23 obecker Exp $
+ | $Id: build.xml,v 1.15 2004/08/26 06:54:54 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -127,7 +127,7 @@
     <!-- save ${main.src} -->
     <copy file="${main.src}" tofile="main${DSTAMP}.tmp" />
     <replace file="${main.src}" token="@@@DATE@@@" value="${date.today}" />
-    <javac srcdir="${src}" destdir="${classes}" classpathref="cp" />
+    <javac srcdir="${src}" destdir="${classes}" classpathref="cp" excludes="test/**" />
     <!-- restore ${main.src} -->
     <move file="main${DSTAMP}.tmp" tofile="${main.src}" />
     <jar jarfile="${ant.project.name}.jar"
