@@ -1,0 +1,184 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+      <title>Joost</title>
+      <style type="text/css">
+        body { font-family: sans-serif; background-color: #eeeeff; }
+        h1 { color: yellow; background-color: #000066; text-align: center;
+             padding: 4pt;}
+        h3 { text-align: center; }
+        h4 { color: white; background-color: #006; padding: 3pt; }
+      </style>
+   </head>
+   <body link="#993333" vlink="#663333">
+      <h1>Joost</h1>
+      <h3>is Ollie's Original Streaming Transformer</h3>
+
+      <p>
+      This page contains information about the world's first prototypic
+      Java implementation of the
+      <strong><a target="_top"
+      href="http://stx.sourceforge.net">Streaming Transformations
+      for XML (STX)</a>.</strong>
+      It is intended as a kind of reference implementation.
+      (And by the way: Joost is also the first name of a good friend's
+      little son ...)
+      </p>
+      <p>
+      I won't assign version numbers until the STX specification is stable.
+      Instead I will use the current date as surrogat. The latest version
+      was created <strong>@@@DATE@@@</strong> and it should be regarded
+      still as an alpha version.
+      </p>
+      <p>
+      <em>Joost</em> is released under the Mozilla Public License 1.1.
+      Have a look at the
+      <a target="_top"
+         href="https://sourceforge.net/projects/joost">project page</a>
+      for more information. Any questions concerning <em>Joost</em> may be
+      asked on the
+      <a target="_top"
+         href="http://lists.sourceforge.net/lists/listinfo/joost-help">joost-help</a>
+      mailing list.
+      </p>
+      <p>
+      After downloading the
+      <a target="_top"
+         href="https://sourceforge.net/project/showfiles.php?group_id=55258">
+      latest release</a>
+      you need additionally
+      <ul>
+         <li>
+            a SAX2 Parser, for example Crimson (already included in
+            Java 1.4 or downloadable separately on
+            <a target="_top"
+               href="http://java.sun.com/xml/downloads/javaxmlpack.html">Sun's
+            Java XML Pack page</a>),
+            <a target="_top"
+               href="http://xml.apache.org/xerces2-j/">Xerces</a>
+            from Apache XML, or Ælfred2 from the
+            <a target="_top"
+               href="http://www.gnu.org/software/classpathx/jaxp/">GNU JAXP
+            Project</a>
+         </li>
+         <li>
+            the JAXP 1.1 interfaces (also included in Java 1.4 or
+            downloadable from the Sun link above)
+         </li>
+         <li>
+            the <a target="_top"
+            href="http://jakarta.apache.org/log4j/docs/index.html">log4j</a>
+            logging framework from Apache Jakarta</li>
+         <li>and of course a Java platform, at least version 1.1</li>
+      </ul>
+      <p>
+      Run <em>Joost</em> with
+      <strong><code>java net.sf.joost.Main xml-source stx-stylesheet</code></strong>
+      <br>
+      or simply
+      <strong><code>java -jar joost.jar xml-source stx-stylesheet</code></strong>
+      </p>
+      <p>
+      To get a list of possible options use the command line parameter
+      <strong><code>-help</code></strong>
+      </p>
+      <p><em>Joost</em> is able to pass its output to <a target="_top"
+      href="http://xml.apache.org/fop/">FOP</a> for producing PDF output
+      from a stream of XSLFO SAX events. To use this functionality you
+      have to add fop.jar, batik.jar and avalon.jar (FOP 0.20.4 comes
+      with avalon-framework-cvs-20020315.jar) to your classpath.
+      There's no possibility to change FOP's verbosity on the command
+      line at the moment (<em>Joost</em> sets it to <code>warn</code>).
+      </p>
+      
+      <h4>Features</h4>
+      <p>
+      Supported stx elements (and their attributes) in the namespace
+       <code>http://temporary.uri/2002/stx</code>
+      <ul>
+      <li>stx:transform (version, strict-mode?)</li>
+      <li>stx:options (default-stxpath-namespace?, output-encoding?,
+          no-match-events?, strip-space?)</li>
+      <li>stx:group (strict-mode?)</li>
+      <li>stx:template (match, priority?, visibility?,
+          recursion-entry-point?)</li>
+      <li>stx:copy</li>
+      <li>stx:text</li>
+      <li>stx:process-children</li>
+      <li>stx:process-self</li>
+      <li>stx:value-of (select)</li>
+      <li>stx:if (test)</li>
+      <li>stx:element-start (name, namespace?)</li>
+      <li>stx:element-end (name, namespace?)</li>
+      <li>stx:attribute (name, namespace?, select)</li>
+      <li>stx:variable (name, select?, keep-value?) for local and group
+          variables</li>
+      <li>stx:assign (name, select)</li>
+      </ul>
+      <p>
+      The <code>name</code> and <code>namespace</code> attributes of
+      <code>element-start</code>, <code>element-end</code>, and
+      <code>attribute</code>, as well as all attributes of literal
+      result elements may contain attribute value templates.
+      <p>
+      Supported XPath functions
+      <ul>
+      <li>position()</li>
+      <li>name(node?)</li>
+      <li>local-name(node?)</li>
+      <li>namespace-uri(node?)</li>
+      <li>not(boolean)</li>
+      <li>true()</li>
+      <li>false()</li>
+      <li>concat(string, string+)</li>
+      <li>string-length(string?)</li>
+      <li>normalize-space(string?)</li>
+      </ul>
+      Miscellaneous functions
+      <ul>
+      <li>level()<br>
+          returns the current level in the ancestor stack,
+          i.e. as XPath expression: <code>count(ancestor::node())</code>,
+          the document root (<code>/</code>) is at level 0, the
+          document element at level 1 and so on
+          </li>
+      <li>get-node(number)<br>
+          returns the node (event) at the requested level on the
+          ancestor stack, i.e.
+          <code>get-node(level())=.</code> and
+          <code>get-node(0)=/</code></li>
+      <li>has-child-nodes()<br>
+          returns <code>true</code> if the current node has at least one
+          child node, otherwise it returns <code>false</code></li>
+      </ul>
+
+      <h4>Limitations</h4>
+      <ul>
+         <li>no datatype list</li>
+         <li>only "backwards" parent paths in expressions for accessing nodes
+             (i.e. <code>..</code> and <code>../..</code> etc.)</li>
+         <li>no cdata handling</li>
+         <li>no detection of the input encoding</li>
+         <li>...</li>
+      </ul>
+
+      <h4>Examples</h4>
+      <p>
+      Please browse <em>Joost</em>'s CVS <a target="_top"
+      href="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/joost/test/">test</a>
+      directory as well as the <a target="_top"
+      href="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/stx/stx/examples/">examples</a> directory from the STX CVS tree.
+
+      <p>
+      <a target="_top" href="http://sourceforge.net">
+      <img src="http://sourceforge.net/sflogo.php?group_id=55258&amp;type=5"
+           width="210" height="62" border="0" alt="SourceForge Logo"
+           align="right"></a>
+      <strong>Have fun and tell me what you think!</strong><br>
+      <div style="font-size: small">
+         <a target="_top"
+            href="http://www.informatik.hu-berlin.de/~obecker/index_e.shtml">ob</a> / @@@DATE@@@
+      </div>
+   </body>
+</html>
