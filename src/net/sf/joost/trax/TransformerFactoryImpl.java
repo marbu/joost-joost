@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.22 2004/12/17 18:25:48 obecker Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.23 2004/12/30 18:24:59 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -192,8 +192,10 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
                 throw new IllegalArgumentException("Emitter is of wrong type,"
                         + "should be either a String or a StxEmitter");
             }
+        } else if (name.equals(KEY_XSLT_FACTORY)) {
+            System.setProperty(KEY_XSLT_FACTORY, (String)value);
         } else if (name.equals(ALLOW_EXTERNAL_FUNCTIONS)) {
-           this.allowExternalFunctions = ((Boolean)value).booleanValue();
+            this.allowExternalFunctions = ((Boolean)value).booleanValue();
         } else {
             if (log != null)
                 log.warn("Feature not supported: " + name);
