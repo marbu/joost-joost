@@ -1,5 +1,5 @@
 /*
- * $Id: NSFilter.java,v 1.2 2003/05/23 11:17:04 obecker Exp $
+ * $Id: NSFilter.java,v 1.3 2003/06/30 13:03:48 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -57,7 +57,8 @@ import net.sf.joost.trax.TrAXConstants;
  * <li>acting as a TransformerHandlerResolver, that returns itself</li>
  * <li>acting as a TransformerHandler, that removes all elements in a
  *     given namespace (passed as a parameter)</li>
- * @version $Revision: 1.2 $ $Date: 2003/05/23 11:17:04 $
+ * </ul>
+ * @version $Revision: 1.3 $ $Date: 2003/06/30 13:03:48 $
  * @author Oliver Becker
  */
 
@@ -265,3 +266,4 @@ public class NSFilter
       return null;
    }
 }
+
