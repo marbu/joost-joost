@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.12 2003/06/19 10:48:45 obecker Exp $
+ * $Id: Main.java,v 1.13 2003/07/23 09:44:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.12 $ $Date: 2003/06/19 10:48:45 $
+ * @version $Revision: 1.13 $ $Date: 2003/07/23 09:44:32 $
  * @author Oliver Becker
  */
 public class Main implements Constants
@@ -319,17 +319,21 @@ printHelp ? 0 : 1);
             if (embedded instanceof TransformerException) {
                TransformerException te = (TransformerException)embedded;
                SourceLocator sl = te.getLocator();
-               String systemId = sl.getSystemId();
-               // remove the "file://" scheme prefix if it is present
-               if (systemId.startsWith("file://"))
-                  systemId = systemId.substring(7);
-               else if (systemId.startsWith("file:"))
-                  // bug in JDK 1.4 / Crimson? (see rfc1738)
-                  systemId = systemId.substring(5);
-               System.err.println(systemId + ":" + 
-                                  sl.getLineNumber() + ":" + 
-                                  sl.getColumnNumber() + ": " +
-                                  te.getMessage());
+               if (sl != null) {
+                  String systemId = sl.getSystemId();
+                  // remove the "file://" scheme prefix if it is present
+                  if (systemId.startsWith("file://"))
+                     systemId = systemId.substring(7);
+                  else if (systemId.startsWith("file:"))
+                     // bug in JDK 1.4 / Crimson? (see rfc1738)
+                     systemId = systemId.substring(5);
+                  System.err.println(systemId + ":" + 
+                                     sl.getLineNumber() + ":" + 
+                                     sl.getColumnNumber() + ": " +
+                                     te.getMessage());
+               }
+               else
+                  System.err.println(te.getMessage());
             }
             else {
                // Fatal: this mustn't happen
