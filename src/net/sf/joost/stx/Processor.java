@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.49 2004/12/27 18:55:24 obecker Exp $
+ * $Id: Processor.java,v 2.50 2005/01/23 18:36:33 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -69,7 +69,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.49 $ $Date: 2004/12/27 18:55:24 $
+ * @version $Revision: 2.50 $ $Date: 2005/01/23 18:36:33 $
  * @author Oliver Becker
  */
 
@@ -1313,7 +1313,7 @@ public class Processor extends XMLFilterImpl
       throws SAXException
    {
       // find last of these consecutive stx:process-siblings instructions
-      Data data, stopData = null;;
+      Data data, stopData = null;
       for (int i=dataStack.size()-1;
            (data = dataStack.elementAt(i)).lastProcStatus == PR_SIBLINGS;
            i--) {
@@ -1340,10 +1340,10 @@ public class Processor extends XMLFilterImpl
       Object topEvent = null;
       // if clearLast==true then there's no event to remove,
       // because the end of of the parent has been encountered
-      if (!clearLast)
-         topEvent = eventStack.pop();
-      else
+      if (clearLast)
          topEvent = eventStack.peek();
+      else
+         topEvent = eventStack.pop();
       Hashtable storedVars = context.localVars;
       Data data;
       do {
@@ -1397,6 +1397,23 @@ public class Processor extends XMLFilterImpl
          // remove this event
          eventStack.pop();
       } while (data != stopData); // last object
+
+      // If the instruction before the last cleared process-siblings is a
+      // process-self, we have to clear it too
+      if (dataStack.peek().lastProcStatus == PR_SELF) {
+         SAXEvent selfEvent = data.sibEvent;
+         // prepare the event stack
+         eventStack.push(selfEvent);
+         // put another namespace context on the stack because endElement()
+         // will remove it
+         namespaceContext.push(namespaceContext.peek());
+         // postpone the processing of character data
+         StringBuffer postponedCharacters = collectedCharacters;
+         collectedCharacters = new StringBuffer();
+         endElement(selfEvent.uri, selfEvent.lName, selfEvent.qName);
+         collectedCharacters = postponedCharacters;
+      }
+      
       // restore old event stack
       if (!clearLast)
          eventStack.push(topEvent);
@@ -1679,7 +1696,6 @@ public class Processor extends XMLFilterImpl
          else if (prStatus == PR_CHILDREN || prStatus == PR_SELF) {
             context.position = data.contextPosition; // restore position
             context.localVars = data.localVars;
-            Object topData = dataStack.peek();
             AbstractInstruction inst = data.instruction;
             inst = doProcessLoop(inst, (SAXEvent)eventStack.peek(), true);
 
