@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.19 2003/12/17 13:36:14 obecker Exp $
+ * $Id: FunctionTable.java,v 2.20 2004/01/26 20:18:55 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,11 +46,12 @@ import java.util.Stack;
 import net.sf.joost.Constants;
 import net.sf.joost.grammar.EvalException;
 import net.sf.joost.grammar.Tree;
+import net.sf.joost.instruction.AnalyzeTextFactory;
 
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.19 $ $Date: 2003/12/17 13:36:14 $
+ * @version $Revision: 2.20 $ $Date: 2004/01/26 20:18:55 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -111,6 +112,7 @@ final public class FunctionTable implements Constants
          new Min(),
          new Max(),
          new Avg(),
+         new RegexGroup(),
          new FilterAvailable(),
          new ExtSequence()
       };
@@ -1809,6 +1811,42 @@ final public class FunctionTable implements Constants
             v = next;
          }
          return new Value(avg / count);
+      }
+   }
+
+
+   /**
+    * The <code>regex-group</code> function.
+    * Returns the captured substring that corresponds to a parenthized 
+    * sub-expression of a regular expression from an <code>stx:match</code>
+    * element.
+    */
+   final public class RegexGroup implements Instance
+   {
+      /** @return 1 */
+      public int getMinParCount() { return 1; }
+      /** @return 1 */
+      public int getMaxParCount() { return 1; }
+      /** @return "regex-group" */
+      public String getName() { return FNSP + "regex-group"; }
+
+      public Value evaluate(Context context, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value v = args.evaluate(context, top);
+         double d = v.convertToNumber().number;
+         // access a special pseudo variable
+         Stack s = 
+            (Stack)context.localVars.get(AnalyzeTextFactory.REGEX_GROUP);
+         if (Double.isNaN(d) || d < 0 || s == null || s.size() == 0)
+            return v.setString("");
+         
+         String[] capSubstr = (String[])s.peek();
+         int no = Math.round((float)d);
+         if (no >= capSubstr.length)
+            return v.setString("");
+
+         return v.setString(capSubstr[no]);
       }
    }
 
