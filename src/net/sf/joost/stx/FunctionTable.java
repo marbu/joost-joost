@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 1.8 2002/11/28 09:57:57 obecker Exp $
+ * $Id: FunctionTable.java,v 1.9 2002/11/28 10:27:16 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 1.8 $ $Date: 2002/11/28 09:57:57 $
+ * @version $Revision: 1.9 $ $Date: 2002/11/28 10:27:16 $
  * @author Oliver Becker
  */
 public final class FunctionTable
@@ -72,7 +72,8 @@ public final class FunctionTable
          new StartsWith(),
          new Substring(),
          new SubstringBefore(),
-         new SubstringAfter()
+         new SubstringAfter(),
+         new Translate()
       };
       functionHash = new Hashtable(functions.length);
       for (int i=0; i<functions.length; i++)
@@ -788,6 +789,44 @@ public final class FunctionTable
             return new Value(s1.substring(index+s2.length()));
          else
             return new Value("");
+      }
+   }
+
+
+   /**
+    * The <code>translate</code> function.
+    * Replaces in the first parameter all characters given in the
+    * second parameter by their counterparts in the third parameter
+    * and returns the result.
+    */
+   public class Translate implements Instance 
+   {
+      /** @return 3 **/
+      public int getMinParCount() { return 3; }
+      /** @return 3 **/
+      public int getMaxParCount() { return 3; }
+      /** @return "{}translate" */
+      public String getName() { return "{}translate"; }
+      
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         String s1 = args.left.left.evaluate(context, events, top)
+                                   .convertToString().string;
+         String s2 = args.left.right.evaluate(context, events, top)
+                                    .convertToString().string;
+         String s3 = args.right.evaluate(context, events, top)
+                               .convertToString().string;
+         StringBuffer result = new StringBuffer();
+         int s1len = s1.length();
+         int s3len = s3.length();
+         for (int i=0; i<s1len; i++) {
+            char c = s1.charAt(i);
+            int index = s2.indexOf(c);
+            if (index < s3len)
+               result.append(index < 0 ? c : s3.charAt(index));
+         }
+         return new Value(result.toString());
       }
    }
 }
