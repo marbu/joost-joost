@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 2.6 2004/01/16 13:26:13 obecker Exp $
+ * $Id: LitElementFactory.java,v 2.7 2004/01/16 14:38:47 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for literal result elements, which are represented by the
  * inner Instance class. 
- * @version $Revision: 2.6 $ $Date: 2004/01/16 13:26:13 $
+ * @version $Revision: 2.7 $ $Date: 2004/01/16 14:38:47 $
  * @author Oliver Becker
 */
 
@@ -103,15 +103,22 @@ final public class LitElementFactory
          this.attrs = new AttributesImpl(attrs);
          this.avtList = avtList;
 
-         // store namespaces without those from exclude-result-prefixes
+         // store namespaces
          if (newNamespaces.size() > 0) {
             namespaces = (Hashtable)newNamespaces; // no copy required
             for (Enumeration keys = namespaces.keys();
                  keys.hasMoreElements(); ) {
-               Object key = keys.nextElement();
+               String key = (String)keys.nextElement();
+               // remove the namespaces from exclude-result-prefixes
                if (context.transformNode.excludedNamespaces
                                         .contains(namespaces.get(key)))
                   namespaces.remove(key);
+               // remove the namespace that belongs to this qName
+               if (qName.startsWith(key) && uri.equals(namespaces.get(key)) &&
+                   ((key.equals("") && qName.indexOf(':') == -1) ||
+                    (qName.charAt(key.length()) == ':')))
+                  namespaces.remove(key);
+
             }
             if (namespaces.size() == 0) // no namespace left
                namespaces = null;
