@@ -1,5 +1,5 @@
 /*
- * $Id: NSFilter.java,v 1.3 2003/06/30 13:03:48 obecker Exp $
+ * $Id: NSFilter.java,v 1.4 2003/07/23 16:26:48 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -58,7 +58,7 @@ import net.sf.joost.trax.TrAXConstants;
  * <li>acting as a TransformerHandler, that removes all elements in a
  *     given namespace (passed as a parameter)</li>
  * </ul>
- * @version $Revision: 1.3 $ $Date: 2003/06/30 13:03:48 $
+ * @version $Revision: 1.4 $ $Date: 2003/07/23 16:26:48 $
  * @author Oliver Becker
  */
 
@@ -109,19 +109,20 @@ public class NSFilter
 
 
    /** 
-    * The filter attribute value to be used in the STX transformation sheet
+    * The filter-method attribute value to be used in the STX transformation
+    * sheet
     */
-   private static final String FILTER = 
+   private static final String METHOD = 
       "http://joost.sf.net/samples/NSFilter";
 
-   public TransformerHandler resolve(String filter, String href, String base,
+   public TransformerHandler resolve(String method, String href, String base,
                                      Hashtable params)
       throws SAXException
    {
-      if (FILTER.equals(filter)) {
+      if (METHOD.equals(method)) {
          if (href != null)
             throw new SAXException("Specification of an external source '" + 
-                                   href + "' not allowed for " + filter);
+                                   href + "' not allowed for " + method);
          skipUri = (String)params.get("uri");
          return this;
       }
@@ -129,20 +130,20 @@ public class NSFilter
          return null;
    }
 
-   public TransformerHandler resolve(String filter, XMLReader reader,
+   public TransformerHandler resolve(String method, XMLReader reader,
                                      Hashtable params)
       throws SAXException
    {
-      if (FILTER.equals(filter)) 
+      if (METHOD.equals(method)) 
          throw new SAXException("Provision of internal code not allowed for "
-                                + filter);
+                                + method);
       else
          return null;
    }
 
-   public boolean available(String filter)
+   public boolean available(String method)
    {
-      return FILTER.equals(filter);
+      return METHOD.equals(method);
    }
 
 

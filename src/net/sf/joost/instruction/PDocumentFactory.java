@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 2.6 2003/07/06 10:36:28 obecker Exp $
+ * $Id: PDocumentFactory.java,v 2.7 2003/07/23 16:26:48 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,7 +46,7 @@ import net.sf.joost.stx.Value;
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.6 $ $Date: 2003/07/06 10:36:28 $
+ * @version $Revision: 2.7 $ $Date: 2003/07/23 16:26:48 $
  * @author Oliver Becker
  */
 
@@ -73,8 +73,8 @@ public class PDocumentFactory extends FactoryBase
       attrNames.add("href");
       attrNames.add("base");
       attrNames.add("group");
-      attrNames.add("filter");
-      attrNames.add("src");
+      attrNames.add("filter-method");
+      attrNames.add("filter-src");
    }
 
    /** @return <code>"process-document"</code> */
@@ -94,24 +94,24 @@ public class PDocumentFactory extends FactoryBase
 
       String groupAtt = attrs.getValue("group");
 
-      String filterAtt = attrs.getValue("filter");
+      String filterMethodAtt = attrs.getValue("filter-method");
 
-      if (groupAtt != null && filterAtt != null)
+      if (groupAtt != null && filterMethodAtt != null)
          throw new SAXParseException(
-            "It's not allowed to use both `group' and `filter' attributes",
+            "It's not allowed to use both `group' and `filter-method' attributes",
             context.locator);
 
-      String srcAtt = attrs.getValue("src");
+      String filterSrcAtt = attrs.getValue("filter-src");
 
-      if (srcAtt != null && filterAtt == null)
+      if (filterSrcAtt != null && filterMethodAtt == null)
          throw new SAXParseException(
-            "Missing `filter' attribute in `" + qName + 
-            "' (`src' is present)",
+            "Missing `filter-method' attribute in `" + qName + 
+            "' (`filter-src' is present)",
             context.locator);
 
       checkAttributes(qName, attrs, attrNames, context);
       return new Instance(qName, parent, context, href, baseAtt,
-                          groupAtt, filterAtt, srcAtt);
+                          groupAtt, filterMethodAtt, filterSrcAtt);
    }
 
 
@@ -124,11 +124,11 @@ public class PDocumentFactory extends FactoryBase
       // Constructor
       public Instance(String qName, NodeBase parent, ParseContext context,
                       Tree href, String baseUri, 
-                      String groupQName, String filter, String src)
+                      String groupQName, String method, String src)
 
          throws SAXParseException
       {
-         super(qName, parent, context, groupQName, filter, src);
+         super(qName, parent, context, groupQName, method, src);
          this.baseUri = baseUri;
          this.href = href;
       }

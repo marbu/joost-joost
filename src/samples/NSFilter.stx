@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: NSFilter.stx,v 1.2 2003/06/12 08:52:37 obecker Exp $
+ | $Id: NSFilter.stx,v 1.3 2003/07/23 16:26:48 obecker Exp $
  | Self-containing example for using an external SAX filter.
  | Since this example transforms only data from a buffer, it will
  | produce the same result on whatever XML input.
@@ -33,25 +33,25 @@
     <result>
       <stx:if test="filter-available($filter)">
         <!-- full -->
-        <stx:process-buffer name="data" filter="{$filter}" />
+        <stx:process-buffer name="data" filter-method="{$filter}" />
 
         <stx:text />  filter <stx:value-of select="$ns1" />
-        <stx:process-buffer name="data" filter="{$filter}">
+        <stx:process-buffer name="data" filter-method="{$filter}">
           <stx:with-param name="uri" select="$ns1" />
         </stx:process-buffer>
 
         <stx:text />  filter <stx:value-of select="$ns2" />
-        <stx:process-buffer name="data" filter="{$filter}">
+        <stx:process-buffer name="data" filter-method="{$filter}">
           <stx:with-param name="uri" select="$ns2" />
         </stx:process-buffer>
 
         <stx:text>  filter both</stx:text>
         <stx:buffer name="tmp">
-          <stx:process-buffer name="data" filter="{$filter}">
+          <stx:process-buffer name="data" filter-method="{$filter}">
             <stx:with-param name="uri" select="$ns1" />
           </stx:process-buffer>
         </stx:buffer>
-        <stx:process-buffer name="tmp" filter="{$filter}">
+        <stx:process-buffer name="tmp" filter-method="{$filter}">
           <stx:with-param name="uri" select="$ns2" />
         </stx:process-buffer>
       </stx:if>

@@ -1,5 +1,5 @@
 /*
- * $Id: ProcessBase.java,v 2.7 2003/06/12 08:53:33 obecker Exp $
+ * $Id: ProcessBase.java,v 2.8 2003/07/23 16:26:48 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.ParseContext;
 /**
  * Common base class for all <code>stx:process-<em>xxx</em></code>
  * instructions
- * @version $Revision: 2.7 $ $Date: 2003/06/12 08:53:33 $
+ * @version $Revision: 2.8 $ $Date: 2003/07/23 16:26:48 $
  * @author Oliver Becker
  */
 public class ProcessBase extends NodeBase
@@ -70,7 +70,7 @@ public class ProcessBase extends NodeBase
    public ProcessBase(String qName, NodeBase parent, 
                       ParseContext context,
                       String groupQName, 
-                      String filterAtt, String src)
+                      String method, String src)
       throws SAXParseException
    {
       super(qName, parent, context, true);
@@ -92,14 +92,14 @@ public class ProcessBase extends NodeBase
       if (groupQName != null)
          this.groupExpName = FactoryBase.getExpandedName(groupQName, context);
 
-      // Evaluate filter and src attributes
-      if (filterAtt != null)
-         filter = FactoryBase.parseAVT(filterAtt, context);
+      // Evaluate filter-method and filter-src attributes
+      if (method != null)
+         filter = FactoryBase.parseAVT(method, context);
       if (src != null) {
          src = src.trim();
          if (!src.endsWith(")"))
             throw new SAXParseException(
-               "Invalid src value `" + src + 
+               "Invalid filter-src value `" + src + 
                "'. Expect url(...) or buffer(...) specification.",
                context.locator);
          if (src.startsWith("url(")) {
@@ -115,7 +115,7 @@ public class ProcessBase extends NodeBase
          }
          else
             throw new SAXParseException(
-               "Invalid src value `" + src + 
+               "Invalid filter-src value `" + src + 
                "'. Expect url(...) or buffer(...) specification.",
                context.locator);
       }

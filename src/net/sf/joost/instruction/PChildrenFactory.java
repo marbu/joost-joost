@@ -1,5 +1,5 @@
 /*
- * $Id: PChildrenFactory.java,v 2.2 2003/06/03 14:30:23 obecker Exp $
+ * $Id: PChildrenFactory.java,v 2.3 2003/07/23 16:26:47 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.stx.SAXEvent;
 /** 
  * Factory for <code>process-children</code> elements, which are represented 
  * by the inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2003/06/03 14:30:23 $
+ * @version $Revision: 2.3 $ $Date: 2003/07/23 16:26:47 $
  * @author Oliver Becker
  */
 
@@ -52,8 +52,8 @@ public class PChildrenFactory extends FactoryBase
    {
       attrNames = new HashSet();
       attrNames.add("group");
-      attrNames.add("filter");
-      attrNames.add("src");
+      attrNames.add("filter-method");
+      attrNames.add("filter-src");
    }
 
 
@@ -69,25 +69,25 @@ public class PChildrenFactory extends FactoryBase
    {
       String groupAtt = attrs.getValue("group");
 
-      String filterAtt = attrs.getValue("filter");
+      String filterMethodAtt = attrs.getValue("filter-method");
 
-      if (groupAtt != null && filterAtt != null)
+      if (groupAtt != null && filterMethodAtt != null)
          throw new SAXParseException(
-            "It's not allowed to use both `group' and `filter' attributes",
+            "It's not allowed to use both `group' and `filter-method' attributes",
             context.locator);
 
-      String srcAtt = attrs.getValue("src");
+      String filterSrcAtt = attrs.getValue("filter-src");
 
-      if (srcAtt != null && filterAtt == null)
+      if (filterSrcAtt != null && filterMethodAtt == null)
          throw new SAXParseException(
-            "Missing `filter' attribute in `" + qName + 
-            "' (`src' is present)",
+            "Missing `filter-method' attribute in `" + qName + 
+            "' (`filter-src' is present)",
             context.locator);
 
       checkAttributes(qName, attrs, attrNames, context);
 
       return new Instance(qName, parent, context, groupAtt, 
-                          filterAtt, srcAtt);
+                          filterMethodAtt, filterSrcAtt);
    }
 
 
@@ -97,10 +97,10 @@ public class PChildrenFactory extends FactoryBase
       // Constructor
       public Instance(String qName, NodeBase parent, 
                       ParseContext context,
-                      String groupQName, String filter, String src)
+                      String groupQName, String method, String src)
          throws SAXParseException
       {
-         super(qName, parent, context, groupQName, filter, src);
+         super(qName, parent, context, groupQName, method, src);
       }
 
 

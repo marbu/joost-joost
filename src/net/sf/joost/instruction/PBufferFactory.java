@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 2.7 2003/06/19 15:39:32 obecker Exp $
+ * $Id: PBufferFactory.java,v 2.8 2003/07/23 16:26:47 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.7 $ $Date: 2003/06/19 15:39:32 $
+ * @version $Revision: 2.8 $ $Date: 2003/07/23 16:26:47 $
  * @author Oliver Becker
  */
 
@@ -67,8 +67,8 @@ public class PBufferFactory extends FactoryBase
       attrNames = new HashSet();
       attrNames.add("name");
       attrNames.add("group");
-      attrNames.add("filter");
-      attrNames.add("src");
+      attrNames.add("filter-method");
+      attrNames.add("filter-src");
    }
 
    /** @return <code>"process-buffer"</code> */
@@ -87,24 +87,24 @@ public class PBufferFactory extends FactoryBase
 
       String groupAtt = attrs.getValue("group");
 
-      String filterAtt = attrs.getValue("filter");
+      String filterMethodAtt = attrs.getValue("filter-method");
 
-      if (groupAtt != null && filterAtt != null)
+      if (groupAtt != null && filterMethodAtt != null)
          throw new SAXParseException(
-            "It's not allowed to use both `group' and `filter' attributes",
+            "It's not allowed to use both `group' and `filter-method' attributes",
             context.locator);
 
-      String srcAtt = attrs.getValue("src");
+      String filterSrcAtt = attrs.getValue("filter-src");
 
-      if (srcAtt != null && filterAtt == null)
+      if (filterSrcAtt != null && filterMethodAtt == null)
          throw new SAXParseException(
-            "Missing `filter' attribute in `" + qName + 
-            "' (`src' is present)",
+            "Missing `filter-method' attribute in `" + qName + 
+            "' (`filter-src' is present)",
             context.locator);
 
       checkAttributes(qName, attrs, attrNames, context);
       return new Instance(qName, parent, context, nameAtt, bufName, 
-                          groupAtt, filterAtt, srcAtt);
+                          groupAtt, filterMethodAtt, filterSrcAtt);
    }
 
 
@@ -117,10 +117,10 @@ public class PBufferFactory extends FactoryBase
       // Constructor
       public Instance(String qName, NodeBase parent, ParseContext context,
                       String bufName, String expName, String groupQName,
-                      String filter, String src)
+                      String method, String src)
          throws SAXParseException
       {
-         super(qName, parent, context, groupQName, filter, src);
+         super(qName, parent, context, groupQName, method, src);
          this.bufName = bufName;
          this.expName = expName;
       }

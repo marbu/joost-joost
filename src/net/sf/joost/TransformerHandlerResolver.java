@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerResolver.java,v 1.3 2003/05/23 11:01:49 obecker Exp $
+ * $Id: TransformerHandlerResolver.java,v 1.4 2003/07/23 16:26:47 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -60,7 +60,7 @@ import javax.xml.transform.sax.TransformerHandler;
  * {@link javax.xml.transform.Transformer} dummy solely as means to the
  * end of enabling {@link javax.xml.transform.Transformer#setParameter}.
  *
- * @version $Revision: 1.3 $ $Date: 2003/05/23 11:01:49 $
+ * @version $Revision: 1.4 $ $Date: 2003/07/23 16:26:47 $
  * @author Oliver Becker
  */
 
@@ -68,14 +68,16 @@ public interface TransformerHandlerResolver
 {
    /**
     * Resolves a {@link TransformerHandler} object for an external
-    * transformation. This method will be called if the <code>src</code>
-    * attribute contains an URL, or if this attribute is missing at all.
-    * @param filter an URI string provided in the <code>filter</code>
+    * transformation. This method will be called if the 
+    * <code>filter-src</code> attribute contains an URL, or if this attribute
+    * is missing at all.
+    * @param method an URI string provided in the <code>filter-method</code>
     *        attribute, identifying the type of the requested filter
     * @param href the location of the source for the filter provided
-    *        in the <code>src</code> attribute (as pseudo-argument of
+    *        in the <code>filter-src</code> attribute (as pseudo-argument of
     *        the <code>url(...)</code> notation);
-    *        <code>null</code> if the <code>src</code> attribute is missing
+    *        <code>null</code> if the <code>filter-src</code> attribute is 
+    *        missing
     * @param base the base URI of the transformation sheet
     * @param params the set of parameters specified using 
     *        <code>stx:with-param</code> elements, all values are 
@@ -86,16 +88,16 @@ public interface TransformerHandlerResolver
     * @exception SAXException if an error occurs during the creation or 
     *        initialization
     */
-   TransformerHandler resolve(String filter, String href, String base,
+   TransformerHandler resolve(String method, String href, String base,
                               Hashtable params)
       throws SAXException;
 
 
    /**
     * Resolves a {@link TransformerHandler} object for an external
-    * transformation. This method will be called if the <code>src</code>
-    * attribute contains a buffer specification.
-    * @param filter an URI string provided in the <code>filter</code>
+    * transformation. This method will be called if the 
+    * <code>filter-src</code> attribute contains a buffer specification.
+    * @param method an URI string provided in the <code>filter-method</code>
     *        attribute, identifying the type of the requested filter
     * @param reader an {@link XMLReader} object that provides the 
     *        source for the transformation as a stream of SAX events 
@@ -112,7 +114,7 @@ public interface TransformerHandlerResolver
     * @exception SAXException if an error occurs during the creation or 
     *        initialization
     */
-   TransformerHandler resolve(String filter, XMLReader reader, 
+   TransformerHandler resolve(String method, XMLReader reader, 
                               Hashtable params)
       throws SAXException;
 
@@ -120,9 +122,9 @@ public interface TransformerHandlerResolver
    /**
     * Determines whether a requested filter is available or not,
     * used by the STX function <code>filter-available</code>.
-    * @param filter an URI string identifying the type of the requested filter
+    * @param method an URI string identifying the type of the requested filter
     * @return <code>true</code> if this resolver will return a
     *         {@link TransformerHandler} object for this filter
     */
-   boolean available(String filter);
+   boolean available(String method);
 }
