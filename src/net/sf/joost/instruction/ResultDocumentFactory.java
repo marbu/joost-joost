@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 2.14 2004/10/30 11:23:52 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 2.15 2004/10/30 15:15:17 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.14 $ $Date: 2004/10/30 11:23:52 $
+ * @version $Revision: 2.15 $ $Date: 2004/10/30 15:15:17 $
  * @author Oliver Becker
  */
 
@@ -78,13 +78,15 @@ final public class ResultDocumentFactory extends FactoryBase
       String encodingAtt = attrs.getValue("output-encoding");
 
       String methodAtt = attrs.getValue("output-method");
-      if (methodAtt != null && 
-          !methodAtt.equals("text") && !methodAtt.equals("xml") && 
-          methodAtt.indexOf(':') == -1)
-         throw new SAXParseException(
-            "Value of attribute `output-method' must be `xml', `text', " + 
-            "or a qualified name. Found `" + methodAtt + "'",
-            context.locator);
+      if (methodAtt != null) {
+         if (methodAtt.indexOf(':') != -1)
+            methodAtt = getExpandedName(methodAtt, context);
+         else if (!methodAtt.equals("text") && !methodAtt.equals("xml"))
+            throw new SAXParseException(
+               "Value of attribute `output-method' must be `xml', `text', " + 
+               "or a qualified name. Found `" + methodAtt + "'",
+               context.locator);
+      }
 
       checkAttributes(qName, attrs, attrNames, context);
       return new Instance(qName, parent, context, href, encodingAtt, 

@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 2.12 2004/09/17 18:45:23 obecker Exp $
+ * $Id: TransformFactory.java,v 2.13 2004/10/30 15:15:17 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 2.12 $ $Date: 2004/09/17 18:45:23 $
+ * @version $Revision: 2.13 $ $Date: 2004/10/30 15:15:17 $
  * @author Oliver Becker
  */
 
@@ -96,13 +96,15 @@ public class TransformFactory extends FactoryBase
       String encodingAtt = attrs.getValue("output-encoding");
 
       String methodAtt = attrs.getValue("output-method");
-      if (methodAtt != null && 
-          !methodAtt.equals("text") && !methodAtt.equals("xml") && 
-          methodAtt.indexOf(':') == -1)
-         throw new SAXParseException(
-            "Value of attribute `output-method' must be `xml', `text', " + 
-            "or a qualified name. Found `" + methodAtt + "'",
-            context.locator);
+      if (methodAtt != null) {
+         if (methodAtt.indexOf(':') != -1)
+            methodAtt = getExpandedName(methodAtt, context);
+         else if (!methodAtt.equals("text") && !methodAtt.equals("xml"))
+            throw new SAXParseException(
+               "Value of attribute `output-method' must be `xml', `text', " + 
+               "or a qualified name. Found `" + methodAtt + "'",
+               context.locator);
+      }
 
       String defStxpNsAtt = attrs.getValue("stxpath-default-namespace");
 
