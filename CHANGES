@@ -1,5 +1,6 @@
 Changes since 20030203
 - added support for xml:space within stylesheets
+- Bugfix 681576: forbid static procedure calls
 
 Changes since 20030121
 - added floor(), ceiling(), round()
