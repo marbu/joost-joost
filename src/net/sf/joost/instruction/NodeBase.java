@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 2.1 2003/04/27 15:34:45 obecker Exp $
+ * $Id: NodeBase.java,v 2.2 2003/04/29 11:37:20 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.stx.Context;
 /** 
  * Abstract base class for all instances of nodes in the STX transformation 
  * sheet
- * @version $Revision: 2.1 $ $Date: 2003/04/27 15:34:45 $
+ * @version $Revision: 2.2 $ $Date: 2003/04/29 11:37:20 $
  * @author Oliver Becker
  */
 public abstract class NodeBase 
@@ -142,7 +142,7 @@ public abstract class NodeBase
 
    /** The names of local declared variables of this element,
        available only if this node has stx:variable children */
-   private Vector scopedVariables;
+   protected Vector scopedVariables;
 
    /** Stack for storing local fields from this or derived classes */
    protected Stack localFieldStack = new Stack();
