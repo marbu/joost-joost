@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.9 2003/05/28 13:22:27 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.10 2003/05/28 14:00:56 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -32,7 +32,6 @@ import org.xml.sax.SAXException;
 
 import java.io.*;
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
@@ -41,7 +40,7 @@ import javax.xml.transform.OutputKeys;
  *  Is is designed for using <code>StreamResult</code>.
  *  So this class outputs a StreamResult to the output target -
  *  {@link #outwriter} (e.g. a registered <code>FileWriter</code>).
- *  @version $Revision: 1.9 $ $Date: 2003/05/28 13:22:27 $
+ *  @version $Revision: 1.10 $ $Date: 2003/05/28 14:00:56 $
  *  @author Oliver Becker, Anatolij Zubow
  */
 public class StreamEmitter implements StxEmitter {
@@ -65,8 +64,7 @@ public class StreamEmitter implements StxEmitter {
     /** output property: version */
     private String propVersion = "1.0";
 
-
-    private Hashtable newNamespaces = new Hashtable();
+    private StringBuffer nsDeclarations = new StringBuffer();
     private String uri, qName;
     private Attributes attrs;
 
@@ -223,20 +221,10 @@ public class StreamEmitter implements StxEmitter {
             StringBuffer out = new StringBuffer("<");
             out.append(qName);
 
-            for (Enumeration e = newNamespaces.keys(); e.hasMoreElements(); ) {
-
-                Object prefix = e.nextElement();
-                out.append(" xmlns");
-
-                if (!prefix.equals("")) {
-                    out.append(':').append(prefix);
-                }
-
-                out.append("=\"").append(newNamespaces.get(prefix)).append('\"');
-            }
+            out.append(nsDeclarations);
+            nsDeclarations.setLength(0);
 
             int length = attrs.getLength();
-
             for (int i=0; i<length; i++) {
 
                 out.append(' ').append(attrs.getQName(i)).append("=\"");
@@ -274,7 +262,6 @@ public class StreamEmitter implements StxEmitter {
 
             }
 
-            newNamespaces.clear();
             qName = null;
 
             return true;
@@ -414,7 +401,11 @@ public class StreamEmitter implements StxEmitter {
         throws SAXException {
 
         processLastElement(false);
-        newNamespaces.put(prefix, uri);
+        if ("".equals(prefix))
+            nsDeclarations.append(" xmlns=\"");
+        else
+            nsDeclarations.append(" xmlns:").append(prefix).append("=\"");
+        nsDeclarations.append(uri).append('\"');
 
     }
 
