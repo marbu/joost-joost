@@ -1,5 +1,5 @@
 /*
- * $Id: ProcessBase.java,v 2.1 2003/04/27 15:34:45 obecker Exp $
+ * $Id: ProcessBase.java,v 2.2 2003/05/02 05:58:58 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -49,8 +49,8 @@ public class ProcessBase extends NodeBase
    // names of the "group" attribute (if present)
    private String groupQName, groupExpName;
 
-   // base group for the next processing; set in the first call
-   protected GroupBase nextProcessGroup = null;
+   // target group for the next processing
+   protected GroupBase targetGroup = null;
 
    private NodeBase me;
 
@@ -146,17 +146,16 @@ public class ProcessBase extends NodeBase
 
       // Evaluate group attribute
       if (groupExpName != null) {
-         nextProcessGroup = (GroupBase)
-            parentGroup.namedGroups.get(groupExpName);
-         if (nextProcessGroup == null)
+         targetGroup = (GroupBase)parentGroup.namedGroups.get(groupExpName);
+         if (targetGroup == null)
             throw new SAXParseException(
                "Unknown target group `" + groupQName + 
                "' specified for `" + qName + "'", 
                publicId, systemId, lineNo, colNo);
       }
-      if (nextProcessGroup == null) { // means: still null
+      if (targetGroup == null) { // means: still null
          // use current group 
-         nextProcessGroup = parentGroup;
+         targetGroup = parentGroup;
       }
       return false; // done
    }
@@ -168,7 +167,7 @@ public class ProcessBase extends NodeBase
    public short process(Context context)
       throws SAXException
    {
-      context.nextProcessGroup = nextProcessGroup;
+      context.targetGroup = targetGroup;
 
       paramStack.push(context.passedParameters.clone());
       context.passedParameters.clear();

@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 2.4 2003/04/30 14:49:25 obecker Exp $
+ * $Id: Context.java,v 2.5 2003/05/02 05:54:40 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import java.util.Stack;
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 2.4 $ $Date: 2003/04/30 14:49:25 $
+ * @version $Revision: 2.5 $ $Date: 2003/05/02 05:54:40 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
@@ -63,8 +63,9 @@ public final class Context implements Cloneable
    /** The Processor object (needed by <code>process-buffer</code>) */
    public Processor currentProcessor;
 
-   /** The next group, set by <code>process-<em>xxx</em></code> instructions */
-   public GroupBase nextProcessGroup;
+   /** The target group, set by <code>process-<em>xxx</em></code>
+       instructions */
+   public GroupBase targetGroup;
 
    /** Encountered <code>process-siblings</code> instruction */
    public PSiblingsFactory.Instance psiblings;

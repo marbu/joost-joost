@@ -1,5 +1,5 @@
 /*
- * $Id: CallProcedureFactory.java,v 2.1 2003/04/29 15:02:56 obecker Exp $
+ * $Id: CallProcedureFactory.java,v 2.2 2003/05/02 05:54:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.stx.Context;
 /**
  * Factory for <code>call-procedure</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.1 $ $Date: 2003/04/29 15:02:56 $
+ * @version $Revision: 2.2 $ $Date: 2003/05/02 05:54:32 $
  * @author Oliver Becker
  */
 
@@ -111,14 +111,14 @@ public class CallProcedureFactory extends FactoryBase
             return true; // groups not parsed completely
 
          // determine procedure object
-         // nextProcessGroup stems from compile in ProcessBase
+         // targetGroup stems from compile() in ProcessBase
          super.compile(pass);
          procedure = (ProcedureFactory.Instance)
-            nextProcessGroup.visibleProcedures.get(procExpName);
+            targetGroup.visibleProcedures.get(procExpName);
          if (procedure == null) {
             // not found, search global templates
             procedure = (ProcedureFactory.Instance)
-               nextProcessGroup.globalProcedures.get(procExpName);
+               targetGroup.globalProcedures.get(procExpName);
          }
 
          if (procedure == null) {
