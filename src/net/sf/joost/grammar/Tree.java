@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 2.9 2003/07/01 11:49:32 obecker Exp $
+ * $Id: Tree.java,v 2.10 2003/09/10 14:10:34 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 2.9 $ $Date: 2003/07/01 11:49:32 $
+ * @version $Revision: 2.10 $ $Date: 2003/09/10 14:10:34 $
  * @author Oliver Becker
  */
 final public class Tree
@@ -87,11 +87,13 @@ final public class Tree
       ATTR_URI_WILDCARD   = 32,  // "@*:ncname"
       ATTR_LOCAL_WILDCARD = 33,  // "@prefix:*"
       LIST                = 34,  // "," in parameter list
-      SEQ                 = 340, // "," in sequences
-      AVT                 = 35,  // "{" ... "}"
-      VAR                 = 36,  // "$qname"
-      DOT                 = 37,  // "."
-      DDOT                = 38;  // ".."
+      SEQ                 = 35,  // "," in sequences
+      AVT                 = 36,  // "{" ... "}"
+      VAR                 = 37,  // "$qname"
+      DOT                 = 38,  // "."
+      DDOT                = 39,  // ".."
+      VALUE               = 40;  // internal: a constructed value leaf
+
 
    /** The type of the node in the Tree. */
    public int type;
@@ -152,6 +154,12 @@ final public class Tree
    public Tree(int type)
    {
       this(type, null);
+   }
+
+   /** Constructs a Tree object as a leaf with a value (internally used). */
+   public Tree(Value val)
+   {
+      this (VALUE, val);
    }
 
    /** 
@@ -496,6 +504,9 @@ final public class Tree
 
          case STRING:
             return new Value((String)value);
+
+         case VALUE:
+            return ((Value)value).copy();
 
          // Arithmetic expressions
          case ADD:
