@@ -1,5 +1,5 @@
 /*
- * $Id: GroupFactory.java,v 1.3 2002/11/04 14:55:57 obecker Exp $
+ * $Id: GroupFactory.java,v 1.4 2002/11/27 10:00:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.stx.Emitter;
 /** 
  * Factory for <code>group</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.3 $ $Date: 2002/11/04 14:55:57 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/27 10:00:37 $
  * @author Oliver Becker
  */
 
@@ -59,7 +59,7 @@ final public class GroupFactory extends FactoryBase
       attrNames.add("strict-mode");
    }
 
-   /** @return "group" */
+   /** @return <code>"group"</code> */
    public String getName()
    {
       return "group";
@@ -90,7 +90,7 @@ final public class GroupFactory extends FactoryBase
       }
 
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, locator, mode, (GroupBase)parent);
+      return new Instance(qName, parent, locator, mode);
    }
 
 
@@ -101,10 +101,10 @@ final public class GroupFactory extends FactoryBase
    final public class Instance extends GroupBase
    {
       // Constructor
-      protected Instance(String qName, Locator locator, short mode, 
-                         GroupBase parent)
+      protected Instance(String qName, NodeBase parent, Locator locator, 
+                         short mode)
       {
-         super(qName, locator, mode, parent);
+         super(qName, parent, locator, mode);
       }
 
       
