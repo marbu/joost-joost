@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.3 2002/08/28 09:50:27 obecker Exp $
+ | $Id: build.xml,v 1.4 2002/08/28 10:28:56 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -182,9 +182,12 @@
     <!-- unfortunately the target "move" seems to move all files separately,
          keeping the directories, so we have to delete them -->
     <delete dir="${dist}/${ant.project.name}" />
-    <!-- delete unwanted scripts -->
+    <!-- delete unwanted scripts and dirs -->
     <delete file="${dist}/${dist.name}/runtest.sh" />
     <delete file="${dist}/${dist.name}/runerrortest.sh" />
+    <delete includeEmptyDirs="true">
+      <fileset dir="${dist}/${dist.name}/docsrc" />
+    </delete>
     <!-- copy the generated jar and javadoc -->
     <copy file="${ant.project.name}.jar"
           todir="${dist}/${dist.name}" />
