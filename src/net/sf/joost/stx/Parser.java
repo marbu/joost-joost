@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 2.8 2003/11/01 14:44:16 zubow Exp $
+ * $Id: Parser.java,v 2.9 2004/01/16 13:26:13 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -47,7 +47,7 @@ import net.sf.joost.instruction.*;
 /** 
  * Creates the tree representation of an STX transformation sheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 2.8 $ $Date: 2003/11/01 14:44:16 $
+ * @version $Revision: 2.9 $ $Date: 2004/01/16 13:26:13 $
  * @author Oliver Becker
  */
 
@@ -70,6 +70,10 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
 
    /** Hashtable: keys = prefixes, values = URI stacks */
    private Hashtable inScopeNamespaces;
+
+   /** Hashtable for newly declared namespaces between literal elements;
+       keys = prefixes, values = URIs */
+   private Hashtable newNamespaces;
 
    /** List of nodes that need another call to {@link NodeBase#compile} */
    public Vector compilableNodes = new Vector();
@@ -133,6 +137,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
       litFac = new LitElementFactory();
       openedElements = new Stack();
       inScopeNamespaces = new Hashtable();
+      newNamespaces = new Hashtable();
 
       context = new ParseContext();
    }
@@ -267,10 +272,20 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
                      "file is not an STX transformation sheet",
                      context.locator);
                }
+            // if this is an instruction that may create a new namespace,
+            // use the full set of namespaces in the next literal element
+            if (fac instanceof CopyFactory ||
+                fac instanceof ElementFactory ||
+                fac instanceof ElementStartFactory)
+               newNamespaces = getInScopeNamespaces();
          }
-         else 
+         else {
             newNode = litFac.createNode(currentNode, uri, lName, qName, attrs,
-                                        context);
+                                        context, newNamespaces);
+            // reset these newly declared namespaces
+            // newNode "consumes" the old value (without copy)
+            newNamespaces = new Hashtable();
+         }
 
          // check xml:space attribute
          int spaceIndex = attrs.getIndex(NamespaceSupport.XMLNS, "space");
@@ -313,6 +328,12 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
       try {
          if (collectedCharacters.length() != 0)
             processCharacters();
+
+         if (currentNode instanceof LitElementFactory.Instance)
+            // restore the newly declared namespaces from this element
+            // (this is a deep copy)
+            newNamespaces = 
+               ((LitElementFactory.Instance)currentNode).getNamespaces();
 
          // Don't call compile for an included stx:transform, because
          // the including Parser will call it
@@ -373,6 +394,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
          inScopeNamespaces.put(prefix, nsStack);
       }
       nsStack.push(uri);
+      newNamespaces.put(prefix, uri);
    }
 
 
@@ -380,6 +402,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
    {
       Stack nsStack = (Stack)inScopeNamespaces.get(prefix);
       nsStack.pop();
+      newNamespaces.remove(prefix);
    }
 
 

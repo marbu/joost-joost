@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 2.5 2003/09/02 14:15:10 obecker Exp $
+ * $Id: LitElementFactory.java,v 2.6 2004/01/16 13:26:13 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for literal result elements, which are represented by the
  * inner Instance class. 
- * @version $Revision: 2.5 $ $Date: 2003/09/02 14:15:10 $
+ * @version $Revision: 2.6 $ $Date: 2004/01/16 13:26:13 $
  * @author Oliver Becker
 */
 
@@ -51,7 +51,7 @@ final public class LitElementFactory
 {
    public NodeBase createNode(NodeBase parent, String uri, String lName, 
                               String qName, Attributes attrs, 
-                              ParseContext context)
+                              ParseContext context, Hashtable newNamespaces)
       throws SAXParseException
    {
       if (parent == null) {
@@ -75,7 +75,8 @@ final public class LitElementFactory
       for (int i=0; i<avtList.length; i++) 
          avtList[i] = FactoryBase.parseAVT(attrs.getValue(i), context);
 
-      return new Instance(uri, lName, qName, attrs, avtList, parent, context);
+      return new Instance(uri, lName, qName, attrs, avtList, parent, context,
+                          newNamespaces);
    }
 
 
@@ -87,12 +88,14 @@ final public class LitElementFactory
       private String lName;
       private AttributesImpl attrs;
       private Tree[] avtList;
+      // the namespaces that possibly need a declaration in the output
       private Hashtable namespaces;
       private Hashtable namespaceAliases;
       
       protected Instance(String uri, String lName, String qName,
                          Attributes attrs, Tree[] avtList, 
-                         NodeBase parent, ParseContext context)
+                         NodeBase parent, ParseContext context,
+                         Hashtable newNamespaces)
       {
          super(qName, parent, context, true);
          this.uri = uri;
@@ -101,18 +104,23 @@ final public class LitElementFactory
          this.avtList = avtList;
 
          // store namespaces without those from exclude-result-prefixes
-         namespaces = (Hashtable)context.nsSet.clone();
-         for (Enumeration keys = namespaces.keys();
-              keys.hasMoreElements(); ) {
-            Object key = keys.nextElement();
-            if (context.transformNode.excludedNamespaces
-                                     .contains(namespaces.get(key)))
-               namespaces.remove(key);
+         if (newNamespaces.size() > 0) {
+            namespaces = (Hashtable)newNamespaces; // no copy required
+            for (Enumeration keys = namespaces.keys();
+                 keys.hasMoreElements(); ) {
+               Object key = keys.nextElement();
+               if (context.transformNode.excludedNamespaces
+                                        .contains(namespaces.get(key)))
+                  namespaces.remove(key);
+            }
+            if (namespaces.size() == 0) // no namespace left
+               namespaces = null;
          }
+         // else: namespaces = null
 
          this.namespaceAliases = context.transformNode.namespaceAliases;
       }
-      
+
 
       /**
        * Apply all declared namespaces aliases 
@@ -170,16 +178,18 @@ final public class LitElementFactory
             }
          }
 
-         // Change namespace URIs of in-scope namespaces
-         for (Enumeration keys = namespaces.keys();
-              keys.hasMoreElements(); ) {
-            Object key = keys.nextElement();
-            Object value = namespaces.get(key);
-            Object alias = namespaceAliases.get(value);
-            if (alias == "" || NamespaceSupport.XMLNS.equals(alias))
-               namespaces.remove(key);
-            else if (alias != null)
-               namespaces.put(key,alias);
+         if (namespaces != null) {
+            // Change namespace URIs of in-scope namespaces
+            for (Enumeration keys = namespaces.keys();
+                 keys.hasMoreElements(); ) {
+               Object key = keys.nextElement();
+               Object value = namespaces.get(key);
+               Object alias = namespaceAliases.get(value);
+               if (alias == "" || NamespaceSupport.XMLNS.equals(alias))
+                  namespaces.remove(key);
+               else if (alias != null)
+                  namespaces.put(key,alias);
+            }
          }
 
          return false;
@@ -212,6 +222,15 @@ final public class LitElementFactory
          return super.processEnd(context);
       }
 
+
+      /** @return a copy of the namespaces that have to be checked for a
+          possible redeclaration */
+      public Hashtable getNamespaces()
+      {
+         return namespaces != null ? (Hashtable)namespaces.clone()
+                                   : new Hashtable();
+      }
+      
 
       //
       // for debugging
