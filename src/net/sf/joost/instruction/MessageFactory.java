@@ -1,5 +1,5 @@
 /*
- * $Id: MessageFactory.java,v 2.4 2004/02/10 12:39:39 obecker Exp $
+ * $Id: MessageFactory.java,v 2.5 2004/08/23 19:41:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,19 +30,29 @@ import org.xml.sax.SAXParseException;
 
 import net.sf.joost.emitter.StreamEmitter;
 import net.sf.joost.emitter.StxEmitter;
+import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 
+import java.util.HashSet;
 
 /** 
  * Factory for <code>message</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.4 $ $Date: 2004/02/10 12:39:39 $
+ * @version $Revision: 2.5 $ $Date: 2004/08/23 19:41:03 $
  * @author Oliver Becker
  */
 
 final public class MessageFactory extends FactoryBase
 {
+   /** allowed attributes for this element */
+   private HashSet attrNames;
+
+   public MessageFactory()
+   {
+      attrNames = new HashSet();
+      attrNames.add("select");
+   }
 
    /** @return <code>"message"</code> */
    public String getName()
@@ -54,17 +64,28 @@ final public class MessageFactory extends FactoryBase
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      checkAttributes(qName, attrs, null, context);
-      return new Instance(qName, parent, context);
+      String selectAtt = attrs.getValue("select");
+      Tree selectExpr = 
+         (selectAtt != null) ? parseExpr(selectAtt, context) : null;
+
+      checkAttributes(qName, attrs, attrNames, context);
+      return new Instance(qName, parent, context, selectExpr);
    }
 
 
    /** Represents an instance of the <code>message</code> element. */
    final public class Instance extends NodeBase
    {
-      protected Instance(String qName, NodeBase parent, ParseContext context)
+      private Tree select;
+
+      protected Instance(String qName, NodeBase parent, ParseContext context,
+                         Tree select)
       {
-         super(qName, parent, context, true);
+         super(qName, parent, context,
+               // this element must be empty if there is a select attribute
+               select == null);
+
+         this.select = select;
       }
       
 
@@ -93,15 +114,26 @@ final public class MessageFactory extends FactoryBase
             }
          }
 
-         super.process(context);
-         context.messageEmitter.startDocument();
-         context.emitter.pushEmitter(context.messageEmitter);
+         if (select == null) {
+            super.process(context);
+            context.messageEmitter.startDocument();
+            context.emitter.pushEmitter(context.messageEmitter);
+         }
+         else {
+            context.messageEmitter.startDocument();
+            String msg = select.evaluate(context, this)
+                               .convertToString().string;
+            context.messageEmitter.characters(msg.toCharArray(), 
+                                              0, msg.length());
+            context.messageEmitter.endDocument();
+         }
          return PR_CONTINUE;
       }
 
 
       /**
-       * Deactivate the message emitter.
+       * Deactivate the message emitter. Called only when there's no
+       * <code>select</code> attribute.
        */
       public short processEnd(Context context)
          throws SAXException

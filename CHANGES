@@ -1,5 +1,6 @@
 Changes since 20040330
 - flush output on error
+- added 'select' attribute to stx:message
 - added filter-method "http://www.ietf.org/rfc/rfc2616.txt#POST"
 - Bugfix: 936354, 1003790
 
@@ -11,9 +12,10 @@ Changes since 20030914
 - allow nested XPath comments (: ... :)
   (yet not covered by the STX spec)
 - added escape-uri()
-- added @output-method to stx:transform and stx:result-document,
+- added 'output-method' attribute to stx:transform and stx:result-document,
   added support for text output (spec change 2003-12-08)
-- renamed @encoding to @output-encoding in stx:result-document (dito)
+- renamed attribute 'encoding' to 'output-encoding' in stx:result-document
+  (dito)
 - Changes according to WD-xpath-functions-20031112:
   * renamed get-in-scope-namespaces() to get-in-scope-prefixes()
   * swapped arguments of get-namespace-uri-for-prefix()
