@@ -1,5 +1,5 @@
 /*
- * $Id: BufferFactory.java,v 1.6 2003/02/24 14:25:50 obecker Exp $
+ * $Id: BufferFactory.java,v 1.7 2003/03/18 14:51:08 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Context;
 /** 
  * Factory for <code>buffer</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.6 $ $Date: 2003/02/24 14:25:50 $
+ * @version $Revision: 1.7 $ $Date: 2003/03/18 14:51:08 $
  * @author Oliver Becker
  */
 
@@ -139,7 +139,7 @@ final public class BufferFactory extends FactoryBase
                                           processStatus);
 
             if ((processStatus & ST_PROCESSING) != 0)
-               emitter.popEmitter();
+               ((BufferEmitter)emitter.popEmitter()).filled();
          }
 
          return processStatus;

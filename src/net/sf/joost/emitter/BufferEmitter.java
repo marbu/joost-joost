@@ -1,5 +1,5 @@
 /*
- * $Id: BufferEmitter.java,v 1.1 2002/11/03 11:37:24 obecker Exp $
+ * $Id: BufferEmitter.java,v 1.2 2003/03/18 14:50:59 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -38,7 +38,7 @@ import net.sf.joost.stx.SAXEvent;
 
 /**
  * This class implements a buffer for storing SAX events.
- * @version $Revision: 1.1 $ $Date: 2002/11/03 11:37:24 $
+ * @version $Revision: 1.2 $ $Date: 2003/03/18 14:50:59 $
  * @author Oliver Becker
  */
 
@@ -47,24 +47,35 @@ final public class BufferEmitter implements StxEmitter {
    /** the event buffer */
    private Vector buffer = new Vector();
 
+   /** the event array, the old contents remains valid until this buffer 
+       is completely new filled */
+   private SAXEvent[] eventArray = new SAXEvent[0];  // initial: empty
+
    /** CDATA flag */
-   boolean insideCDATA = false;
+   private boolean insideCDATA = false;
 
    /** characters flag, needed for detecting empty CDATA sections */
-   boolean charsEmitted = false;
+   private boolean charsEmitted = false;
+
 
    /** @return an array of the events stored in this buffer */
    public SAXEvent[] getEvents()
    {
-      SAXEvent[] events = new SAXEvent[buffer.size()];
-      buffer.toArray(events);
-      return events;
+      return eventArray;
    }
 
    /** Clears the event buffer */
    public void clear()
    {
       buffer.clear();
+   }
+
+   /** Signals that the buffer is completely filled; makes its contents
+       available to {@link #getEvents} */
+   public void filled()
+   {
+      eventArray = new SAXEvent[buffer.size()];
+      buffer.toArray(eventArray);
    }
 
 
