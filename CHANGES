@@ -1,7 +1,12 @@
 Changes since 20030502
 - added 'separator' attribute to stx:value-of
-- added 'method', 'href', and 'use' attributes to stx:process-buffer;
-  enabled passing a buffer to a (JAXP conformant) XSLT engine
+- added 'filter' and 'src' attributes to stx:process-buffer, 
+  stx:process-children, and stx:process-self;
+  enabled built-in passing of SAX events to a (JAXP conformant) XSLT engine
+- added TransformerHandlerResolver interface for using custom
+  SAX TransformerHandlers 
+  (see API doc for this interface, as well as the samples.NSFilter example)
+- added filter-available()
 
 Changes since 20030320
 - increased performance by switching to a new processing model

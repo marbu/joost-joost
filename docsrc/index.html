@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.39 2003/05/16 15:02:07 obecker Exp $ -->
+<!-- $Id: index.html,v 1.40 2003/05/23 11:22:26 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -114,15 +114,15 @@
       <li>stx:procedure (name, public?, visibility?, new-scope?)</li>
       <li>stx:call-procedure (name, group?)</li>
       <li>stx:copy (attributes?)</li>
-      <li>stx:process-children (group?)</li>
-      <li>stx:process-self (group?)</li>
+      <li>stx:process-children (group?, filter?, src?)</li>
+      <li>stx:process-self (group?, filter?, src?)</li>
       <li>stx:process-siblings (group?, while?, until?)</li>
       <li>stx:process-attributes (group?)</li>
       <li>stx:process-document (href, base?, group?)</li>
       <li>stx:result-document (href, encoding?)</li>
       <li>stx:buffer (name)</li>
       <li>stx:result-buffer (name, clear?)</li>
-      <li>stx:process-buffer (name, group?, method?, href?, use?)</li>
+      <li>stx:process-buffer (name, group?, filter?, src?)</li>
       <li>stx:value-of (select, separator?)</li>
       <li>stx:if (test)</li>
       <li>stx:else</li>
@@ -181,6 +181,7 @@
       <li>subsequence(sequence, number, number?)</li>
       <li>count(sequence)</li>
       <li>sum(sequence)</li>
+      <li>filter-available(string)</li>
       </ul>
 
       <h4>Limitations</h4>
