@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 2.8 2003/09/03 15:01:57 obecker Exp $
+ * $Id: PDocumentFactory.java,v 2.9 2003/09/04 11:16:19 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -51,7 +51,7 @@ import net.sf.joost.trax.TrAXHelper;
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.8 $ $Date: 2003/09/03 15:01:57 $
+ * @version $Revision: 2.9 $ $Date: 2003/09/04 11:16:19 $
  * @author Oliver Becker
  */
 
@@ -148,11 +148,9 @@ public class PDocumentFactory extends FactoryBase
       {
          Value v = href.evaluate(context, this);
          if (v.type == Value.EMPTY) 
-            return PR_CONTINUE;
+            return PR_CONTINUE; // nothing to do
 
          Processor proc = context.currentProcessor;
-         XMLReader reader = Processor.getXMLReader();
-         reader.setErrorHandler(context.errorHandler);
          ContentHandler contH = proc;
          LexicalHandler lexH = proc;
          if (filter != null) {
@@ -162,17 +160,6 @@ public class PDocumentFactory extends FactoryBase
                return PR_ERROR;
             contH = handler;
             lexH = handler;
-         }
-         reader.setContentHandler(contH);
-         try {
-            reader.setProperty(
-               "http://xml.org/sax/properties/lexical-handler", lexH);
-         }
-         catch (SAXException ex) {
-            if (log != null)
-               log.warn("Accessing " + reader + ": " + ex);
-            context.errorHandler.warning("Accessing " + reader + ": " + ex,
-                                         publicId, systemId, lineNo, colNo);
          }
 
          String base;
@@ -200,19 +187,22 @@ public class PDocumentFactory extends FactoryBase
 
          try {
             Value next;
+            XMLReader defaultReader = null;
             do {
-               XMLReader thisReader = null;
+               XMLReader reader;
                InputSource iSource;
                Source source;
                next = v.next;
                v.next = null;
                String hrefURI = v.convertToString().string;
+               // ask URI resolver if present
                if (context.uriResolver != null && 
                    (source = 
                        context.uriResolver.resolve(hrefURI, base)) != null) {
                   SAXSource saxSource = TrAXHelper.getSAXSource(source, null);
-                  thisReader = saxSource.getXMLReader();
-                  if (thisReader != null) {
+                  reader = saxSource.getXMLReader();
+                  if (reader != null) {
+                     reader.setErrorHandler(context.errorHandler);
                      reader.setContentHandler(contH);
                      try {
                         reader.setProperty(
@@ -227,17 +217,38 @@ public class PDocumentFactory extends FactoryBase
                            publicId, systemId, lineNo, colNo);
                      }
                   }
+                  else 
+                     reader = defaultReader;
                   iSource = saxSource.getInputSource();
                }
                else {
                   iSource = 
                      new InputSource(new URL(new URL(base), hrefURI)
                                          .toExternalForm());
+                  reader = defaultReader;
                }
-               if (thisReader == null)
-                  thisReader = reader;
 
-               thisReader.parse(iSource);
+               if (reader == null) { // i.e. defaultReader == null
+                  // construct a default XML reader,
+                  // happens at most once per process-document invocation
+                  reader = defaultReader = Processor.getXMLReader();
+                  reader.setErrorHandler(context.errorHandler);
+                  reader.setContentHandler(contH);
+                  try {
+                     reader.setProperty(
+                        "http://xml.org/sax/properties/lexical-handler", 
+                        lexH);
+                  }
+                  catch (SAXException ex) {
+                     if (log != null)
+                        log.warn("Accessing " + reader + ": " + ex);
+                     context.errorHandler.warning(
+                        "Accessing " + reader + ": " + ex,
+                        publicId, systemId, lineNo, colNo);
+                  }
+               }
+
+               reader.parse(iSource);
                v = next;
             } while (v != null);
          }
