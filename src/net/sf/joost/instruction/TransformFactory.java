@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 2.8 2003/06/17 12:32:55 obecker Exp $
+ * $Id: TransformFactory.java,v 2.9 2003/06/18 11:45:42 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Processor;
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 2.8 $ $Date: 2003/06/17 12:32:55 $
+ * @version $Revision: 2.9 $ $Date: 2003/06/18 11:45:42 $
  * @author Oliver Becker
  */
 
@@ -175,7 +175,7 @@ public class TransformFactory extends FactoryBase
    final public class Instance extends GroupBase
    {
       /** names of global parameters (<code>stx:param</code>) */
-      public Hashtable globalParams = new Hashtable();
+      public Hashtable globalParams;
 
       // stx:transform attributes (options)
       public String outputEncoding;
@@ -198,7 +198,18 @@ public class TransformFactory extends FactoryBase
          if (parent == null) {
             namedGroups = new Hashtable(); // shared with all sub-groups
             globalProcedures = new Hashtable(); // also shared
+            globalParams = new Hashtable(); // shared with all includes
          }
+         else {
+            // use global parameters of the including STX sheet
+            // (have to do the following lookup, because 
+            // context.transformNode is still null 
+            // -> should be improved/fixed)
+            while (!(parent instanceof TransformFactory.Instance))
+               parent = parent.parent;
+            globalParams = ((TransformFactory.Instance)parent).globalParams;
+         }
+
          this.outputEncoding = 
             (outputEncoding != null) ? outputEncoding 
                                      : DEFAULT_ENCODING; // in Constants
