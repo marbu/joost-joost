@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.20 2003/09/08 09:44:54 obecker Exp $
+ * $Id: TransformerImpl.java,v 1.21 2003/12/23 17:05:29 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -70,7 +70,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
     private static org.apache.commons.logging.Log log =
         org.apache.commons.logging.LogFactory.getLog(TransformerImpl.class);
 
-    private static Processor processor = null;
+    private Processor processor = null; // Bugfix
 
     private URIResolver uriRes          = null;
     private ErrorListener errorListener = null;
