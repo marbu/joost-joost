@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.8 2003/06/06 15:08:14 obecker Exp $
+ * $Id: FunctionTable.java,v 2.9 2003/06/09 10:23:49 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.8 $ $Date: 2003/06/06 15:08:14 $
+ * @version $Revision: 2.9 $ $Date: 2003/06/09 10:23:49 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -53,6 +53,9 @@ final public class FunctionTable implements Constants
    // namespace to be prepended before function names
    // (function namespace prefix)
    private static String FNSP = "{" + FUNC_NS + "}";
+
+   // Joost extension namespace prefix
+   private static String JENSP = "{http://joost.sourceforge.net/functions}";
 
    /** Contains one instance for each function. */
    private Hashtable functionHash;
@@ -93,7 +96,8 @@ final public class FunctionTable implements Constants
          new Subsequence(),
          new Count(),
          new Sum(),
-         new FilterAvailable()
+         new FilterAvailable(),
+         new ExtSequence()
       };
       functionHash = new Hashtable(functions.length);
       for (int i=0; i<functions.length; i++)
@@ -1396,6 +1400,52 @@ final public class FunctionTable implements Constants
    // ***********************************************************************
 
    //
+   // Joost extension functions
+   //
+
+   /**
+    * The <code>sequence</code> extension function.
+    * Converts a Java array to a sequence.
+    */
+   final public class ExtSequence implements Instance
+   {
+      /** @return 1 */
+      public int getMinParCount() { return 1; }
+      /** @return 1 */
+      public int getMaxParCount() { return 1; }
+      /** @return "sequence" */
+      public String getName() { return JENSP + "sequence"; }
+
+      public Value evaluate(Context context, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value v = args.evaluate(context, top);
+         // in case there's no array
+         if (v.type != Value.OBJECT || !(v.object instanceof Object[]))
+            return v;
+
+         Object[] objs = (Object[])v.object;
+         // an empty array
+         if (objs.length == 0)
+            return v.setEmpty();
+
+         // ok, there's at least one element
+         v = new Value(objs[0]);
+         // create the rest of the sequence
+         Value last = v;
+         for (int i=1; i<objs.length; i++) {
+            last.next = new Value(objs[i]);
+            last = last.next;
+         }
+         return v;
+      }
+   }
+
+
+
+   // ***********************************************************************
+
+   //
    // Custom extension functions
    //
 
@@ -1425,13 +1475,13 @@ final public class FunctionTable implements Constants
        * Constructs a Java extension function.
        * @param className the name of the Java class the function belongs to
        *        (taken from the namespace URI of the function call)
-       * @param fName the local name of the function call 
+       * @param lName the local name of the function call 
        *        (may contain hyphens)
        * @param args the supplied function parameters
        * @param locator the Locator object
        * @exception SAXParseException if there's no proper function
        */
-      public ExtensionFunction(String className, String fName, Tree args, 
+      public ExtensionFunction(String className, String lName, Tree args, 
                                Locator locator)
          throws SAXParseException
       {
@@ -1454,8 +1504,9 @@ final public class FunctionTable implements Constants
             }
          }
 
+         String fName = lName;
          // check function name
-         if (fName.equals("new")) {
+         if (lName.equals("new")) {
             // request to construct a new object
             isConstructor = true;
             // first: check the class
@@ -1497,11 +1548,11 @@ final public class FunctionTable implements Constants
          }
          else {
             // turn a hyphenated function-name into camelCase
-            if (fName.indexOf('-') >= 0) {
+            if (lName.indexOf('-') >= 0) {
                StringBuffer buff = new StringBuffer();
                boolean afterHyphen = false;
-               for (int n=0; n<fName.length(); n++) {
-                  char c = fName.charAt(n);
+               for (int n=0; n<lName.length(); n++) {
+                  char c = lName.charAt(n);
                   if (c=='-')
                      afterHyphen = true;
                   else {
@@ -1534,7 +1585,7 @@ final public class FunctionTable implements Constants
 
             if (candidateMethods.size() == 0)
                throw new SAXParseException(
-                  "No function found matching `" + fName + "' with " + 
+                  "No function found matching `" + lName + "' with " + 
                   paramCount + " parameter" + (paramCount != 1 ? "s" : "") + 
                   " in class " + className,
                   locator);
@@ -1701,30 +1752,7 @@ final public class FunctionTable implements Constants
 
             // call method
             try {
-               Object result = theMethod.invoke(theInstance, currentParams);
-               if (result == null)
-                  return new Value((Object)null);
-               else if (result instanceof Void)
-                  return new Value();
-               else if (result instanceof String ||
-                        result instanceof Character)
-                  return new Value(result.toString());
-               else if (result instanceof Boolean)
-                  return new Value(((Boolean)result).booleanValue());
-               else if (result instanceof Double)
-                  return new Value(((Double)result).doubleValue());
-               else if (result instanceof Float)
-                  return new Value((double)((Float)result).floatValue());
-               else if (result instanceof Byte)
-                  return new Value((double)((Byte)result).byteValue());
-               else if (result instanceof Short)
-                  return new Value((double)((Short)result).shortValue());
-               else if (result instanceof Integer)
-                  return new Value((double)((Integer)result).intValue());
-               else if (result instanceof Long)
-                  return new Value((double)((Long)result).longValue());
-               else
-                  return new Value(result);
+               return new Value(theMethod.invoke(theInstance, currentParams));
             }
             catch (IllegalAccessException err1) {
                throw new EvalException("Method access is illegal " +
@@ -1753,4 +1781,3 @@ final public class FunctionTable implements Constants
       public String getName() { return null; }
    }
 }
-
