@@ -1,5 +1,5 @@
 /*
- * $Id: CallProcedureFactory.java,v 1.3 2003/02/08 16:21:00 obecker Exp $
+ * $Id: CallProcedureFactory.java,v 1.4 2003/02/16 14:42:41 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.Emitter;
 /**
  * Factory for <code>call-procedure</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.3 $ $Date: 2003/02/08 16:21:00 $
+ * @version $Revision: 1.4 $ $Date: 2003/02/16 14:42:41 $
  * @author Oliver Becker
  */
 
@@ -136,9 +136,14 @@ public class CallProcedureFactory extends FactoryBase
             }
          }
 
-         if (procedure != null)
+         if (procedure != null) {
+            // save current table of local variables
+            Hashtable localVars = (Hashtable)context.localVars.clone();
             processStatus = procedure.process(emitter, eventStack, context, 
                                               processStatus);
+            // restore local variables
+            context.localVars = localVars;
+         }
 
          if ((processStatus & ST_PROCESSING) != 0)
             // process stx:with-param after processing; clean up the
