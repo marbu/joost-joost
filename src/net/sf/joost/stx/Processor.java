@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.15 2003/06/19 15:40:55 obecker Exp $
+ * $Id: Processor.java,v 2.16 2003/07/03 13:13:21 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -69,7 +69,7 @@ import net.sf.joost.trace.DebugProcessor;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.15 $ $Date: 2003/06/19 15:40:55 $
+ * @version $Revision: 2.16 $ $Date: 2003/07/03 13:13:21 $
  * @author Oliver Becker
  */
 
@@ -1469,6 +1469,17 @@ public class Processor extends XMLFilterImpl
 
       if (collectedCharacters.length() != 0)
          processCharacters();
+
+      if (skipDepth == 1 && context.targetHandler != null &&
+          dataStack.peek().lastProcStatus == PR_CHILDREN) {
+         // provisional fix for bug #765301
+         // (This whole external filter stuff needs to be rewritten to
+         // enable the functionality for stx:process-siblings. Using
+         // skipDepth isn't really a good idea ...)
+         skipDepth = 0;
+         endExternDocument();
+         context.targetHandler = null;
+      }
 
       if (skipDepth == 0) {
 
