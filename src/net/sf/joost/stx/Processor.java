@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.9 2003/05/16 14:55:52 obecker Exp $
+ * $Id: Processor.java,v 2.10 2003/05/23 11:14:45 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -64,7 +64,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.9 $ $Date: 2003/05/16 14:55:52 $
+ * @version $Revision: 2.10 $ $Date: 2003/05/23 11:14:45 $
  * @author Oliver Becker
  */
 
@@ -775,12 +775,70 @@ public class Processor extends XMLFilterImpl
                   new Data(temp, inst, context.currentGroup, 
                            context.position, context.targetGroup, 
                            PR_CHILDREN));
+               if (context.targetHandler != null) {
+                  // instruction had a filter attribute
+                  startExternDocument();
+                  if (collectedCharacters.length() > 0) {
+                     context.targetHandler.characters(
+                        collectedCharacters.toString().toCharArray(), 
+                        0, collectedCharacters.length());
+                     collectedCharacters.setLength(0);
+                  }
+                  skipDepth = 1;
+               }
                break;
             case PR_SELF: // stx:process-self encountered
                dataStack.push(
                   new Data(temp, inst, context.currentGroup, 
                            context.position, context.targetGroup, PR_SELF));
-               processEvent(); // recurse
+               if (context.targetHandler != null) {
+                  // instruction had a filter attribute
+                  switch (event.type) {
+                  case SAXEvent.ELEMENT:
+                     startExternDocument();
+                     context.targetHandler.startElement(
+                        event.uri, event.lName, event.qName, event.attrs);
+                     skipDepth = 1;
+                     break;
+                  case SAXEvent.TEXT:
+                     startExternDocument();
+                     context.targetHandler.characters(
+                        event.value.toCharArray(), 0, event.value.length());
+                     endExternDocument();
+                     break;
+                  case SAXEvent.CDATA:
+                     startExternDocument();
+                     context.targetHandler.startCDATA();
+                     context.targetHandler.characters(
+                        event.value.toCharArray(), 0, event.value.length());
+                     context.targetHandler.endCDATA();
+                     endExternDocument();
+                     break;
+                  case SAXEvent.PI:
+                     startExternDocument();
+                     context.targetHandler.processingInstruction(
+                        event.qName, event.value);
+                     endExternDocument();
+                     break;
+                  case SAXEvent.COMMENT:
+                     startExternDocument();
+                     context.targetHandler.comment(
+                        event.value.toCharArray(), 0, event.value.length());
+                     endExternDocument();
+                     break;
+                  case SAXEvent.ROOT:
+                     context.targetHandler.startDocument();
+                     skipDepth = 1;
+                     break;
+                  case SAXEvent.ATTRIBUTE:
+                     // nothing to do
+                     break;
+                  default:
+                     log.error("Unexpected event: " + event);
+                  }
+               }
+               else
+                  processEvent(); // recurse
                if (event.type == SAXEvent.TEXT || 
                    event.type == SAXEvent.CDATA || 
                    event.type == SAXEvent.COMMENT || 
@@ -954,6 +1012,18 @@ public class Processor extends XMLFilterImpl
       if (DEBUG)
          if (log.isDebugEnabled())
             log.debug("`" + s + "'");
+
+      if (skipDepth > 0 && context.targetHandler != null) {
+         if (insideCDATA) {
+            context.targetHandler.startCDATA();
+            context.targetHandler.characters(s.toCharArray(), 0, s.length());
+            context.targetHandler.endCDATA();
+         }
+         else
+            context.targetHandler.characters(s.toCharArray(), 0, s.length());
+         collectedCharacters.setLength(0);
+         return;
+      }
 
       if (context.targetGroup.stripSpace && s.trim().length() == 0) {
          collectedCharacters.setLength(0);
@@ -1148,6 +1218,47 @@ public class Processor extends XMLFilterImpl
    }
 
 
+   /**
+    * Emits a <code>startDocument</code> event to an external handler
+    * (in {@link Context#targetHandler}), followed by all necessary
+    * namespace declarations (<code>startPrefixMapping</code> events).
+    */
+   private void startExternDocument()
+      throws SAXException
+   {
+      context.targetHandler.startDocument();
+      for (java.util.Enumeration e = nsSupport.getPrefixes();
+           e.hasMoreElements(); ) {
+         String prefix = (String)e.nextElement();
+         if (!prefix.equals("xml"))
+            context.targetHandler.startPrefixMapping(
+               prefix, nsSupport.getURI(prefix));
+      }
+      String defNs = nsSupport.getURI("");
+      if (defNs != null)
+         context.targetHandler.startPrefixMapping("", defNs);
+   }
+
+
+   /**
+    * Emits an <code>endDocument</code> event to an external handler
+    * (in {@link Context#targetHandler}), preceded by all necessary
+    * namespace undeclarations (<code>endPrefixMapping</code> events).
+    */
+   private void endExternDocument()
+      throws SAXException
+   {
+      for (java.util.Enumeration e = nsSupport.getPrefixes();
+           e.hasMoreElements(); ) {
+         String prefix = (String)e.nextElement();
+         if (!prefix.equals("xml"))
+            context.targetHandler.endPrefixMapping(prefix);
+      }
+      if (nsSupport.getURI("") != null)
+         context.targetHandler.endPrefixMapping("");
+      context.targetHandler.endDocument();
+   }
+
    // **********************************************************************
 
    //
@@ -1225,6 +1336,10 @@ public class Processor extends XMLFilterImpl
       else {
          // no stx:process-children in match="/"
          skipDepth--;
+         if (skipDepth == 0 && context.targetHandler != null) {
+            endExternDocument();
+            context.targetHandler = null;
+         }
       }
 
       if (skipDepth == 0) {
@@ -1259,27 +1374,25 @@ public class Processor extends XMLFilterImpl
             log.debug("dataStack: " + dataStack);
          }
 
-      if (skipDepth > 0) {
-         skipDepth++;
-         return;
-      }
-
       // look-ahead mechanism
-      if (lastElement != null) {
+      if (lastElement != null) 
          processLastElement(true);
-         if (skipDepth == 1) { // after processing lastElement
-            skipDepth = 2;     // increase counter again for this element
-            return;
-         }
-      }
-      lastElement = SAXEvent.newElement(uri, lName, qName, attrs, nsSupport);
 
       if (collectedCharacters.length() != 0)
          processCharacters();
-         if (!nsContextActive) {
-            nsSupport.pushContext();
-         }
-         nsContextActive = false;
+
+      if (skipDepth > 0) {
+         skipDepth++;
+         if (context.targetHandler != null)
+            context.targetHandler.startElement(uri, lName, qName, attrs);
+         return;
+      }
+
+      lastElement = SAXEvent.newElement(uri, lName, qName, attrs, nsSupport);
+
+      if (!nsContextActive)
+         nsSupport.pushContext();
+      nsContextActive = false;
    }
 
 
@@ -1363,8 +1476,16 @@ public class Processor extends XMLFilterImpl
             log.error("encountered 'else' " + prStatus);
          }
       }
-      else
+      else {
          skipDepth--;
+         if (context.targetHandler != null) {
+            context.targetHandler.endElement(uri, lName, qName);
+            if (skipDepth == 0) {
+               endExternDocument();
+               context.targetHandler = null;
+            }
+         }
+      }
 
       if (skipDepth == 0) {
          // look at the previous process status on the data stack
@@ -1380,15 +1501,19 @@ public class Processor extends XMLFilterImpl
 
 
    public void characters(char[] ch, int start, int length)
+      throws SAXException
    {
-      if (skipDepth > 0)
+      if (skipDepth > 0) {
+         if (context.targetHandler != null)
+            context.targetHandler.characters(ch, start, length);
          return;
-
+      }
       collectedCharacters.append(ch, start, length);
    }
 
 
    public void ignorableWhitespace(char[] ch, int start, int length)
+      throws SAXException
    {
       characters(ch, start, length);
    }
@@ -1397,17 +1522,21 @@ public class Processor extends XMLFilterImpl
    public void processingInstruction(String target, String data)
       throws SAXException
    {
-      if (skipDepth > 0 || insideDTD)
+      if (insideDTD)
          return;
 
-      if (lastElement != null) {
+      if (lastElement != null)
          processLastElement(true);
-         if (skipDepth > 0)
-            return;
-      }
+
       if (collectedCharacters.length() != 0)
          processCharacters();
       
+      if (skipDepth > 0) {
+         if (context.targetHandler != null)
+            context.targetHandler.processingInstruction(target, data);
+         return;
+      }
+
       // don't modify the event stack after process-self
       ((SAXEvent)eventStack.peek()).countPI(target);
 
@@ -1424,12 +1553,14 @@ public class Processor extends XMLFilterImpl
    public void startPrefixMapping(String prefix, String uri)
       throws SAXException
    {
-      if (lastElement != null) {
+      if (lastElement != null)
          processLastElement(true);
-         lastElement = null;
-      }
-      if (skipDepth > 0)
+
+      if (skipDepth > 0) {
+         if (context.targetHandler != null)
+            context.targetHandler.startPrefixMapping(prefix, uri);
          return;
+      }
 
       if (!nsContextActive) {
          nsSupport.pushContext();
@@ -1439,10 +1570,12 @@ public class Processor extends XMLFilterImpl
    }
 
 
-//     public void endPrefixMapping(String prefix)
-//        throws SAXException
-//     {
-//     }
+   public void endPrefixMapping(String prefix)
+      throws SAXException
+   {
+      if (context.targetHandler != null)
+         context.targetHandler.endPrefixMapping(prefix);
+   }
 
 //     public void skippedEntity(String name)
 //     {
@@ -1486,21 +1619,29 @@ public class Processor extends XMLFilterImpl
    public void startCDATA()
       throws SAXException
    {
-      if (skipDepth > 0 || !context.targetGroup.recognizeCdata)
+      if (!context.targetGroup.recognizeCdata)
          return;
 
       if (DEBUG)
          log.debug("");
 
+      if (skipDepth > 0) {
+         if (context.targetHandler != null)
+            context.targetHandler.startCDATA();
+         return;
+      }
+
       if (collectedCharacters.length() != 0) {
-         if (lastElement != null) {
+         if (lastElement != null) 
             processLastElement(true);
-         if (skipDepth > 0)
+         processCharacters();
+         if (skipDepth > 0) {
+            if (context.targetHandler != null) 
+               context.targetHandler.startCDATA();
             return;
          }
-         processCharacters();
       }
-         
+
       insideCDATA = true;
    }
 
@@ -1511,8 +1652,15 @@ public class Processor extends XMLFilterImpl
       if (!context.targetGroup.recognizeCdata)
          return;
 
+      if (skipDepth > 0) {
+         if (context.targetHandler != null)
+            context.targetHandler.endCDATA();
+         return;
+      }
+
       if (lastElement != null)
          processLastElement(true);
+
       processCharacters(); // test for emptiness occurs there
 
       insideCDATA = false;
@@ -1526,18 +1674,21 @@ public class Processor extends XMLFilterImpl
          if (log.isDebugEnabled())
             log.debug(new String(ch,start,length));
 
-      if (skipDepth > 0 || insideDTD)
+      if (insideDTD)
          return;
 
-      if (lastElement != null) {
+      if (lastElement != null)
          processLastElement(true);
-         if (skipDepth > 0) {
-            return;
-         }
-      }
+
       if (collectedCharacters.length() != 0)
          processCharacters();
       
+      if (skipDepth > 0) {
+         if (context.targetHandler != null)
+            context.targetHandler.comment(ch, start, length);
+         return;
+      }
+
       // don't modify the event stack after process-self
       ((SAXEvent)eventStack.peek()).countComment();
 
