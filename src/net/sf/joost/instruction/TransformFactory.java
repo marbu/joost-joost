@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 2.9 2003/06/18 11:45:42 obecker Exp $
+ * $Id: TransformFactory.java,v 2.10 2003/08/31 19:38:52 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Processor;
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 2.9 $ $Date: 2003/06/18 11:45:42 $
+ * @version $Revision: 2.10 $ $Date: 2003/08/31 19:38:52 $
  * @author Oliver Becker
  */
 
@@ -177,6 +177,9 @@ public class TransformFactory extends FactoryBase
       /** names of global parameters (<code>stx:param</code>) */
       public Hashtable globalParams;
 
+      /** mapping table for <code>stx:namespace-alias</code> instructions */
+      public Hashtable namespaceAliases;
+
       // stx:transform attributes (options)
       public String outputEncoding;
       public String stxpathDefaultNamespace;
@@ -199,6 +202,7 @@ public class TransformFactory extends FactoryBase
             namedGroups = new Hashtable(); // shared with all sub-groups
             globalProcedures = new Hashtable(); // also shared
             globalParams = new Hashtable(); // shared with all includes
+            namespaceAliases = new Hashtable(); // also shared
          }
          else {
             // use global parameters of the including STX sheet
@@ -208,6 +212,8 @@ public class TransformFactory extends FactoryBase
             while (!(parent instanceof TransformFactory.Instance))
                parent = parent.parent;
             globalParams = ((TransformFactory.Instance)parent).globalParams;
+            namespaceAliases = 
+               ((TransformFactory.Instance)parent).namespaceAliases;
          }
 
          this.outputEncoding = 
@@ -241,6 +247,9 @@ public class TransformFactory extends FactoryBase
              node instanceof GroupBase ||    // group, transform (= include)
              node instanceof VariableBase)   // param, variable, buffer
             super.insert(node);
+         else if (node instanceof NSAliasFactory.Instance) {
+            // nothing to do in this case
+         }
          else
             throw new SAXParseException("`" + node.qName + 
                                         "' not allowed as top level element", 

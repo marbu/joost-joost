@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 2.3 2003/06/15 11:52:25 obecker Exp $
+ * $Id: LitElementFactory.java,v 2.4 2003/08/31 19:38:52 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for literal result elements, which are represented by the
  * inner Instance class. 
- * @version $Revision: 2.3 $ $Date: 2003/06/15 11:52:25 $
+ * @version $Revision: 2.4 $ $Date: 2003/08/31 19:38:52 $
  * @author Oliver Becker
 */
 
@@ -87,6 +87,7 @@ final public class LitElementFactory
       private AttributesImpl attrs;
       private Tree[] avtList;
       private Hashtable namespaces;
+      private Hashtable namespaceAliases;
       
       protected Instance(String uri, String lName, String qName,
                          Attributes attrs, Tree[] avtList, 
@@ -107,8 +108,49 @@ final public class LitElementFactory
                                      .contains(namespaces.get(key)))
                namespaces.remove(key);
          }
+
+         this.namespaceAliases = context.transformNode.namespaceAliases;
       }
       
+
+      /**
+       * Apply all declared namespaces aliases 
+       * (<code>stx:namespace-alias</code>)
+       */
+      public boolean compile(int pass)
+         throws SAXException
+      {
+         if (pass == 0)
+            // have to wait until the whole STX sheet has been parsed
+            return true;
+
+         // Change namespace URI of this element
+         String toNS = (String)namespaceAliases.get(uri);
+         if (toNS != null)
+            uri = toNS;
+
+         // Change namespace URI of the attributes
+         int aLen = attrs.getLength();
+         for (int i=0; i<aLen; i++) {
+            String aURI = attrs.getURI(i);
+            toNS = (String)namespaceAliases.get(aURI);
+            if (toNS != null)
+               attrs.setURI(i, toNS);
+         }
+
+         // Change namespace URIs of in-scope namespaces
+         for (Enumeration keys = namespaces.keys();
+              keys.hasMoreElements(); ) {
+            Object key = keys.nextElement();
+            Object value = namespaces.get(key);
+            Object alias = namespaceAliases.get(value);
+            if(alias != null)
+               namespaces.put(key,alias);
+         }
+
+         return false;
+      }
+
 
       /**
        * Emits the start tag of this literal element to the emitter
