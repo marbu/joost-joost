@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.13 2003/06/06 15:08:14 obecker Exp $
+ * $Id: Value.java,v 1.14 2003/06/09 10:25:42 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,7 +29,7 @@ import net.sf.joost.grammar.EvalException;
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.13 $ $Date: 2003/06/06 15:08:14 $
+ * @version $Revision: 1.14 $ $Date: 2003/06/09 10:25:42 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -114,11 +114,63 @@ public class Value implements Cloneable
    }
 
 
-   /** Constructs a <code>Value</code> containing a custom Java object */
-   public Value(Object o)
+   /** Constructs a <code>Value</code> containing a custom Java object,
+       possibly converting the object to a known STX type */
+   public Value(Object obj)
    {
-      type = OBJECT;
-      object = o;
+      if (obj == null) {
+         type = OBJECT;
+         return;
+      }
+      else if (obj instanceof Void) {
+         type = EMPTY;
+         return;
+      }
+      else if (obj instanceof String || obj instanceof Character) {
+         type = STRING;
+         string = obj.toString();
+         return;
+      }
+      else if (obj instanceof Boolean) {
+         type = BOOLEAN;
+         bool = ((Boolean)obj).booleanValue();
+         return;
+      }
+      else if (obj instanceof Double) {
+         type = NUMBER;
+         number = ((Double)obj).doubleValue();
+         return;
+      }
+      else if (obj instanceof Float) {
+         type = NUMBER;
+         number = (double)((Float)obj).floatValue();
+         return;
+      }
+      else if (obj instanceof Byte) {
+         type = NUMBER;
+         number = (double)((Byte)obj).byteValue();
+         return;
+      }
+      else if (obj instanceof Short) {
+         type = NUMBER;
+         number = (double)((Short)obj).shortValue();
+         return;
+      }
+      else if (obj instanceof Integer) {
+         type = NUMBER;
+         number = (double)((Integer)obj).intValue();
+         return;
+      }
+      else if (obj instanceof Long) {
+         type = NUMBER;
+         number = (double)((Long)obj).longValue();
+         return;
+      }
+      else {
+         type = OBJECT;
+         object = obj;
+         return;
+      }
    }
 
 
@@ -313,7 +365,8 @@ public class Value implements Cloneable
       case BOOLEAN:
          if (target == boolean.class)   return 1;
          if (target == Boolean.class)   return 2;
-         if (target == String.class || target == CharSequence.class) return 3;
+         if (target == String.class) 
+            return 3;
          if (target == byte.class)      return 4;
          if (target == Byte.class)      return 5; 
          if (target == char.class)      return 6;
@@ -346,12 +399,12 @@ public class Value implements Cloneable
          if (target == Byte.class)      return 13; 
          if (target == boolean.class)   return 14;
          if (target == Boolean.class)   return 15;
-         if (target == String.class || target == CharSequence.class) 
+         if (target == String.class) 
             return 16;
          break;
       case NODE: // treat NODE and STRING equal
       case STRING: 
-         if (target == String.class || target == CharSequence.class) 
+         if (target == String.class) 
             return 1;        
          if (target == char.class)      return 2;
          if (target == Character.class) return 3;
@@ -399,7 +452,7 @@ public class Value implements Cloneable
          // target is a superclass of object's class (or they are the same)
          return object;
       }
-      else if (target == String.class || target == CharSequence.class) {
+      else if (target == String.class) {
          convertToString();
          return string;
       }
@@ -443,6 +496,7 @@ public class Value implements Cloneable
          throw new EvalException("Conversion to " + target.getName() + 
                                  " is not supported");
    }
+
 
 
    //
