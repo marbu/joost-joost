@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 1.12 2002/11/22 16:29:22 obecker Exp $
+ * $Id: Parser.java,v 1.13 2002/11/27 09:44:49 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.instruction.*;
 /** 
  * Creates the tree representation of an STX stylesheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 1.12 $ $Date: 2002/11/22 16:29:22 $
+ * @version $Revision: 1.13 $ $Date: 2002/11/27 09:44:49 $
  * @author Oliver Becker
  */
 
@@ -170,7 +170,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
             throw new SAXParseException(
                "Text may occur only within templates", locator);
          else
-            currentNode.append(new TextNode(s, locator));
+            currentNode.append(new TextNode(s, currentNode, locator));
       }
       collectedCharacters.setLength(0);
    }
