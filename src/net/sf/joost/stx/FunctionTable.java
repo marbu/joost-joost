@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.6 2003/05/14 11:56:48 obecker Exp $
+ * $Id: FunctionTable.java,v 2.7 2003/05/23 11:12:30 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.6 $ $Date: 2003/05/14 11:56:48 $
+ * @version $Revision: 2.7 $ $Date: 2003/05/23 11:12:30 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -86,7 +86,8 @@ final public class FunctionTable implements Constants
          new ItemAt(),
          new Subsequence(),
          new Count(),
-         new Sum()
+         new Sum(),
+         new FilterAvailable()
       };
       functionHash = new Hashtable(functions.length);
       for (int i=0; i<functions.length; i++)
@@ -1343,6 +1344,28 @@ final public class FunctionTable implements Constants
             v = next;
          }
          return new Value(sum);
+      }
+   }
+
+
+   /**
+    * The <code>filter-available</code> function.
+    * Determines if an external filter will be available.
+    */
+   final public class FilterAvailable implements Instance
+   {
+      /** @return 1 */
+      public int getMinParCount() { return 1; }
+      /** @return 1 */
+      public int getMaxParCount() { return 1; }
+      /** @return "filter-available" */
+      public String getName() { return FNSP + "filter-available"; }
+
+      public Value evaluate(Context context, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value v = args.evaluate(context, top);
+         return v.setBoolean(context.defaultTransformerHandlerResolver.available(v.convertToString().string));
       }
    }
 }
