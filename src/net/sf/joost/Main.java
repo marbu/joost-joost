@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.15 2003/10/31 12:08:09 obecker Exp $
+ * $Id: Main.java,v 1.16 2004/01/15 17:03:07 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.15 $ $Date: 2003/10/31 12:08:09 $
+ * @version $Revision: 1.16 $ $Date: 2004/01/15 17:03:07 $
  * @author Oliver Becker
  */
 public class Main implements Constants
@@ -94,8 +94,11 @@ public class Main implements Constants
 
          // parse command line argument list
          for (int i=0; i<args.length; i++) {
+            if (args[i].trim().length() == 0) {
+               // empty parameter? ingore 
+            }
             // all options start with a '-', but a single '-' means stdin
-            if (args[i].charAt(0) == '-' && args[i].length() > 1) {
+            else if (args[i].charAt(0) == '-' && args[i].length() > 1) {
                if ("-help".equals(args[i])) {
                   printHelp = true;
                   continue;
@@ -186,10 +189,6 @@ public class Main implements Constants
                }
             }
             // command line argument is not an option with a leading '-'
-            else if (args[i].trim().length() == 0) {
-               // empty parameter? ingore 
-               // (causes otherwise an error on Windows 98 with joost.bat)
-            }
             else if ((index = args[i].indexOf('=')) != -1) {
                // parameter assignment 
                if (processor != null)
@@ -340,8 +339,9 @@ public class Main implements Constants
             if (embedded instanceof TransformerException) {
                TransformerException te = (TransformerException)embedded;
                SourceLocator sl = te.getLocator();
-               if (sl != null) {
-                  String systemId = sl.getSystemId();
+               String systemId;
+               // ensure that systemId is not null; is this a bug?
+               if (sl != null && (systemId = sl.getSystemId()) != null) {
                   // remove the "file://" scheme prefix if it is present
                   if (systemId.startsWith("file://"))
                      systemId = systemId.substring(7);
