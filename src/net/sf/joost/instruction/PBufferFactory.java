@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 2.3 2003/05/16 15:00:21 obecker Exp $
+ * $Id: PBufferFactory.java,v 2.4 2003/05/19 14:42:28 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,7 +28,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.ext.LexicalHandler;
 
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -46,7 +45,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.3 $ $Date: 2003/05/16 15:00:21 $
+ * @version $Revision: 2.4 $ $Date: 2003/05/19 14:42:28 $
  * @author Oliver Becker
  */
 
@@ -196,11 +195,8 @@ public class PBufferFactory extends FactoryBase
                   new EmitterAdapter(context.emitter, 
                                      publicId, systemId, lineNo, colNo);
                handler.setResult(new SAXResult(adapter));
-               LexicalHandler lexH = null;
-               if (handler instanceof LexicalHandler)
-                  lexH = (LexicalHandler)handler;
                handler.startDocument();
-               br.parse(handler, lexH);
+               br.parse(handler, handler);
                handler.endDocument();
             }
             catch(Exception e) {
