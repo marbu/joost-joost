@@ -1,5 +1,5 @@
 /*
- * $Id: FactoryBase.java,v 2.1 2003/04/30 15:08:15 obecker Exp $
+ * $Id: FactoryBase.java,v 2.2 2003/05/23 11:05:43 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.grammar.PatternParser;
  * Abstract base class for all factory classes which produce nodes
  * ({@link NodeBase}) for the tree representation of an STX transformation
  * sheet.
- * @version $Revision: 2.1 $ $Date: 2003/04/30 15:08:15 $
+ * @version $Revision: 2.2 $ $Date: 2003/05/23 11:05:43 $
  * @author Oliver Becker
  */
 
@@ -186,6 +186,7 @@ public abstract class FactoryBase implements Constants
    {
       StringBuffer result = new StringBuffer("{");
 
+      qName = qName.trim();
       int colon = qName.indexOf(':');
       if (colon != -1) { // prefixed name
          String prefix = qName.substring(0, colon);
