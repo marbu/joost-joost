@@ -1,5 +1,5 @@
 /*
- * $Id: Constants.java,v 2.2 2003/06/10 08:42:58 obecker Exp $
+ * $Id: Constants.java,v 2.3 2004/09/29 05:48:52 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -27,7 +27,7 @@ package net.sf.joost;
 
 /**
  * This interface contains constants shared between different classes. 
- * @version $Revision: 2.2 $ $Date: 2003/06/10 08:42:58 $
+ * @version $Revision: 2.3 $ $Date: 2004/09/29 05:48:52 $
  * @author Oliver Becker
  */
 public interface Constants
@@ -66,7 +66,7 @@ public interface Constants
       FEAT_NSPREFIX = FEATURE_URI_PREFIX + "namespace-prefixes";
 
 
-   /* The default encoding for XML */
+   /** The default encoding for XML */
    public static String DEFAULT_ENCODING   = "UTF-8";
 
 
