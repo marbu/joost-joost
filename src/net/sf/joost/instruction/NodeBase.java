@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 1.4 2002/11/15 18:23:03 obecker Exp $
+ * $Id: NodeBase.java,v 1.5 2002/11/19 10:28:35 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.stx.Emitter;
 
 /**
  * Abstract base class for all instances of nodes in a STX stylesheet.
- * @version $Revision: 1.4 $ $Date: 2002/11/15 18:23:03 $
+ * @version $Revision: 1.5 $ $Date: 2002/11/19 10:28:35 $
  * @author Oliver Becker
  */
 public abstract class NodeBase implements Constants
@@ -89,8 +89,6 @@ public abstract class NodeBase implements Constants
       this.qName = qName;
       publicId = locator.getPublicId();
       systemId = locator.getSystemId();
-      if (systemId.startsWith("file://"))
-         systemId = systemId.substring(7);
       lineNo = locator.getLineNumber();
       colNo = locator.getColumnNumber();
       this.mustBeEmpty = mustBeEmpty;

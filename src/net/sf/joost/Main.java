@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.5 2002/11/07 13:41:24 obecker Exp $
+ * $Id: Main.java,v 1.6 2002/11/19 10:28:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.5 $ $Date: 2002/11/07 13:41:24 $
+ * @version $Revision: 1.6 $ $Date: 2002/11/19 10:28:32 $
  * @author Oliver Becker
  */
 public class Main
@@ -321,7 +321,14 @@ printHelp ? 0 : 1);
             if (embedded instanceof TransformerException) {
                TransformerException te = (TransformerException)embedded;
                SourceLocator sl = te.getLocator();
-               System.err.println(sl.getSystemId() + ":" + 
+               String systemId = sl.getSystemId();
+               // remove the "file://" scheme prefix if it is present
+               if (systemId.startsWith("file://"))
+                  systemId = systemId.substring(7);
+               else if (systemId.startsWith("file:"))
+                  // bug in JDK 1.4 / Crimson? (see rfc1738)
+                  systemId = systemId.substring(5);
+               System.err.println(systemId + ":" + 
                                   sl.getLineNumber() + ":" + 
                                   sl.getColumnNumber() + ": " +
                                   te.getMessage());
