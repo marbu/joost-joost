@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.4 2002/11/06 16:45:19 obecker Exp $
+ * $Id: Main.java,v 1.5 2002/11/07 13:41:24 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.4 $ $Date: 2002/11/06 16:45:19 $
+ * @version $Revision: 1.5 $ $Date: 2002/11/07 13:41:24 $
  * @author Oliver Becker
  */
 public class Main
@@ -210,7 +210,7 @@ public class Main
       if (printHelp || wrongParameter) {
          usage(
   "Usage:\n"
-+ "java net.sf.joost.Main [options] xml-source stx-stylesheet\n\n"
++ "java net.sf.joost.Main [options] xml-source stx-stylesheet [parameters]\n\n"
 + "Options:\n"
 + "  -help      print this message\n"
 + "  -version   print the version information and exit\n"
@@ -222,7 +222,9 @@ public class Main
 + "             (default is the embedded file log4j.properties)\n"
 + "  -log-level all|debug|info|warn|error|fatal|all\n"
 + "             set the log level for the root logger object\n"
-+ "             (default is specified in the properties file being used)\n",
++ "             (default is specified in the properties file being used)\n\n"
++ "Parameters for the transformation (e.g. <stx:param name=\"par\"/>) must be"
++ "\nspecified as par=value\n",
 printHelp ? 0 : 1);
       }
 
