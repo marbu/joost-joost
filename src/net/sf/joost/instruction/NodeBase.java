@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 2.6 2003/11/01 14:42:18 zubow Exp $
+ * $Id: NodeBase.java,v 2.7 2004/01/21 11:22:58 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Abstract base class for all instances of nodes in the STX transformation 
  * sheet
- * @version $Revision: 2.6 $ $Date: 2003/11/01 14:42:18 $
+ * @version $Revision: 2.7 $ $Date: 2004/01/21 11:22:58 $
  * @author Oliver Becker
  */
 public abstract class NodeBase 
@@ -119,18 +119,10 @@ public abstract class NodeBase
    protected AbstractInstruction nodeEnd;
 
    /** The public identifier of the transformation sheet */
-   public String publicId;
+   public String publicId = "";
 
    /** The system identifier of the transformation sheet */
-   public String systemId;
-
-   /** The line number of the begin of this node in the transformation
-       sheet. */
-   public int lineNo;
-
-   /** The column number of the begin of this node in the transformation
-       sheet. */
-   public int colNo;
+   public String systemId = "";
 
    /** 
     * <code>true</code> if the attribute <code>xml:space</code> on the
@@ -159,7 +151,7 @@ public abstract class NodeBase
     * Constructs a node. 
     * @param qName the qualified name of this node
     * @param parent the parent of this node
-    * @param locator the location in the transformation sheet
+    * @param context the current parse context
     * @param mayHaveChildren
     *        <code>true</code> if the node may have children
     */
@@ -173,10 +165,6 @@ public abstract class NodeBase
          systemId = context.locator.getSystemId();
          lineNo = context.locator.getLineNumber();
          colNo = context.locator.getColumnNumber();
-      }
-      else {
-         publicId = systemId = "";
-         lineNo = colNo = -1;
       }
 
       if (mayHaveChildren) {
@@ -230,6 +218,19 @@ public abstract class NodeBase
          scopedVariables = new Vector();
    }
 
+
+   /**
+    * Notify this node about its end location (taken from
+    * {@link ParseContext#locator} in the <code>context</code> parameter)
+    * @param context the current parse context
+    */
+   public void setEndLocation(ParseContext context)
+   {
+      if (nodeEnd != null && context.locator != null) {
+         nodeEnd.lineNo = context.locator.getLineNumber();
+         nodeEnd.colNo = context.locator.getColumnNumber();
+      }
+   }
 
    /**
     * This method may be overwritten to perform compilation tasks (for example
@@ -298,7 +299,8 @@ public abstract class NodeBase
    }
 
    /**
-    * Getter for {@link #nodeEnd} used by {@link net.sf.joost.stx.Processor#processEvent}.
+    * Getter for {@link #nodeEnd} used by 
+    * {@link net.sf.joost.stx.Processor#processEvent}.
     * @return a final ref on <code>AbstractInstruction</code>
     */
    public final AbstractInstruction getNodeEnd() {
