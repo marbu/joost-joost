@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.5 2003/01/18 10:32:08 obecker Exp $
+ * $Id: Value.java,v 1.6 2003/01/21 10:22:35 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,7 +29,7 @@ import net.sf.joost.grammar.EvalException;
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.5 $ $Date: 2003/01/18 10:32:08 $
+ * @version $Revision: 1.6 $ $Date: 2003/01/21 10:22:35 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -174,11 +174,6 @@ public class Value implements Cloneable
       case STRING:
          break;
       case NODE:
-         if (event.type == SAXEvent.ELEMENT)
-            throw new EvalException("Undefined node value for elements");
-         if (event.type == SAXEvent.ROOT)
-            throw new EvalException("Undefined node value for the " + 
-                                    "document root");
          string = event.value;
          break;
       default:
