@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 2.4 2003/05/19 14:42:28 obecker Exp $
+ * $Id: PBufferFactory.java,v 2.5 2003/05/23 11:07:24 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,11 +31,8 @@ import org.xml.sax.SAXParseException;
 
 import java.util.HashSet;
 import java.util.Hashtable;
-import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 
-import net.sf.joost.emitter.BufferEmitter;
-import net.sf.joost.emitter.EmitterAdapter;
 import net.sf.joost.stx.BufferReader;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Processor;
@@ -45,7 +42,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.4 $ $Date: 2003/05/19 14:42:28 $
+ * @version $Revision: 2.5 $ $Date: 2003/05/23 11:07:24 $
  * @author Oliver Becker
  */
 
@@ -71,9 +68,8 @@ public class PBufferFactory extends FactoryBase
       attrNames = new HashSet();
       attrNames.add("name");
       attrNames.add("group");
-      attrNames.add("method");
-      attrNames.add("href");
-      attrNames.add("use");
+      attrNames.add("filter");
+      attrNames.add("src");
    }
 
    /** @return <code>"process-buffer"</code> */
@@ -92,41 +88,25 @@ public class PBufferFactory extends FactoryBase
       String bufName = "@" + getExpandedName(nameAtt, nsSet, locator);
 
       String groupAtt = attrs.getValue("group");
-      String groupName = null;
-      if (groupAtt != null)
-         groupName = getExpandedName(groupAtt, nsSet, locator);
 
-      String methodAtt = attrs.getValue("method");
-      if (groupAtt != null && methodAtt != null)
+      String filterAtt = attrs.getValue("filter");
+
+      if (groupAtt != null && filterAtt != null)
          throw new SAXParseException(
-            "It's not allowed to use both `group' and `method' attributes",
+            "It's not allowed to use both `group' and `filter' attributes",
             locator);
 
-      String hrefAtt = attrs.getValue("href");
-      String useAtt = attrs.getValue("use");
-      String useName = (useAtt != null)
-                          ? "@" + getExpandedName(useAtt, nsSet, locator)
-                          : null;
+      String srcAtt = attrs.getValue("src");
 
-      if (useAtt != null && hrefAtt != null)
+      if (srcAtt != null && filterAtt == null)
          throw new SAXParseException(
-            "It's not allowed to specify both `use' and `method' attributes",
-            locator);
-      if (hrefAtt != null && methodAtt == null)
-         throw new SAXParseException(
-            "Missing `method' attribute in `" + qName + 
-            "' (`href' is present)",
-            locator);
-      if (useAtt != null && methodAtt == null)
-         throw new SAXParseException(
-            "Missing `method' attribute in `" + qName + 
-            "' (`use' is present)",
+            "Missing `filter' attribute in `" + qName + 
+            "' (`src' is present)",
             locator);
 
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, nameAtt, bufName, 
-                          groupAtt, groupName, methodAtt, hrefAtt, 
-                          useAtt, useName);
+      return new Instance(qName, parent, nsSet, locator, nameAtt, bufName, 
+                          groupAtt, filterAtt, srcAtt);
    }
 
 
@@ -134,22 +114,18 @@ public class PBufferFactory extends FactoryBase
    /** The inner Instance class */
    public class Instance extends ProcessBase
    {
-      String bufName, expName, method, href, useBufName, use;
+      String bufName, expName;
 
       // Constructor
-      public Instance(String qName, NodeBase parent, Locator locator, 
+      public Instance(String qName, NodeBase parent, 
+                      Hashtable nsSet, Locator locator, 
                       String bufName, String expName, String groupQName,
-                      String groupExpName, String method, String href,
-                      String useBufName, String use)
+                      String filter, String src)
          throws SAXParseException
       {
-         super(qName, parent, locator, groupQName, groupExpName);
+         super(qName, parent, nsSet, locator, groupQName, filter, src);
          this.bufName = bufName;
          this.expName = expName;
-         this.method = method;
-         this.href = href;
-         this.useBufName = useBufName;
-         this.use = use;
       }
 
 
@@ -162,44 +138,28 @@ public class PBufferFactory extends FactoryBase
          BufferReader br = new BufferReader(context, bufName, expName,
                                             publicId, systemId, 
                                             lineNo, colNo);
-         if (br == null)
-            return PR_ERROR;
 
-         if (method != null) {
-            // use external SAX processor (TransformerHandler)
+         if (filter != null) {
+            // use external SAX filter (TransformerHandler)
+            TransformerHandler handler = getProcessHandler(context);
+            if (handler == null)
+               return PR_ERROR;
+
             try {
-               TransformerHandler handler;
-               if (use != null) {
-                  BufferReader ubr = 
-                     new BufferReader(context, useBufName, use,
-                                      publicId, systemId, lineNo, colNo);
-                  if (ubr == null)
-                     return PR_ERROR;
-                  handler = 
-                     context.defaultTransformerHandlerResolver
-                            .resolve(method, ubr, context.passedParameters);
-               }
-               else {
-                  handler = 
-                     context.defaultTransformerHandlerResolver
-                            .resolve(method, href, context.passedParameters);
-               }
-               if (handler == null) {
-                  context.errorHandler.fatalError(
-                     "Don't know how to process with method `" +
-                     method + "'", publicId, systemId, lineNo, colNo);
-                  return PR_ERROR;
-               }
-
-               EmitterAdapter adapter = 
-                  new EmitterAdapter(context.emitter, 
-                                     publicId, systemId, lineNo, colNo);
-               handler.setResult(new SAXResult(adapter));
                handler.startDocument();
                br.parse(handler, handler);
                handler.endDocument();
             }
-            catch(Exception e) {
+            catch (SAXException e) {
+               // add locator information
+               context.errorHandler.fatalError(e.getMessage(),
+                                               publicId, systemId, 
+                                               lineNo, colNo);
+               return PR_ERROR;
+            }
+            // catch any unchecked exception
+            catch (RuntimeException e) {
+               // wrap exception
                java.io.StringWriter sw = null;
                if (DEBUG) {
                   sw = new java.io.StringWriter();
