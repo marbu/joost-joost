@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.14 2003/06/09 10:25:42 obecker Exp $
+ * $Id: Value.java,v 1.15 2003/06/10 13:03:09 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,7 +29,7 @@ import net.sf.joost.grammar.EvalException;
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.14 $ $Date: 2003/06/09 10:25:42 $
+ * @version $Revision: 1.15 $ $Date: 2003/06/10 13:03:09 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -262,7 +262,7 @@ public class Value implements Cloneable
          bool = !string.equals("");
          break;
       case OBJECT:
-         bool = object != null;
+         bool = object == null ? false : !object.toString().equals("");
          break;
       default:
          // Mustn't happen
@@ -347,81 +347,82 @@ public class Value implements Cloneable
    /**
     * Determines the conversion distance of the contained value to the
     * specified target Java class. Lower results indicate higher preferences.
-    * (These values are actually taken from Saxon's conversion preference
-    * tables. Hopefully they are reasonable values.)
     * @param target the class to which a conversion is desired
     * @return an individual distance value, or 
     * {@link Double#POSITIVE_INFINITY} if a conversion is not possible
     */
    public double getDistanceTo(Class target)
    {
-      if (type == OBJECT && target.isAssignableFrom(object.getClass()))
-         return 0;
+      if (type == OBJECT) {
+         if (target == object.getClass())                return 0; 
+         if (target.isAssignableFrom(object.getClass())) return 1;
+         if (target == String.class)                     return 50;
+      }
       if (target == Object.class)
          return 50;
       switch (type) {
       case EMPTY:
+         if (!target.isPrimitive())
+            // target is a reference type
+            return 1;
          break;
       case BOOLEAN:
-         if (target == boolean.class)   return 1;
-         if (target == Boolean.class)   return 2;
-         if (target == String.class) 
-            return 3;
-         if (target == byte.class)      return 4;
-         if (target == Byte.class)      return 5; 
-         if (target == char.class)      return 6;
-         if (target == Character.class) return 7;
-         if (target == double.class)    return 8;
-         if (target == Double.class)    return 9;
-         if (target == float.class)     return 10;
-         if (target == Float.class)     return 11;            
-         if (target == int.class)       return 12;
-         if (target == Integer.class)   return 13;
-         if (target == long.class)      return 14;
-         if (target == Long.class)      return 15;
-         if (target == short.class)     return 16;
-         if (target == Short.class)     return 17;
+         if (target == boolean.class)   return 0;
+         if (target == Boolean.class)   return 1;
+         if (target == byte.class)      return 10;
+         if (target == Byte.class)      return 11; 
+         if (target == short.class)     return 12;
+         if (target == Short.class)     return 13;
+         if (target == int.class)       return 14;
+         if (target == Integer.class)   return 15;
+         if (target == long.class)      return 16;
+         if (target == Long.class)      return 17;
+         if (target == char.class)      return 18;
+         if (target == Character.class) return 19;
+         if (target == String.class)    return 20;
+         if (target == float.class)     return 21;
+         if (target == Float.class)     return 22;            
+         if (target == double.class)    return 23;
+         if (target == Double.class)    return 24;
          break;
       case NUMBER:
          if (target == double.class)    return 0;
          if (target == Double.class)    return 1;
          if (target == float.class)     return 2;
-         if (target == Float.class)     return 3;            
+         if (target == Float.class)     return 3;           
          if (target == long.class)      return 4;
          if (target == Long.class)      return 5;
          if (target == int.class)       return 6;
          if (target == Integer.class)   return 7;
          if (target == short.class)     return 8;
          if (target == Short.class)     return 9;
-         if (target == char.class)      return 10;
-         if (target == Character.class) return 11;
-         if (target == byte.class)      return 12;
-         if (target == Byte.class)      return 13; 
-         if (target == boolean.class)   return 14;
-         if (target == Boolean.class)   return 15;
-         if (target == String.class) 
-            return 16;
+         if (target == byte.class)      return 10;
+         if (target == Byte.class)      return 11; 
+         if (target == String.class)    return 20;
+         if (target == char.class)      return 31;
+         if (target == Character.class) return 32;
+         if (target == boolean.class)   return 33;
+         if (target == Boolean.class)   return 34;
          break;
       case NODE: // treat NODE and STRING equal
       case STRING: 
-         if (target == String.class) 
-            return 1;        
-         if (target == char.class)      return 2;
-         if (target == Character.class) return 3;
-         if (target == double.class)    return 6;
-         if (target == Double.class)    return 7;
-         if (target == float.class)     return 8;
-         if (target == Float.class)     return 9;            
-         if (target == int.class)       return 10;
-         if (target == Integer.class)   return 11;
-         if (target == long.class)      return 12;
-         if (target == Long.class)      return 13;
-         if (target == short.class)     return 14;
-         if (target == Short.class)     return 15;
-         if (target == boolean.class)   return 16;
-         if (target == Boolean.class)   return 17;
-         if (target == byte.class)      return 18;
-         if (target == Byte.class)      return 19; 
+         if (target == String.class)    return 0;        
+         if (target == char.class)      return 1;
+         if (target == Character.class) return 2;
+         if (target == double.class)    return 10;
+         if (target == Double.class)    return 11;
+         if (target == float.class)     return 12;
+         if (target == Float.class)     return 13;            
+         if (target == int.class)       return 14;
+         if (target == Integer.class)   return 15;
+         if (target == long.class)      return 16;
+         if (target == Long.class)      return 17;
+         if (target == short.class)     return 18;
+         if (target == Short.class)     return 19;
+         if (target == byte.class)      return 20;
+         if (target == Byte.class)      return 21; 
+         if (target == boolean.class)   return 30;
+         if (target == Boolean.class)   return 31;
          break;
       }
       return Double.POSITIVE_INFINITY;
@@ -438,12 +439,12 @@ public class Value implements Cloneable
    {
       if (target == Object.class) {
          switch (type) {
-         case EMPTY: return null;
-         case NODE: convertToString(); return string; // ??
+         case EMPTY:   return null;
+         case NODE:    return event;
          case BOOLEAN: return new Boolean(bool);
-         case NUMBER: return new Double(number);
-         case STRING: return string;
-         case OBJECT: return object;
+         case NUMBER:  return new Double(number);
+         case STRING:  return string;
+         case OBJECT:  return object;
          default:
             throw new RuntimeException("Fatal: unexpected type " + type);
          }
@@ -451,6 +452,10 @@ public class Value implements Cloneable
       else if (type == OBJECT && target.isAssignableFrom(object.getClass())) {
          // target is a superclass of object's class (or they are the same)
          return object;
+      }
+      else if (type == EMPTY && !target.isPrimitive()) {
+         // target is a reference type
+         return null;
       }
       else if (target == String.class) {
          convertToString();
