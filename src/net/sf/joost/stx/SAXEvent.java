@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEvent.java,v 1.6 2002/11/03 11:35:18 obecker Exp $
+ * $Id: SAXEvent.java,v 1.7 2003/01/18 10:34:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,12 +28,13 @@ import org.xml.sax.Attributes;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.NamespaceSupport;
 
+import java.util.Enumeration;
 import java.util.Hashtable;
 
 
 /** 
  * SAXEvent stores all information attached to an incoming SAX event 
- * @version $Revision: 1.6 $ $Date: 2002/11/03 11:35:18 $
+ * @version $Revision: 1.7 $ $Date: 2003/01/18 10:34:03 $
  * @author Oliver Becker
  */
 final public class SAXEvent
@@ -55,7 +56,7 @@ final public class SAXEvent
    public String lName;
    public String qName; // PI->target, MAPPING->prefix
    public Attributes attrs;
-   public NamespaceSupport nsSupport;
+   public Hashtable namespaces;
    public String value; // PI->data, MAPPING->uri, TEXT, ATTRIBUTES as usual
 
    private Hashtable posHash;
@@ -82,7 +83,18 @@ final public class SAXEvent
       this.qName = qName;
       if (attrs != null)
          this.attrs = new AttributesImpl(attrs);
-      this.nsSupport = nsSupport;
+
+      if (nsSupport != null) {
+         // copy into a hashtable
+         this.namespaces = new Hashtable();
+         for (Enumeration e = nsSupport.getPrefixes(); e.hasMoreElements(); ) {
+            String prefix = (String)e.nextElement();
+            this.namespaces.put(prefix, nsSupport.getURI(prefix));
+         }
+         String defaultURI = nsSupport.getURI("");
+         if (defaultURI != null)
+            this.namespaces.put("", defaultURI);
+      }
    }
 
    private SAXEvent(int type, String value)

@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.29 2003/01/15 14:28:58 obecker Exp $
+ * $Id: Processor.java,v 1.30 2003/01/18 10:34:03 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -61,7 +61,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.29 $ $Date: 2003/01/15 14:28:58 $
+ * @version $Revision: 1.30 $ $Date: 2003/01/18 10:34:03 $
  * @author Oliver Becker
  */
 
@@ -743,7 +743,7 @@ public class Processor extends XMLFilterImpl
          case SAXEvent.ELEMENT:
             if((context.passThrough & PASS_THROUGH_ELEMENT) != 0)
                emitter.startElement(event.uri, event.lName, event.qName,
-                                    event.attrs, event.nsSupport,
+                                    event.attrs, event.namespaces,
                                     copyLocation.publicId,
                                     copyLocation.systemId,
                                     copyLocation.lineNo, copyLocation.colNo);

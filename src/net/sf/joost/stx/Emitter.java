@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.12 2002/11/27 15:33:54 obecker Exp $
+ * $Id: Emitter.java,v 1.13 2003/01/18 10:34:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,13 +30,13 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
-import org.xml.sax.helpers.NamespaceSupport;
 
 import java.util.EmptyStackException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Stack;
 
+import net.sf.joost.Constants;
 import net.sf.joost.emitter.StxEmitter;
 
 
@@ -44,7 +44,7 @@ import net.sf.joost.emitter.StxEmitter;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.12 $ $Date: 2002/11/27 15:33:54 $
+ * @version $Revision: 1.13 $ $Date: 2003/01/18 10:34:03 $
  * @author Oliver Becker
  */
 
@@ -218,7 +218,7 @@ public final class Emitter
 
 
    public void startElement(String uri, String lName, String qName,
-                            Attributes attrs, NamespaceSupport nsSupport,
+                            Attributes attrs, Hashtable namespaces,
                             String publicId, String systemId, 
                             int lineNo, int colNo)
       throws SAXException
@@ -236,16 +236,18 @@ public final class Emitter
          else
             lastAttrs = new AttributesImpl();
 
-         if (nsSupport != null) {
-            for (Enumeration e = nsSupport.getPrefixes();
+         if (namespaces != null) {
+            // would rather use Hashtable.putAll(), but have to exclude
+            // the STX namespace
+            for (Enumeration e = namespaces.keys();
                  e.hasMoreElements(); ) {
-               String prefix = (String)e.nextElement();
-               inScopeNamespaces.put(prefix, nsSupport.getURI(prefix));
+               String nsPrefix = (String)e.nextElement();
+               String nsURI = (String)namespaces.get(nsPrefix);
+               if (!Constants.STX_NS.equals(nsURI)) // skip STX namespace
+                  inScopeNamespaces.put(nsPrefix, namespaces.get(nsPrefix));
             }
-            String defaultNS = nsSupport.getURI("");
-            // NamespaceSupport stores the null namespace as null.
-            // We use the empty string instead
-            inScopeNamespaces.put("", defaultNS == null ? "" : defaultNS);
+            if (namespaces.get("") == null)
+               inScopeNamespaces.put("", ""); // add default null namespace
          }
          lastPublicId = publicId;
          lastSystemId = systemId;
