@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 1.16 2003/02/18 17:07:49 obecker Exp $
+ * $Id: FunctionTable.java,v 1.17 2003/02/21 14:00:51 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,8 +28,9 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import java.util.Stack;
+import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Stack;
 
 import net.sf.joost.grammar.EvalException;
 import net.sf.joost.grammar.Tree;
@@ -37,10 +38,10 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 1.16 $ $Date: 2003/02/18 17:07:49 $
+ * @version $Revision: 1.17 $ $Date: 2003/02/21 14:00:51 $
  * @author Oliver Becker
  */
-public final class FunctionTable
+final public class FunctionTable
 {
    // Log4J initialization
    private static org.apache.log4j.Logger log4j = 
@@ -66,6 +67,8 @@ public final class FunctionTable
          new LocalName(),
          new NamespaceURI(),
          new Prefix(),
+         new GetNamespaceUriForPrefix(),
+         new GetInScopeNamespaces(),
          new Not(),
          new True(),
          new False(),
@@ -138,6 +141,27 @@ public final class FunctionTable
 
 
    /**
+    * @return a value for an optional function argument. Either the
+    *         argument was present, or the current item will be used.
+    * @exception SAXException from evaluating <code>args</code> 
+    */
+   private static Value getOptionalValue(Context context, Stack events,
+                                         int top, Tree args)
+      throws SAXException
+   {
+      if (args != null)                     // argument present
+         return args.evaluate(context, events, top);
+      else if (context.currentItem != null) // current item present
+         return context.currentItem.copy();
+      else if (top > 0)                     // use current node
+         return new Value((SAXEvent)events.elementAt(top-1), top);
+      else // no event available (e.g. init of global variables)
+         return new Value();
+   }
+
+
+
+   /**
     * Type for all functions
     */
    public interface Instance
@@ -174,11 +198,14 @@ public final class FunctionTable
    /**
     * The <code>string</code> function.
     * Returns its argument converted to a string.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-string">
+    * fn:string in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class StringConv implements Instance
+   final public class StringConv implements Instance
    {
-      /** @return 1 */
-      public int getMinParCount() { return 1; }
+      /** @return 0 */
+      public int getMinParCount() { return 0; }
       /** @return 1 */
       public int getMaxParCount() { return 1; }
       /** @return "string" */
@@ -187,7 +214,8 @@ public final class FunctionTable
       public Value evaluate(Context context, Stack events, int top, Tree args)
          throws SAXException, EvalException
       {
-         return args.evaluate(context, events, top).convertToString();
+         return 
+            getOptionalValue(context, events, top, args).convertToString();
       }
    }
 
@@ -195,11 +223,14 @@ public final class FunctionTable
    /**
     * The <code>number</code> function.
     * Returns its argument converted to a number.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-number">
+    * fn:number in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class NumberConv implements Instance
+   final public class NumberConv implements Instance
    {
-      /** @return 1 */
-      public int getMinParCount() { return 1; }
+      /** @return 0 */
+      public int getMinParCount() { return 0; }
       /** @return 1 */
       public int getMaxParCount() { return 1; }
       /** @return "number" */
@@ -208,7 +239,8 @@ public final class FunctionTable
       public Value evaluate(Context context, Stack events, int top, Tree args)
          throws SAXException, EvalException
       {
-         return args.evaluate(context, events, top).convertToNumber();
+         return 
+            getOptionalValue(context, events, top, args).convertToNumber();
       }
    }
 
@@ -216,8 +248,11 @@ public final class FunctionTable
    /**
     * The <code>boolean</code> function.
     * Returns its argument converted to a boolean.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-boolean">
+    * fn:boolean in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class BooleanConv implements Instance
+   final public class BooleanConv implements Instance
    {
       /** @return 1 */
       public int getMinParCount() { return 1; }
@@ -244,7 +279,7 @@ public final class FunctionTable
     * The <code>position</code> function.
     * Returns the context position of this node.
     */
-   public class Position implements Instance
+   final public class Position implements Instance
    {
       /** @return 0 */
       public int getMinParCount() { return 0; }
@@ -264,7 +299,7 @@ public final class FunctionTable
     * The <code>current</code> function.
     * Returns the current node from the ancestor stack
     */
-   public class Current implements Instance
+   final public class Current implements Instance
    {
       /** @return 0 */
       public int getMinParCount() { return 0; }
@@ -284,7 +319,7 @@ public final class FunctionTable
     * The <code>level</code> function.
     * Returns the size of the ancestor stack for this node.
     */
-   public class Level implements Instance
+   final public class Level implements Instance
    {
       /** @return 0 */
       public int getMinParCount() { return 0; }
@@ -304,7 +339,7 @@ public final class FunctionTable
     * The <code>get-node</code> function.
     * Returns the node in the ancestor stack at a certain position
     */
-   public class GetNode implements Instance
+   final public class GetNode implements Instance
    {
       /** @return 1 */
       public int getMinParCount() { return 1; }
@@ -330,7 +365,7 @@ public final class FunctionTable
     * The <code>has-child-nodes</code> function.
     * Returns true if the context node has children (is not empty)
     */
-   public class HasChildNodes implements Instance
+   final public class HasChildNodes implements Instance
    {
       /** @return 0 */
       public int getMinParCount() { return 0; }
@@ -350,8 +385,11 @@ public final class FunctionTable
    /**
     * The <code>name</code> function.
     * Returns the qualified name of this node.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-xpath-name">
+    * fn:name in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class Name implements Instance
+   final public class Name implements Instance
    {
       /** @return 0 */
       public int getMinParCount() { return 0; }
@@ -363,27 +401,19 @@ public final class FunctionTable
       public Value evaluate(Context context, Stack events, int top, Tree args)
          throws SAXException, EvalException
       {
-         SAXEvent e;
-         if (args != null) { // one parameter
-            Value v = args.evaluate(context, events, top);
-            if (v.type == Value.EMPTY)
-               return v;
-            if (v.type != Value.NODE) 
-               throw new EvalException("The parameter passed to the name " + 
-                                       "function must be a node (found " + 
-                                       v +")");
-            e = v.event;
-         }
-         else if (top > 0) // use current node (last event)
-            e = (SAXEvent)events.elementAt(top-1);
-         else // no event available (e.g. init of global variables)
-            return new Value("");
+         Value v = getOptionalValue(context, events, top, args);
+         if (v.type == Value.EMPTY)
+            return v;
+         if (v.type != Value.NODE) 
+            throw new EvalException("The parameter passed to the name " + 
+                                    "function must be a node (got " + 
+                                    v + ")");
 
-         switch (e.type) {
+         switch (v.event.type) {
          case SAXEvent.ELEMENT:
          case SAXEvent.ATTRIBUTE:
          case SAXEvent.PI:
-            return new Value(e.qName);
+            return new Value(v.event.qName);
          default:
             return new Value("");
          }
@@ -394,8 +424,11 @@ public final class FunctionTable
    /**
     * The <code>local-name</code> function.
     * Returns the local name of this node.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-local-name">
+    * fn:local-name in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class LocalName implements Instance
+   final public class LocalName implements Instance
    {
       /** @return 0 */
       public int getMinParCount() { return 0; }
@@ -407,28 +440,20 @@ public final class FunctionTable
       public Value evaluate(Context context, Stack events, int top, Tree args)
          throws SAXException, EvalException
       {
-         SAXEvent e;
-         if (args != null) { // one parameter
-            Value v = args.evaluate(context, events, top);
-            if (v.type == Value.EMPTY)
-               return v;
-            if (v.type != Value.NODE) 
-               throw new EvalException("The parameter passed to the " +
-                                       "local-name function must be a " +
-                                       "node (found " + v +")");
-            e = v.event;
-         }
-         else if (top > 0) // use current node (last event)
-            e = (SAXEvent)events.elementAt(top-1);
-         else // no event available (e.g. init of global variables)
-            return new Value("");
+         Value v = getOptionalValue(context, events, top, args);
+         if (v.type == Value.EMPTY)
+            return v;
+         if (v.type != Value.NODE) 
+            throw new EvalException("The parameter passed to the local-" + 
+                                    "name function must be a node (got " + 
+                                    v + ")");
 
-         switch (e.type) {
+         switch (v.event.type) {
          case SAXEvent.ELEMENT:
          case SAXEvent.ATTRIBUTE:
-            return new Value(e.lName);
+            return new Value(v.event.lName);
          case SAXEvent.PI:
-            return new Value(e.qName);
+            return new Value(v.event.qName);
          default:
             return new Value("");
          }
@@ -439,8 +464,11 @@ public final class FunctionTable
    /**
     * The <code>namespace-uri</code> function.
     * Returns the namespace URI of this node.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-namespace-uri">
+    * fn:namespace-uri in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class NamespaceURI implements Instance
+   final public class NamespaceURI implements Instance
    {
       /** @return 0 */
       public int getMinParCount() { return 0; }
@@ -452,24 +480,17 @@ public final class FunctionTable
       public Value evaluate(Context context, Stack events, int top, Tree args)
          throws SAXException, EvalException
       {
-         SAXEvent e;
-         if (args != null) { // one parameter
-            Value v = args.evaluate(context, events, top);
-            if (v.type == Value.EMPTY)
-               return v;
-            if (v.type != Value.NODE) 
-               throw new EvalException("The parameter passed to the " + 
-                                       "namespace-uri function must be a " +
-                                       "node (found " + v +")");
-            e = v.event;
-         }
-         else if (top > 0) // use current node (last event)
-            e = (SAXEvent)events.elementAt(top-1);
-         else // no event available (e.g. init of global variables)
-            return new Value("");
+         Value v = getOptionalValue(context, events, top, args);
+         if (v.type == Value.EMPTY)
+            return v;
+         if (v.type != Value.NODE) 
+            throw new EvalException("The parameter passed to the " + 
+                                    "namespace-uri function must be a " + 
+                                    "node (got " + v + ")");
 
-         if (e.type == SAXEvent.ELEMENT || e.type == SAXEvent.ATTRIBUTE)
-            return new Value(e.uri);
+         if (v.event.type == SAXEvent.ELEMENT || 
+             v.event.type == SAXEvent.ATTRIBUTE)
+            return new Value(v.event.uri);
          else
             return new Value("");
       }
@@ -480,7 +501,7 @@ public final class FunctionTable
     * The <code>prefix</code> function.
     * Returns the prefix of the qualified name of this node.
     */
-   public class Prefix implements Instance
+   final public class Prefix implements Instance
    {
       /** @return 0 */
       public int getMinParCount() { return 0; }
@@ -492,31 +513,113 @@ public final class FunctionTable
       public Value evaluate(Context context, Stack events, int top, Tree args)
          throws SAXException, EvalException
       {
-         SAXEvent e;
-         if (args != null) { // one parameter
-            Value v = args.evaluate(context, events, top);
-            if (v.type == Value.EMPTY)
-               return v;
-            if (v.type != Value.NODE) 
-               throw new EvalException("The parameter passed to the " +
-                                       "prefix function must be a " +
-                                       "node (found " + v +")");
-            e = v.event;
-         }
-         else if (top > 0) // use current node (last event)
-            e = (SAXEvent)events.elementAt(top-1);
-         else // no event available (e.g. init of global variables)
-            return new Value("");
+         Value v = getOptionalValue(context, events, top, args);
+         if (v.type == Value.EMPTY)
+            return v;
+         if (v.type != Value.NODE) 
+            throw new EvalException("The parameter passed to the prefix " + 
+                                    "function must be a node (got " + v + 
+                                    ")");
 
-         switch (e.type) {
+         switch (v.event.type) {
          case SAXEvent.ELEMENT:
          case SAXEvent.ATTRIBUTE: {
-            int colon = e.qName.indexOf(':');
-            return new Value(colon == -1 ? "" : e.qName.substring(0, colon));
+            int colon = v.event.qName.indexOf(':');
+            return new Value(colon == -1 ? "" 
+                                         : v.event.qName.substring(0, colon));
          }
          default:
             return new Value("");
          }
+      }
+   }
+
+
+   /**
+    * The <code>get-namespace-uri-for-prefix</code> function.
+    * Returns the names of the in-scope namespaces for this node.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-get-namespace-uri-for-prefix">
+    * fn:get-namespace-uri-for-prefix in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
+    */
+   final public class GetNamespaceUriForPrefix implements Instance
+   {
+      /** @return 2 */
+      public int getMinParCount() { return 2; }
+      /** @return 2 */
+      public int getMaxParCount() { return 2; }
+      /** @return "get-namespace-uri-for-prefix" */
+      public String getName() { return "{}get-namespace-uri-for-prefix"; }
+
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value v = args.left.evaluate(context, events, top);
+         if (v.type != Value.NODE) 
+            throw new EvalException("The parameter passed to the " +
+                                    "get-namespace-uri-for-prefix " +
+                                    "function must be a node (got " + 
+                                    v + ")");
+         SAXEvent e = v.event;
+
+         String prefix = args.right.evaluate(context, events, top)
+                                   .convertToString().string;
+
+         if (e.namespaces == null)
+            return new Value();
+
+         String uri = (String)e.namespaces.get(prefix);
+         if (uri == null)
+            return new Value();
+         else
+            return new Value(uri);
+      }
+   }
+
+
+   /**
+    * The <code>get-in-scope-namespaces</code> function.
+    * Returns the names of the in-scope namespaces for this node.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-get-in-scope-namespaces">
+    * fn:get-in-scope-namespaces in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
+    */
+   final public class GetInScopeNamespaces implements Instance
+   {
+      /** @return 1 */
+      public int getMinParCount() { return 1; }
+      /** @return 1 */
+      public int getMaxParCount() { return 1; }
+      /** @return "get-in-scope-namespaces" */
+      public String getName() { return "{}get-in-scope-namespaces"; }
+
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value v = args.evaluate(context, events, top);
+         if (v.type != Value.NODE) 
+            throw new EvalException("The parameter passed to the " +
+                                    "get-in-scope-namespaces function " +
+                                    "must be a node (got " + v + ")");
+         SAXEvent e = v.event;
+
+         if (e.namespaces == null)
+            return new Value();
+
+         Value ret = null, last = null;
+         for (Enumeration en=e.namespaces.keys(); en.hasMoreElements(); ) {
+            v = new Value((String)en.nextElement());
+            if (last != null)
+               last.next = v;
+            else
+               ret = v;
+            last = v;
+         }
+         if (ret != null)
+            return ret;
+         else
+            // shouldn't happen: at least "xml" is always defined
+            return new Value();
       }
    }
 
@@ -529,8 +632,11 @@ public final class FunctionTable
    /**
     * The <code>not</code> function.
     * Returns the negation of its parameter.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-not">
+    * fn:not in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class Not implements Instance
+   final public class Not implements Instance
    {
       /** @return 1 **/
       public int getMinParCount() { return 1; }
@@ -552,8 +658,11 @@ public final class FunctionTable
    /**
     * The <code>true</code> function.
     * Returns the boolean value true.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-true">
+    * fn:true in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class True implements Instance
+   final public class True implements Instance
    {
       /** @return 0 **/
       public int getMinParCount() { return 0; }
@@ -573,8 +682,11 @@ public final class FunctionTable
    /**
     * The <code>false</code> function.
     * Returns the boolean value true.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-false">
+    * fn:false in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class False implements Instance
+   final public class False implements Instance
    {
       /** @return 0 **/
       public int getMinParCount() { return 0; }
@@ -599,8 +711,11 @@ public final class FunctionTable
    /**
     * The <code>floor</code> function.
     * Returns the largest integer that is not greater than the argument.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-floor">
+    * fn:floor in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class Floor implements Instance
+   final public class Floor implements Instance
    {
       /** @return 1 **/
       public int getMinParCount() { return 1; }
@@ -625,8 +740,11 @@ public final class FunctionTable
    /**
     * The <code>ceiling</code> function.
     * Returns the smallest integer that is not less than the argument.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-ceiling">
+    * fn:ceiling in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class Ceiling implements Instance
+   final public class Ceiling implements Instance
    {
       /** @return 1 **/
       public int getMinParCount() { return 1; }
@@ -651,8 +769,11 @@ public final class FunctionTable
    /**
     * The <code>round</code> function.
     * Returns the integer that is closest to the argument.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-round">
+    * fn:round in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class Round implements Instance
+   final public class Round implements Instance
    {
       /** @return 1 **/
       public int getMinParCount() { return 1; }
@@ -685,8 +806,11 @@ public final class FunctionTable
    /**
     * The <code>concat</code> function.
     * Returns the concatenation of its string parameters.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-concat">
+    * fn:concat in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class Concat implements Instance
+   final public class Concat implements Instance
    {
       /** @return 2 **/
       public int getMinParCount() { return 2; }
@@ -717,8 +841,11 @@ public final class FunctionTable
    /**
     * The <code>string-length</code> function.
     * Returns the length of its string parameter.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-string-length">
+    * fn:string-length in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class StringLength implements Instance
+   final public class StringLength implements Instance
    {
       /** @return 0 **/
       public int getMinParCount() { return 0; }
@@ -730,13 +857,7 @@ public final class FunctionTable
       public Value evaluate(Context context, Stack events, int top, Tree args)
          throws SAXException, EvalException
       {
-         Value v;
-         if (args != null)
-            v = args.evaluate(context, events, top);
-         else if (top > 0) // use current node (last event)
-            v = new Value((SAXEvent)events.elementAt(top-1), top);
-         else // no event available (e.g. init of global variables)
-            return new Value(0);
+         Value v = getOptionalValue(context, events, top, args);
          v.setNumber(v.convertToString().string.length());
          return v;
       }
@@ -746,8 +867,11 @@ public final class FunctionTable
    /**
     * The <code>normalize-space</code> function.
     * Returns its string parameter with trimmed whitespace.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-normalize-space">
+    * fn:normalize-space in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class NormalizeSpace implements Instance
+   final public class NormalizeSpace implements Instance
    {
       /** @return 0 **/
       public int getMinParCount() { return 0; }
@@ -759,17 +883,10 @@ public final class FunctionTable
       public Value evaluate(Context context, Stack events, int top, Tree args)
          throws SAXException, EvalException
       {
-         Value v;
-         if (args != null)
-            v = args.evaluate(context, events, top);
-         else if (top > 0) // use current node (last event)
-            v = new Value((SAXEvent)events.elementAt(top-1), top);
-         else // no event available (e.g. init of global variables)
-            return new Value("");
-
-         StringBuffer res = new StringBuffer();
+         Value v = getOptionalValue(context, events, top, args);
          String str = v.convertToString().string;
          int len = str.length();
+         StringBuffer res = new StringBuffer();
          boolean appended = false;
          for (int i=0; i<len; i++) {
             char c = str.charAt(i);
@@ -796,8 +913,11 @@ public final class FunctionTable
     * The <code>contains</code> function.
     * Returns <code>true</code> if the string in the first parameter
     * contains the substring provided as second parameter.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-contains">
+    * fn:contains in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class Contains implements Instance 
+   final public class Contains implements Instance 
    {
       /** @return 2 **/
       public int getMinParCount() { return 2; }
@@ -822,8 +942,11 @@ public final class FunctionTable
     * The <code>starts-with</code> function.
     * Returns <code>true</code> if the string in the first parameter
     * starts with the substring provided as second parameter.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-starts-with">
+    * fn:starts-with in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class StartsWith implements Instance 
+   final public class StartsWith implements Instance 
    {
       /** @return 2 **/
       public int getMinParCount() { return 2; }
@@ -849,8 +972,11 @@ public final class FunctionTable
     * Returns the substring from the first parameter, beginning at
     * an offset given by the second parameter with a length given
     * by an optional third parameter.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-substring">
+    * fn:substring in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class Substring implements Instance 
+   final public class Substring implements Instance 
    {
       /** @return 2 **/
       public int getMinParCount() { return 2; }
@@ -924,8 +1050,11 @@ public final class FunctionTable
     * The <code>substring-before</code> function.
     * Returns the substring from the first parameter that occurs
     * before the second parameter.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-substring-before">
+    * fn:substring-before in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class SubstringBefore implements Instance 
+   final public class SubstringBefore implements Instance 
    {
       /** @return 2 **/
       public int getMinParCount() { return 2; }
@@ -954,8 +1083,11 @@ public final class FunctionTable
     * The <code>substring-after</code> function.
     * Returns the substring from the first parameter that occurs
     * after the first occurrence of the second parameter.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-substring-after">
+    * fn:substring-after in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class SubstringAfter implements Instance 
+   final public class SubstringAfter implements Instance 
    {
       /** @return 2 **/
       public int getMinParCount() { return 2; }
@@ -985,8 +1117,11 @@ public final class FunctionTable
     * Replaces in the first parameter all characters given in the
     * second parameter by their counterparts in the third parameter
     * and returns the result.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-translate">
+    * fn:translate in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class Translate implements Instance 
+   final public class Translate implements Instance 
    {
       /** @return 3 **/
       public int getMinParCount() { return 3; }
@@ -1026,8 +1161,11 @@ public final class FunctionTable
     * The <code>empty</code> function.
     * Returns <code>true</code> if the argument is the empty sequence
     * and <code>false</code> otherwise.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-empty">
+    * fn:empty in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class Empty implements Instance
+   final public class Empty implements Instance
    {
       /** @return 1 */
       public int getMinParCount() { return 1; }
@@ -1049,8 +1187,11 @@ public final class FunctionTable
     * The <code>item-at</code> function.
     * Returns the item in the sequence (first parameter) at the specified
     * position (second parameter).
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-item-at">
+    * fn:item-at in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class ItemAt implements Instance
+   final public class ItemAt implements Instance
    {
       /** @return 2 */
       public int getMinParCount() { return 2; }
@@ -1090,8 +1231,11 @@ public final class FunctionTable
     * Returns the subsequence from the first parameter, beginning at
     * a position given by the second parameter with a length given
     * by an optional third parameter.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-subsequence">
+    * fn:subsequence in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class Subsequence implements Instance 
+   final public class Subsequence implements Instance 
    {
       /** @return 2 **/
       public int getMinParCount() { return 2; }
@@ -1171,8 +1315,11 @@ public final class FunctionTable
    /**
     * The <code>count</code> function.
     * Returns the number of items in the sequence.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-count">
+    * fn:count in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class Count implements Instance
+   final public class Count implements Instance
    {
       /** @return 1 */
       public int getMinParCount() { return 1; }
@@ -1200,8 +1347,11 @@ public final class FunctionTable
    /**
     * The <code>sum</code> function.
     * Returns the sum of all items in the sequence.
+    * @see <a target="xq1xp2fo"
+    * href="http://www.w3.org/TR/xquery-operators/#func-sum">
+    * fn:sum in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
-   public class Sum implements Instance
+   final public class Sum implements Instance
    {
       /** @return 1 */
       public int getMinParCount() { return 1; }
