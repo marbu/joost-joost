@@ -1,5 +1,5 @@
 /*
- * $Id: DebugEmitter.java,v 1.5 2004/02/18 17:28:34 zubow Exp $
+ * $Id: DebugEmitter.java,v 1.6 2004/09/29 06:21:04 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -13,33 +13,33 @@
  *
  * The Original Code is: this file
  *
- * The Initial Developer of the Original Code is Oliver Becker.
+ * The Initial Developer of the Original Code is Anatolij Zubow.
  *
  * Portions created by  ______________________
  * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________.
+ * Contributor(s): Oliver Becker.
  */
 
 package net.sf.joost.trace;
 
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.Hashtable;
+
 import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.ErrorHandlerImpl;
 import net.sf.joost.stx.SAXEvent;
-import net.sf.joost.emitter.StxEmitter;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.Locator;
-import org.xml.sax.helpers.LocatorImpl;
 
-import java.util.Hashtable;
-import java.io.Writer;
-import java.io.StringWriter;
+import org.xml.sax.Attributes;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.LocatorImpl;
 
 /**
  * Extends the {@link net.sf.joost.stx.Emitter} with debug features.
- * @version $Revision: 1.5 $ $Date: 2004/02/18 17:28:34 $
+ * @version $Revision: 1.6 $ $Date: 2004/09/29 06:21:04 $
  * @author Zubow
  */
 public class DebugEmitter extends Emitter {
@@ -94,11 +94,6 @@ public class DebugEmitter extends Emitter {
         return writer = new DebugWriter(href);
     }
 
-    public void pushEmitter(StxEmitter emitter)
-      throws SAXException {
-        //log.debug("pushing emitter " + writer.getHref());
-        super.pushEmitter(emitter);
-    }
 
     // ------------------------------------------------------------------
     // Sax-callback methods
@@ -135,7 +130,8 @@ public class DebugEmitter extends Emitter {
                              int lineNo, int colNo) throws SAXException {
         log.debug("start element in resultdoc");
         SAXEvent saxevent;
-        saxevent = SAXEvent.newElement(uri, lName, qName, attrs, namespaces);
+        saxevent = SAXEvent.newElement(uri, lName, qName, attrs, true, 
+                                       namespaces);
 
         super.startElement(uri, lName, qName, attrs,
                 namespaces, publicId, systemId, lineNo, colNo);
@@ -153,7 +149,7 @@ public class DebugEmitter extends Emitter {
         log.debug("end element in resultdoc");
         SAXEvent saxevent;
         // todo - namespace support - remove null value
-        saxevent = SAXEvent.newElement(uri, lName, qName, null, null);
+        saxevent = SAXEvent.newElement(uri, lName, qName, null, true, null);
         // update locator
         updateLocator(publicId, systemId, lineNo, colNo);
         super.endElement(uri, lName, qName, publicId, systemId, lineNo, colNo);

@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.25 2004/02/13 12:22:08 obecker Exp $
+ * $Id: Emitter.java,v 1.26 2004/09/29 06:20:36 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -19,44 +19,42 @@
  * are Copyright (C) ______ _______________________. 
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): Thomas Behrends.
  */
 
 package net.sf.joost.stx;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.ext.LexicalHandler;
-import org.xml.sax.helpers.AttributesImpl;
-import org.xml.sax.helpers.NamespaceSupport;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-
-import java.util.EmptyStackException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Stack;
 
 import net.sf.joost.Constants;
 import net.sf.joost.emitter.StxEmitter;
+import net.sf.joost.stx.helpers.MutableAttributes;
+import net.sf.joost.stx.helpers.MutableAttributesImpl;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.ext.LexicalHandler;
+import org.xml.sax.helpers.NamespaceSupport;
 
 
 /** 
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.25 $ $Date: 2004/02/13 12:22:08 $
+ * @version $Revision: 1.26 $ $Date: 2004/09/29 06:20:36 $
  * @author Oliver Becker
  */
 
 public class Emitter implements Constants
 {
-   private ContentHandler contH;
+   public ContentHandler contH;
    private LexicalHandler lexH;
    private ErrorHandlerImpl errorHandler;  // set in the constructor
 
@@ -68,12 +66,13 @@ public class Emitter implements Constants
    /** Stack for emitted start events, allows well-formedness check */
    private Stack openedElements;
 
-   /** Stack for handler objects and unprocessed elements */
-   private Stack emitterStack;
-
+   /** Previous emitter. 
+       A new one will be created for each new result event stream. */
+   public Emitter prev;
+   
    // last properties of the element 
    private String lastUri, lastLName, lastQName;
-   private AttributesImpl lastAttrs;
+   private MutableAttributes lastAttrs;
    private String lastPublicId, lastSystemId;
    private int lastLineNo, lastColNo;
 
@@ -88,11 +87,29 @@ public class Emitter implements Constants
       nsStack = new Stack();
 
       openedElements = new Stack();
-      emitterStack = new Stack();
       this.errorHandler = errorHandler;
    }
 
+   public Emitter(Emitter prev, StxEmitter handler)
+   {
+      this.prev = prev;
+      this.contH = handler;
+      this.lexH = handler;
+      
+      nsSupport = prev.nsSupport; // new NamespaceSupport();
+//       nsSupport.pushContext();
+      nsDefault = "";
+      nsStack = new Stack();
 
+      openedElements = new Stack();
+      this.errorHandler = prev.errorHandler;
+   }
+
+   public void beforeRemoval()
+   {
+//       nsSupport.popContext();
+   }
+   
    public void setContentHandler(ContentHandler handler)
    {
       contH = handler;
@@ -250,12 +267,7 @@ public class Emitter implements Constants
          lastUri = uri;
          lastLName = lName;
          lastQName = qName;
-         // Note: addAttribute() blocks if #lastAttrs was created via
-         // constructor with an empty #attrs parameter (Bug?)
-         if (attrs.getLength() != 0)
-            lastAttrs = new AttributesImpl(attrs);
-         else
-            lastAttrs = new AttributesImpl();
+         lastAttrs = new MutableAttributesImpl(attrs);
 
          if (namespaces != null) {
             // does #namespaces contain undeclared namespaces?
@@ -465,86 +477,15 @@ public class Emitter implements Constants
 
 
    /**
-    * Instructs the Emitter to output all following SAX events to a new
-    * real emitter.
-    * @param emitter the new emitter to be used
-    */
-   public void pushEmitter(StxEmitter emitter)
-      throws SAXException
-   {
-      // save old handlers
-      emitterStack.push(contH);
-      emitterStack.push(lexH);
-      // save last element
-      if (lastAttrs != null) {
-         emitterStack.push(SAXEvent.newElement(lastUri, lastLName, lastQName,
-                                               lastAttrs, null));
-         lastAttrs = null;
-      }
-      else
-         emitterStack.push(null);
-      contH = emitter;
-      lexH = emitter;
-
-      // save and reset current namespaces
-      emitterStack.push(nsSupport);
-      nsSupport = new NamespaceSupport();
-      nsDefault = "";
-
-      // save and reset current result ancestor stack
-      emitterStack.push(openedElements);
-      openedElements = new Stack();
-   }
-
-
-   /**
-    * Discards the current emitter and uses the previous handlers
-    */
-   public StxEmitter popEmitter()
-      throws SAXException
-   {
-      if (lastAttrs != null)
-         processLastElement();
-      StxEmitter ret = null;
-      if (contH instanceof StxEmitter) {
-         // save current emitter for returning
-         ret = (StxEmitter)contH;
-
-         // restore previous result ancestor stack
-         openedElements = (Stack)emitterStack.pop();
-
-         // restore previous namespaces
-         nsSupport = (NamespaceSupport)emitterStack.pop();
-         nsDefault = nsSupport.getURI("");
-         if (nsDefault == null)
-            nsDefault = "";
-
-         // restore the previous unprocessed element
-         Object obj = emitterStack.pop();
-         if (obj != null) {
-            SAXEvent e = (SAXEvent)obj;
-            lastUri = e.uri;
-            lastQName = e.qName;
-            lastLName = e.lName;
-            lastAttrs = (AttributesImpl)e.attrs;
-         }
-         // restore previous handlers
-         lexH = (LexicalHandler)emitterStack.pop();
-         contH = (ContentHandler)emitterStack.pop();
-      }
-      else
-         throw new SAXException("No StxEmitter on the emitter stack");
-
-      return ret;
-   }
-
-
-   /**
     * @return true if this emitter is in use or on the stack
     */
    public boolean isEmitterActive(StxEmitter emitter)
    {
-      return (contH == emitter) || (emitterStack.search(emitter) != -1);
+      if (contH == emitter)
+         return true;
+      if (prev != null)
+         return prev.isEmitterActive(emitter);
+      return false;
    }
 
 

@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.40 2004/08/21 21:39:13 obecker Exp $
+ * $Id: Processor.java,v 2.41 2004/09/29 06:20:36 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -19,7 +19,7 @@
  * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): Anatolij Zubow
+ * Contributor(s): Anatolij Zubow, Thomas Behrends.
  */
 
 package net.sf.joost.stx;
@@ -31,6 +31,22 @@ import java.util.Hashtable;
 import java.util.Properties;
 import java.util.Stack;
 import java.util.Vector;
+
+import javax.xml.transform.ErrorListener;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.URIResolver;
+
+import net.sf.joost.Constants;
+import net.sf.joost.TransformerHandlerResolver;
+import net.sf.joost.emitter.StxEmitter;
+import net.sf.joost.grammar.EvalException;
+import net.sf.joost.instruction.AbstractInstruction;
+import net.sf.joost.instruction.GroupBase;
+import net.sf.joost.instruction.NodeBase;
+import net.sf.joost.instruction.PSiblingsFactory;
+import net.sf.joost.instruction.ProcessBase;
+import net.sf.joost.instruction.TemplateFactory;
+import net.sf.joost.instruction.TransformFactory;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -46,28 +62,12 @@ import org.xml.sax.helpers.NamespaceSupport;
 import org.xml.sax.helpers.XMLFilterImpl;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-import javax.xml.transform.ErrorListener;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.URIResolver;
-
-import net.sf.joost.Constants;
-import net.sf.joost.TransformerHandlerResolver;
-import net.sf.joost.emitter.StxEmitter;
-import net.sf.joost.grammar.EvalException;
-import net.sf.joost.instruction.AbstractInstruction;
-import net.sf.joost.instruction.GroupBase;
-import net.sf.joost.instruction.NodeBase;
-import net.sf.joost.instruction.ProcessBase;
-import net.sf.joost.instruction.PSiblingsFactory;
-import net.sf.joost.instruction.TemplateFactory;
-import net.sf.joost.instruction.TransformFactory;
-
 
 
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.40 $ $Date: 2004/08/21 21:39:13 $
+ * @version $Revision: 2.41 $ $Date: 2004/09/29 06:20:36 $
  * @author Oliver Becker
  */
 
@@ -98,9 +98,6 @@ public class Processor extends XMLFilterImpl
 
    /** The Context object */
    private Context context;
-
-   /** The Emitter object */
-   private Emitter emitter;
 
    /** The STX Parser object */
    private Parser stxParser;
@@ -161,6 +158,8 @@ public class Processor extends XMLFilterImpl
 
    public Properties outputProperties;
 
+   private final boolean isProcessorClass = 
+      getClass().equals(Processor.class);
 
 
    // **********************************************************************
@@ -563,7 +562,7 @@ public class Processor extends XMLFilterImpl
    {
       context = new Context();
 
-      emitter = context.emitter = initializeEmitter(context, stxParser);
+      context.emitter = initializeEmitter(context, stxParser);
 
       eventStack = context.ancestorStack;
 
@@ -645,7 +644,7 @@ public class Processor extends XMLFilterImpl
     */
    public void setContentHandler(ContentHandler handler)
    {
-      emitter.setContentHandler(handler);
+      context.emitter.setContentHandler(handler);
    }
 
 
@@ -654,7 +653,7 @@ public class Processor extends XMLFilterImpl
     */
    public void setLexicalHandler(LexicalHandler handler)
    {
-      emitter.setLexicalHandler(handler);
+      context.emitter.setLexicalHandler(handler);
    }
 
 
@@ -784,7 +783,6 @@ public class Processor extends XMLFilterImpl
     * group (if specified).
     */
    public void startInnerProcessing()
-      throws SAXException
    {
       // there might be characters already read
       innerProcStack.push(collectedCharacters.toString());
@@ -914,7 +912,7 @@ public class Processor extends XMLFilterImpl
 
       while (inst != null && processStatus == PR_CONTINUE) {
          // check, if this is the original class: call process() directly
-         if (getClass().equals(Processor.class)) {
+         if (isProcessorClass) {
             while (inst != null && processStatus == PR_CONTINUE) {
                
                if (DEBUG)
@@ -1145,13 +1143,14 @@ public class Processor extends XMLFilterImpl
       else {
          // no template found, default action
          GroupBase tg = context.targetGroup;
+         Emitter emitter = context.emitter;
          switch (event.type) {
          case SAXEvent.ROOT:
             dataStack.push(new Data(dataStack.peek()));
             break;
 
          case SAXEvent.ELEMENT:
-            if((tg.passThrough & PASS_THROUGH_ELEMENT) != 0)
+            if ((tg.passThrough & PASS_THROUGH_ELEMENT) != 0)
                emitter.startElement(event.uri, event.lName, event.qName,
                                     event.attrs, event.namespaces,
                                     tg.publicId, tg.systemId,
@@ -1160,14 +1159,14 @@ public class Processor extends XMLFilterImpl
             break;
 
          case SAXEvent.TEXT:
-            if((tg.passThrough & PASS_THROUGH_TEXT) != 0) {
+            if ((tg.passThrough & PASS_THROUGH_TEXT) != 0) {
                emitter.characters(event.value.toCharArray(),
                                   0, event.value.length());
             }
             break;
 
          case SAXEvent.CDATA:
-            if((tg.passThrough & PASS_THROUGH_TEXT) != 0) {
+            if ((tg.passThrough & PASS_THROUGH_TEXT) != 0) {
                emitter.startCDATA(tg.publicId, tg.systemId,
                                   tg.lineNo, tg.colNo);
                emitter.characters(event.value.toCharArray(),
@@ -1177,7 +1176,7 @@ public class Processor extends XMLFilterImpl
             break;
 
          case SAXEvent.COMMENT:
-            if((tg.passThrough & PASS_THROUGH_COMMENT) != 0)
+            if ((tg.passThrough & PASS_THROUGH_COMMENT) != 0)
                emitter.comment(event.value.toCharArray(),
                                0, event.value.length(),
                                tg.publicId, tg.systemId,
@@ -1185,14 +1184,14 @@ public class Processor extends XMLFilterImpl
             break;
 
          case SAXEvent.PI:
-            if((tg.passThrough & PASS_THROUGH_PI) != 0)
+            if ((tg.passThrough & PASS_THROUGH_PI) != 0)
                emitter.processingInstruction(event.qName, event.value,
                                              tg.publicId, tg.systemId,
                                              tg.lineNo, tg.colNo);
             break;
 
          case SAXEvent.ATTRIBUTE:
-            if((tg.passThrough & PASS_THROUGH_ATTRIBUTE) != 0)
+            if ((tg.passThrough & PASS_THROUGH_ATTRIBUTE) != 0)
                emitter.addAttribute(event.uri, event.qName, event.lName,
                                     event.value,
                                     tg.publicId, tg.systemId,
@@ -1366,9 +1365,8 @@ public class Processor extends XMLFilterImpl
       // find last of these consecutive stx:process-siblings instructions
       Data data, stopData = null;;
       for (int i=dataStack.size()-1;
-           (data = dataStack.elementAt(i)).lastProcStatus ==
-              PR_SIBLINGS;
-           i-- ) {
+           (data = dataStack.elementAt(i)).lastProcStatus == PR_SIBLINGS;
+           i--) {
          stopData = data;
       }
       if (stopData != null) // yep, found at least one
@@ -1556,7 +1554,7 @@ public class Processor extends XMLFilterImpl
       if (innerProcStack.empty()) {
          // initialize all group stx:variables
          transformNode.initGroupVariables(context);
-         emitter.startDocument();
+         context.emitter.startDocument();
       }
       else { // stx:process-document
          innerProcStack.push(eventStack);
@@ -1633,10 +1631,12 @@ public class Processor extends XMLFilterImpl
          else {
             eventStack.pop();
 
-            if (innerProcStack.empty())
-               emitter.endDocument(transformNode.publicId,
+            if (innerProcStack.empty()) {
+               transformNode.exitRecursionLevel(context);
+               context.emitter.endDocument(transformNode.publicId,
                                    transformNode.systemId,
                                    transformNode.lineNo, transformNode.colNo);
+            }
             else
                eventStack = context.ancestorStack =
                             (Stack)innerProcStack.pop();
@@ -1672,7 +1672,7 @@ public class Processor extends XMLFilterImpl
          return;
       }
 
-      lastElement = SAXEvent.newElement(uri, lName, qName, attrs, 
+      lastElement = SAXEvent.newElement(uri, lName, qName, attrs, false,
                                         inScopeNamespaces);
 
       if (!nsContextActive) {
@@ -1719,7 +1719,7 @@ public class Processor extends XMLFilterImpl
          if (data.template == null) {
             // perform default action?
             if ((data.targetGroup.passThrough & PASS_THROUGH_ELEMENT) != 0)
-               emitter.endElement(uri, lName, qName,
+               context.emitter.endElement(uri, lName, qName,
                                   data.targetGroup.publicId,
                                   data.targetGroup.systemId,
                                   data.targetGroup.lineNo,
@@ -2022,7 +2022,7 @@ public class Processor extends XMLFilterImpl
      * @return the emitter
      */
     public Emitter getEmitter() {
-        return this.emitter;
+        return context.emitter;
     }
 
     /**
