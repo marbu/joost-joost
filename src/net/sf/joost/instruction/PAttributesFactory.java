@@ -1,5 +1,5 @@
 /*
- * $Id: PAttributesFactory.java,v 1.5 2002/12/23 08:25:24 obecker Exp $
+ * $Id: PAttributesFactory.java,v 1.6 2003/01/27 08:24:25 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,15 +33,15 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Stack;
 
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.SAXEvent;
 
 
 /**
  * Factory for <code>process-attributes</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.5 $ $Date: 2002/12/23 08:25:24 $
+ * @version $Revision: 1.6 $ $Date: 2003/01/27 08:24:25 $
  * @author Oliver Becker
  */
 
@@ -129,21 +129,23 @@ public class PAttributesFactory extends FactoryBase
                   "Unknown target group `" + groupQName + 
                   "' specified for `" + qName + "'", 
                   publicId, systemId, lineNo, colNo);
-               return processStatus; // if the errorHandler returns
+               // recover: ignore group attribute
             }
-            // change to a new base group for matching
-            context.nextProcessGroup = groupExpName;
+            else {
+               // change to a new base group for matching
+               context.nextProcessGroup = groupExpName;
+            }
          }
 
          SAXEvent event = (SAXEvent)eventStack.peek();
 
-         if (event.type != SAXEvent.ELEMENT)
-            // current event is not an element: nothing to do
+         if (event.type != SAXEvent.ELEMENT || event.attrs.getLength() == 0) {
+            // current event is not an element or no attributes present:
+            // nothing to do ...
+            // almost: first clean up the parameter stack
+            super.process(emitter, eventStack, context, ST_ATTRIBUTES);
             return processStatus;
-
-         if (event.attrs.getLength() == 0)
-            // no attributes present: nothing to do
-            return processStatus;
+         }
 
          log4j.debug("Status: " + processStatus);
 
