@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.15 2002/11/06 16:45:20 obecker Exp $
+ * $Id: Processor.java,v 1.16 2002/11/07 11:09:24 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -62,7 +62,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.15 $ $Date: 2002/11/06 16:45:20 $
+ * @version $Revision: 1.16 $ $Date: 2002/11/07 11:09:24 $
  * @author Oliver Becker
  */
 
@@ -159,6 +159,14 @@ public class Processor extends XMLFilterImpl
 
    /** Stack for {@link Data} objects */
    private Stack dataStack = new Stack();
+
+   /** 
+    * Stack for ancestor stacks ({@link #eventStack},
+    * needed for the processing of buffers, because each buffer has
+    * its own ancestor stack. 
+    */
+   private Stack bufferStack = new Stack();
+
 
    // **********************************************************************
    /**
@@ -499,7 +507,8 @@ public class Processor extends XMLFilterImpl
    {
       if (!name.startsWith("{"))
          name = "{}" + name;
-      return transformNode.globalParams.get(name);
+      Value param = (Value)transformNode.globalParams.get(name);
+      return param != null ? param.convertToString().string : null;
    }
 
    /**
@@ -805,6 +814,30 @@ public class Processor extends XMLFilterImpl
    }
 
 
+   /**
+    * Starts the processing of a new buffer and creates a new ancestor
+    * stack.
+    */
+   public void startBuffer()
+      throws SAXException
+   {
+      bufferStack.push(eventStack);
+      eventStack = new Stack();
+      startDocument();
+   }
+
+
+   /**
+    * Ends the processing of a buffer by restoring the old ancestor stack.
+    */
+   public void endBuffer()
+      throws SAXException
+   {
+      endDocument();
+      eventStack = (Stack)bufferStack.pop();
+   }
+
+
 
    //
    // from interface ContentHandler
@@ -816,18 +849,14 @@ public class Processor extends XMLFilterImpl
 
       // perform this only once (in case of a stx:process-self statement)
       if (eventStack.empty()) {
-         // initialize all group stx:variables
-         transformNode.initGroupVariables(emitter, eventStack, context);
-//           if (!transformNode.globalParams.isEmpty()) {
-//              String msg = "Supernumerous parameters specified: ";
-//              for (Enumeration e = transformNode.globalParams.keys();
-//                   e.hasMoreElements();)
-//                 msg += e.nextElement() + " ";
-//              context.errorHandler.warning(msg, null);
-//           }
-
+         // perform this only at the begin of a transformation,
+         // not at the begin of processing a buffer
+         if (bufferStack.empty()) {
+            // initialize all group stx:variables
+            transformNode.initGroupVariables(emitter, eventStack, context);
+            emitter.startDocument();
+         }
          eventStack.push(SAXEvent.newRoot());
-         emitter.startDocument();
       }
 
       TemplateFactory.Instance temp = findMatchingTemplate();
@@ -883,10 +912,11 @@ public class Processor extends XMLFilterImpl
          if ((((Data)dataStack.peek()).lastProcStatus & ST_SELF) != 0)
             endDocument(); // recurse (process-self)
          else {
-            emitter.endDocument(context,
-                                transformNode.publicId, 
-                                transformNode.systemId,
-                                transformNode.lineNo, transformNode.colNo);
+            if (bufferStack.empty())
+               emitter.endDocument(context,
+                                   transformNode.publicId, 
+                                   transformNode.systemId,
+                                   transformNode.lineNo, transformNode.colNo);
             if (log4j.isDebugEnabled())
                log4j.debug("eventStack.pop " + eventStack.pop());
             else
@@ -896,10 +926,11 @@ public class Processor extends XMLFilterImpl
       else {
          if (skipDepth != 1)
             log4j.error("skipDepth != 1");
-         emitter.endDocument(context,
-                             transformNode.publicId, 
-                             transformNode.systemId,
-                             transformNode.lineNo, transformNode.colNo);
+         if (bufferStack.empty())
+            emitter.endDocument(context,
+                                transformNode.publicId, 
+                                transformNode.systemId,
+                                transformNode.lineNo, transformNode.colNo);
          if (log4j.isDebugEnabled())
             log4j.debug("eventStack.pop " + eventStack.pop());
          else
