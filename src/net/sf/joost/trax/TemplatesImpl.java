@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.19 2004/09/19 13:41:38 obecker Exp $
+ * $Id: TemplatesImpl.java,v 1.20 2004/10/03 19:06:38 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -64,7 +64,7 @@ public class TemplatesImpl implements Templates, TrAXConstants {
     private Processor processor             = null;
 
     /**
-     * Synch object to gaurd against setting values from the TrAX interface
+     * Synch object to guard against setting values from the TrAX interface
      * or reentry while the transform is going on.
      */
     private Boolean reentryGuard = new Boolean(true);
