@@ -1,5 +1,5 @@
 /*
- * $Id: TraceListener.java,v 1.4 2004/02/03 18:22:27 zubow Exp $
+ * $Id: TraceListener.java,v 1.5 2004/09/19 13:36:42 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -13,28 +13,19 @@
  *
  * The Original Code is: this file
  *
- * The Initial Developer of the Original Code is Oliver Becker.
+ * The Initial Developer of the Original Code is Anatolij Zubow.
  *
  * Portions created by  ______________________
  * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________.
+ * Contributor(s): Oliver Becker.
  */
 
 package net.sf.joost.trace;
 
-import net.sf.joost.stx.Context;
-import net.sf.joost.stx.SAXEvent;
-import net.sf.joost.instruction.NodeBase;
 import net.sf.joost.instruction.AbstractInstruction;
-
-import java.util.Stack;
-import java.util.Hashtable;
-
-import org.xml.sax.Attributes;
-
-import net.sf.joost.stx.Processor;
+import net.sf.joost.stx.SAXEvent;
 
 /**
  * The STX processor calls this interface when it matches a source node,
@@ -43,7 +34,7 @@ import net.sf.joost.stx.Processor;
  * {@link net.sf.joost.trax.TransformerImpl} with the help of the
  * {@link net.sf.joost.trace.TraceManager}
  * {@link net.sf.joost.trax.TransformerImpl#getTraceManager()}.
- * @version $Revision: 1.4 $ $Date: 2004/02/03 18:22:27 $
+ * @version $Revision: 1.5 $ $Date: 2004/09/19 13:36:42 $
  * @author Zubow
  */
 public interface TraceListener {

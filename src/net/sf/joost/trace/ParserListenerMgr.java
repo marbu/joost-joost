@@ -1,5 +1,5 @@
 /*
- * $Id: ParserListenerMgr.java,v 1.2 2004/02/03 18:22:27 zubow Exp $
+ * $Id: ParserListenerMgr.java,v 1.3 2004/09/19 13:36:42 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,14 +24,13 @@
 
 package net.sf.joost.trace;
 
-import net.sf.joost.stx.ParserListener;
-import net.sf.joost.instruction.AbstractInstruction;
-import net.sf.joost.instruction.NodeBase;
-import net.sf.joost.trax.TransformerImpl;
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TooManyListenersException;
-import java.util.ArrayList;
+
+import net.sf.joost.instruction.NodeBase;
+import net.sf.joost.stx.ParserListener;
+import net.sf.joost.trax.TransformerImpl;
 
 /**
  * This class implements the {@link ParserListener}-Interface for
