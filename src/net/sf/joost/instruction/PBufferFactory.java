@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 1.14 2003/03/04 18:21:37 obecker Exp $
+ * $Id: PBufferFactory.java,v 1.15 2003/03/18 14:53:15 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.14 $ $Date: 2003/03/04 18:21:37 $
+ * @version $Revision: 1.15 $ $Date: 2003/03/18 14:53:15 $
  * @author Oliver Becker
  */
 
@@ -127,13 +127,6 @@ public class PBufferFactory extends FactoryBase
          if (buffer == null) {
             context.errorHandler.error(
                "Can't process an undeclared buffer `" + bufName + "'",
-               publicId, systemId, lineNo, colNo);
-            return processStatus; // if the errorHandler returns
-         }
-
-         if (emitter.isEmitterActive((BufferEmitter)buffer)) {
-            context.errorHandler.error(
-               "Can't process active buffer `" + bufName + "'",
                publicId, systemId, lineNo, colNo);
             return processStatus; // if the errorHandler returns
          }
