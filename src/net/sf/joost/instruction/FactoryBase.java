@@ -1,5 +1,5 @@
 /*
- * $Id: FactoryBase.java,v 1.2 2002/09/10 07:33:07 obecker Exp $
+ * $Id: FactoryBase.java,v 1.3 2002/11/02 15:09:51 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.grammar.ExprParser;
 /**
  * Abstract base class for all factory classes which produce nodes
  * ({@link NodeBase}) for the tree representation of an STX stylesheet.
- * @version $Revision: 1.2 $ $Date: 2002/09/10 07:33:07 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/02 15:09:51 $
  * @author Oliver Becker
  */
 
@@ -87,6 +87,54 @@ public abstract class FactoryBase
                                      name + "' attribute", locator);
 
       return att;
+   }
+
+
+   /**
+    * Attribute values "yes" and "no"
+    */
+   static protected final String[] YESNO_VALUES = { "yes", "no" };
+
+   /**
+    * Looks for the attribute <code>name</code> in <code>attrs</code>
+    * and checks if the value is among the values of <code>enumValues</code>.
+    * @param name the name of the attribute to look for
+    * @param attrs the attribute set
+    * @param enumValues allowed attribute values
+    * @param locator the SAX Locator
+    * @return the index of the attribute value in <code>enumValues</code>,
+    *    -1 if the attribute isn't present in <code>attrs</code>
+    * @exception SAXParseException if the attribute value isn't in
+    *    <code>enumValues</code>
+    */
+   protected static int getEnumAttValue(String name, Attributes attrs,
+                                        String[] enumValues, Locator locator)
+      throws SAXParseException
+   {
+      String value = attrs.getValue(name);
+      if (value == null)
+         return -1; // attribute not present
+
+      value = value.trim();
+      for (int i=0; i<enumValues.length; i++)
+         if (enumValues[i].equals(value))
+            return i;
+
+      // wrong attribute value
+      if (enumValues.length == 2)
+         throw new SAXParseException(
+            "Value of attribute `" + name + "' must be either `" +
+            enumValues[0] + "' or `" + enumValues[1] + "' (found `" +
+            value + "')",
+            locator);
+      else {
+         String msg = "Value of attribute `" + name + "' must be one of ";
+         for (int i=0; i<enumValues.length-1; i++)
+            msg += "`" + enumValues[i] + "', ";
+         msg += "or `" + enumValues[enumValues.length-1] + "' (found `" +
+                value + "')";
+         throw new SAXParseException(msg, locator);
+      }
    }
 
 
