@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEmitter.java,v 1.6 2004/10/22 08:04:43 obecker Exp $
+ * $Id: SAXEmitter.java,v 1.7 2004/10/25 20:39:33 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,8 +25,8 @@
 
 package net.sf.joost.emitter;
 
-import net.sf.joost.OptionalLog;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
@@ -44,7 +44,11 @@ public class SAXEmitter implements StxEmitter {
 
     // Define a static logger variable so that it references the
     // Logger instance named "SAXEmitter".
-    private static Object log = OptionalLog.getLog(SAXEmitter.class);
+    private static Log log;
+    static {
+        if (DEBUG)
+            log = LogFactory.getLog(SAXEmitter.class);
+    }
 
     /**
      * A SAXResult, so SAXEmitter acts as a proxy und propagates the events to
@@ -60,7 +64,7 @@ public class SAXEmitter implements StxEmitter {
     public SAXEmitter(ContentHandler saxSourceHandler) {
 
         if (DEBUG)
-            ((org.apache.commons.logging.Log)log).debug("init SAXEmitter");
+            log.debug("init SAXEmitter");
         this.saxSourceHandler = saxSourceHandler;
 
     }

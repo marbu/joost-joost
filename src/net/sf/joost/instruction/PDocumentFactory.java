@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 2.12 2004/10/24 18:00:16 obecker Exp $
+ * $Id: PDocumentFactory.java,v 2.13 2004/10/25 20:39:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -54,7 +54,7 @@ import org.xml.sax.ext.LexicalHandler;
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.12 $ $Date: 2004/10/24 18:00:16 $
+ * @version $Revision: 2.13 $ $Date: 2004/10/25 20:39:33 $
  * @author Oliver Becker
  */
 
@@ -63,12 +63,8 @@ public class PDocumentFactory extends FactoryBase
    /** allowed attributes for this element */
    private HashSet attrNames;
 
-   private static Object log;
-   static {
-      if (DEBUG) 
-         // Log initialization
-         log = OptionalLog.getLog(PDocumentFactory.class);
-   }
+   // Log initialization
+   private static Log log = OptionalLog.getLog(PDocumentFactory.class);
 
 
    // 
@@ -212,7 +208,7 @@ public class PDocumentFactory extends FactoryBase
                      }
                      catch (SAXException ex) {
                         if (log != null)
-                           ((Log)log).warn("Accessing " + reader + ": " + ex);
+                           log.warn("Accessing " + reader + ": " + ex);
                         context.errorHandler.warning(
                            "Accessing " + reader + ": " + ex,
                            publicId, systemId, lineNo, colNo);
@@ -244,7 +240,7 @@ public class PDocumentFactory extends FactoryBase
                   }
                   catch (SAXException ex) {
                      if (log != null)
-                        ((Log)log).warn("Accessing " + reader + ": " + ex);
+                        log.warn("Accessing " + reader + ": " + ex);
                      context.errorHandler.warning(
                         "Accessing " + reader + ": " + ex,
                         publicId, systemId, lineNo, colNo);

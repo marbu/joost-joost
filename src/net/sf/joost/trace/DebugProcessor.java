@@ -1,5 +1,5 @@
 /*
- * $Id: DebugProcessor.java,v 1.16 2004/10/24 20:40:37 obecker Exp $
+ * $Id: DebugProcessor.java,v 1.17 2004/10/25 20:39:34 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -42,6 +42,7 @@ import net.sf.joost.stx.Processor;
 import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.trax.TransformerImpl;
 
+import org.apache.commons.logging.Log;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -50,7 +51,7 @@ import org.xml.sax.XMLReader;
 
 /**
  * Extends the {@link net.sf.joost.stx.Processor} with debug features.
- * @version $Revision: 1.16 $ $Date: 2004/10/24 20:40:37 $
+ * @version $Revision: 1.17 $ $Date: 2004/10/25 20:39:34 $
  * @author Zubow
  */
 public class DebugProcessor extends Processor {
@@ -67,7 +68,7 @@ public class DebugProcessor extends Processor {
     private Locator locator;
 
     /** logger */
-    private static Object log =  OptionalLog.getLog(DebugProcessor.class);
+    private static Log log =  OptionalLog.getLog(DebugProcessor.class);
 
     /**
      * See {@link net.sf.joost.stx.Processor#Processor(net.sf.joost.stx.Processor)}
@@ -152,8 +153,7 @@ public class DebugProcessor extends Processor {
      */
     protected Emitter initializeEmitter(Context ctx, Parser parser) {
         if (log != null)
-            ((org.apache.commons.logging.Log)log).info(
-                "initialize DebugProcessor ...");
+            log.info("initialize DebugProcessor ...");
         // save reference to stx-parser for nssupport, ...
         this.stxparser = parser;
         return new DebugEmitter(ctx.errorHandler);

@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesHandlerImpl.java,v 1.9 2004/10/24 20:40:41 obecker Exp $
+ * $Id: TemplatesHandlerImpl.java,v 1.10 2004/10/25 20:39:34 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -29,10 +29,11 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.TemplatesHandler;
 
-import net.sf.joost.OptionalLog;
+import net.sf.joost.Constants;
 import net.sf.joost.stx.Parser;
 
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 
@@ -45,12 +46,15 @@ import org.xml.sax.Locator;
  *
  * @author Zubow
  */
-public class TemplatesHandlerImpl implements TemplatesHandler {
+public class TemplatesHandlerImpl implements TemplatesHandler, Constants {
 
     // Define a static logger variable so that it references the
     // Logger instance named "TemplatesHandlerImpl".
-    private static Object log = 
-        OptionalLog.getLog(TemplatesHandlerImpl.class);
+    private static Log log;
+    static {
+        if (DEBUG)
+            log = LogFactory.getLog(TemplatesHandlerImpl.class);
+    }
 
     // member fields
     private Parser stxparser                = null;
@@ -64,8 +68,8 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
      */
     protected TemplatesHandlerImpl(TransformerFactoryImpl tfactory) {
 
-        if (log != null)
-            ((Log)log).debug("calling constructor");
+        if (DEBUG)
+            log.debug("calling constructor");
         this.tfactory = tfactory;
         // construct a tree representation of an STX stylesheet
         stxparser = new Parser();
@@ -96,8 +100,8 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
      */
     public Templates getTemplates() {
 
-        if (log != null)
-            ((Log)log).debug("calling getTemplates()");
+        if (DEBUG)
+            log.debug("calling getTemplates()");
         Templates templates = null;
         try {
             // construct TrAX-representation of an compiled STX stylesheet

@@ -1,5 +1,5 @@
 /*
- * $Id: DOMEmitter.java,v 1.4 2004/10/22 08:04:43 obecker Exp $
+ * $Id: DOMEmitter.java,v 1.5 2004/10/25 20:39:33 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -30,8 +30,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import net.sf.joost.OptionalLog;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -53,7 +53,12 @@ public class DOMEmitter implements StxEmitter {
 
     // Define a static logger variable so that it references the
     // Logger instance named "DOMEmitter".
-    private static Object log = OptionalLog.getLog(DOMEmitter.class);
+    private static Log log;
+    static {
+        if (DEBUG)
+            log = LogFactory.getLog(DOMEmitter.class);
+    }
+    
 
     private boolean rootElement         = false;
     private DocumentBuilder docBuilder  = null;
@@ -69,7 +74,7 @@ public class DOMEmitter implements StxEmitter {
     public DOMEmitter() throws ParserConfigurationException {
 
         if (DEBUG)
-            ((org.apache.commons.logging.Log)log).debug("init DOMEmitter");
+            log.debug("init DOMEmitter");
 
         //getting DocumentBuilder
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();

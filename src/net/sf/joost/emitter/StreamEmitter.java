@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.22 2004/10/22 08:04:43 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.23 2004/10/25 20:39:33 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -46,14 +46,14 @@ import org.xml.sax.SAXException;
 
 /**
  * Base class for emitter classes that produce a character stream.
- * @version $Revision: 1.22 $ $Date: 2004/10/22 08:04:43 $
+ * @version $Revision: 1.23 $ $Date: 2004/10/25 20:39:33 $
  * @author Oliver Becker
  */
 public abstract class StreamEmitter
    implements StxEmitter
 {
    // Log initialization
-   private static Object log = OptionalLog.getLog(StreamEmitter.class);
+   private static Log log = OptionalLog.getLog(StreamEmitter.class);
 
 
    /** Writer for the resulting text */
@@ -107,7 +107,7 @@ public abstract class StreamEmitter
          String msg = "Unsupported output method `" + outputMethod + 
                       "', use default `xml' method instead"; 
          if (log != null)
-            ((Log)log).warn(msg);
+            log.warn(msg);
          else
             System.err.println("Warning: " + msg);
       }
@@ -147,7 +147,7 @@ public abstract class StreamEmitter
          String msg = "Unsupported encoding " + encoding + ", using " +
                       DEFAULT_ENCODING;
          if (log != null)
-            ((Log)log).warn(msg);
+            log.warn(msg);
          else
             System.err.println("Warning: " + msg);
          writer = new OutputStreamWriter(out, DEFAULT_ENCODING);

@@ -1,5 +1,5 @@
 /*
- * $Id: OptionalLog.java,v 1.1 2004/10/21 18:20:02 obecker Exp $
+ * $Id: OptionalLog.java,v 1.2 2004/10/25 20:39:33 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,6 +25,8 @@ package net.sf.joost;
 
 import java.lang.reflect.Method;
 
+import org.apache.commons.logging.Log;
+
 /**
  * Provides a helper class that optionally initializes the Commons Logging
  * facility. If <code>org.apache.commons.logging.LogFactory</code> is present
@@ -33,7 +35,7 @@ import java.lang.reflect.Method;
  * method returns <code>null</code>. This approach prevents a
  * <code>NoClassDefFoundError</code> in case logging is not available.
  *  
- * @version $Revision: 1.1 $ $Date: 2004/10/21 18:20:02 $
+ * @version $Revision: 1.2 $ $Date: 2004/10/25 20:39:33 $
  * @author Oliver Becker
  */
 public final class OptionalLog
@@ -58,12 +60,12 @@ public final class OptionalLog
     * Returns a <code>org.apache.commons.logging.Log</log> object if this
     * class is available, otherwise <code>null</code>
     */
-   public static Object getLog(Class _class)
+   public static Log getLog(Class _class)
    {
       if (getLogMethod != null) {
          Object[] params = { _class };
          try {
-            return getLogMethod.invoke(null, params);
+            return (Log)getLogMethod.invoke(null, params);
          }
          catch (Throwable t) {
             // Shouldn't happen ...

@@ -1,5 +1,5 @@
 /*
- * $Id: DebugEmitter.java,v 1.8 2004/10/24 18:00:42 obecker Exp $
+ * $Id: DebugEmitter.java,v 1.9 2004/10/25 20:39:34 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -42,13 +42,13 @@ import org.xml.sax.helpers.LocatorImpl;
 
 /**
  * Extends the {@link net.sf.joost.stx.Emitter} with debug features.
- * @version $Revision: 1.8 $ $Date: 2004/10/24 18:00:42 $
+ * @version $Revision: 1.9 $ $Date: 2004/10/25 20:39:34 $
  * @author Zubow
  */
 public class DebugEmitter extends Emitter {
 
     /** logger */
-    private static Object log = OptionalLog.getLog(DebugEmitter.class);
+    private static Log log = OptionalLog.getLog(DebugEmitter.class);
 
     /** for dynamic tracing */
     private TraceManager tmgr;
@@ -111,7 +111,7 @@ public class DebugEmitter extends Emitter {
                                  int lineNo, int colNo)
       throws java.io.IOException, SAXException {
         if (log != null)
-            ((Log)log).debug("requesting writer for " + href);
+            log.debug("requesting writer for " + href);
         return writer = new DebugWriter(href);
     }
 
@@ -125,7 +125,7 @@ public class DebugEmitter extends Emitter {
      */
     public void startDocument() throws SAXException {
         if (log != null)
-            ((Log)log).debug("start resultdocument");
+            log.debug("start resultdocument");
         // update locator
         updateLocator(null, null, -1, -1);
         this.tmgr.fireStartResultDocument();
@@ -137,7 +137,7 @@ public class DebugEmitter extends Emitter {
     public void endDocument(String publicId, String systemId,
                             int lineNo, int colNo) throws SAXException {
         if (log != null)
-            ((Log)log).debug("end resultdocument");
+            log.debug("end resultdocument");
         super.endDocument(publicId, systemId, lineNo, colNo);
         // update locator
         updateLocator(publicId, systemId, lineNo, colNo);
@@ -152,7 +152,7 @@ public class DebugEmitter extends Emitter {
                              String publicId, String systemId,
                              int lineNo, int colNo) throws SAXException {
         if (log != null)
-            ((Log)log).debug("start element in resultdoc");
+            log.debug("start element in resultdoc");
         SAXEvent saxevent;
         saxevent = SAXEvent.newElement(uri, lName, qName, attrs, true, 
                                        namespaces);
@@ -171,7 +171,7 @@ public class DebugEmitter extends Emitter {
                            String publicId, String systemId,
                            int lineNo, int colNo) throws SAXException {
         if (log != null)
-            ((Log)log).debug("end element in resultdoc");
+            log.debug("end element in resultdoc");
         SAXEvent saxevent;
         // todo - namespace support - remove null value
         saxevent = SAXEvent.newElement(uri, lName, qName, null, true, null);
@@ -187,7 +187,7 @@ public class DebugEmitter extends Emitter {
     public void characters(char[] ch, int start, int length)
             throws SAXException {
         if (log != null)
-            ((Log)log).debug("characters in resultdoc");
+            log.debug("characters in resultdoc");
         SAXEvent saxevent;
         saxevent = SAXEvent.newText(new String(ch, start, length));
         super.characters(ch, start, length);
@@ -203,7 +203,7 @@ public class DebugEmitter extends Emitter {
                                       String publicId, String systemId,
                                       int lineNo, int colNo) throws SAXException {
         if (log != null)
-            ((Log)log).debug("processingInstruction in resultdoc");
+            log.debug("processingInstruction in resultdoc");
         SAXEvent saxevent;
         saxevent = SAXEvent.newPI(target, data);
         super.processingInstruction(target, data, publicId, systemId, lineNo, colNo);
@@ -219,7 +219,7 @@ public class DebugEmitter extends Emitter {
                         String publicId, String systemId,
                         int lineNo, int colNo) throws SAXException {
         if (log != null)
-            ((Log)log).debug("comment in resultdoc");
+            log.debug("comment in resultdoc");
         SAXEvent saxevent;
         saxevent = SAXEvent.newComment(new String(ch, start, length));
         super.comment(ch, start, length, publicId, systemId, lineNo, colNo);
@@ -234,7 +234,7 @@ public class DebugEmitter extends Emitter {
     public void startCDATA(String publicId, String systemId,
                            int lineNo, int colNo) throws SAXException {
         if (log != null)
-            ((Log)log).debug("start CDATA in resultdoc");
+            log.debug("start CDATA in resultdoc");
         super.startCDATA(publicId, systemId, lineNo, colNo);
         // update locator
         updateLocator(publicId, systemId, lineNo, colNo);
@@ -246,7 +246,7 @@ public class DebugEmitter extends Emitter {
      */
     public void endCDATA() throws SAXException {
         if (log != null)
-            ((Log)log).debug("end CDATA in resultdoc");
+            log.debug("end CDATA in resultdoc");
         super.endCDATA();
         // update locator
         updateLocator(null, null, -1, -1);
@@ -259,7 +259,7 @@ public class DebugEmitter extends Emitter {
     private void updateLocator(String publicId, String systemId,
                                int lineNo, int colNo) {
         if (log != null)
-            ((Log)log).debug("update emitterlocator " + publicId + " "
+            log.debug("update emitterlocator " + publicId + " "
                              + systemId + " " + lineNo + "," + colNo);
         locator.setPublicId(publicId);
         locator.setSystemId(systemId);

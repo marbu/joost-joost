@@ -1,5 +1,5 @@
 /*
- * $Id: TextEmitter.java,v 1.2 2004/10/22 08:04:43 obecker Exp $
+ * $Id: TextEmitter.java,v 1.3 2004/10/25 20:39:33 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -36,13 +36,13 @@ import org.xml.sax.SAXException;
 /**
  * This class implements an emitter that uses the <code>text</code> output
  * method for byte or character streams.
- * @version $Revision: 1.2 $ $Date: 2004/10/22 08:04:43 $
+ * @version $Revision: 1.3 $ $Date: 2004/10/25 20:39:33 $
  * @author Oliver Becker, Anatolij Zubow
  */
 public class TextEmitter extends StreamEmitter 
 {
    // Log initialization
-   private static Object log = OptionalLog.getLog(TextEmitter.class);
+   private static Log log = OptionalLog.getLog(TextEmitter.class);
 
 
    /** Constructor */
@@ -67,7 +67,7 @@ public class TextEmitter extends StreamEmitter
       } 
       catch (IOException ex) {
          if (log != null)
-            ((Log)log).error(ex);
+            log.error(ex);
          throw new SAXException(ex);
       }
    }
@@ -101,11 +101,11 @@ public class TextEmitter extends StreamEmitter
       try {
          writer.write(ch, start, length);
          if (DEBUG)
-            ((Log)log).debug("`" + new String(ch, start, length) + "'");
+            log.debug("`" + new String(ch, start, length) + "'");
       } 
       catch (IOException ex) {
          if (log != null)
-            ((Log)log).error(ex);
+            log.error(ex);
          throw new SAXException(ex);
       }
    }

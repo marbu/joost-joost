@@ -1,5 +1,5 @@
 /*
- * $Id: CopyFactory.java,v 2.8 2004/10/24 18:00:16 obecker Exp $
+ * $Id: CopyFactory.java,v 2.9 2004/10/25 20:39:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,6 +32,7 @@ import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.SAXEvent;
 
+import org.apache.commons.logging.Log;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -40,7 +41,7 @@ import org.xml.sax.helpers.AttributesImpl;
 /** 
  * Factory for <code>copy</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.8 $ $Date: 2004/10/24 18:00:16 $
+ * @version $Revision: 2.9 $ $Date: 2004/10/25 20:39:33 $
  * @author Oliver Becker
  */
 
@@ -52,13 +53,8 @@ final public class CopyFactory extends FactoryBase
    /** empty attribute list (needed as parameter for startElement) */
    private static Attributes emptyAttList = new AttributesImpl();
 
-
-   private static Object log;
-   static {
-      if (DEBUG)
-         // Log initialization
-         log = OptionalLog.getLog(CopyFactory.class);
-   }
+   // Log initialization
+   private static Log log = OptionalLog.getLog(CopyFactory.class);
 
 
    // Constructor
@@ -80,7 +76,7 @@ final public class CopyFactory extends FactoryBase
       throws SAXParseException
    {
       String attributesAtt = attrs.getValue("attributes");
-      Tree attributesPattern = (attributesAtt != null )
+      Tree attributesPattern = (attributesAtt != null)
          ? parsePattern(attributesAtt, context)
          : null;
 
@@ -203,8 +199,7 @@ final public class CopyFactory extends FactoryBase
             break;
          default:
             if (log != null)
-               ((org.apache.commons.logging.Log)log).error(
-                  "Unknown SAXEvent type " + event.type);
+               log.error("Unknown SAXEvent type " + event.type);
             throw new SAXParseException("Unknown SAXEvent type",
                                         publicId, systemId, lineNo, colNo);
          }
