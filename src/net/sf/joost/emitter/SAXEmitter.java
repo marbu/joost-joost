@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEmitter.java,v 1.3 2003/04/29 15:10:57 obecker Exp $
+ * $Id: SAXEmitter.java,v 1.4 2003/09/08 09:42:12 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,6 +24,8 @@
 
 
 package net.sf.joost.emitter;
+
+import net.sf.joost.Constants;
 
 //SAX2
 import org.xml.sax.Attributes;
@@ -59,7 +61,8 @@ public class SAXEmitter implements StxEmitter {
      */
     public SAXEmitter(ContentHandler saxSourceHandler) {
 
-        log.debug("init SAXEmitter");
+        if (DEBUG)
+            log.debug("init SAXEmitter");
         this.saxSourceHandler = saxSourceHandler;
 
     }

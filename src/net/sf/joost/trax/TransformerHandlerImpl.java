@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerImpl.java,v 1.6 2003/07/27 10:38:02 zubow Exp $
+ * $Id: TransformerHandlerImpl.java,v 1.7 2003/09/08 09:42:43 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,6 +25,7 @@
 
 package net.sf.joost.trax;
 
+import net.sf.joost.Constants;
 import net.sf.joost.emitter.DOMEmitter;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.stx.Processor;
@@ -54,7 +55,7 @@ import javax.xml.transform.sax.TransformerHandler;
  * the underlying joost-stx-engine the Processor-class
  * @author Zubow
  */
-public class TransformerHandlerImpl implements TransformerHandler {
+public class TransformerHandlerImpl implements TransformerHandler, Constants {
 
     // Define a static logger variable so that it references the
     // Logger instance named "TransformerHandlerImpl".
@@ -88,7 +89,8 @@ public class TransformerHandlerImpl implements TransformerHandler {
      */
     protected TransformerHandlerImpl(Transformer transformer) {
 
-        log.debug("calling constructor");
+        if (DEBUG)
+            log.debug("calling constructor");
         // Save the reference to the transformer
         this.transformer = transformer;
     }
@@ -125,7 +127,8 @@ public class TransformerHandlerImpl implements TransformerHandler {
      */
     public void setResult(Result result) throws IllegalArgumentException {
 
-        log.debug("setting Result - here SAXResult");
+        if (DEBUG)
+            log.debug("setting Result - here SAXResult");
         try {
             if (result instanceof Result) {
                 this.result = result;
@@ -167,7 +170,8 @@ public class TransformerHandlerImpl implements TransformerHandler {
      */
     private void init(Result result) throws TransformerException {
 
-        log.debug("init emitter-class according to result");
+        if (DEBUG)
+            log.debug("init emitter-class according to result");
 
         if (this.transformer instanceof TransformerImpl) {
             this.processor =
@@ -208,7 +212,8 @@ public class TransformerHandlerImpl implements TransformerHandler {
 
         //set the constructed DOM-Node on the DOMResult
         if (result instanceof DOMResult) {
-            log.debug("result is a DOMResult");
+            if (DEBUG)
+                log.debug("result is a DOMResult");
             Node nodeResult = ((DOMEmitter)stxEmitter).getDOMTree();
             //DOM specific Implementation
             ((DOMResult)result).setNode(nodeResult);
