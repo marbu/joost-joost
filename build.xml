@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.5 2002/11/28 10:56:00 obecker Exp $
+ | $Id: build.xml,v 1.6 2003/01/05 21:14:31 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -69,6 +69,14 @@
   <target name="mk.grammar">
     <preprocess infile="${grammar.dir}/${grammar}.cup"
                 outfile="${grammar.dir}/${grammar}Parser.cup" />
+    <replace file="${grammar.dir}/${grammar}Parser.cup"
+             token="* $Id: build.xml,v 1.6 2003/01/05 21:14:31 obecker Exp ${grammar}.cup,v">
+      <replacevalue>* This file was generated automatically - do not edit!
+ *
+ * $</replacevalue>
+    </replace>
+    <replace file="${grammar.dir}/${grammar}Parser.cup"
+             token="@@@START-NT@@@" value="${grammar}" />
     <java classname="java_cup.Main" classpath="lib/${genHelper}"
           fork="true" failonerror="true" dir="${grammar.dir}">
       <arg line="-parser ${grammar}Parser" />
