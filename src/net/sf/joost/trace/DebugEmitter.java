@@ -1,5 +1,5 @@
 /*
- * $Id: DebugEmitter.java,v 1.3 2004/02/03 18:22:27 zubow Exp $
+ * $Id: DebugEmitter.java,v 1.4 2004/02/13 16:19:02 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -27,16 +27,19 @@ package net.sf.joost.trace;
 import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.ErrorHandlerImpl;
 import net.sf.joost.stx.SAXEvent;
+import net.sf.joost.emitter.StxEmitter;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.Locator;
 import org.xml.sax.helpers.LocatorImpl;
 
 import java.util.Hashtable;
+import java.io.Writer;
+import java.io.StringWriter;
 
 /**
  * Extends the {@link net.sf.joost.stx.Emitter} with debug features.
- * @version $Revision: 1.3 $ $Date: 2004/02/03 18:22:27 $
+ * @version $Revision: 1.4 $ $Date: 2004/02/13 16:19:02 $
  * @author Zubow
  */
 public class DebugEmitter extends Emitter {
@@ -50,6 +53,9 @@ public class DebugEmitter extends Emitter {
 
     /** handle locator information */
     private LocatorImpl locator = new LocatorImpl();
+
+    public DebugWriter writer;
+
     /**
      * constructor
      * see {@link Emitter#Emitter(ErrorHandlerImpl)}
@@ -74,6 +80,24 @@ public class DebugEmitter extends Emitter {
 
     public Locator getEmitterLocator() {
         return locator;
+    }
+
+    /**
+     * overloaded method for debug support
+     * see {@link Emitter#getResultWriter}
+     */
+    public Writer getResultWriter(String href, String encoding,
+                                 String publicId, String systemId,
+                                 int lineNo, int colNo)
+      throws java.io.IOException, SAXException {
+        log.debug("requesting writer for " + href);
+        return writer = new DebugWriter(href);
+    }
+
+    public void pushEmitter(StxEmitter emitter)
+      throws SAXException {
+        log.debug("pushing emitter " + writer.getHref());
+        super.pushEmitter(emitter);
     }
 
     // ------------------------------------------------------------------
@@ -216,4 +240,21 @@ public class DebugEmitter extends Emitter {
         locator.setColumnNumber(colNo);
     }
 
+    // ------------------------------------------------------------------------
+    // Inner classes
+    // ------------------------------------------------------------------------
+
+    public class DebugWriter extends StringWriter {
+
+        private String href;
+
+        public DebugWriter(String href) {
+            super();
+            this.href = href;
+        }
+
+        public String getHref() {
+            return href;
+        }
+    }
 }
