@@ -1,5 +1,5 @@
 /*
- * $Id: FactoryBase.java,v 1.6 2003/01/27 17:57:46 obecker Exp $
+ * $Id: FactoryBase.java,v 1.7 2003/02/03 15:52:05 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,6 +32,7 @@ import java.util.Hashtable;
 import java.util.HashSet;
 import java.io.StringReader;
 
+import net.sf.joost.grammar.Sym;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.grammar.Yylex;
 import net.sf.joost.grammar.ExprParser;
@@ -41,7 +42,7 @@ import net.sf.joost.grammar.PatternParser;
 /**
  * Abstract base class for all factory classes which produce nodes
  * ({@link NodeBase}) for the tree representation of an STX stylesheet.
- * @version $Revision: 1.6 $ $Date: 2003/01/27 17:57:46 $
+ * @version $Revision: 1.7 $ $Date: 2003/02/03 15:52:05 $
  * @author Oliver Becker
  */
 
@@ -223,9 +224,21 @@ public abstract class FactoryBase
          throw e;
       }
       catch (Exception e) {
-         throw new SAXParseException(e.getMessage() + 
-                                     "Found `" + lexer.last.value + "'",
-                                     locator);
+         if (parser.errorToken.sym == Sym.EOF) {
+            if (lexer.last != null) 
+               throw new SAXParseException(
+                  e.getMessage() + "Encountered end of pattern after `" + 
+                  lexer.last.value + "'.",
+                  locator);
+            else
+               throw new SAXParseException(
+                  e.getMessage() + "Found empty pattern.",
+                  locator);
+         }
+         else
+            throw new SAXParseException(
+               e.getMessage() + "Found `" + lexer.last.value + "'.",
+               locator);
       }
       return pattern;
    }
@@ -254,9 +267,21 @@ public abstract class FactoryBase
          throw e;
       }
       catch (Exception e) {
-         throw new SAXParseException(e.getMessage() + 
-                                     "Found `" + lexer.last.value + "'",
-                                     locator);
+         if (parser.errorToken.sym == Sym.EOF) {
+            if (lexer.last != null) 
+               throw new SAXParseException(
+                  e.getMessage() + "Encountered end of expression after `" + 
+                  lexer.last.value + "'.",
+                  locator);
+            else
+               throw new SAXParseException(
+                  e.getMessage() + "Found empty expression.",
+                  locator);
+         }
+         else
+            throw new SAXParseException(
+               e.getMessage() + "Found `" + lexer.last.value + "'.",
+               locator);
       }
       return expr;
    }

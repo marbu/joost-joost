@@ -1,5 +1,5 @@
 /*
- * $Id: Pattern.cup,v 1.5 2003/01/08 16:07:51 obecker Exp $
+ * $Id: Pattern.cup,v 1.6 2003/02/03 15:52:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,6 +28,7 @@ parser code {:
    protected java.util.Hashtable j_nsSet;
    protected org.xml.sax.Locator j_locator;
 
+   public net.sf.joost.grammar.cup.Symbol errorToken = null;
 
    public PatternParser(net.sf.joost.grammar.cup.Scanner s, 
                         java.util.Hashtable nsSet,
@@ -42,6 +43,7 @@ parser code {:
    public void report_error(String msg, Object info)
    {
       errMsg += msg + ". ";
+      errorToken = cur_token;
    }
 
    public void report_fatal_error(String msg, Object info)
