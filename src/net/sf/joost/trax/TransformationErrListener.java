@@ -1,5 +1,5 @@
 /*
- * $Id: TransformationErrListener.java,v 1.1 2003/07/27 10:36:16 zubow Exp $
+ * $Id: TransformationErrListener.java,v 1.2 2003/09/03 09:44:16 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -71,8 +71,6 @@ public class TransformationErrListener implements ErrorListener {
             }
         } else {
             log.warn(tE);
-            // no user defined errorlistener, so throw this exception
-            throw tE;
         }
     }
 
