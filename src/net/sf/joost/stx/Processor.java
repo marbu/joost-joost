@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.25 2002/12/15 17:12:32 obecker Exp $
+ * $Id: Processor.java,v 1.26 2002/12/19 14:26:20 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -61,7 +61,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.25 $ $Date: 2002/12/15 17:12:32 $
+ * @version $Revision: 1.26 $ $Date: 2002/12/19 14:26:20 $
  * @author Oliver Becker
  */
 
@@ -529,17 +529,17 @@ public class Processor extends XMLFilterImpl
 
 
    /**
-    * Starts the processing of a new buffer and creates a new ancestor
-    * stack.
+    * Starts the inner processing of a new buffer or another document
+    * by saving the text data already read and jumping to the targetted
+    * group (if specified).
     */
-   public void startBuffer()
+   public void startInnerProcessing()
       throws SAXException
    {
-      bufferStack.push(eventStack);
-      eventStack = new Stack();
       // there might be characters already read
       bufferStack.push(collectedCharacters.toString());
       collectedCharacters.setLength(0);
+      // possible jump to another group (changed visibleTemplates)
       dataStack.push(
          new Data(null, context.position, context.lookAhead,
                   context.nextProcessGroup != null 
@@ -548,20 +548,17 @@ public class Processor extends XMLFilterImpl
                        context.nextProcessGroup) 
                   :((Data)dataStack.peek()).visibleTemplates,
                   ST_BUFFER));
-      startDocument();
    }
 
 
    /**
-    * Ends the processing of a buffer by restoring the old ancestor stack.
+    * Ends the inner processing by restoring the collected text data.
     */
-   public void endBuffer()
+   public void endInnerProcessing()
       throws SAXException
    {
-      endDocument();
       dataStack.pop();
       collectedCharacters.append(bufferStack.pop());
-      eventStack = (Stack)bufferStack.pop();
    }
 
 
@@ -907,12 +904,17 @@ public class Processor extends XMLFilterImpl
       log4j.debug("");
 
       // perform this only at the begin of a transformation,
-      // not at the begin of processing a buffer
+      // not at the begin of processing another document
       if (bufferStack.empty()) {
          // initialize all group stx:variables
          transformNode.initGroupVariables(emitter, eventStack, context);
          emitter.startDocument();
       }
+      else { // stx:process-document
+         bufferStack.push(eventStack);
+         eventStack = new Stack();
+      }
+
       eventStack.push(SAXEvent.newRoot());
 
       processEvent();
@@ -944,27 +946,35 @@ public class Processor extends XMLFilterImpl
          if ((((Data)dataStack.peek()).lastProcStatus & ST_SELF) != 0)
             endDocument(); // recurse (process-self)
          else {
-            if (bufferStack.empty())
-               emitter.endDocument(transformNode.publicId, 
-                                   transformNode.systemId,
-                                   transformNode.lineNo, transformNode.colNo);
             if (log4j.isDebugEnabled())
                log4j.debug("eventStack.pop " + eventStack.pop());
             else
                eventStack.pop();
+
+            if (bufferStack.empty())
+               emitter.endDocument(transformNode.publicId, 
+                                   transformNode.systemId,
+                                   transformNode.lineNo, transformNode.colNo);
+            else
+               eventStack = (Stack)bufferStack.pop();
          }
       }
       else {
+         // no stx:process-children in match="/"
          if (skipDepth != 1)
             log4j.error("skipDepth != 1");
-         if (bufferStack.empty())
-            emitter.endDocument(transformNode.publicId, 
-                                transformNode.systemId,
-                                transformNode.lineNo, transformNode.colNo);
+
          if (log4j.isDebugEnabled())
             log4j.debug("eventStack.pop " + eventStack.pop());
          else
             eventStack.pop();
+
+         if (bufferStack.empty())
+            emitter.endDocument(transformNode.publicId, 
+                                transformNode.systemId,
+                                transformNode.lineNo, transformNode.colNo);
+         else
+            eventStack = (Stack)bufferStack.pop();
       }
    }
 
@@ -1162,9 +1172,14 @@ public class Processor extends XMLFilterImpl
 //     {
 //     }
 
-//     public void setDocumentLocator(Locator locator)
-//     {
-//     }
+
+   /**
+    * Store the locator in the context object
+    */
+   public void setDocumentLocator(Locator locator)
+   {
+      context.locator = locator;
+   }
 
 
    //
