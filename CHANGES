@@ -1,3 +1,8 @@
+Changes since 20041002
+- generate character references for characters that can't be represented
+  in the current encoding
+- added HTML output method
+  
 Changes since 20040330
 - boosted Joost's performance about 25% 
   (major internal refactoring contributed by Thomas Behrends)
@@ -5,7 +10,7 @@ Changes since 20040330
   stx:processing-instruction
 - added filter-method "http://www.ietf.org/rfc/rfc2616.txt#POST"
 - flush output on error
-- Bugfix: 936354, 1003790
+- Bugfixes: 936354, 1003790
 
 Changes since 20031219
 - added command line switches: -time, -m
