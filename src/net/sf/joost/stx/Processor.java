@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.38 2004/02/10 12:12:50 obecker Exp $
+ * $Id: Processor.java,v 2.39 2004/04/16 10:34:43 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -67,7 +67,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.38 $ $Date: 2004/02/10 12:12:50 $
+ * @version $Revision: 2.39 $ $Date: 2004/04/16 10:34:43 $
  * @author Oliver Becker
  */
 
@@ -101,6 +101,9 @@ public class Processor extends XMLFilterImpl
 
    /** The Emitter object */
    private Emitter emitter;
+
+   /** The STX Parser object */
+   private Parser stxParser;
 
    /**
     * Depth in the subtree to be skipped; increased by startElement
@@ -449,7 +452,7 @@ public class Processor extends XMLFilterImpl
       // create a Parser for parsing the STX transformation sheet
       ErrorHandlerImpl errorHandler = new ErrorHandlerImpl(errorListener,
                                                            true);
-      Parser stxParser = new Parser();
+      stxParser = new Parser();
       stxParser.setErrorHandler(errorHandler);
       stxParser.setURIResolver(uriResolver);
       stxParser.setParserListener(parserListener);
@@ -460,7 +463,7 @@ public class Processor extends XMLFilterImpl
       // parse the transformation sheet
       reader.parse(src);
 
-      init(stxParser);
+      init();
 
       // re-use this XMLReader for processing
       setParent(reader);
@@ -471,12 +474,13 @@ public class Processor extends XMLFilterImpl
     * Constructs a new Processor instance from an existing Parser
     * (Joost-Representation of an STX transformation sheet)
     * @param stxParser the joost-Representation of a transformation sheet
-    * @throws SAXException if a SAX parent parser couldn't be created
+    * @throws SAXException if {@link #getXMLReader} fails
     */
    public Processor(Parser stxParser)
       throws SAXException
    {
-      init(stxParser);
+      this.stxParser = stxParser;
+      init();
       setParent(getXMLReader());
    }
 
@@ -487,10 +491,9 @@ public class Processor extends XMLFilterImpl
     */
    public Processor(Processor proc)
    {
-      transformNode = proc.transformNode;
+      stxParser = proc.stxParser;
       globalTemplates = proc.globalTemplates;
-      dataStack.push(proc.dataStack.elementAt(0));
-      context = proc.context.copy();
+      init();
       setParent(proc.getParent());
    }
 
@@ -547,12 +550,9 @@ public class Processor extends XMLFilterImpl
 
 
    /**
-    * Initialize a <code>Processor</code> object from an STX Parser
-    * @throws SAXException if global variables of the STX transformation
-    * sheet couldn't be initialized
+    * Initialize a <code>Processor</code> object
     */
-   protected void init(Parser stxParser)
-      throws SAXException
+   private void init()
    {
       context = new Context();
 
@@ -574,10 +574,13 @@ public class Processor extends XMLFilterImpl
       inScopeNamespaces.put("xml", NamespaceSupport.XMLNS);
 
       // array of global templates
-      Vector tempVec = transformNode.getGlobalTemplates();
-      globalTemplates = new TemplateFactory.Instance[tempVec.size()];
-      tempVec.toArray(globalTemplates);
-      Arrays.sort(globalTemplates);
+      if (globalTemplates == null) {
+         // note: getGlobalTemplates() returns null at the second invocation!
+         Vector tempVec = transformNode.getGlobalTemplates();
+         globalTemplates = new TemplateFactory.Instance[tempVec.size()];
+         tempVec.toArray(globalTemplates);
+         Arrays.sort(globalTemplates);
+      }
       initOutputProperties();
    }
 
