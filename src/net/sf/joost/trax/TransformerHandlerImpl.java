@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerImpl.java,v 1.8 2003/11/01 14:51:07 zubow Exp $
+ * $Id: TransformerHandlerImpl.java,v 1.9 2004/09/19 13:40:38 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,24 +25,22 @@
 
 package net.sf.joost.trax;
 
+import javax.xml.transform.Result;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.sax.TransformerHandler;
+
 import net.sf.joost.Constants;
 import net.sf.joost.emitter.DOMEmitter;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.stx.Processor;
 
-//JAXP
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
-
-import javax.xml.transform.*;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.sax.TransformerHandler;
 
 
 /**
@@ -157,7 +155,7 @@ public class TransformerHandlerImpl implements TransformerHandler, Constants {
      * Setter for {@link #systemId}
      * @param systemID
      */
-    public void setSystemId(String systemID) {
+    public void setSystemId(String systemId) {
         this.systemId = systemId;
     }
 
