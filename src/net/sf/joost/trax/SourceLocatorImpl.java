@@ -1,5 +1,5 @@
 /*
- * $Id: SourceLocatorImpl.java,v 1.2 2002/10/08 19:16:51 zubow Exp $
+ * $Id: SourceLocatorImpl.java,v 1.3 2002/10/15 18:54:49 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,9 +26,9 @@
 package net.sf.joost.trax;
 
 //jaxp
-import javax.xml.transform.SourceLocator;
-//sax
 import org.xml.sax.Locator;
+
+import javax.xml.transform.SourceLocator;
 
 
 /**
@@ -39,7 +39,7 @@ public class SourceLocatorImpl implements SourceLocator {
     /**
      * Identifies the class version, maintained by CVS.
      */
-    private static final String cvsId = "$Header: /cvsroot/joost/joost/src/net/sf/joost/trax/SourceLocatorImpl.java,v 1.2 2002/10/08 19:16:51 zubow Exp $";
+    private static final String cvsId = "$Header: /cvsroot/joost/joost/src/net/sf/joost/trax/SourceLocatorImpl.java,v 1.3 2002/10/15 18:54:49 zubow Exp $";
 
     /**
      * Unique public key

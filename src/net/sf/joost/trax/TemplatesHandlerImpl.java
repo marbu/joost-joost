@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesHandlerImpl.java,v 1.2 2002/10/08 19:19:11 zubow Exp $
+ * $Id: TemplatesHandlerImpl.java,v 1.3 2002/10/15 18:55:47 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,25 +26,16 @@
 package net.sf.joost.trax;
 
 //import JAXP
-import javax.xml.transform.sax.TemplatesHandler;
-import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.ErrorListener;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.parsers.ParserConfigurationException;
-
-//import SAX
-import org.xml.sax.Locator;
-import org.xml.sax.Attributes;
-
-//import joost-Representation of an stx-stylesheet
 import net.sf.joost.stx.Parser;
-
-//import joost-STX-Processor
-import net.sf.joost.stx.Processor;
-
-//import log4j classes.
 import org.apache.log4j.Logger;
+import org.xml.sax.Attributes;
+import org.xml.sax.Locator;
+
+import javax.xml.transform.ErrorListener;
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.sax.TemplatesHandler;
 
 
 /**

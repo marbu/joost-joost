@@ -1,17 +1,16 @@
 // taken from Michael Kay's Saxon, see http://saxon.sourceforge.net
 package net.sf.joost.trax;
 
+import org.w3c.dom.*;
 import org.xml.sax.*;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
-import org.xml.sax.helpers.NamespaceSupport;
 import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.helpers.NamespaceSupport;
 
 import java.util.Enumeration;
-import java.util.Locale;
 import java.util.Hashtable;
-
-import org.w3c.dom.*;
+import java.util.Locale;
 
 /**
 * DOMDriver.java: (pseudo-)SAX driver for DOM.<BR>
