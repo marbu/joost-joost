@@ -1,5 +1,5 @@
 /*
- * $Id: NSAliasFactory.java,v 2.2 2003/09/01 14:00:26 obecker Exp $
+ * $Id: NSAliasFactory.java,v 2.3 2004/01/23 09:51:48 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,12 +31,13 @@ import org.xml.sax.SAXParseException;
 import java.util.HashSet;
 import java.util.Hashtable;
 
+import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 
 
 /** 
  * Factory for <code>namespace-alias</code> elements
- * @version $Revision: 2.2 $ $Date: 2003/09/01 14:00:26 $
+ * @version $Revision: 2.3 $ $Date: 2004/01/23 09:51:48 $
  * @author Oliver Becker
  */
 
@@ -149,6 +150,19 @@ final public class NSAliasFactory extends FactoryBase
       protected Instance(String qName, NodeBase parent, ParseContext context)
       {
          super(qName, parent, context, false);
+      }
+
+      public boolean processable()
+      {
+         return false;
+      }
+
+      // Shouldn't be called
+      public short process(Context c)
+         throws SAXException
+      {
+         throw new SAXParseException("process called for " + qName,
+                                     publicId, systemId, lineNo, colNo);
       }
    }
 }

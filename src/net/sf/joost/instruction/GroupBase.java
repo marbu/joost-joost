@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 2.11 2004/01/13 17:57:42 zubow Exp $
+ * $Id: GroupBase.java,v 2.12 2004/01/23 09:51:31 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.Value;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 2.11 $ $Date: 2004/01/13 17:57:42 $
+ * @version $Revision: 2.12 $ $Date: 2004/01/23 09:51:31 $
  * @author Oliver Becker
  */
 
@@ -431,6 +431,10 @@ abstract public class GroupBase extends NodeBase
    }
 
 
+   public boolean processable()
+   {
+      return false;
+   }
    
    // Shouldn't be called
    public short process(Context c)
