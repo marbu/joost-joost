@@ -144,6 +144,9 @@
       <p>
       Supported STXPath functions
       <ul>
+      <li>string(obj)</li>
+      <li>number(obj)</li>
+      <li>boolean(obj)</li>
       <li>position()</li>
       <li>name(node?)</li>
       <li>local-name(node?)</li>
@@ -164,6 +167,11 @@
       <li>level()</li>
       <li>get-node(number)</li>
       <li>has-child-nodes()</li>
+      <li>empty(sequence)</li>
+      <li>item-at(sequence, number)</li>
+      <li>subsequence(sequence, number, number?)
+          (<em>currently named <code>sublist</code> in the
+          STX WD, 14 Jan 2003</em>)</li>
       <li>count(sequence)</li>
       <li>sum(sequence)</li>
       </ul>
@@ -171,6 +179,10 @@
       <h4>Limitations</h4>
       <ul>
          <li>no ancestor axis</li>
+         <li>no full Unicode support
+             (allow currently only ASCII characters in names,
+             pay no attention to surrogate pairs)</li>
+         <li>TrAX: URIResolver not supported</li>
          <li>all STX elements and functions not explicitely mentioned
              on this page wait for an implementation</li>
          <li>...</li>

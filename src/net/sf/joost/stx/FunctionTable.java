@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 1.12 2003/01/18 10:45:38 obecker Exp $
+ * $Id: FunctionTable.java,v 1.13 2003/01/20 17:28:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 1.12 $ $Date: 2003/01/18 10:45:38 $
+ * @version $Revision: 1.13 $ $Date: 2003/01/20 17:28:37 $
  * @author Oliver Becker
  */
 public final class FunctionTable
@@ -54,6 +54,9 @@ public final class FunctionTable
    public FunctionTable()
    {
       Instance[] functions = {
+         new StringConv(),
+         new NumberConv(),
+         new BooleanConv(),
          new Position(), 
          new Level(),
          new GetNode(),
@@ -74,6 +77,9 @@ public final class FunctionTable
          new SubstringBefore(),
          new SubstringAfter(),
          new Translate(),
+         new Empty(),
+         new ItemAt(),
+         new Subsequence(),
          new Count(),
          new Sum()
       };
@@ -154,6 +160,75 @@ public final class FunctionTable
                             Tree args)
          throws SAXException, EvalException;
    }
+
+
+
+   // 
+   // Type Conversion functions
+   //
+
+   /**
+    * The <code>string</code> function.
+    * Returns its argument converted to a string.
+    */
+   public class StringConv implements Instance
+   {
+      /** @return 1 */
+      public int getMinParCount() { return 1; }
+      /** @return 1 */
+      public int getMaxParCount() { return 1; }
+      /** @return "string" */
+      public String getName() { return "{}string"; }
+
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         return args.evaluate(context, events, top).convertToString();
+      }
+   }
+
+
+   /**
+    * The <code>number</code> function.
+    * Returns its argument converted to a number.
+    */
+   public class NumberConv implements Instance
+   {
+      /** @return 1 */
+      public int getMinParCount() { return 1; }
+      /** @return 1 */
+      public int getMaxParCount() { return 1; }
+      /** @return "number" */
+      public String getName() { return "{}number"; }
+
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         return args.evaluate(context, events, top).convertToNumber();
+      }
+   }
+
+
+   /**
+    * The <code>boolean</code> function.
+    * Returns its argument converted to a boolean.
+    */
+   public class BooleanConv implements Instance
+   {
+      /** @return 1 */
+      public int getMinParCount() { return 1; }
+      /** @return 1 */
+      public int getMaxParCount() { return 1; }
+      /** @return "boolean" */
+      public String getName() { return "{}boolean"; }
+
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         return args.evaluate(context, events, top).convertToBoolean();
+      }
+   }
+
 
 
 
@@ -836,6 +911,152 @@ public final class FunctionTable
    //
    // Sequence functions
    //
+
+   /**
+    * The <code>empty</code> function.
+    * Returns <code>true</code> if the argument is the empty sequence
+    * and <code>false</code> otherwise.
+    */
+   public class Empty implements Instance
+   {
+      /** @return 1 */
+      public int getMinParCount() { return 1; }
+      /** @return 1 */
+      public int getMaxParCount() { return 1; }
+      /** @return "empty" */
+      public String getName() { return "{}empty"; }
+
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value v = args.evaluate(context, events, top);
+         return v.setBoolean(v.type == Value.EMPTY);
+      }
+   }
+
+
+   /**
+    * The <code>item-at</code> function.
+    * Returns the item in the sequence (first parameter) at the specified
+    * position (second parameter).
+    */
+   public class ItemAt implements Instance
+   {
+      /** @return 2 */
+      public int getMinParCount() { return 2; }
+      /** @return 2 */
+      public int getMaxParCount() { return 2; }
+      /** @return "item-at" */
+      public String getName() { return "{}item-at"; }
+
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value seq = args.left.evaluate(context, events, top);
+         double pos = args.right.evaluate(context, events, top)
+                                .convertToNumber().number;
+
+         if (seq.type == Value.EMPTY || Double.isNaN(pos))
+            return seq.setEmpty(); // reuse the Value object
+
+         int ipos = (int)Math.round(pos);
+         while (seq != null && --ipos != 0)
+            seq = seq.next;
+
+         if (seq == null)
+            throw new EvalException("Position " + pos + 
+                                    " out of bounds in call to function `" + 
+                                    getName().substring(2) + "'");
+         else {
+            seq.next = null;
+            return seq;
+         }
+      }
+   }
+
+
+   /**
+    * The <code>subsequence</code> function.
+    * Returns the subsequence from the first parameter, beginning at
+    * a position given by the second parameter with a length given
+    * by an optional third parameter.
+    */
+   public class Subsequence implements Instance 
+   {
+      /** @return 2 **/
+      public int getMinParCount() { return 2; }
+      /** @return 3 **/
+      public int getMaxParCount() { return 3; }
+      /** @return "{}subsequence" */
+      public String getName() { return "{}subsequence"; }
+      
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value seq;
+         long begin, end;
+         // semantics is consistent with substring
+         // TODO: this is currently not consistent with 
+         // the XQ/XP 2.0 F&O WD 15 Nov 2002, need to check
+         if (args.left.type == Tree.LIST) { // three parameters
+            seq = args.left.left.evaluate(context, events, top);
+            double arg2 = args.left.right.evaluate(context, events, top)
+                                         .convertToNumber().number;
+            double arg3 = args.right.evaluate(context, events, top)
+                                    .convertToNumber().number;
+
+            // extra test, because round(NaN) gives 0
+            if (seq.type == Value.EMPTY || 
+                Double.isNaN(arg2) || Double.isNaN(arg2+arg3))
+               return seq.setEmpty(); // reuse the Value object
+
+            // the first item is at position 1
+            begin = Math.round(arg2 - 1.0);
+            end = begin + Math.round(arg3);
+            if (begin < 0)
+               begin = 0;
+            if (end <= begin)
+               return seq.setEmpty();
+         }
+         else { // two parameters
+            seq = args.left.evaluate(context, events, top);
+            double arg2 = args.right.evaluate(context, events, top)
+                                    .convertToNumber().number;
+
+            if (seq.type == Value.EMPTY || Double.isNaN(arg2))
+               return seq.setEmpty(); // reuse the Value object
+            if (arg2 < 1)
+               return seq;
+
+            // the first item is at position 1,
+            begin = Math.round(arg2 - 1.0);
+            end = -1; // special marker to speed up the evaluation
+         }
+
+         Value ret = null;
+         while (seq != null) {
+            if (ret == null && begin == 0) {
+               ret = seq;
+               if (end < 0) // true, if the two parameter version was used
+                  break;
+            }
+            else
+               begin--;
+            end--;
+            if (end == 0)
+               break;
+            seq = seq.next;
+         }
+         if (ret != null) {
+            if (end == 0) // reached the end of the requested subsequence
+               seq.next = null; // cut the rest
+            return ret;
+         }
+         else
+            return seq.setEmpty(); // reuse the Value object
+      }
+   }
+
 
    /**
     * The <code>count</code> function.

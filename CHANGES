@@ -9,7 +9,9 @@ Changes since 20021223
   * stx:options' @no-match-events to @pass-through
   * stx:template's @recursion-entry-point to @new-scope
 - implemented sequence data type
-- sequence functions: count(), sum()
+- sequence functions: empty(), item-at(), subsequence(), count(), sum()
+- other functions: string(), number(), boolean()
+- variables and parameters will be default initialized with the empty sequence
 - implemented full location paths in data accessors (except ancestor)
 
 Changes since 20021128
