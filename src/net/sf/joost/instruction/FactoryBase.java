@@ -1,5 +1,5 @@
 /*
- * $Id: FactoryBase.java,v 2.5 2003/10/06 10:10:49 obecker Exp $
+ * $Id: FactoryBase.java,v 2.6 2003/10/06 10:21:42 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.ParseContext;
  * Abstract base class for all factory classes which produce nodes
  * ({@link NodeBase}) for the tree representation of an STX transformation
  * sheet.
- * @version $Revision: 2.5 $ $Date: 2003/10/06 10:10:49 $
+ * @version $Revision: 2.6 $ $Date: 2003/10/06 10:21:42 $
  * @author Oliver Becker
  */
 
@@ -220,7 +220,7 @@ public abstract class FactoryBase implements Constants
          pattern = (Tree)parser.parse().value;
          if (lexer.withinComment > 0)
             throw new SAXParseException(
-               "Encountered end of pattern within a comment.", 
+               "Syntax error, encountered end of pattern within a comment.", 
                context.locator);
       }
       catch (SAXParseException e) {
@@ -270,7 +270,8 @@ public abstract class FactoryBase implements Constants
          expr = (Tree)parser.parse().value;
          if (lexer.withinComment > 0)
             throw new SAXParseException(
-               "Encountered end of expression within a comment.", 
+               "Syntax error, " + 
+               "encountered end of expression within a comment.", 
                context.locator);
       }
       catch (SAXParseException e) {
