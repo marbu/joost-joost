@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.32 2005/03/13 17:13:03 obecker Exp $
+ * $Id: Emitter.java,v 1.33 2005/03/21 08:23:19 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -52,7 +52,7 @@ import org.xml.sax.helpers.NamespaceSupport;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.32 $ $Date: 2005/03/13 17:13:03 $
+ * @version $Revision: 1.33 $ $Date: 2005/03/21 08:23:19 $
  * @author Oliver Becker
  */
 
@@ -512,26 +512,17 @@ public class Emitter implements Constants
 
       File hrefFile = null; // the file object representing href
       
-      if (href.indexOf(':') != -1) { // href is a URI
-         hrefFile = new File(new URI(href));
+      if (contH instanceof StxEmitter) { // we may extract a base URI 
+         String base = ((StxEmitter) contH).getSystemId();
+         if (base != null)
+            hrefFile = new File(new URI(base).resolve(href));
       }
-      else { // href is a path without protocol
-         if (contH instanceof StxEmitter) {
-            String base = ((StxEmitter) contH).getSystemId();
-            if (base != null) {
-               int slashPos = base.lastIndexOf('/');
-               // check if there is a path with several path components
-               if (slashPos != -1)
-                  base = base.substring(0, slashPos); // remove last component
-               // construct file relative to base
-               hrefFile = new File(new File(new URI(base)), href);
-            }
-            else // no base identifier
-               hrefFile = new File(href);
-         }
-         else // no base available at all
+      if (hrefFile == null) { // still null (means: no base available)
+         if (href.indexOf(':') != -1) // href is a URI
+            hrefFile = new File(new URI(href));
+         else // href is just a path
             hrefFile = new File(href);
-      }
+      }      
       
       // create missing directories 
       // (say: simply create them, don't check if there are really missing)
