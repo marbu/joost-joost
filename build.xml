@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.10 2003/04/29 15:19:47 obecker Exp $
+ | $Id: build.xml,v 1.11 2003/05/19 14:50:23 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -139,6 +139,7 @@
   <target name="doc" depends="dep, mk.apidoc"
     description="creates the API documentation in the doc/api subdirectory">
     <javadoc sourcepath="${src}" destdir="${doc}/api"
+             link="http://java.sun.com/j2se/1.4.1/docs/api"
              packagenames="net.sf.joost, net.sf.joost.stx,
                            net.sf.joost.instruction, net.sf.joost.emitter,
                            net.sf.joost.grammar, net.sf.joost.grammar.cup,
