@@ -11,6 +11,7 @@ Changes since 20030502
   (see API doc for this interface, as well as the samples.NSFilter example)
 - added filter-available()
 - added (partial) support for TrAX output properties
+- added support for Java extension functions
 
 Changes since 20030320
 - increased performance by switching to a new processing model
