@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.11 2002/11/02 15:19:17 obecker Exp $
+ * $Id: Processor.java,v 1.12 2002/11/04 14:07:52 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -61,7 +61,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.11 $ $Date: 2002/11/02 15:19:17 $
+ * @version $Revision: 1.12 $ $Date: 2002/11/04 14:07:52 $
  * @author Oliver Becker
  */
 
@@ -372,8 +372,6 @@ public class Processor extends XMLFilterImpl
       if (transformNode.options != null) {
          OptionsFactory.Instance optionsNode = transformNode.options;
          outputEncoding = optionsNode.outputEncoding;
-         if ("#input".equals(outputEncoding))
-            outputEncoding = null;
          if (optionsNode.defaultSTXPathNamespace != null)
             context.defaultSTXPathNamespace =
                optionsNode.defaultSTXPathNamespace;
