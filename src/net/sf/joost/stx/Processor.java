@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.6 2003/05/02 10:38:27 obecker Exp $
+ * $Id: Processor.java,v 2.7 2003/05/14 11:55:30 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -63,7 +63,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.6 $ $Date: 2003/05/02 10:38:27 $
+ * @version $Revision: 2.7 $ $Date: 2003/05/14 11:55:30 $
  * @author Oliver Becker
  */
 
@@ -147,8 +147,9 @@ public class Processor extends XMLFilterImpl
     */
    private Stack innerProcStack = new Stack();
 
-   /** Stack for {@link Data} objects */
-   private Stack dataStack = new Stack();
+
+
+
 
    // **********************************************************************
    /**
@@ -169,9 +170,6 @@ public class Processor extends XMLFilterImpl
 
       /** The context position of the current node (from {@link Context}) */
       long contextPosition;
-
-      /** The look ahead event for the current node (from {@link Context}) */
-      SAXEvent lookAhead;
 
       /** Next group in the processing, contains the visible templates */
       GroupBase targetGroup;
@@ -201,30 +199,28 @@ public class Processor extends XMLFilterImpl
        * <code>stx:process-siblings</code>
        */
       Data(TemplateFactory.Instance t, AbstractInstruction i, GroupBase cg,
-           long cp, SAXEvent la, GroupBase tg, short lps,
+           long cp, GroupBase tg, short lps,
            PSiblingsFactory.Instance ps, Hashtable lv, SAXEvent se)
       {
          template = t;
          instruction = i;
          currentGroup = cg;
          contextPosition = cp;
-         lookAhead = la;
          targetGroup = tg;
          lastProcStatus = lps;
          psiblings = ps;
          localVars = (Hashtable)lv.clone();
-         sibEvent = se;
+         sibEvent = se.addRef();
       }
 
       /** Constructor for "descendant or self" processing */
       Data(TemplateFactory.Instance t, AbstractInstruction i, GroupBase cg, 
-           long cp, SAXEvent la, GroupBase tg, short lps)
+           long cp, GroupBase tg, short lps)
       {
          template = t;
          instruction = i;
          currentGroup = cg;
          contextPosition = cp;
-         lookAhead = la;
          targetGroup = tg;
          lastProcStatus = lps;
       }
@@ -243,13 +239,73 @@ public class Processor extends XMLFilterImpl
       public String toString()
       {
          return "Data{" + template + "," + contextPosition + "," +
-                lookAhead + "," +
                 java.util.Arrays.asList(targetGroup.visibleTemplates) + "," + 
                 lastProcStatus + "}";
       }
    } // inner class Data
 
    // **********************************************************************
+
+   /** Stack for {@link Data} objects */
+   private DataStack dataStack = new DataStack();
+
+   /**
+    * Inner class that implements a stack for {@link Data} objects.
+    * I've implemented my own (typed) stack to circumvent the costs of
+    * type casts for the Data objects. However, I've noticed no notable
+    * performance gain.
+    */
+   private final class DataStack
+   {
+      private Data[] stack = new Data[32];
+      private int objCount = 0;
+
+      void push(Data d)
+      {
+         if (objCount == stack.length) {
+            Data[] tmp = new Data[2 * objCount];
+            System.arraycopy(stack, 0, tmp, 0, objCount);
+            stack = tmp;
+         }
+         stack[objCount++] = d;
+      }
+
+      Data peek()
+      {
+         return stack[objCount-1];
+      }
+
+      Data pop()
+      {
+         return stack[--objCount];
+      }
+
+      int size()
+      {
+         return objCount;
+      }
+
+      Data elementAt(int pos)
+      {
+         return stack[pos];
+      }
+
+      // for debugging
+      public String toString()
+      {
+         StringBuffer sb = new StringBuffer('[');
+         for (int i=0; i<objCount; i++) {
+            if (i > 0)
+               sb.append(',');
+            sb.append(stack[i].toString());
+         }
+         sb.append(']');
+         return sb.toString();
+      }
+   } // inner class DataStack
+
+   // **********************************************************************
+
 
    private static org.apache.commons.logging.Log log = 
       org.apache.commons.logging.LogFactory.getLog(Processor.class);
@@ -551,7 +607,7 @@ public class Processor extends XMLFilterImpl
       // possible jump to another group (changed visibleTemplates)
       dataStack.push(
          new Data(null, null, context.currentGroup, context.position, 
-                  context.lookAhead, context.targetGroup,
+                  context.targetGroup,
                   PR_BUFFER));
    }
 
@@ -581,7 +637,7 @@ public class Processor extends XMLFilterImpl
    private boolean foundUnprocessedTemplate(TemplateFactory.Instance temp)
    {
       for (int top=dataStack.size()-1; top >= 0; top--) {
-         Data d = (Data)dataStack.elementAt(top);
+         Data d = dataStack.elementAt(top);
          if (d.lastProcStatus == PR_SELF) { // stx:process-self
             if (d.template == temp)
                return false; // no, this template was already in use
@@ -604,7 +660,7 @@ public class Processor extends XMLFilterImpl
       TemplateFactory.Instance[] category = null;
       int tempIndex = -1;
 
-      Data top = (Data)dataStack.peek();
+      Data top = dataStack.peek();
 
       // Is the previous instruction not an stx:process-self?
       // used for performance (to prevent calling foundUnprocessedTemplate())
@@ -668,7 +724,7 @@ public class Processor extends XMLFilterImpl
             log.debug(context.localVars);
          }
 
-      if (((Data)dataStack.peek()).lastProcStatus == PR_SIBLINGS)
+      if (dataStack.peek().lastProcStatus == PR_SIBLINGS)
          processSiblings();
 
       TemplateFactory.Instance temp = findMatchingTemplate();
@@ -704,14 +760,13 @@ public class Processor extends XMLFilterImpl
             case PR_CHILDREN: // stx:process-children encountered
                dataStack.push(
                   new Data(temp, inst, context.currentGroup, 
-                           context.position, context.lookAhead,
-                           context.targetGroup, PR_CHILDREN));
+                           context.position, context.targetGroup, 
+                           PR_CHILDREN));
                break;
             case PR_SELF: // stx:process-self encountered
                dataStack.push(
                   new Data(temp, inst, context.currentGroup, 
-                           context.position, context.lookAhead,
-                           context.targetGroup, PR_SELF));
+                           context.position, context.targetGroup, PR_SELF));
                processEvent(); // recurse
                if (event.type == SAXEvent.TEXT || 
                    event.type == SAXEvent.CDATA || 
@@ -746,9 +801,8 @@ public class Processor extends XMLFilterImpl
                   case PR_SIBLINGS:
                      dataStack.push(
                         new Data(temp, inst, context.currentGroup, 
-                                 context.position, context.lookAhead,
-                                 context.targetGroup, PR_SIBLINGS, 
-                                 context.psiblings,
+                                 context.position, context.targetGroup, 
+                                 PR_SIBLINGS, context.psiblings,
                                  context.localVars, event));
                      break;
                   // case PR_ATTRIBUTES: won't happen
@@ -765,9 +819,9 @@ public class Processor extends XMLFilterImpl
                }
                dataStack.push(
                   new Data(temp, inst, context.currentGroup, 
-                           context.position, context.lookAhead,
-                           context.targetGroup, PR_SIBLINGS, 
-                           context.psiblings, context.localVars, event));
+                           context.position, context.targetGroup, 
+                           PR_SIBLINGS, context.psiblings, 
+                           context.localVars, event));
                break;
             case PR_ATTRIBUTES: // stx:process-attributes encountered
                // happens only for elements with attributes
@@ -789,7 +843,7 @@ public class Processor extends XMLFilterImpl
          GroupBase tg = context.targetGroup;
          switch (event.type) {
          case SAXEvent.ROOT:
-            dataStack.push(new Data(((Data)dataStack.peek()).targetGroup));
+            dataStack.push(new Data(dataStack.peek().targetGroup));
             break;
          case SAXEvent.ELEMENT:
             if((tg.passThrough & PASS_THROUGH_ELEMENT) != 0)
@@ -797,7 +851,7 @@ public class Processor extends XMLFilterImpl
                                     event.attrs, event.namespaces,
                                     tg.publicId, tg.systemId,
                                     tg.lineNo, tg.colNo);
-            dataStack.push(new Data(((Data)dataStack.peek()).targetGroup));
+            dataStack.push(new Data(dataStack.peek().targetGroup));
             break;
          case SAXEvent.TEXT:
             if((tg.passThrough & PASS_THROUGH_TEXT) != 0) {
@@ -845,7 +899,7 @@ public class Processor extends XMLFilterImpl
     * Process last element start (stored as {@link #lastElement} in
     * {@link #startElement startElement}) 
     */
-   private void processLastElement(SAXEvent currentEvent)
+   private void processLastElement(boolean hasChildren)
       throws SAXException
    {
       if (DEBUG)
@@ -856,13 +910,13 @@ public class Processor extends XMLFilterImpl
       String s = collectedCharacters.toString();
       if (s.length() == 0 || 
           (context.targetGroup.stripSpace && s.trim().length() == 0)) {
-         context.lookAhead = currentEvent;
+         if (hasChildren)
+            lastElement.enableChildNodes(true);
       }
       else {
-         context.lookAhead = insideCDATA ? SAXEvent.newCDATA(s) 
-                                         : SAXEvent.newText(s);
-         // text look-ahead is the string value of elements
+         // set string value of the last element
          lastElement.value = s;
+         lastElement.enableChildNodes(true);
       }
 
       // put last element on the event stack
@@ -872,8 +926,6 @@ public class Processor extends XMLFilterImpl
 
       lastElement = null;
       processEvent();
-
-      context.lookAhead = null; // reset look-ahead
    }
 
 
@@ -895,18 +947,20 @@ public class Processor extends XMLFilterImpl
          return; // white-space only characters found, do nothing
       }
 
+      SAXEvent ev;
       if (insideCDATA) {
          ((SAXEvent)eventStack.peek()).countCDATA();
-         eventStack.push(SAXEvent.newCDATA(s));
+         ev = SAXEvent.newCDATA(s);
       }
       else {
          ((SAXEvent)eventStack.peek()).countText();
-         eventStack.push(SAXEvent.newText(s));
+         ev = SAXEvent.newText(s);
       }
-      context.lookAhead = null;
 
+      eventStack.push(ev);
       processEvent();
       eventStack.pop();
+      ev.removeRef();
 
       collectedCharacters.setLength(0);
    }
@@ -925,20 +979,21 @@ public class Processor extends XMLFilterImpl
       // (for findMatchingTemplate)
       dataStack.push(
          new Data(null, null, context.currentGroup,
-                  context.position, context.lookAhead,
-                  context.targetGroup, PR_ATTRIBUTES));
+                  context.position, context.targetGroup, PR_ATTRIBUTES));
       for (int i=0; i<attrs.getLength(); i++) {
          if (DEBUG)
             if (log.isDebugEnabled())
                log.debug(attrs.getQName(i));
-         eventStack.push(SAXEvent.newAttribute(attrs, i));
+         SAXEvent ev = SAXEvent.newAttribute(attrs, i);
+         eventStack.push(ev);
          processEvent();
          eventStack.pop();
+         ev.removeRef();
          if (DEBUG)
             if (log.isDebugEnabled())
                log.debug("done " + attrs.getQName(i));
       }
-      Data d =(Data)dataStack.pop();
+      Data d = dataStack.pop();
       // restore position and current group
       context.position = d.contextPosition;
       context.currentGroup = d.currentGroup;
@@ -958,7 +1013,7 @@ public class Processor extends XMLFilterImpl
          // check, if one of the last consecutive stx:process-siblings 
          // terminates
          int stackPos = dataStack.size()-1;
-         Data data = (Data)dataStack.peek();
+         Data data = dataStack.peek();
          Hashtable storedVars = context.localVars;
          stopData = null;
          do {
@@ -967,16 +1022,16 @@ public class Processor extends XMLFilterImpl
                stopData = data;
                stopPos = stackPos;
             }
-            data = (Data)dataStack.elementAt(--stackPos);
+            data = dataStack.elementAt(--stackPos);
          } while (data.lastProcStatus == PR_SIBLINGS);
          context.localVars = storedVars;
-         if (stopData != null) // the first of the non-matching templates
+         if (stopData != null) // the first of the non-matching process-sibs
             clearProcessSiblings(stopData, false);
          // If after clearing the process siblings instructions there is
          // a new PR_SIBLINGS on the stack, its match conditions must
          // be checked here, too.
       } while (stopData != null && dataStack.size() == stopPos+1 &&
-               ((Data)dataStack.peek()).lastProcStatus == PR_SIBLINGS);
+               dataStack.peek().lastProcStatus == PR_SIBLINGS);
    }
 
 
@@ -991,7 +1046,7 @@ public class Processor extends XMLFilterImpl
       // find last of these consecutive stx:process-siblings instructions
       Data data, stopData = null;;
       for (int i=dataStack.size()-1; 
-           (data = (Data)dataStack.elementAt(i)).lastProcStatus == 
+           (data = dataStack.elementAt(i)).lastProcStatus == 
               PR_SIBLINGS;
            i-- ) {
          stopData = data;
@@ -1018,11 +1073,10 @@ public class Processor extends XMLFilterImpl
       Hashtable storedVars = context.localVars;
       Data data;
       do {
-         data = (Data)dataStack.pop();
+         data = dataStack.pop();
          // put back stored event
          eventStack.push(data.sibEvent);
          context.position = data.contextPosition; // restore position
-         context.lookAhead = data.lookAhead;      // restore look ahead
          context.localVars = data.localVars;      // restore variables
          AbstractInstruction inst = data.instruction;
          int ret;
@@ -1061,7 +1115,7 @@ public class Processor extends XMLFilterImpl
             }
          } while (ret == PR_SIBLINGS && 
                   (clearLast || data != stopData));
-         if (!clearLast && ret == PR_SIBLINGS) {
+         if (ret == PR_SIBLINGS) {
             // put back the last stx:process-siblings instruction
             stopData.instruction = inst;
             // there might have been a group attribute
@@ -1071,6 +1125,8 @@ public class Processor extends XMLFilterImpl
             context.localVars = storedVars;
             dataStack.push(stopData);
          }
+         else
+            data.sibEvent.removeRef();
          // remove this event
          eventStack.pop();
       } while (data != stopData); // last object
@@ -1114,7 +1170,7 @@ public class Processor extends XMLFilterImpl
 
       if (skipDepth == 0) {
          clearProcessSiblings();
-         Data data = (Data)dataStack.pop();
+         Data data = dataStack.pop();
          context.currentGroup = data.currentGroup;
          context.targetGroup = data.targetGroup;
          short prStatus = data.lastProcStatus;
@@ -1123,8 +1179,6 @@ public class Processor extends XMLFilterImpl
          }
          else if (prStatus == PR_CHILDREN || prStatus == PR_SELF) {
             context.position = data.contextPosition; // restore position
-            context.lookAhead = data.lookAhead;      // restore look ahead
-
             AbstractInstruction inst = data.instruction;
             short ret = PR_CONTINUE;
             while (inst != null && ret == PR_CONTINUE) {
@@ -1162,7 +1216,7 @@ public class Processor extends XMLFilterImpl
 
       if (skipDepth == 0) {
          // look at the previous process status on the stack
-         if (((Data)dataStack.peek()).lastProcStatus == PR_SELF)
+         if (dataStack.peek().lastProcStatus == PR_SELF)
             endDocument(); // recurse (process-self)
          else {
             eventStack.pop();
@@ -1197,16 +1251,15 @@ public class Processor extends XMLFilterImpl
          return;
       }
 
-      SAXEvent me = SAXEvent.newElement(uri, lName, qName, attrs, nsSupport);
       // look-ahead mechanism
       if (lastElement != null) {
-         processLastElement(me);
+         processLastElement(true);
          if (skipDepth == 1) { // after processing lastElement
             skipDepth = 2;     // increase counter again for this element
             return;
          }
       }
-      lastElement = me;
+      lastElement = SAXEvent.newElement(uri, lName, qName, attrs, nsSupport);
 
       if (collectedCharacters.length() != 0)
          processCharacters();
@@ -1228,7 +1281,7 @@ public class Processor extends XMLFilterImpl
          }
 
       if (lastElement != null)
-         processLastElement(null);
+         processLastElement(false);
 
       if (collectedCharacters.length() != 0)
          processCharacters();
@@ -1237,10 +1290,10 @@ public class Processor extends XMLFilterImpl
 
          clearProcessSiblings();
 
-         Data data = (Data)dataStack.pop();
+         Data data = dataStack.pop();
          short prStatus = data.lastProcStatus;
          context.currentGroup = data.currentGroup;
-         context.targetGroup = ((Data)dataStack.peek()).targetGroup;
+         context.targetGroup = dataStack.peek().targetGroup;
          if (data.template == null) {
             // perform default action?
             if ((data.targetGroup.passThrough & PASS_THROUGH_ELEMENT) != 0)
@@ -1252,7 +1305,6 @@ public class Processor extends XMLFilterImpl
          }
          else if (prStatus == PR_CHILDREN || prStatus == PR_SELF) {
             context.position = data.contextPosition; // restore position
-            context.lookAhead = data.lookAhead;      // restore look ahead
             Object topData = dataStack.peek();
             AbstractInstruction inst = data.instruction;
             int ret = PR_CONTINUE;
@@ -1286,8 +1338,7 @@ public class Processor extends XMLFilterImpl
             case PR_SIBLINGS:
                dataStack.push(
                   new Data(data.template, inst, context.currentGroup, 
-                           context.position, context.lookAhead,
-                           context.targetGroup,
+                           context.position, context.targetGroup,
                            PR_SIBLINGS, context.psiblings, context.localVars,
                            (SAXEvent)eventStack.peek()));
                break;
@@ -1304,11 +1355,11 @@ public class Processor extends XMLFilterImpl
 
       if (skipDepth == 0) {
          // look at the previous process status on the data stack
-         if (((Data)dataStack.peek()).lastProcStatus == PR_SELF) {
+         if (dataStack.peek().lastProcStatus == PR_SELF) {
             endElement(uri, lName, qName); // recurse (process-self)
          }
          else {
-            eventStack.pop();
+            ((SAXEvent)eventStack.pop()).removeRef();
             nsSupport.popContext();
          }
       }
@@ -1336,9 +1387,8 @@ public class Processor extends XMLFilterImpl
       if (skipDepth > 0 || insideDTD)
          return;
 
-      SAXEvent me = SAXEvent.newPI(target, data);
       if (lastElement != null) {
-         processLastElement(me);
+         processLastElement(true);
          if (skipDepth > 0)
             return;
       }
@@ -1347,33 +1397,22 @@ public class Processor extends XMLFilterImpl
       
       // don't modify the event stack after process-self
       ((SAXEvent)eventStack.peek()).countPI(target);
+
+      SAXEvent me = SAXEvent.newPI(target, data);
       eventStack.push(me);
 
       processEvent();
 
       eventStack.pop();
+      me.removeRef();
    }
 
-
-   /** 
-    * This dummy node is used as look-ahead in {@link #startPrefixMapping}.
-    * This is more or less a hack. Actually the look-ahead must be an element,
-    * but we don't know its properties (name etc) at the moment. Since
-    * text nodes are the only look-ahead nodes whose properties can be
-    * accessed, we use a text node with an empty string here. (Any other
-    * type would do it as well, but that seems to be even more weird ...
-    * constructing an empty element is difficult)
-    * We can't use <code>null</code> because this would mean there are no
-    * children at all, which in turn affects the result of a call to the
-    * function <code>has-child-nodes</code>
-    */
-   private static SAXEvent dummyNode = SAXEvent.newText("");
 
    public void startPrefixMapping(String prefix, String uri)
       throws SAXException
    {
       if (lastElement != null) {
-         processLastElement(dummyNode); // use the dummy node as explained
+         processLastElement(true);
          lastElement = null;
       }
       if (skipDepth > 0)
@@ -1442,8 +1481,7 @@ public class Processor extends XMLFilterImpl
 
       if (collectedCharacters.length() != 0) {
          if (lastElement != null) {
-            processLastElement(dummyNode); // the dummy won't be used because
-                                           // there are characters waiting
+            processLastElement(true);
          if (skipDepth > 0)
             return;
          }
@@ -1461,7 +1499,7 @@ public class Processor extends XMLFilterImpl
          return;
 
       if (lastElement != null)
-         processLastElement(dummyNode); // dito, see startCDATA above
+         processLastElement(true);
       processCharacters(); // test for emptiness occurs there
 
       insideCDATA = false;
@@ -1478,22 +1516,25 @@ public class Processor extends XMLFilterImpl
       if (skipDepth > 0 || insideDTD)
          return;
 
-      SAXEvent me = SAXEvent.newComment(new String(ch, start, length));
       if (lastElement != null) {
-         processLastElement(me);
-         if (skipDepth > 0)
+         processLastElement(true);
+         if (skipDepth > 0) {
             return;
+         }
       }
       if (collectedCharacters.length() != 0)
          processCharacters();
       
       // don't modify the event stack after process-self
       ((SAXEvent)eventStack.peek()).countComment();
+
+      SAXEvent me = SAXEvent.newComment(new String(ch, start, length));
       eventStack.push(me);
 
       processEvent();
 
       eventStack.pop();
+      me.removeRef();
    }
 
 
