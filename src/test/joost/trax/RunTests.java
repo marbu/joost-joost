@@ -3,7 +3,7 @@
  *
  *	Tests without junit
  *
- *	$Id: RunTests.java,v 1.3 2002/11/11 18:57:40 zubow Exp $
+ *	$Id: RunTests.java,v 1.4 2003/07/27 10:38:34 zubow Exp $
  *
  */
 
@@ -92,11 +92,11 @@ public class RunTests {
 
         try {
             //run testcases
-            //log.info("Try to run runTest0 - Identity");
-            //TestCases.runTests0("test/error.xml");
+            log.info("Try to run runTest0 - Identity");
+            TestCases.runTests0("test/flat.xml");
 
             //log.info("Try to run runTest1");
-            //TestCases.runTests1("test/error.xml", "test/error.stx");
+            TestCases.runTests1("test/flat.xml", "test/flat.stx");
             //log.info("Try to run runTest1 again");
             //TestCases.runTests1("testdata/temp.xml", "test/sum3.stx");
 
@@ -135,7 +135,7 @@ public class RunTests {
             //reverse order
             //TestCases.runTests9("test/flat.xml", "test/sum3.stx", "test/flat.stx");
 
-            TestCases.runTests19(null, null);
+            //TestCases.runTests19(null, null);
 
             //TestCases.runTests18(null,null,null,null);
 

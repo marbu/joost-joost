@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.17 2003/07/27 10:38:02 zubow Exp $
+ * $Id: TransformerImpl.java,v 1.18 2003/07/27 10:40:18 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -91,7 +91,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
      * must be set to false.
      * todo : Implementation.
      */
-    public static boolean DEBUG_MODE = true;
+    public static boolean DEBUG_MODE = false;
 
     /**
     * The trace manager.
