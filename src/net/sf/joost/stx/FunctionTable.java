@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.18 2003/12/09 12:35:43 obecker Exp $
+ * $Id: FunctionTable.java,v 2.19 2003/12/17 13:36:14 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -50,7 +50,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.18 $ $Date: 2003/12/09 12:35:43 $
+ * @version $Revision: 2.19 $ $Date: 2003/12/17 13:36:14 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -226,7 +226,7 @@ final public class FunctionTable implements Constants
     * The <code>string</code> function.
     * Returns its argument converted to a string.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-string">
+    * href="http://www.w3.org/TR/xpath-functions/#func-string">
     * fn:string in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class StringConv implements Instance
@@ -251,7 +251,7 @@ final public class FunctionTable implements Constants
     * The <code>number</code> function.
     * Returns its argument converted to a number.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-number">
+    * href="http://www.w3.org/TR/xpath-functions/#func-number">
     * fn:number in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class NumberConv implements Instance
@@ -276,7 +276,7 @@ final public class FunctionTable implements Constants
     * The <code>boolean</code> function.
     * Returns its argument converted to a boolean.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-boolean">
+    * href="http://www.w3.org/TR/xpath-functions/#func-boolean">
     * fn:boolean in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class BooleanConv implements Instance
@@ -389,7 +389,7 @@ final public class FunctionTable implements Constants
     * The <code>name</code> function.
     * Returns the qualified name of this node.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-xpath-name">
+    * href="http://www.w3.org/TR/xpath-functions/#func-name">
     * fn:name in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class Name implements Instance
@@ -406,7 +406,7 @@ final public class FunctionTable implements Constants
       {
          Value v = getOptionalValue(context, top, args);
          if (v.type == Value.EMPTY)
-            return v;
+            return v.setString("");
          if (v.type != Value.NODE) 
             throw new EvalException("The parameter passed to the `" + 
                                     getName().substring(FNSP.length()) + 
@@ -429,7 +429,7 @@ final public class FunctionTable implements Constants
     * The <code>local-name</code> function.
     * Returns the local name of this node.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-local-name">
+    * href="http://www.w3.org/TR/xpath-functions/#func-local-name">
     * fn:local-name in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class LocalName implements Instance
@@ -446,7 +446,7 @@ final public class FunctionTable implements Constants
       {
          Value v = getOptionalValue(context, top, args);
          if (v.type == Value.EMPTY)
-            return v;
+            return v.setString("");
          if (v.type != Value.NODE) 
             throw new EvalException("The parameter passed to the `" + 
                                     getName().substring(FNSP.length()) + 
@@ -470,7 +470,7 @@ final public class FunctionTable implements Constants
     * The <code>namespace-uri</code> function.
     * Returns the namespace URI of this node.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-namespace-uri">
+    * href="http://www.w3.org/TR/xpath-functions/#func-namespace-uri">
     * fn:namespace-uri in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class NamespaceURI implements Instance
@@ -487,7 +487,7 @@ final public class FunctionTable implements Constants
       {
          Value v = getOptionalValue(context, top, args);
          if (v.type == Value.EMPTY)
-            return v;
+            return v.setString("");
          if (v.type != Value.NODE) 
             throw new EvalException("The parameter passed to the `" + 
                                     getName().substring(FNSP.length()) + 
@@ -507,7 +507,7 @@ final public class FunctionTable implements Constants
     * The <code>get-namespace-uri-for-prefix</code> function.
     * Returns the names of the in-scope namespaces for this node.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-get-namespace-uri-for-prefix">
+    * href="http://www.w3.org/TR/xpath-functions/#func-get-namespace-uri-for-prefix">
     * fn:get-namespace-uri-for-prefix in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class GetNamespaceUriForPrefix implements Instance
@@ -549,7 +549,7 @@ final public class FunctionTable implements Constants
     * The <code>get-in-scope-prefixes</code> function.
     * Returns the names of the in-scope namespaces for this node.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-get-in-scope-prefixes">
+    * href="http://www.w3.org/TR/xpath-functions/#func-get-in-scope-prefixes">
     * fn:get-in-scope-prefixes in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class GetInScopePrefixes implements Instance
@@ -604,7 +604,7 @@ final public class FunctionTable implements Constants
     * The <code>not</code> function.
     * Returns the negation of its parameter.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-not">
+    * href="http://www.w3.org/TR/xpath-functions/#func-not">
     * fn:not in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class Not implements Instance
@@ -630,7 +630,7 @@ final public class FunctionTable implements Constants
     * The <code>true</code> function.
     * Returns the boolean value true.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-true">
+    * href="http://www.w3.org/TR/xpath-functions/#func-true">
     * fn:true in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class True implements Instance
@@ -654,7 +654,7 @@ final public class FunctionTable implements Constants
     * The <code>false</code> function.
     * Returns the boolean value true.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-false">
+    * href="http://www.w3.org/TR/xpath-functions/#func-false">
     * fn:false in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class False implements Instance
@@ -685,7 +685,7 @@ final public class FunctionTable implements Constants
     * The <code>floor</code> function.
     * Returns the largest integer that is not greater than the argument.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-floor">
+    * href="http://www.w3.org/TR/xpath-functions/#func-floor">
     * fn:floor in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class Floor implements Instance
@@ -714,7 +714,7 @@ final public class FunctionTable implements Constants
     * The <code>ceiling</code> function.
     * Returns the smallest integer that is not less than the argument.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-ceiling">
+    * href="http://www.w3.org/TR/xpath-functions/#func-ceiling">
     * fn:ceiling in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class Ceiling implements Instance
@@ -743,7 +743,7 @@ final public class FunctionTable implements Constants
     * The <code>round</code> function.
     * Returns the integer that is closest to the argument.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-round">
+    * href="http://www.w3.org/TR/xpath-functions/#func-round">
     * fn:round in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class Round implements Instance
@@ -782,7 +782,7 @@ final public class FunctionTable implements Constants
     * The <code>concat</code> function.
     * Returns the concatenation of its string parameters.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-concat">
+    * href="http://www.w3.org/TR/xpath-functions/#func-concat">
     * fn:concat in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class Concat implements Instance
@@ -816,7 +816,7 @@ final public class FunctionTable implements Constants
     * Returns a string that is the concatenation of all strings in the first
     * sequence parameter, separated by the string in the second parameter.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-string-join">
+    * href="http://www.w3.org/TR/xpath-functions/#func-string-join">
     * fn:string-join in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class StringJoin implements Instance 
@@ -853,7 +853,7 @@ final public class FunctionTable implements Constants
     * The <code>string-length</code> function.
     * Returns the length of its string parameter.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-string-length">
+    * href="http://www.w3.org/TR/xpath-functions/#func-string-length">
     * fn:string-length in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class StringLength implements Instance
@@ -879,7 +879,7 @@ final public class FunctionTable implements Constants
     * The <code>normalize-space</code> function.
     * Returns its string parameter with trimmed whitespace.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-normalize-space">
+    * href="http://www.w3.org/TR/xpath-functions/#func-normalize-space">
     * fn:normalize-space in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class NormalizeSpace implements Instance
@@ -925,7 +925,7 @@ final public class FunctionTable implements Constants
     * Returns <code>true</code> if the string in the first parameter
     * contains the substring provided as second parameter.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-contains">
+    * href="http://www.w3.org/TR/xpath-functions/#func-contains">
     * fn:contains in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class Contains implements Instance 
@@ -954,7 +954,7 @@ final public class FunctionTable implements Constants
     * Returns <code>true</code> if the string in the first parameter
     * starts with the substring provided as second parameter.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-starts-with">
+    * href="http://www.w3.org/TR/xpath-functions/#func-starts-with">
     * fn:starts-with in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class StartsWith implements Instance 
@@ -983,7 +983,7 @@ final public class FunctionTable implements Constants
     * Returns <code>true</code> if the string in the first parameter
     * ends with the substring provided as second parameter.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-ends-with">
+    * href="http://www.w3.org/TR/xpath-functions/#func-ends-with">
     * fn:ends-with in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class EndsWith implements Instance 
@@ -1013,7 +1013,7 @@ final public class FunctionTable implements Constants
     * an offset given by the second parameter with a length given
     * by an optional third parameter.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-substring">
+    * href="http://www.w3.org/TR/xpath-functions/#func-substring">
     * fn:substring in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class Substring implements Instance 
@@ -1090,7 +1090,7 @@ final public class FunctionTable implements Constants
     * Returns the substring from the first parameter that occurs
     * before the second parameter.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-substring-before">
+    * href="http://www.w3.org/TR/xpath-functions/#func-substring-before">
     * fn:substring-before in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class SubstringBefore implements Instance 
@@ -1123,7 +1123,7 @@ final public class FunctionTable implements Constants
     * Returns the substring from the first parameter that occurs
     * after the first occurrence of the second parameter.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-substring-after">
+    * href="http://www.w3.org/TR/xpath-functions/#func-substring-after">
     * fn:substring-after in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class SubstringAfter implements Instance 
@@ -1157,7 +1157,7 @@ final public class FunctionTable implements Constants
     * second parameter by their counterparts in the third parameter
     * and returns the result.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-translate">
+    * href="http://www.w3.org/TR/xpath-functions/#func-translate">
     * fn:translate in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class Translate implements Instance 
@@ -1232,7 +1232,7 @@ final public class FunctionTable implements Constants
     * The <code>escape-uri</code> function.
     * Applies URI escaping rules.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-escape-uri">
+    * href="http://www.w3.org/TR/xpath-functions/#func-escape-uri">
     * fn:escape-uri in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class EscapeUri implements Instance 
@@ -1306,7 +1306,7 @@ final public class FunctionTable implements Constants
     * Returns <code>true</code> if the argument is the empty sequence
     * and <code>false</code> otherwise.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-empty">
+    * href="http://www.w3.org/TR/xpath-functions/#func-empty">
     * fn:empty in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class Empty implements Instance
@@ -1332,7 +1332,7 @@ final public class FunctionTable implements Constants
     * Returns <code>false</code> if the argument is the empty sequence
     * and <code>true</code> otherwise.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-exists">
+    * href="http://www.w3.org/TR/xpath-functions/#func-exists">
     * fn:exists in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class Exists implements Instance
@@ -1399,7 +1399,7 @@ final public class FunctionTable implements Constants
     * a member of the specified sequence that is equal to the item that is 
     * the value of the second argument.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-index-of">
+    * href="http://www.w3.org/TR/xpath-functions/#func-index-of">
     * fn:index-of in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class IndexOf implements Instance
@@ -1453,7 +1453,7 @@ final public class FunctionTable implements Constants
     * a position given by the second parameter with a length given
     * by an optional third parameter.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-subsequence">
+    * href="http://www.w3.org/TR/xpath-functions/#func-subsequence">
     * fn:subsequence in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class Subsequence implements Instance 
@@ -1470,9 +1470,6 @@ final public class FunctionTable implements Constants
       {
          Value seq;
          long begin, end;
-         // semantics is consistent with substring
-         // TODO: this is currently not consistent with 
-         // the XQ/XP 2.0 F&O WD 15 Nov 2002, need to check
          if (args.left.type == Tree.LIST) { // three parameters
             seq = args.left.left.evaluate(context, top);
             double arg2 = args.left.right.evaluate(context, top)
@@ -1538,7 +1535,7 @@ final public class FunctionTable implements Constants
     * Inserts an item or sequence of items into a specified position of a 
     * sequence.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-insert-before">
+    * href="http://www.w3.org/TR/xpath-functions/#func-insert-before">
     * fn:insert-before in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class InsertBefore implements Instance
@@ -1600,7 +1597,7 @@ final public class FunctionTable implements Constants
     * Removes the item in the sequence (first parameter) at the specified
     * position (second parameter).
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-remove">
+    * href="http://www.w3.org/TR/xpath-functions/#func-remove">
     * fn:remove in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class Remove implements Instance
@@ -1657,7 +1654,7 @@ final public class FunctionTable implements Constants
     * The <code>count</code> function.
     * Returns the number of items in the sequence.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-count">
+    * href="http://www.w3.org/TR/xpath-functions/#func-count">
     * fn:count in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class Count implements Instance
@@ -1689,7 +1686,7 @@ final public class FunctionTable implements Constants
     * The <code>sum</code> function.
     * Returns the sum of all items in the sequence.
     * @see <a target="xq1xp2fo"
-    * href="http://www.w3.org/TR/xquery-operators/#func-sum">
+    * href="http://www.w3.org/TR/xpath-functions/#func-sum">
     * fn:sum in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
     */
    final public class Sum implements Instance
