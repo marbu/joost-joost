@@ -60,7 +60,7 @@ public class DOMDriver implements Locator, XMLReader
     * @param locale The locale for which diagnostics will be generated
     */
 
-    public void setLocale (Locale locale) throws SAXException
+    public void setLocale (Locale locale)
     {}
 
 
