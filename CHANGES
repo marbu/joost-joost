@@ -1,12 +1,16 @@
 Changes since 20021223
 - added 'required' attribute to stx:param
-- added 'base' attribute to stx:process-document
+- added 'base' attribute to stx:process-document, 
+  changed type of 'href' to expression
 - added stx:result-document
 - renamed
   * stx:element-start to stx:start-element
   * stx:element-end to stx:end-element
   * stx:options' @no-match-events to @pass-through
   * stx:template's @recursion-entry-point to @new-scope
+- implemented sequence data type
+- sequence functions: count(), sum()
+- implemented full location paths in data accessors (except ancestor)
 
 Changes since 20021128
 - added 'markup' attribute to stx:text
