@@ -1,5 +1,5 @@
 /*
- * $Id: Pattern.cup,v 1.4 2003/01/05 21:18:51 obecker Exp $
+ * $Id: Pattern.cup,v 1.5 2003/01/08 16:07:51 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -58,9 +58,9 @@ parser code {:
 #include "terminals.inc"
 
 /* Non-Terminals */
-non terminal Pattern, MatchPath, RelativePath;
-non terminal Step, NodeTest, NameTest;
-non terminal KindTest, Predicate;
+non terminal Tree Pattern, MatchPath, RelativePath;
+non terminal Tree Step, NodeTest, NameTest;
+non terminal Tree KindTest, Predicate;
 
 
 /* Shared expression grammar (with Expr.cup) */
@@ -73,7 +73,7 @@ Pattern ::=
    MatchPath:t
       {: RESULT = t; :}
  | Pattern:t BAR MatchPath:p
-      {: RESULT = new Tree(Tree.UNION, (Tree)t, (Tree)p); :}
+      {: RESULT = new Tree(Tree.UNION, t, p); :}
  ;
 
 MatchPath ::= 
@@ -81,7 +81,7 @@ MatchPath ::=
       {: RESULT = new Tree(Tree.ROOT, null); :}
  | SLASH RelativePath:t
       {: // need to add an additional leaf for root
-         Tree tmp = (Tree)t, last = null;
+         Tree tmp = t, last = null;
          // go down the tree to the left
          while (tmp.type == Tree.CHILD || tmp.type == Tree.DESC) {
             last = tmp;
@@ -104,14 +104,14 @@ RelativePath ::=
    Step:t
       {: RESULT = t; :}
  | RelativePath:p SLASH Step:s
-      {: RESULT = new Tree(Tree.CHILD, (Tree)p, (Tree)s); :}
+      {: RESULT = new Tree(Tree.CHILD, p, s); :}
  | RelativePath:p DSLASH Step:s
-      {: RESULT = new Tree(Tree.DESC, (Tree)p, (Tree)s); :}
+      {: RESULT = new Tree(Tree.DESC, p, s); :}
  ;
 
 Step ::= 
    NodeTest:n Predicate:p
-      {: RESULT = (p != null) ? new Tree(Tree.PREDICATE, (Tree)n, (Tree)p)
+      {: RESULT = (p != null) ? new Tree(Tree.PREDICATE, n, p)
                               : n; :}
  ;
 
