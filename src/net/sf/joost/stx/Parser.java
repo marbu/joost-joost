@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 1.19 2003/02/03 12:21:40 obecker Exp $
+ * $Id: Parser.java,v 1.20 2003/02/04 16:16:21 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,6 +30,7 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.helpers.NamespaceSupport;
 
 import java.util.EmptyStackException;
 import java.util.Enumeration;
@@ -44,7 +45,7 @@ import net.sf.joost.instruction.*;
 /** 
  * Creates the tree representation of an STX stylesheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 1.19 $ $Date: 2003/02/03 12:21:40 $
+ * @version $Revision: 1.20 $ $Date: 2003/02/04 16:16:21 $
  * @author Oliver Becker
  */
 
@@ -171,11 +172,12 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
       throws SAXParseException
    {
       String s = collectedCharacters.toString();
-      if (s.trim().length() != 0 || 
-          currentNode instanceof TextFactory.Instance) {
-         if (currentNode instanceof TransformFactory.Instance)
-            throw new SAXParseException(
-               "Text may occur only within templates", locator);
+      if (currentNode.preserveSpace || s.trim().length() != 0) {
+         if (currentNode instanceof GroupBase) {
+            if (s.trim().length() != 0)
+               throw new SAXParseException(
+                  "Text may occur only within templates", locator);
+         }
          else
             currentNode.append(new TextNode(s, currentNode, locator));
       }
@@ -237,6 +239,28 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
          else 
             newNode = litFac.createNode(currentNode, uri, lName, qName, attrs,
                                         nsSet, locator);
+
+         // check xml:space attribute
+         int spaceIndex = attrs.getIndex(NamespaceSupport.XMLNS, "space");
+         if (spaceIndex != -1) { // attribute present
+            String spaceAtt = attrs.getValue(spaceIndex);
+            if ("preserve".equals(spaceAtt))
+               newNode.preserveSpace = true;
+            else if (!"default".equals(spaceAtt))
+               throw new SAXParseException(
+                  "Value of attribute `" + attrs.getQName(spaceIndex) + 
+                  "' must be either `preserve' or `default' (found `" +
+                  spaceAtt + "')", locator);
+            // "default" means false -> nothing to do
+         }
+         else if (newNode instanceof TextFactory.Instance ||
+                  newNode instanceof CdataFactory.Instance)
+            // these elements behave as if xml:space was set to "preserve"
+            newNode.preserveSpace = true;
+         else if (currentNode != null)
+            // inherit from parent
+            newNode.preserveSpace = currentNode.preserveSpace;
+
          openedElements.push(currentNode);
          currentNode = newNode;
       }

@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 1.7 2002/12/15 17:00:48 obecker Exp $
+ * $Id: NodeBase.java,v 1.8 2003/02/04 16:16:21 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.stx.Emitter;
 
 /**
  * Abstract base class for all instances of nodes in a STX stylesheet.
- * @version $Revision: 1.7 $ $Date: 2002/12/15 17:00:48 $
+ * @version $Revision: 1.8 $ $Date: 2003/02/04 16:16:21 $
  * @author Oliver Becker
  */
 public abstract class NodeBase implements Constants
@@ -61,6 +61,14 @@ public abstract class NodeBase implements Constants
 
    /** The column number of the begin of this node in the stylesheet. */
    public int colNo;
+
+   /** 
+    * <code>true</code> if the attribute <code>xml:space</code> on the
+    * nearest ancestor element was set to <code>preserve</code>, 
+    * <code>false</code> otherwise. This field is set in the
+    * {@link net.sf.joost.stx.Parser} object.
+    */
+   public boolean preserveSpace;
 
    /** Will be set to true by derived classed to indicate that no children
        are allowed on this node. */
