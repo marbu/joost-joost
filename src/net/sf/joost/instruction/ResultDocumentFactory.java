@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 2.8 2003/12/09 11:35:18 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 2.9 2004/02/12 11:46:40 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -47,7 +47,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.8 $ $Date: 2003/12/09 11:35:18 $
+ * @version $Revision: 2.9 $ $Date: 2004/02/12 11:46:40 $
  * @author Oliver Becker
  */
 
@@ -198,8 +198,8 @@ final public class ResultDocumentFactory extends FactoryBase
             return PR_CONTINUE; // if the errorHandler returns
          }
 
-         se.startDocument();
          context.emitter.pushEmitter(se);
+         context.emitter.startDocument();
          return PR_CONTINUE;
       }
 
@@ -207,13 +207,16 @@ final public class ResultDocumentFactory extends FactoryBase
       public short processEnd(Context context)
          throws SAXException
       {
-         context.emitter.popEmitter().endDocument();
+         context.emitter.endDocument(publicId, systemId, 
+                                     nodeEnd.lineNo, nodeEnd.colNo);
+         context.emitter.popEmitter();
          try {
             ((OutputStreamWriter)localFieldStack.pop()).close();
          }
          catch (java.io.IOException ex) {
             context.errorHandler.error(ex.toString(), 
-                                       publicId, systemId, lineNo, colNo);
+                                       publicId, systemId, 
+                                       nodeEnd.lineNo, nodeEnd.colNo);
             return PR_CONTINUE; // if the errorHandler returns
          }
 
