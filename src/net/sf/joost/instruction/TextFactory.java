@@ -1,5 +1,5 @@
 /*
- * $Id: TextFactory.java,v 1.4 2002/11/29 21:04:47 obecker Exp $
+ * $Id: TextFactory.java,v 1.5 2002/12/13 17:46:15 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.Emitter;
 /** 
  * Factory for <code>text</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.4 $ $Date: 2002/11/29 21:04:47 $
+ * @version $Revision: 1.5 $ $Date: 2002/12/13 17:46:15 $
  * @author Oliver Becker
  */
 
@@ -55,7 +55,7 @@ public class TextFactory extends FactoryBase
    private HashSet attrNames;
 
    private static final String[] MARKUP_VALUES =
-   { "none", "ignore", "serialize" };
+   { "error", "ignore", "serialize" };
 
    private int NO_MARKUP = 0, IGNORE_MARKUP = 1, SERIALIZE_MARKUP = 2;
 
@@ -116,8 +116,9 @@ public class TextFactory extends FactoryBase
             buffer = new StringBuffer();
             stxEmitter = new StringEmitter(
                buffer, markup == NO_MARKUP 
-                       ? "(`" + qName + "' with the `markup' attribute set " +
-                         "to `none' started in line " + 
+                       ? "(`" + qName + 
+                         "' with the `markup' attribute set to `" + 
+                         MARKUP_VALUES[NO_MARKUP] + "' started in line " + 
                          locator.getLineNumber() + ")"
                        : null );
          }
