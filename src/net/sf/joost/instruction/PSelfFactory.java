@@ -1,5 +1,5 @@
 /*
- * $Id: PSelfFactory.java,v 1.5 2002/12/15 17:15:23 obecker Exp $
+ * $Id: PSelfFactory.java,v 1.6 2002/12/17 16:36:30 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.Context;
 /**
  * Factory for <code>process-self</code> elements, which are represented by 
  * the inner Instance class.
- * @version $Revision: 1.5 $ $Date: 2002/12/15 17:15:23 $
+ * @version $Revision: 1.6 $ $Date: 2002/12/17 16:36:30 $
  * @author Oliver Becker
  */
 
@@ -119,7 +119,8 @@ public class PSelfFactory extends FactoryBase
                if (context.currentGroup.namedGroups.get(groupExpName) 
                       == null) {
                   context.errorHandler.error(
-                     "Unknown group `" + groupQName + "'", 
+                     "Unknown target group `" + groupQName + 
+                     "' specified for `" + qName + "'", 
                      publicId, systemId, lineNo, colNo);
                   return processStatus; // if the errorHandler returns
                }

@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 1.7 2002/12/15 17:15:57 obecker Exp $
+ * $Id: PBufferFactory.java,v 1.8 2002/12/17 16:36:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.7 $ $Date: 2002/12/15 17:15:57 $
+ * @version $Revision: 1.8 $ $Date: 2002/12/17 16:36:29 $
  * @author Oliver Becker
  */
 
@@ -141,7 +141,8 @@ public class PBufferFactory extends FactoryBase
          if (groupExpName != null) {
             if (context.currentGroup.namedGroups.get(groupExpName) == null) {
                context.errorHandler.error(
-                  "Unknown group `" + groupQName + "'", 
+                  "Unknown target group `" + groupQName + 
+                  "' specified for `" + qName + "'", 
                   publicId, systemId, lineNo, colNo);
                return processStatus; // if the errorHandler returns
             }
