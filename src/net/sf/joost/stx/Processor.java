@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.18 2002/11/14 13:18:49 obecker Exp $
+ * $Id: Processor.java,v 1.19 2002/11/17 16:47:09 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -61,7 +61,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.18 $ $Date: 2002/11/14 13:18:49 $
+ * @version $Revision: 1.19 $ $Date: 2002/11/17 16:47:09 $
  * @author Oliver Becker
  */
 
@@ -822,6 +822,14 @@ public class Processor extends XMLFilterImpl
          case SAXEvent.PI:
             if((context.noMatchEvents & COPY_PI_NO_MATCH) != 0)
                emitter.processingInstruction(event.qName, event.value);
+            break;
+         case SAXEvent.ATTRIBUTE:
+            if((context.noMatchEvents & COPY_ATTRIBUTE_NO_MATCH) != 0)
+               emitter.addAttribute(event.uri, event.qName, event.lName,
+                                    event.value, context,
+                                    copyLocation.publicId,
+                                    copyLocation.systemId,
+                                    copyLocation.lineNo, copyLocation.colNo);
             break;
          default:
             log4j.warn("no default action for " + event);
