@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.11 2003/05/19 14:50:23 obecker Exp $
+ | $Id: build.xml,v 1.12 2003/06/10 13:11:08 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -126,7 +126,7 @@
     <!-- restore ${main.src} -->
     <move file="main${DSTAMP}.tmp" tofile="${main.src}" />
     <jar jarfile="${ant.project.name}.jar"
-         basedir="${classes}" excludes="test/**"
+         basedir="${classes}" excludes="test/**, samples/**"
          manifest="conf/manifest.mf" />
   </target>
 
@@ -138,6 +138,8 @@
   
   <target name="doc" depends="dep, mk.apidoc"
     description="creates the API documentation in the doc/api subdirectory">
+    <copy file="docsrc/index.html" tofile="doc/index.html" />
+    <replace file="doc/index.html" token="@@@DATE@@@" value="${date.today}" />
     <javadoc sourcepath="${src}" destdir="${doc}/api"
              link="http://java.sun.com/j2se/1.4.1/docs/api"
              packagenames="net.sf.joost, net.sf.joost.stx,
@@ -147,8 +149,6 @@
              windowtitle="Joost API documentation" private="true">
       <classpath refid="cp" />
     </javadoc>
-    <copy file="docsrc/index.html" tofile="doc/index.html" />
-    <replace file="doc/index.html" token="@@@DATE@@@" value="${date.today}" />
   </target>
   
 
