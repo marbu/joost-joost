@@ -1,5 +1,5 @@
 /*
- * $Id: TextFactory.java,v 2.0 2003/04/25 16:46:34 obecker Exp $
+ * $Id: TextFactory.java,v 2.1 2003/06/03 14:30:26 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -26,24 +26,23 @@ package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import java.io.StringWriter;
 import java.util.HashSet;
-import java.util.Hashtable;
 
 import net.sf.joost.emitter.StreamEmitter;
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 
 
 /** 
  * Factory for <code>text</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:34 $
+ * @version $Revision: 2.1 $ $Date: 2003/06/03 14:30:26 $
  * @author Oliver Becker
  */
 
@@ -70,17 +69,16 @@ public class TextFactory extends FactoryBase
       return "text";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs,
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      int markup = getEnumAttValue("markup", attrs, MARKUP_VALUES, locator);
+      int markup = getEnumAttValue("markup", attrs, MARKUP_VALUES, context);
       if (markup == -1)
          markup = NO_MARKUP; // default value
 
-      checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, markup);
+      checkAttributes(qName, attrs, attrNames, context);
+      return new Instance(qName, parent, context, markup);
    }
 
 
@@ -97,11 +95,11 @@ public class TextFactory extends FactoryBase
       private int recursionLevel = 0;
 
 
-      public Instance(String qName, NodeBase parent, Locator locator,
+      public Instance(String qName, NodeBase parent, ParseContext context,
                       int markup)
          throws SAXParseException
       {
-         super(qName, parent, locator, true);
+         super(qName, parent, context, true);
          if (markup == SERIALIZE_MARKUP) {
             // use our StreamEmitter with a StringWriter
             StringWriter w = new StringWriter();
@@ -110,7 +108,7 @@ public class TextFactory extends FactoryBase
                stxEmitter = new StreamEmitter(w);
             }
             catch (java.io.IOException ex) {
-               throw new SAXParseException(null, locator, ex);
+               throw new SAXParseException(null, context.locator, ex);
             }
          }
          else {
@@ -121,7 +119,7 @@ public class TextFactory extends FactoryBase
                        ? "(`" + qName + 
                          "' with the `markup' attribute set to `" + 
                          MARKUP_VALUES[NO_MARKUP] + "' started in line " + 
-                         locator.getLineNumber() + ")"
+                         lineNo + ")"
                        : null );
          }
       }

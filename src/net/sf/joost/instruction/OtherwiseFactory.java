@@ -1,5 +1,5 @@
 /*
- * $Id: OtherwiseFactory.java,v 2.0 2003/04/25 16:46:33 obecker Exp $
+ * $Id: OtherwiseFactory.java,v 2.1 2003/06/03 14:30:23 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,19 +25,17 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import java.util.Hashtable;
-
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 
 
 /** 
  * Factory for <code>otherwise</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:33 $
+ * @version $Revision: 2.1 $ $Date: 2003/06/03 14:30:23 $
  * @author Oliver Becker
  */
 public class OtherwiseFactory extends FactoryBase
@@ -48,18 +46,17 @@ public class OtherwiseFactory extends FactoryBase
       return "otherwise";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs,
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
       if (!(parent instanceof ChooseFactory.Instance))
          throw new SAXParseException(
             "`" + qName + "' must be child of stx:choose",
-            locator);
+            context.locator);
 
-      checkAttributes(qName, attrs, null, locator);
-      return new Instance(qName, parent, locator);
+      checkAttributes(qName, attrs, null, context);
+      return new Instance(qName, parent, context);
    }
 
 
@@ -67,9 +64,9 @@ public class OtherwiseFactory extends FactoryBase
    /** Represents an instance of the <code>otherwise</code> element. */
    final public class Instance extends NodeBase
    {
-      public Instance(String qName, NodeBase parent, Locator locator)
+      public Instance(String qName, NodeBase parent, ParseContext context)
       {
-         super(qName, parent, locator, true);
+         super(qName, parent, context, true);
       }
 
 

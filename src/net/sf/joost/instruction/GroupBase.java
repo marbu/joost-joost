@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 2.7 2003/06/02 11:58:44 obecker Exp $
+ * $Id: GroupBase.java,v 2.8 2003/06/03 14:30:22 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,7 +24,6 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -35,6 +34,7 @@ import java.util.Stack;
 import java.util.Vector;
 
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Processor;
 import net.sf.joost.stx.Value;
 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.Value;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 2.7 $ $Date: 2003/06/02 11:58:44 $
+ * @version $Revision: 2.8 $ $Date: 2003/06/03 14:30:22 $
  * @author Oliver Becker
  */
 
@@ -128,11 +128,11 @@ abstract public class GroupBase extends NodeBase
 
 
    // Constructor
-   protected GroupBase(String qName, NodeBase parent, Locator locator,
+   protected GroupBase(String qName, NodeBase parent, ParseContext context,
                        byte passThrough, boolean stripSpace, 
                        boolean recognizeCdata)
    {
-      super(qName, parent, locator, true);
+      super(qName, parent, context, true);
       this.parentGroup = (GroupBase)parent;
       this.passThrough = passThrough;
       this.stripSpace = stripSpace;

@@ -1,5 +1,5 @@
 /*
- * $Id: ElementEndFactory.java,v 2.1 2003/04/30 15:08:15 obecker Exp $
+ * $Id: ElementEndFactory.java,v 2.2 2003/06/03 14:30:20 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,7 +25,6 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -33,6 +32,7 @@ import java.util.Hashtable;
 import java.util.HashSet;
 
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Value;
 import net.sf.joost.grammar.Tree;
 
@@ -40,7 +40,7 @@ import net.sf.joost.grammar.Tree;
 /**
  * Factory for <code>end-element</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.1 $ $Date: 2003/04/30 15:08:15 $
+ * @version $Revision: 2.2 $ $Date: 2003/06/03 14:30:20 $
  * @author Oliver Becker
  */
 
@@ -65,25 +65,23 @@ final public class ElementEndFactory extends FactoryBase
       return "end-element";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String nameAtt = getAttribute(qName, attrs, "name", locator);
-      Tree nameAVT = parseAVT(nameAtt, nsSet, parent, locator);
+      String nameAtt = getAttribute(qName, attrs, "name", context);
+      Tree nameAVT = parseAVT(nameAtt, context);
 
       String namespaceAtt = attrs.getValue("namespace");
       Tree namespaceAVT;
       if (namespaceAtt != null)
-         namespaceAVT = parseAVT(namespaceAtt, nsSet, parent, locator);
+         namespaceAVT = parseAVT(namespaceAtt, context);
       else
          namespaceAVT = null;
 
-      checkAttributes(qName, attrs, attrNames, locator);
+      checkAttributes(qName, attrs, attrNames, context);
 
-      return new Instance(qName, parent, locator, nsSet, 
-                          nameAVT, namespaceAVT);
+      return new Instance(qName, parent, context, nameAVT, namespaceAVT);
    }
 
 
@@ -93,12 +91,11 @@ final public class ElementEndFactory extends FactoryBase
       private Tree name, namespace;
       private Hashtable nsSet;
 
-      protected Instance(String qName, NodeBase parent, Locator locator, 
-                         Hashtable nsSet,
+      protected Instance(String qName, NodeBase parent, ParseContext context,
                          Tree name, Tree namespace)
       {
-         super(qName, parent, locator, false);
-         this.nsSet = (Hashtable)nsSet.clone();
+         super(qName, parent, context, false);
+         this.nsSet = (Hashtable)context.nsSet.clone();
          this.name = name;
          this.namespace = namespace;
       }

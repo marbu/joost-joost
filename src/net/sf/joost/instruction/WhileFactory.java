@@ -1,5 +1,5 @@
 /*
- * $Id: WhileFactory.java,v 2.2 2003/04/30 15:08:18 obecker Exp $
+ * $Id: WhileFactory.java,v 2.3 2003/06/03 14:30:27 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,14 +25,13 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import java.util.Hashtable;
 import java.util.HashSet;
 
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Value;
 import net.sf.joost.grammar.Tree;
 
@@ -40,7 +39,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>while</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2003/04/30 15:08:18 $
+ * @version $Revision: 2.3 $ $Date: 2003/06/03 14:30:27 $
  * @author Oliver Becker
  */
 
@@ -62,15 +61,14 @@ final public class WhileFactory extends FactoryBase
       return "while";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String testAtt = getAttribute(qName, attrs, "test", locator);
-      Tree testExpr = parseExpr(testAtt, nsSet, parent, locator);
-      checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, testExpr);
+      String testAtt = getAttribute(qName, attrs, "test", context);
+      Tree testExpr = parseExpr(testAtt, context);
+      checkAttributes(qName, attrs, attrNames, context);
+      return new Instance(qName, parent, context, testExpr);
    }
 
 
@@ -83,9 +81,9 @@ final public class WhileFactory extends FactoryBase
 
       // Constructor
       protected Instance(final String qName, NodeBase parent, 
-                         Locator locator, Tree test)
+                         ParseContext context, Tree test)
       {
-         super(qName, parent, locator, true);
+         super(qName, parent, context, true);
          this.test = test;
          me = this;
 

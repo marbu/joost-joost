@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateBase.java,v 2.3 2003/05/26 11:50:34 obecker Exp $
+ * $Id: TemplateBase.java,v 2.4 2003/06/03 14:30:25 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,7 +24,6 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -32,12 +31,13 @@ import java.util.Hashtable;
 import java.util.Stack;
 
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 
 
 /**
  * Common base class for {@link TemplateFactory.Instance} and
  * {@link ProcedureFactory.Instance}.
- * @version $Revision: 2.3 $ $Date: 2003/05/26 11:50:34 $
+ * @version $Revision: 2.4 $ $Date: 2003/06/03 14:30:25 $
  * @author Oliver Becker
  */
 
@@ -72,11 +72,11 @@ public abstract class TemplateBase extends NodeBase
    // Constructor
    //
 
-   protected TemplateBase(String qName, NodeBase parent, Locator locator,
+   protected TemplateBase(String qName, NodeBase parent, ParseContext context,
                           int visibility, boolean isPublic, boolean newScope)
       throws SAXParseException
    {
-      super(qName, parent, locator, true);
+      super(qName, parent, context, true);
       parentGroup = (GroupBase)parent;
       this.visibility = visibility;
       this.isPublic = isPublic;

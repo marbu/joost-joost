@@ -1,5 +1,5 @@
 /*
- * $Id: ProcessBase.java,v 2.5 2003/05/26 11:50:34 obecker Exp $
+ * $Id: ProcessBase.java,v 2.6 2003/06/03 14:30:25 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,7 +31,6 @@ import java.util.Vector;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -39,11 +38,12 @@ import net.sf.joost.Constants;
 import net.sf.joost.emitter.EmitterAdapter;
 import net.sf.joost.stx.BufferReader;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 
 /**
  * Common base class for all <code>stx:process-<em>xxx</em></code>
  * instructions
- * @version $Revision: 2.5 $ $Date: 2003/05/26 11:50:34 $
+ * @version $Revision: 2.6 $ $Date: 2003/06/03 14:30:25 $
  * @author Oliver Becker
  */
 public class ProcessBase extends NodeBase
@@ -66,12 +66,12 @@ public class ProcessBase extends NodeBase
 
    // Constructor
    public ProcessBase(String qName, NodeBase parent, 
-                      Hashtable nsSet, Locator locator,
+                      ParseContext context,
                       String groupQName, 
                       String filter, String src)
       throws SAXParseException
    {
-      super(qName, parent, locator, true);
+      super(qName, parent, context, true);
       me = this;
 
       // insert instruction that clears the parameter stack when
@@ -88,8 +88,7 @@ public class ProcessBase extends NodeBase
 
       this.groupQName = groupQName;
       if (groupQName != null)
-         this.groupExpName = FactoryBase.getExpandedName(groupQName, 
-                                                         nsSet, locator);
+         this.groupExpName = FactoryBase.getExpandedName(groupQName, context);
 
       // Evaluate src attribute
       this.filter = filter;
@@ -99,7 +98,7 @@ public class ProcessBase extends NodeBase
             throw new SAXParseException(
                "Invalid src value `" + src + 
                "'. Expect url(...) or buffer(...) specification.",
-               locator);
+               context.locator);
          if (src.startsWith("url(")) {
             href = src.substring(4, src.length()-1).trim();
             if ((href.startsWith("\"") && href.endsWith("\"")) ||
@@ -109,14 +108,13 @@ public class ProcessBase extends NodeBase
          else if (src.startsWith("buffer(")) {
             useBufQName = src.substring(7, src.length()-1).trim();
             useBufExpName = "@" + 
-                            FactoryBase.getExpandedName(useBufQName, nsSet, 
-                                                        locator);
+                            FactoryBase.getExpandedName(useBufQName, context);
          }
          else
             throw new SAXParseException(
                "Invalid src value `" + src + 
                "'. Expect url(...) or buffer(...) specification.",
-               locator);
+               context.locator);
       }
 
       if (this instanceof PDocumentFactory.Instance || 
@@ -134,12 +132,12 @@ public class ProcessBase extends NodeBase
          throw new SAXParseException(
             "`" + qName + "' must be a descendant of stx:template or " + 
             "stx:procedure",
-            locator);
+            context.locator);
       if (ancestor instanceof WithParamFactory.Instance)
          throw new SAXParseException(
             "`" + qName + "' must not be a descendant of `" +
             ancestor.qName + "'",
-            locator);
+            context.locator);
    }
 
 

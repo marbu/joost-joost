@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 2.1 2003/04/30 15:08:16 obecker Exp $
+ * $Id: LitElementFactory.java,v 2.2 2003/06/03 14:30:23 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -34,30 +34,22 @@ import java.util.Hashtable;
 
 import net.sf.joost.Constants;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.grammar.Tree;
 
 
 /** 
  * Factory for literal result elements, which are represented by the
  * inner Instance class. 
- * @version $Revision: 2.1 $ $Date: 2003/04/30 15:08:16 $
+ * @version $Revision: 2.2 $ $Date: 2003/06/03 14:30:23 $
  * @author Oliver Becker
 */
 
-final public class LitElementFactory extends FactoryBase
+final public class LitElementFactory
 {
-   /** 
-    * Is implemented solely because the base class requires it. 
-    * @return an empty String
-    */
-   public String getName()
-   {
-      return "";
-   }
-
    public NodeBase createNode(NodeBase parent, String uri, String lName, 
                               String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+                              ParseContext context)
       throws SAXParseException
    {
       if (parent == null) {
@@ -65,24 +57,23 @@ final public class LitElementFactory extends FactoryBase
             throw new SAXParseException(
                "File is not an STX transformation sheet, need namespace `" +
                Constants.STX_NS + "' for the `transform' element",
-               locator);
+               context.locator);
          else
             throw new SAXParseException(
                "File is not an STX transformation sheet, found " + qName, 
-               locator);
+               context.locator);
       }
 
       if (parent instanceof TransformFactory.Instance)
          throw new SAXParseException("Literal result element `" + qName + 
                                      "' may occur only within templates",
-                                     locator);
+                                     context.locator);
 
       Tree[] avtList = new Tree[attrs.getLength()];
       for (int i=0; i<avtList.length; i++) 
-         avtList[i] = parseAVT(attrs.getValue(i), nsSet, parent, locator);
+         avtList[i] = FactoryBase.parseAVT(attrs.getValue(i), context);
 
-      return new Instance(uri, lName, qName, attrs, avtList, nsSet, parent,
-                          locator);
+      return new Instance(uri, lName, qName, attrs, avtList, parent, context);
    }
 
 
@@ -97,15 +88,15 @@ final public class LitElementFactory extends FactoryBase
       private Hashtable namespaces;
       
       protected Instance(String uri, String lName, String qName,
-                         Attributes attrs, Tree[] avtList, Hashtable nsTable,
-                         NodeBase parent, Locator locator)
+                         Attributes attrs, Tree[] avtList, 
+                         NodeBase parent, ParseContext context)
       {
-         super(qName, parent, locator, true);
+         super(qName, parent, context, true);
          this.uri = uri;
          this.lName = lName;
          this.attrs = new AttributesImpl(attrs);
          this.avtList = avtList;
-         this.namespaces = (Hashtable)nsTable.clone();
+         this.namespaces = (Hashtable)context.nsSet.clone();
       }
       
 

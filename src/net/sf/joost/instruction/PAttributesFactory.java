@@ -1,5 +1,5 @@
 /*
- * $Id: PAttributesFactory.java,v 2.2 2003/05/23 11:04:47 obecker Exp $
+ * $Id: PAttributesFactory.java,v 2.3 2003/06/03 14:30:23 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,21 +25,20 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import java.util.HashSet;
-import java.util.Hashtable;
 
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.SAXEvent;
 
 
 /**
  * Factory for <code>process-attributes</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.2 $ $Date: 2003/05/23 11:04:47 $
+ * @version $Revision: 2.3 $ $Date: 2003/06/03 14:30:23 $
  * @author Oliver Becker
  */
 
@@ -62,16 +61,15 @@ public class PAttributesFactory extends FactoryBase
       return "process-attributes";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
       String groupAtt = attrs.getValue("group");
 
-      checkAttributes(qName, attrs, attrNames, locator);
+      checkAttributes(qName, attrs, attrNames, context);
 
-      return new Instance(qName, parent, nsSet, locator, groupAtt);
+      return new Instance(qName, parent, context, groupAtt);
    }
 
 
@@ -79,12 +77,11 @@ public class PAttributesFactory extends FactoryBase
    public class Instance extends ProcessBase
    {
       // Constructor
-      public Instance(String qName, NodeBase parent, 
-                      Hashtable nsSet, Locator locator,
+      public Instance(String qName, NodeBase parent, ParseContext context,
                       String groupQName)
          throws SAXParseException
       {
-         super(qName, parent, nsSet, locator, groupQName, null, null);
+         super(qName, parent, context, groupQName, null, null);
          // external filter not possible here (last two params = null)
       }
 

@@ -1,5 +1,5 @@
 /*
- * $Id: expr.inc,v 1.7 2003/04/30 15:06:03 obecker Exp $
+ * $Id: expr.inc,v 1.8 2003/06/03 14:28:45 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -109,7 +109,7 @@ BasicExpr ::=
  | NUMBER:n  /* Literal */
       {: RESULT = new Tree(Tree.NUMBER, n); :}
  | LPAR ExprSeq:t RPAR  /* ParenthesizedExpr */
-      {: RESULT = (t == null ? new Tree(Tree.LIST, null, null) : t); :}
+      {: RESULT = (t == null ? new Tree(Tree.LIST) : t); :}
  | DOT
       {: RESULT = new Tree(Tree.DOT, null); :}
  ;
@@ -171,8 +171,7 @@ Unfortunately this results in shift/reduce conflicts in CUP.
 
 NodeAccessor ::= 
    DOLLAR Name:n  /* Variable */
-      {: RESULT = new Tree(Tree.VAR, n, parser.j_transform,
-                           parser.j_nsSet, parser.j_locator); :}
+      {: RESULT = new Tree(Tree.VAR, n, parser.j_context); :}
  | FunctionCall:t
       {: RESULT = t; :}
  ;
@@ -214,16 +213,13 @@ AccessorStep ::=
 
 NodeNameTest ::=
    Name:n
-      {: RESULT = new Tree(Tree.NAME_TEST, n, parser.j_transform,
-                           parser.j_nsSet, parser.j_locator); :}
+      {: RESULT = new Tree(Tree.NAME_TEST, n, parser.j_context); :}
  | STAR
       {: RESULT = new Tree(Tree.WILDCARD, null); :}
  | STAR COLON NCNAME:n
-      {: RESULT = new Tree(Tree.URI_WILDCARD, "*", n, 
-                           parser.j_nsSet, parser.j_locator); :}
+      {: RESULT = new Tree(Tree.URI_WILDCARD, "*", n, parser.j_context); :}
  | NCNAME:n COLON STAR
-      {: RESULT = new Tree(Tree.LOCAL_WILDCARD, n, "*", 
-                           parser.j_nsSet, parser.j_locator); :}
+      {: RESULT = new Tree(Tree.LOCAL_WILDCARD, n, "*", parser.j_context); :}
  ;
 
 KindTest ::=
@@ -243,26 +239,24 @@ KindTest ::=
 
 AttributeNameTest ::=
    AT Name:n
-      {: RESULT = new Tree(Tree.ATTR, n, parser.j_transform,
-                           parser.j_nsSet, parser.j_locator); :}
+      {: RESULT = new Tree(Tree.ATTR, n, parser.j_context); :}
  | AT STAR
       {: RESULT = new Tree(Tree.ATTR_WILDCARD, null); :}
  | AT STAR COLON NCNAME:n
       {: RESULT = new Tree(Tree.ATTR_URI_WILDCARD, "*", n,
-                           parser.j_nsSet, parser.j_locator); :}
+                           parser.j_context); :}
  | AT NCNAME:n COLON STAR
       {: RESULT = new Tree(Tree.ATTR_LOCAL_WILDCARD, n, "*",
-                           parser.j_nsSet, parser.j_locator); :}
+                           parser.j_context); :}
  ;
 
 FunctionCall ::=
    Name:n LPAR ParaSeq:e RPAR
-      {: RESULT = new Tree(Tree.FUNCTION, n, e, parser.j_transform,
-                           parser.j_nsSet, parser.j_locator); :}
+      {: RESULT = new Tree(Tree.FUNCTION, n, e, parser.j_context); :}
  ;
 
 ExprSeq ::=
-      {: RESULT = new Tree(Tree.SEQ, null, null); :}
+      {: RESULT = new Tree(Tree.SEQ); :}
  | Expr:t
       {: RESULT = t; :}
  | Expr:t1 COMMA ExprSeq:t2

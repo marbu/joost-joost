@@ -1,5 +1,5 @@
 /*
- * $Id: GroupFactory.java,v 2.4 2003/06/01 19:39:04 obecker Exp $
+ * $Id: GroupFactory.java,v 2.5 2003/06/03 14:30:22 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,20 +25,20 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
 
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.HashSet;
 
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Processor;
 
 
 /** 
  * Factory for <code>group</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.4 $ $Date: 2003/06/01 19:39:04 $
+ * @version $Revision: 2.5 $ $Date: 2003/06/03 14:30:22 $
  * @author Oliver Becker
  */
 
@@ -73,27 +73,26 @@ final public class GroupFactory extends FactoryBase
       return "group";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
       // check parent
       if (parent != null && !(parent instanceof GroupBase))
          throw new SAXParseException("`" + qName + 
                                      "' not allowed as child of `" +
-                                     parent.qName + "'", locator);
+                                     parent.qName + "'", context.locator);
 
       String groupName = null;
       String nameAtt = attrs.getValue("name");
       if (nameAtt != null) {
-         groupName = getExpandedName(nameAtt, nsSet, locator);
+         groupName = getExpandedName(nameAtt, context);
          
          Hashtable namedGroups = ((GroupBase)parent).namedGroups;
          if (namedGroups.get(groupName) != null) 
             throw new SAXParseException(
                "Group name `" + nameAtt + "' already used", 
-               locator);
+               context.locator);
          else
             namedGroups.put(groupName, groupName); 
             // value groupName (second parameter) is just a marker,
@@ -105,7 +104,7 @@ final public class GroupFactory extends FactoryBase
       // default is "inherit" for the following three attributes
       byte passThrough = 0;
       switch (getEnumAttValue("pass-through", attrs,
-                              PASS_THROUGH_VALUES, locator)) {
+                              PASS_THROUGH_VALUES, context)) {
       case 0: passThrough = Processor.PASS_THROUGH_NONE;     break;
       case 1: passThrough = Processor.PASS_THROUGH_TEXT;     break;
       case 2: passThrough = Processor.PASS_THROUGH_ALL;      break;
@@ -114,12 +113,13 @@ final public class GroupFactory extends FactoryBase
       default:
          // mustn't happen 
          throw new SAXParseException(
-            "FATAL: Unexpected return value from getEnumAttValue", locator);
+            "FATAL: Unexpected return value from getEnumAttValue", 
+            context.locator);
       }
 
       boolean stripSpace = false;
       switch(getEnumAttValue("strip-space", attrs,
-                             YESNO_INHERIT_VALUES, locator)) {
+                             YESNO_INHERIT_VALUES, context)) {
       case YES_VALUE: stripSpace = true;            break;
       case NO_VALUE:  stripSpace = false;           break;
       case -1:
@@ -127,12 +127,13 @@ final public class GroupFactory extends FactoryBase
       default:
          // mustn't happen 
          throw new SAXParseException(
-            "FATAL: Unexpected return value from getEnumAttValue", locator);
+            "FATAL: Unexpected return value from getEnumAttValue", 
+            context.locator);
       }
 
       boolean recognizeCdata = false;
       switch(getEnumAttValue("recognize-cdata", attrs,
-                             YESNO_INHERIT_VALUES, locator)) {
+                             YESNO_INHERIT_VALUES, context)) {
       case YES_VALUE: recognizeCdata = true;                break;
       case NO_VALUE:  recognizeCdata = false;               break;
       case -1:
@@ -140,12 +141,13 @@ final public class GroupFactory extends FactoryBase
       default:
          // mustn't happen 
          throw new SAXParseException(
-            "FATAL: Unexpected return value from getEnumAttValue", locator);
+            "FATAL: Unexpected return value from getEnumAttValue", 
+            context.locator);
       }
 
 
-      checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, groupName,
+      checkAttributes(qName, attrs, attrNames, context);
+      return new Instance(qName, parent, context, groupName,
                           passThrough, stripSpace, recognizeCdata);
    }
 
@@ -157,11 +159,11 @@ final public class GroupFactory extends FactoryBase
    final public class Instance extends GroupBase
    {
       // Constructor
-      protected Instance(String qName, NodeBase parent, Locator locator, 
+      protected Instance(String qName, NodeBase parent, ParseContext context,
                          String groupName, byte passThrough,
                          boolean stripSpace, boolean recognizeCdata)
       {
-         super(qName, parent, locator, 
+         super(qName, parent, context,
                passThrough, stripSpace, recognizeCdata);
          this.groupName = groupName;
       }

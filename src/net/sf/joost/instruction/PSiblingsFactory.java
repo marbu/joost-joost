@@ -1,5 +1,5 @@
 /*
- * $Id: PSiblingsFactory.java,v 2.2 2003/05/23 11:04:47 obecker Exp $
+ * $Id: PSiblingsFactory.java,v 2.3 2003/06/03 14:30:24 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,22 +25,21 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import java.util.HashSet;
-import java.util.Hashtable;
 
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.SAXEvent;
 
 
 /** 
  * Factory for <code>process-siblings</code> elements, which are represented 
  * by the inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2003/05/23 11:04:47 $
+ * @version $Revision: 2.3 $ $Date: 2003/06/03 14:30:24 $
  * @author Oliver Becker
  */
 
@@ -65,26 +64,25 @@ public class PSiblingsFactory extends FactoryBase
       return "process-siblings";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String local, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, Attributes attrs,
+                              ParseContext context)
       throws SAXParseException
    {
       String groupAtt = attrs.getValue("group");
 
       String whileAtt = attrs.getValue("while");
       Tree whilePattern = whileAtt != null
-         ? parsePattern(whileAtt, nsSet, parent, locator)
+         ? parsePattern(whileAtt, context)
          : null;
 
       String untilAtt = attrs.getValue("until");
       Tree untilPattern = untilAtt != null
-         ? parsePattern(untilAtt, nsSet, parent, locator)
+         ? parsePattern(untilAtt, context)
          : null;
 
-      checkAttributes(qName, attrs, attrNames, locator);
+      checkAttributes(qName, attrs, attrNames, context);
 
-      return new Instance(qName, parent, nsSet, locator, groupAtt,
+      return new Instance(qName, parent, context, groupAtt,
                           whilePattern, untilPattern);
    }
 
@@ -96,12 +94,12 @@ public class PSiblingsFactory extends FactoryBase
       GroupBase parentGroup;
 
       public Instance(String qName, NodeBase parent, 
-                      Hashtable nsSet, Locator locator,
+                      ParseContext context,
                       String groupQName, 
                       Tree whilePattern, Tree untilPattern)
          throws SAXParseException
       {
-         super(qName, parent, nsSet, locator, groupQName, null, null);
+         super(qName, parent, context, groupQName, null, null);
          this.whilePattern = whilePattern;
          this.untilPattern = untilPattern;
 

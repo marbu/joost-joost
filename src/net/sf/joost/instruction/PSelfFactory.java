@@ -1,5 +1,5 @@
 /*
- * $Id: PSelfFactory.java,v 2.1 2003/05/23 11:10:08 obecker Exp $
+ * $Id: PSelfFactory.java,v 2.2 2003/06/03 14:30:24 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,20 +25,19 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import java.util.HashSet;
-import java.util.Hashtable;
 
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 
 
 /**
  * Factory for <code>process-self</code> elements, which are represented by 
  * the inner Instance class.
- * @version $Revision: 2.1 $ $Date: 2003/05/23 11:10:08 $
+ * @version $Revision: 2.2 $ $Date: 2003/06/03 14:30:24 $
  * @author Oliver Becker
  */
 
@@ -63,9 +62,8 @@ public class PSelfFactory extends FactoryBase
       return "process-self";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
       String groupAtt = attrs.getValue("group");
@@ -75,7 +73,7 @@ public class PSelfFactory extends FactoryBase
       if (groupAtt != null && filterAtt != null)
          throw new SAXParseException(
             "It's not allowed to use both `group' and `filter' attributes",
-            locator);
+            context.locator);
 
       String srcAtt = attrs.getValue("src");
 
@@ -83,11 +81,11 @@ public class PSelfFactory extends FactoryBase
          throw new SAXParseException(
             "Missing `filter' attribute in `" + qName + 
             "' (`src' is present)",
-            locator);
+            context.locator);
 
-      checkAttributes(qName, attrs, attrNames, locator);
+      checkAttributes(qName, attrs, attrNames, context);
 
-      return new Instance(qName, parent, nsSet, locator, groupAtt,
+      return new Instance(qName, parent, context, groupAtt,
                           filterAtt, srcAtt);
    }
 
@@ -96,12 +94,11 @@ public class PSelfFactory extends FactoryBase
    public class Instance extends ProcessBase
    {
       // Constructor
-      public Instance(String qName, NodeBase parent, 
-                      Hashtable nsSet, Locator locator,
+      public Instance(String qName, NodeBase parent, ParseContext context,
                       String groupQName, String filter, String src)
          throws SAXParseException
       {
-         super(qName, parent, nsSet, locator, groupQName, filter, src);
+         super(qName, parent, context, groupQName, filter, src);
       }
 
 

@@ -1,5 +1,5 @@
 /*
- * $Id: ParamFactory.java,v 2.3 2003/04/30 15:08:17 obecker Exp $
+ * $Id: ParamFactory.java,v 2.4 2003/06/03 14:30:24 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,7 +25,6 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -35,6 +34,7 @@ import java.util.HashSet;
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.stx.Value;
 
@@ -42,7 +42,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>params</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.3 $ $Date: 2003/04/30 15:08:17 $
+ * @version $Revision: 2.4 $ $Date: 2003/06/03 14:30:24 $
  * @author Oliver Becker
  */
 
@@ -66,9 +66,8 @@ final public class ParamFactory extends FactoryBase
       return "param";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
       if (parent == null || 
@@ -77,7 +76,7 @@ final public class ParamFactory extends FactoryBase
          throw new SAXParseException(
             "`" + qName + "' must be a top level element " +
             "or a child of stx:template or stx:procedure",
-            locator);
+            context.locator);
 
       if(parent instanceof TemplateBase &&
          parent != parent.lastChild && // not the first
@@ -85,14 +84,14 @@ final public class ParamFactory extends FactoryBase
          throw new SAXParseException(
             "`" + qName + "' instructions must always occur as first " +
             "children of `" + parent.qName + "'",
-            locator);
+            context.locator);
 
-      String nameAtt = getAttribute(qName, attrs, "name", locator);
-      String parName = getExpandedName(nameAtt, nsSet, locator);
+      String nameAtt = getAttribute(qName, attrs, "name", context);
+      String parName = getExpandedName(nameAtt, context);
 
       // default is false
       boolean required = getEnumAttValue("required", attrs, YESNO_VALUES, 
-                                         locator) == YES_VALUE;
+                                         context) == YES_VALUE;
 
       String selectAtt = attrs.getValue("select");
       Tree selectExpr;
@@ -100,14 +99,14 @@ final public class ParamFactory extends FactoryBase
          if (required)
             throw new SAXParseException(
                "`" + qName + "' must not have a `select' attribute if it " +
-               "declares the parameter as required", locator);
-         selectExpr = parseExpr(selectAtt, nsSet, parent, locator);
+               "declares the parameter as required", context.locator);
+         selectExpr = parseExpr(selectAtt, context);
       }
       else
          selectExpr = null;
 
-      checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, nameAtt, parName,
+      checkAttributes(qName, attrs, attrNames, context);
+      return new Instance(qName, parent, context, nameAtt, parName,
                           selectExpr, required);
    }
 
@@ -120,11 +119,11 @@ final public class ParamFactory extends FactoryBase
       private boolean required;
       private AbstractInstruction contents, successor;
 
-      protected Instance(String qName, NodeBase parent, Locator locator, 
+      protected Instance(String qName, NodeBase parent, ParseContext context,
                          String varName, String expName, Tree select,
                          boolean required)
       {
-         super(qName, parent, locator, expName, 
+         super(qName, parent, context, expName, 
                false, // keep-value has no meaning here
                // this element may have children if there is no select
                // attribute and the parameter is not required

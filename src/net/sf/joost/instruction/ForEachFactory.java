@@ -1,5 +1,5 @@
 /*
- * $Id: ForEachFactory.java,v 2.4 2003/04/30 15:08:15 obecker Exp $
+ * $Id: ForEachFactory.java,v 2.5 2003/06/03 14:30:21 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,16 +25,15 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.Stack;
 import java.util.Vector;
 
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Value;
 import net.sf.joost.grammar.Tree;
 
@@ -42,7 +41,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>for-each-item</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.4 $ $Date: 2003/04/30 15:08:15 $
+ * @version $Revision: 2.5 $ $Date: 2003/06/03 14:30:21 $
  * @author Oliver Becker
  */
 
@@ -65,19 +64,18 @@ final public class ForEachFactory extends FactoryBase
       return "for-each-item";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String nameAtt = getAttribute(qName, attrs, "name", locator);
-      String expName = getExpandedName(nameAtt, nsSet, locator);
+      String nameAtt = getAttribute(qName, attrs, "name", context);
+      String expName = getExpandedName(nameAtt, context);
 
-      String selectAtt = getAttribute(qName, attrs, "select", locator);
-      Tree selectExpr = parseExpr(selectAtt, nsSet, parent, locator);
-      checkAttributes(qName, attrs, attrNames, locator);
+      String selectAtt = getAttribute(qName, attrs, "select", context);
+      Tree selectExpr = parseExpr(selectAtt, context);
+      checkAttributes(qName, attrs, attrNames, context);
 
-      return new Instance(qName, parent, locator, nameAtt, expName,
+      return new Instance(qName, parent, context, nameAtt, expName,
                           selectExpr);
    }
 
@@ -109,10 +107,10 @@ final public class ForEachFactory extends FactoryBase
 
       // Constructor
       protected Instance(final String qName, NodeBase parent, 
-                         Locator locator, String varName, String expName,
-                         Tree select)
+                         ParseContext context, 
+                         String varName, String expName, Tree select)
       {
-         super(qName, parent, locator, true);
+         super(qName, parent, context, true);
          this.varName = varName;
          this.expName = expName;
          this.select = select;

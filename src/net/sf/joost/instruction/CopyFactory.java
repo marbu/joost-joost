@@ -1,5 +1,5 @@
 /*
- * $Id: CopyFactory.java,v 2.4 2003/05/14 12:30:06 obecker Exp $
+ * $Id: CopyFactory.java,v 2.5 2003/06/03 14:30:20 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,22 +25,21 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import java.util.HashSet;
-import java.util.Hashtable;
 
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.grammar.Tree;
 
 /** 
  * Factory for <code>copy</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.4 $ $Date: 2003/05/14 12:30:06 $
+ * @version $Revision: 2.5 $ $Date: 2003/06/03 14:30:20 $
  * @author Oliver Becker
  */
 
@@ -76,18 +75,17 @@ final public class CopyFactory extends FactoryBase
       return "copy";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
       String attributesAtt = attrs.getValue("attributes");
       Tree attributesPattern = (attributesAtt != null )
-         ? parsePattern(attributesAtt, nsSet, parent, locator)
+         ? parsePattern(attributesAtt, context)
          : null;
 
-      checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, attributesPattern);
+      checkAttributes(qName, attrs, attrNames, context);
+      return new Instance(qName, parent, context, attributesPattern);
    }
 
 
@@ -106,10 +104,10 @@ final public class CopyFactory extends FactoryBase
       // Constructor
       //
 
-      public Instance(String qName, NodeBase parent, Locator locator, 
+      public Instance(String qName, NodeBase parent, ParseContext context,
                       Tree attPattern)
       {
-         super(qName, parent, locator, true);
+         super(qName, parent, context, true);
          this.attPattern = attPattern;
          if (attPattern != null && attPattern.type == Tree.ATTR_WILDCARD)
             attrWildcard = true;

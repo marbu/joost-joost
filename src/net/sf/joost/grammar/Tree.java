@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 2.5 2003/05/14 11:53:03 obecker Exp $
+ * $Id: Tree.java,v 2.6 2003/06/03 14:28:45 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,13 +38,14 @@ import net.sf.joost.instruction.NodeBase;
 import net.sf.joost.instruction.TransformFactory;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.FunctionTable;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.stx.Value;
 
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 2.5 $ $Date: 2003/05/14 11:53:03 $
+ * @version $Revision: 2.6 $ $Date: 2003/06/03 14:28:45 $
  * @author Oliver Becker
  */
 final public class Tree
@@ -147,16 +148,19 @@ final public class Tree
       // System.err.println("Tree-Constructor 3: " + this);
    }
 
+   /** Constructs a Tree object as a leaf without a value. */
+   public Tree(int type)
+   {
+      this(type, null);
+   }
+
    /** 
     * Constructs a Tree object with a String value. If the type is a
     * {@link #NAME_TEST} then {@link #uri} and
     * {@link #lName} will be initialized appropriately 
-    * according to the mapping given in nsSet.
-    *
-    * @param nsSet the table of namespace prefix mappings
+    * according to the mapping given in {@link ParseContext#nsSet}.
     */
-   public Tree(int type, String value, TransformFactory.Instance transform,
-               Hashtable nsSet, Locator locator)
+   public Tree(int type, String value, ParseContext context)
       throws SAXParseException
    {
       this(type, null, null, value);
@@ -170,12 +174,12 @@ final public class Tree
       String qName = (String)value;
       int colon = qName.indexOf(":");
       if (colon != -1) {
-         uri = (String)nsSet.get(qName.substring(0, colon));
+         uri = (String)context.nsSet.get(qName.substring(0, colon));
          lName = qName.substring(colon+1);
          if (uri == null) {
             throw new SAXParseException("Undeclared prefix `" + 
                                    qName.substring(0, colon) + "'",
-                                   locator);
+                                   context.locator);
 
          }
       }
@@ -184,7 +188,7 @@ final public class Tree
          case NAME_TEST:
             // no qualified name: uri depends on the value of
             // <stx:transform default-stxpath-namespace="..." />
-            uri = transform.defaultSTXPathNamespace;
+            uri = context.transformNode.defaultSTXPathNamespace;
             break;
          case FUNCTION:
             // use the fixed default function namespace
@@ -202,12 +206,9 @@ final public class Tree
    /**
     * Constructs a Tree object with namespace prefix and local name.
     * {@link #uri} will be initialized according to the
-    * mapping given in <code>nsSet</code>.
-    *
-    * @param nsSet the table of namespace prefix mappings
+    * mapping given in {@link ParseContext#nsSet}
     */
-   public Tree(int type, String prefix, String lName, Hashtable nsSet,
-               Locator locator)
+   public Tree(int type, String prefix, String lName, ParseContext context)
       throws SAXParseException
    {
       this(type, null, null, prefix + ":" + lName);
@@ -216,30 +217,29 @@ final public class Tree
          log.fatal("Unexpected type " + type);
          throw new SAXParseException(
                       "FATAL: Tree constructor: Unexpected type " + type, 
-                      locator);
+                      context.locator);
       }
       this.lName = lName;
       if (type == URI_WILDCARD || type == ATTR_URI_WILDCARD)
          uri = "*";
       else {
-         uri = (String)nsSet.get(prefix);
+         uri = (String)context.nsSet.get(prefix);
          this.lName = lName;
          if (uri == null) 
             throw new SAXParseException("Undeclared prefix `" + prefix + "'",
-                                   locator);
+                                        context.locator);
       }
    }
 
 
-   public Tree(int type, String qName, Tree left, 
-               TransformFactory.Instance t, Hashtable nsSet,
-               Locator locator)
+   public Tree(int type, String qName, Tree left, ParseContext context)
       throws SAXParseException
    {
-      this(type, qName, t, nsSet, locator);
+      this(type, qName, context);
       this.left = left;
-      func = funcTable.getFunction(uri, lName, qName, left, locator);
+      func = funcTable.getFunction(uri, lName, qName, left, context.locator);
    }
+
 
 
 

@@ -1,5 +1,5 @@
 /*
- * $Id: PIFactory.java,v 2.1 2003/04/30 15:08:16 obecker Exp $
+ * $Id: PIFactory.java,v 2.2 2003/06/03 14:30:24 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,24 +25,23 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import java.util.Hashtable;
 import java.util.HashSet;
 
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Value;
 
 
 /** 
  * Factory for <code>processing-instruction</code> elements, which are 
  * represented by the inner Instance class. 
- * @version $Revision: 2.1 $ $Date: 2003/04/30 15:08:16 $
+ * @version $Revision: 2.2 $ $Date: 2003/06/03 14:30:24 $
  * @author Oliver Becker
  */
 
@@ -64,17 +63,16 @@ final public class PIFactory extends FactoryBase
       return "processing-instruction";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String nameAtt = getAttribute(qName, attrs, "name", locator);
-      Tree nameAVT = parseAVT(nameAtt, nsSet, parent, locator);
+      String nameAtt = getAttribute(qName, attrs, "name", context);
+      Tree nameAVT = parseAVT(nameAtt, context);
 
-      checkAttributes(qName, attrs, attrNames, locator);
+      checkAttributes(qName, attrs, attrNames, context);
 
-      return new Instance(qName, parent, locator, nameAVT);
+      return new Instance(qName, parent, context, nameAVT);
    }
 
 
@@ -89,15 +87,15 @@ final public class PIFactory extends FactoryBase
       private StringBuffer buffer;
       private String piName;
 
-      protected Instance(String qName, NodeBase parent, Locator locator, 
+      protected Instance(String qName, NodeBase parent, ParseContext context,
                          Tree name)
       {
-         super(qName, parent, locator, true);
+         super(qName, parent, context, true);
          this.name = name;
          buffer = new StringBuffer();
          strEmitter = new StringEmitter(buffer, 
                                         "(`" + qName + "' started in line " +
-                                        locator.getLineNumber() + ")");
+                                        lineNo + ")");
       }
 
 

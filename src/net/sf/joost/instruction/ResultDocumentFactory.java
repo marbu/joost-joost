@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 2.3 2003/05/28 13:20:13 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 2.4 2003/06/03 14:30:25 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,7 +25,6 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -34,7 +33,6 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
@@ -43,12 +41,13 @@ import net.sf.joost.emitter.StreamEmitter;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 
 
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.3 $ $Date: 2003/05/28 13:20:13 $
+ * @version $Revision: 2.4 $ $Date: 2003/06/03 14:30:25 $
  * @author Oliver Becker
  */
 
@@ -81,18 +80,17 @@ final public class ResultDocumentFactory extends FactoryBase
       return "result-document";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String hrefAtt = getAttribute(qName, attrs, "href", locator);
-      Tree href = parseExpr(hrefAtt, nsSet, parent, locator);
+      String hrefAtt = getAttribute(qName, attrs, "href", context);
+      Tree href = parseExpr(hrefAtt, context);
 
       String encodingAtt = attrs.getValue("encoding");
 
-      checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, href, encodingAtt);
+      checkAttributes(qName, attrs, attrNames, context);
+      return new Instance(qName, parent, context, href, encodingAtt);
    }
 
 
@@ -102,10 +100,10 @@ final public class ResultDocumentFactory extends FactoryBase
       private Tree href;
       private String encoding;
 
-      protected Instance(String qName, NodeBase parent, Locator locator, 
+      protected Instance(String qName, NodeBase parent, ParseContext context,
                          Tree href, String encoding)
       {
-         super(qName, parent, locator, true);
+         super(qName, parent, context, true);
          this.href = href;
          this.encoding = encoding;
       }

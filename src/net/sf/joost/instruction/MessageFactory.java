@@ -1,5 +1,5 @@
 /*
- * $Id: MessageFactory.java,v 2.1 2003/05/28 13:20:13 obecker Exp $
+ * $Id: MessageFactory.java,v 2.2 2003/06/03 14:30:23 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,21 +25,19 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-
-import java.util.Hashtable;
 
 import net.sf.joost.emitter.StreamEmitter;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 
 
 /** 
  * Factory for <code>message</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.1 $ $Date: 2003/05/28 13:20:13 $
+ * @version $Revision: 2.2 $ $Date: 2003/06/03 14:30:23 $
  * @author Oliver Becker
  */
 
@@ -52,22 +50,21 @@ final public class MessageFactory extends FactoryBase
       return "message";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      checkAttributes(qName, attrs, null, locator);
-      return new Instance(qName, parent, locator);
+      checkAttributes(qName, attrs, null, context);
+      return new Instance(qName, parent, context);
    }
 
 
    /** Represents an instance of the <code>message</code> element. */
    final public class Instance extends NodeBase
    {
-      protected Instance(String qName, NodeBase parent, Locator locator)
+      protected Instance(String qName, NodeBase parent, ParseContext context)
       {
-         super(qName, parent, locator, true);
+         super(qName, parent, context, true);
       }
       
 

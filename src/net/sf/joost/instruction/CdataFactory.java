@@ -1,5 +1,5 @@
 /*
- * $Id: CdataFactory.java,v 2.0 2003/04/25 16:46:30 obecker Exp $
+ * $Id: CdataFactory.java,v 2.1 2003/06/03 14:30:20 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -26,21 +26,19 @@ package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-
-import java.util.Hashtable;
 
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Emitter;
+import net.sf.joost.stx.ParseContext;
 
 
 /** 
  * Factory for <code>cdata</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:30 $
+ * @version $Revision: 2.1 $ $Date: 2003/06/03 14:30:20 $
  * @author Oliver Becker
  */
 
@@ -52,13 +50,12 @@ final public class CdataFactory extends FactoryBase
       return "cdata";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs,
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      checkAttributes(qName, attrs, null, locator);
-      return new Instance(qName, parent, locator);
+      checkAttributes(qName, attrs, null, context);
+      return new Instance(qName, parent, context);
    }
 
 
@@ -68,13 +65,13 @@ final public class CdataFactory extends FactoryBase
       private StringEmitter strEmitter;
       private StringBuffer buffer;
 
-      public Instance(String qName, NodeBase parent, Locator locator)
+      public Instance(String qName, NodeBase parent, ParseContext context)
       {
-         super(qName, parent, locator, true);
+         super(qName, parent, context, true);
          buffer = new StringBuffer();
          strEmitter = new StringEmitter(buffer, 
                                         "(`" + qName + "' started in line " +
-                                        locator.getLineNumber() + ")");
+                                        lineNo + ")");
       }
 
 

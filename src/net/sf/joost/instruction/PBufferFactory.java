@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 2.5 2003/05/23 11:07:24 obecker Exp $
+ * $Id: PBufferFactory.java,v 2.6 2003/06/03 14:30:23 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,16 +25,15 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import java.util.HashSet;
-import java.util.Hashtable;
 import javax.xml.transform.sax.TransformerHandler;
 
 import net.sf.joost.stx.BufferReader;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Processor;
 import net.sf.joost.stx.SAXEvent;
 
@@ -42,7 +41,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.5 $ $Date: 2003/05/23 11:07:24 $
+ * @version $Revision: 2.6 $ $Date: 2003/06/03 14:30:23 $
  * @author Oliver Becker
  */
 
@@ -78,14 +77,13 @@ public class PBufferFactory extends FactoryBase
       return "process-buffer";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String nameAtt = getAttribute(qName, attrs, "name", locator);
+      String nameAtt = getAttribute(qName, attrs, "name", context);
       // buffers are special variables with an "@" prefix
-      String bufName = "@" + getExpandedName(nameAtt, nsSet, locator);
+      String bufName = "@" + getExpandedName(nameAtt, context);
 
       String groupAtt = attrs.getValue("group");
 
@@ -94,7 +92,7 @@ public class PBufferFactory extends FactoryBase
       if (groupAtt != null && filterAtt != null)
          throw new SAXParseException(
             "It's not allowed to use both `group' and `filter' attributes",
-            locator);
+            context.locator);
 
       String srcAtt = attrs.getValue("src");
 
@@ -102,10 +100,10 @@ public class PBufferFactory extends FactoryBase
          throw new SAXParseException(
             "Missing `filter' attribute in `" + qName + 
             "' (`src' is present)",
-            locator);
+            context.locator);
 
-      checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, nsSet, locator, nameAtt, bufName, 
+      checkAttributes(qName, attrs, attrNames, context);
+      return new Instance(qName, parent, context, nameAtt, bufName, 
                           groupAtt, filterAtt, srcAtt);
    }
 
@@ -117,13 +115,12 @@ public class PBufferFactory extends FactoryBase
       String bufName, expName;
 
       // Constructor
-      public Instance(String qName, NodeBase parent, 
-                      Hashtable nsSet, Locator locator, 
+      public Instance(String qName, NodeBase parent, ParseContext context,
                       String bufName, String expName, String groupQName,
                       String filter, String src)
          throws SAXParseException
       {
-         super(qName, parent, nsSet, locator, groupQName, filter, src);
+         super(qName, parent, context, groupQName, filter, src);
          this.bufName = bufName;
          this.expName = expName;
       }

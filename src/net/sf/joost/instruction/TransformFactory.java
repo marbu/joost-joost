@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 2.4 2003/06/03 07:05:05 obecker Exp $
+ * $Id: TransformFactory.java,v 2.5 2003/06/03 14:30:26 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,7 +25,6 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
 
 import java.util.Arrays;
@@ -34,13 +33,14 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Processor;
 
 
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 2.4 $ $Date: 2003/06/03 07:05:05 $
+ * @version $Revision: 2.5 $ $Date: 2003/06/03 14:30:26 $
  * @author Oliver Becker
  */
 
@@ -71,22 +71,22 @@ public class TransformFactory extends FactoryBase
       return "transform";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs,
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, Attributes attrs,
+                              ParseContext context)
       throws SAXParseException
    {
-      if (parent != null && parent.systemId.equals(locator.getSystemId()))
+      if (parent != null && 
+          parent.systemId.equals(context.locator.getSystemId()))
          throw new SAXParseException("`" + qName + 
                                      "' is allowed only as root element",
-                                     locator);
+                                     context.locator);
       // parent.systemId != locator.systemId means: it is included
 
-      String version = getAttribute(qName, attrs, "version", locator);
+      String version = getAttribute(qName, attrs, "version", context);
       if (!version.equals("1.0"))
          throw new SAXParseException("Unknown STX version `" + version + 
                                      "'. The only supported version is 1.0.",
-                                     locator); 
+                                     context.locator); 
 
       String encodingAtt = attrs.getValue("output-encoding");
       String defStxpNsAtt = attrs.getValue("default-stxpath-namespace");
@@ -94,7 +94,7 @@ public class TransformFactory extends FactoryBase
       // default is "none"
       byte passThrough = 0;
       switch (getEnumAttValue("pass-through", attrs,
-                              PASS_THROUGH_VALUES, locator)) {
+                              PASS_THROUGH_VALUES, context)) {
       case -1:
       case 0: passThrough = Processor.PASS_THROUGH_NONE;     break;
       case 1: passThrough = Processor.PASS_THROUGH_TEXT;     break;
@@ -102,22 +102,22 @@ public class TransformFactory extends FactoryBase
       default:
          // mustn't happen 
          throw new SAXParseException(
-            "Unexpected return value from getEnumAttValue", locator);
+            "Unexpected return value from getEnumAttValue", context.locator);
       }
 
       // default is "no" (false)
       boolean stripSpace = 
          getEnumAttValue("strip-space", attrs, YESNO_VALUES, 
-                         locator) == YES_VALUE;
+                         context) == YES_VALUE;
 
       // default is "yes" (true)
       boolean recognizeCdata =
          getEnumAttValue("recognize-cdata", attrs, YESNO_VALUES, 
-                         locator) != NO_VALUE;
+                         context) != NO_VALUE;
 
-      checkAttributes(qName, attrs, attrNames, locator);
+      checkAttributes(qName, attrs, attrNames, context);
 
-      return new Instance(parent, qName, locator, encodingAtt, defStxpNsAtt,
+      return new Instance(parent, qName, context, encodingAtt, defStxpNsAtt,
                           passThrough, stripSpace, recognizeCdata);
    }
 
@@ -139,12 +139,12 @@ public class TransformFactory extends FactoryBase
       public Vector compilableNodes;
 
       // Constructor
-      public Instance(NodeBase parent,
-                      String qName, Locator locator, String outputEncoding,
+      public Instance(NodeBase parent, String qName, ParseContext context,
+                      String outputEncoding,
                       String defaultSTXPathNamespace, byte passThrough,
                       boolean stripSpace, boolean recognizeCdata)
       {
-         super(qName, parent, locator, 
+         super(qName, parent, context,
                passThrough, stripSpace, recognizeCdata);
          if (parent == null) {
             namedGroups = new Hashtable(); // shared with all sub-groups

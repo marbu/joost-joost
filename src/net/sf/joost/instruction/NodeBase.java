@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 2.3 2003/04/29 15:03:00 obecker Exp $
+ * $Id: NodeBase.java,v 2.4 2003/06/03 14:30:23 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,7 +24,6 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -33,12 +32,13 @@ import java.util.Vector;
 
 import net.sf.joost.Constants;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 
 
 /** 
  * Abstract base class for all instances of nodes in the STX transformation 
  * sheet
- * @version $Revision: 2.3 $ $Date: 2003/04/29 15:03:00 $
+ * @version $Revision: 2.4 $ $Date: 2003/06/03 14:30:23 $
  * @author Oliver Becker
  */
 public abstract class NodeBase 
@@ -163,15 +163,15 @@ public abstract class NodeBase
     * @param mayHaveChildren
     *        <code>true</code> if the node may have children
     */
-   protected NodeBase(String qName, NodeBase parent, Locator locator,
+   protected NodeBase(String qName, NodeBase parent, ParseContext context,
                       boolean mayHaveChildren)
    {
       this.qName = qName;
       this.parent = parent;
-      publicId = locator.getPublicId();
-      systemId = locator.getSystemId();
-      lineNo = locator.getLineNumber();
-      colNo = locator.getColumnNumber();
+      publicId = context.locator.getPublicId();
+      systemId = context.locator.getSystemId();
+      lineNo = context.locator.getLineNumber();
+      colNo = context.locator.getColumnNumber();
 
       if (mayHaveChildren) {
          next = nodeEnd = new End(this);

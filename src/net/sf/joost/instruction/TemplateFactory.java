@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateFactory.java,v 2.4 2003/06/01 19:37:02 obecker Exp $
+ * $Id: TemplateFactory.java,v 2.5 2003/06/03 14:30:26 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,7 +25,6 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -35,12 +34,13 @@ import java.util.Stack;
 
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 
 
 /**
  * Factory for <code>template</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.4 $ $Date: 2003/06/01 19:37:02 $
+ * @version $Revision: 2.5 $ $Date: 2003/06/03 14:30:26 $
  * @author Oliver Becker
  */
 
@@ -67,20 +67,19 @@ public final class TemplateFactory extends FactoryBase
       return "template";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
       if (parent == null || !(parent instanceof GroupBase))
          throw new SAXParseException("`" + qName + "' must be a top level " +
                                      "element or a child of stx:group",
-                                     locator);
+                                     context.locator);
 
       GroupBase parentGroup = (GroupBase)parent;
 
-      String matchAtt = getAttribute(qName, attrs, "match", locator);
-      Tree matchPattern = parsePattern(matchAtt, nsSet, parent, locator);
+      String matchAtt = getAttribute(qName, attrs, "match", context);
+      Tree matchPattern = parsePattern(matchAtt, context);
 
       String priorityAtt = attrs.getValue("priority");
       double priority;
@@ -91,7 +90,7 @@ public final class TemplateFactory extends FactoryBase
          catch (NumberFormatException ex) {
             throw new SAXParseException("The priority value `" + 
                                         priorityAtt + "' is not a number",
-                                        locator);
+                                        context.locator);
          }
       }
       else {
@@ -100,12 +99,12 @@ public final class TemplateFactory extends FactoryBase
 
       int visibility = getEnumAttValue("visibility", attrs,
                                        TemplateBase.VISIBILITY_VALUES, 
-                                       locator);
+                                       context);
       if (visibility == -1)
          visibility =  TemplateBase.LOCAL_VISIBLE; // default value
 
       int publicAttVal =
-         getEnumAttValue("public", attrs, YESNO_VALUES, locator);
+         getEnumAttValue("public", attrs, YESNO_VALUES, context);
       // default value depends on the parent:
       // "yes" (true) for top-level templates,
       // "no" (false) for others
@@ -115,12 +114,12 @@ public final class TemplateFactory extends FactoryBase
 
       // default is "no" (false)
       boolean newScope = 
-         getEnumAttValue("new-scope", attrs, YESNO_VALUES, locator)
+         getEnumAttValue("new-scope", attrs, YESNO_VALUES, context)
          == YES_VALUE;
 
-      checkAttributes(qName, attrs, attrNames, locator);
+      checkAttributes(qName, attrs, attrNames, context);
 
-      return new Instance(qName, parent, locator,
+      return new Instance(qName, parent, context,
                           matchPattern, priority, visibility, isPublic,
                           newScope);
    }
@@ -177,12 +176,12 @@ public final class TemplateFactory extends FactoryBase
       //
       // Constructor
       //
-      protected Instance(String qName, NodeBase parent, Locator locator,
+      protected Instance(String qName, NodeBase parent, ParseContext context,
                          Tree match, double priority, int visibility, 
                          boolean isPublic, boolean newScope)
          throws SAXParseException
       {
-         super(qName, parent, locator, visibility, isPublic, newScope);
+         super(qName, parent, context, visibility, isPublic, newScope);
          this.match = match;
          this.priority = priority;
       }

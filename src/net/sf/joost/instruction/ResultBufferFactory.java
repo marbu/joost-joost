@@ -1,5 +1,5 @@
 /*
- * $Id: ResultBufferFactory.java,v 2.0 2003/04/25 16:46:34 obecker Exp $
+ * $Id: ResultBufferFactory.java,v 2.1 2003/06/03 14:30:25 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,7 +25,6 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -34,12 +33,13 @@ import java.util.Hashtable;
 
 import net.sf.joost.emitter.BufferEmitter;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 
 
 /** 
  * Factory for <code>result-buffer</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:34 $
+ * @version $Revision: 2.1 $ $Date: 2003/06/03 14:30:25 $
  * @author Oliver Becker
  */
 
@@ -63,21 +63,20 @@ final public class ResultBufferFactory extends FactoryBase
       return "result-buffer";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String nameAtt = getAttribute(qName, attrs, "name", locator);
+      String nameAtt = getAttribute(qName, attrs, "name", context);
       // buffers are special variables with an "@" prefix
-      String bufName = "@" + getExpandedName(nameAtt, nsSet, locator);
+      String bufName = "@" + getExpandedName(nameAtt, context);
 
       // default is "no" (false)
       boolean clear =
-         getEnumAttValue("clear", attrs, YESNO_VALUES, locator) == YES_VALUE;
+         getEnumAttValue("clear", attrs, YESNO_VALUES, context) == YES_VALUE;
 
-      checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, nameAtt, bufName, clear);
+      checkAttributes(qName, attrs, attrNames, context);
+      return new Instance(qName, parent, context, nameAtt, bufName, clear);
    }
 
 
@@ -87,10 +86,10 @@ final public class ResultBufferFactory extends FactoryBase
       private String bufName, expName;
       private boolean clear;
 
-      protected Instance(String qName, NodeBase parent, Locator locator, 
+      protected Instance(String qName, NodeBase parent, ParseContext context,
                          String bufName, String expName, boolean clear)
       {
-         super(qName, parent, locator, true);
+         super(qName, parent, context, true);
          this.bufName = bufName;
          this.expName = expName;
          this.clear = clear;

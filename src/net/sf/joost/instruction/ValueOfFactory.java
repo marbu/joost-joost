@@ -1,5 +1,5 @@
 /*
- * $Id: ValueOfFactory.java,v 2.4 2003/05/26 13:49:39 obecker Exp $
+ * $Id: ValueOfFactory.java,v 2.5 2003/06/03 14:30:27 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,14 +25,13 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import java.util.HashSet;
-import java.util.Hashtable;
 
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Value;
 import net.sf.joost.grammar.Tree;
 
@@ -40,7 +39,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>value-of</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.4 $ $Date: 2003/05/26 13:49:39 $
+ * @version $Revision: 2.5 $ $Date: 2003/06/03 14:30:27 $
  * @author Oliver Becker
  */
 
@@ -63,21 +62,20 @@ final public class ValueOfFactory extends FactoryBase
       return "value-of";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String selectAtt = getAttribute(qName, attrs, "select", locator);
-      Tree selectExpr = parseExpr(selectAtt, nsSet, parent, locator);
+      String selectAtt = getAttribute(qName, attrs, "select", context);
+      Tree selectExpr = parseExpr(selectAtt, context);
 
       String separatorAtt = attrs.getValue("separator");
       Tree separatorAVT = null;
       if (separatorAtt != null)
-         separatorAVT = parseAVT(separatorAtt, nsSet, parent, locator);
+         separatorAVT = parseAVT(separatorAtt, context);
 
-      checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, selectExpr, separatorAVT);
+      checkAttributes(qName, attrs, attrNames, context);
+      return new Instance(qName, parent, context, selectExpr, separatorAVT);
    }
 
 
@@ -86,10 +84,10 @@ final public class ValueOfFactory extends FactoryBase
    {
       private Tree select, separator;
 
-      protected Instance(String qName, NodeBase parent, Locator locator, 
+      protected Instance(String qName, NodeBase parent, ParseContext context,
                          Tree select, Tree separator)
       {
-         super(qName, parent, locator, false);
+         super(qName, parent, context, false);
          this.select = select;
          this.separator = separator;
       }

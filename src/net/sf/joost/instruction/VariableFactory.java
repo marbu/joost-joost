@@ -1,5 +1,5 @@
 /*
- * $Id: VariableFactory.java,v 2.1 2003/04/30 15:08:17 obecker Exp $
+ * $Id: VariableFactory.java,v 2.2 2003/06/03 14:30:27 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,7 +25,6 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -35,6 +34,7 @@ import java.util.HashSet;
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.stx.Value;
 
@@ -42,7 +42,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>variable</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.1 $ $Date: 2003/04/30 15:08:17 $
+ * @version $Revision: 2.2 $ $Date: 2003/06/03 14:30:27 $
  * @author Oliver Becker
  */
 
@@ -66,33 +66,32 @@ final public class VariableFactory extends FactoryBase
       return "variable";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String nameAtt = getAttribute(qName, attrs, "name", locator);
-      String varName = getExpandedName(nameAtt, nsSet, locator);
+      String nameAtt = getAttribute(qName, attrs, "name", context);
+      String varName = getExpandedName(nameAtt, context);
 
       String selectAtt = attrs.getValue("select");
       Tree selectExpr;
       if (selectAtt != null) 
-         selectExpr = parseExpr(selectAtt, nsSet, parent, locator);
+         selectExpr = parseExpr(selectAtt, context);
       else
          selectExpr = null;
 
       int keepValueIndex = getEnumAttValue("keep-value", attrs, YESNO_VALUES,
-                                           locator);
+                                           context);
       if (keepValueIndex != -1 && !(parent instanceof GroupBase))
          throw new SAXParseException(
             "Attribute `keep-value' is not allowed for local variables",
-            locator);
+            context.locator);
 
       // default is "no" (false)
       boolean keepValue = (keepValueIndex == YES_VALUE);
 
-      checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, locator, nameAtt, varName, selectExpr, 
+      checkAttributes(qName, attrs, attrNames, context);
+      return new Instance(qName, context, nameAtt, varName, selectExpr, 
                           keepValue, parent);
    }
 
@@ -104,11 +103,11 @@ final public class VariableFactory extends FactoryBase
       private Tree select;
 
 
-      protected Instance(String qName, Locator locator, String varName,
+      protected Instance(String qName, ParseContext context, String varName,
                          String expName, Tree select, boolean keepValue,
                          NodeBase parent)
       {
-         super(qName, parent, locator, expName, keepValue, 
+         super(qName, parent, context, expName, keepValue, 
                // this element must be empty if there is a select attribute
                select == null);
          this.varName = varName;

@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 2.3 2003/05/23 11:04:47 obecker Exp $
+ * $Id: PDocumentFactory.java,v 2.4 2003/06/03 14:30:23 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,10 +32,10 @@ import org.xml.sax.XMLReader;
 
 import java.net.URL;
 import java.util.HashSet;
-import java.util.Hashtable;
 
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Processor;
 import net.sf.joost.stx.Value;
 
@@ -43,7 +43,7 @@ import net.sf.joost.stx.Value;
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.3 $ $Date: 2003/05/23 11:04:47 $
+ * @version $Revision: 2.4 $ $Date: 2003/06/03 14:30:23 $
  * @author Oliver Becker
  */
 
@@ -78,20 +78,19 @@ public class PDocumentFactory extends FactoryBase
       return "process-document";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String hrefAtt = getAttribute(qName, attrs, "href", locator);
-      Tree href = parseExpr(hrefAtt, nsSet, parent, locator);
+      String hrefAtt = getAttribute(qName, attrs, "href", context);
+      Tree href = parseExpr(hrefAtt, context);
 
       String baseAtt = attrs.getValue("base");
 
       String groupAtt = attrs.getValue("group");
 
-      checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, nsSet, locator, href, baseAtt,
+      checkAttributes(qName, attrs, attrNames, context);
+      return new Instance(qName, parent, context, href, baseAtt,
                           groupAtt);
    }
 
@@ -103,13 +102,12 @@ public class PDocumentFactory extends FactoryBase
       String baseUri;
 
       // Constructor
-      public Instance(String qName, NodeBase parent, 
-                      Hashtable nsSet, Locator locator, 
+      public Instance(String qName, NodeBase parent, ParseContext context,
                       Tree href, String baseUri, 
                       String groupQName)
          throws SAXParseException
       {
-         super(qName, parent, nsSet, locator, groupQName, null, null);
+         super(qName, parent, context, groupQName, null, null);
          this.baseUri = baseUri;
          this.href = href;
       }

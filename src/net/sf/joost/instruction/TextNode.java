@@ -1,5 +1,5 @@
 /*
- * $Id: TextNode.java,v 2.0 2003/04/25 16:46:35 obecker Exp $
+ * $Id: TextNode.java,v 2.1 2003/06/03 14:30:26 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,16 +24,16 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 
 
 /** 
  * Instances created by this factory represent text nodes in the 
  * transformation sheet
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:35 $
+ * @version $Revision: 2.1 $ $Date: 2003/06/03 14:30:26 $
  * @author Oliver Becker
  */
 
@@ -41,9 +41,9 @@ public class TextNode extends NodeBase
 {
    private String string;
 
-   public TextNode(String s, NodeBase parent, Locator locator)
+   public TextNode(String s, NodeBase parent, ParseContext context)
    {
-      super("", parent, locator, false);
+      super("", parent, context, false);
       string = s;
    }
 

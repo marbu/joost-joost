@@ -1,5 +1,5 @@
 /*
- * $Id: Pattern.cup,v 1.8 2003/04/30 15:06:03 obecker Exp $
+ * $Id: Pattern.cup,v 1.9 2003/06/03 14:28:45 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,21 +25,15 @@
 package net.sf.joost.grammar;
 
 parser code {: 
-   protected java.util.Hashtable j_nsSet;
-   protected org.xml.sax.Locator j_locator;
-   protected net.sf.joost.instruction.TransformFactory.Instance j_transform;
+   protected net.sf.joost.stx.ParseContext j_context;
 
    public net.sf.joost.grammar.cup.Symbol errorToken = null;
 
    public PatternParser(net.sf.joost.grammar.cup.Scanner s, 
-                        java.util.Hashtable nsSet,
-                        net.sf.joost.instruction.TransformFactory.Instance t,
-                        org.xml.sax.Locator locator)
+                        net.sf.joost.stx.ParseContext context)
    {
       super(s);
-      j_nsSet = nsSet; 
-      j_transform = t;
-      j_locator = locator;
+      j_context = context;
    }
 
    private String errMsg = "";

@@ -1,5 +1,5 @@
 /*
- * $Id: ProcedureFactory.java,v 2.3 2003/06/02 08:50:20 obecker Exp $
+ * $Id: ProcedureFactory.java,v 2.4 2003/06/03 14:30:24 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,21 +25,20 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import java.util.Hashtable;
 import java.util.HashSet;
 
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.SAXEvent;
 
 
 /**
  * Factory for <code>procedure</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.3 $ $Date: 2003/06/02 08:50:20 $
+ * @version $Revision: 2.4 $ $Date: 2003/06/03 14:30:24 $
  * @author Oliver Becker
  */
 
@@ -65,29 +64,28 @@ public final class ProcedureFactory extends FactoryBase
       return "procedure";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
       if (parent == null || !(parent instanceof GroupBase))
          throw new SAXParseException("`" + qName + "' must be a top level " +
                                      "element or a child of stx:group",
-                                     locator);
+                                     context.locator);
 
       GroupBase parentGroup = (GroupBase)parent;
 
-      String nameAtt = getAttribute(qName, attrs, "name", locator);
-      String expName = getExpandedName(nameAtt, nsSet, locator);
+      String nameAtt = getAttribute(qName, attrs, "name", context);
+      String expName = getExpandedName(nameAtt, context);
 
       int visibility = getEnumAttValue("visibility", attrs,
                                        TemplateBase.VISIBILITY_VALUES, 
-                                       locator);
+                                       context);
       if (visibility == -1)
          visibility =  TemplateBase.LOCAL_VISIBLE; // default value
 
       int publicAttVal =
-         getEnumAttValue("public", attrs, YESNO_VALUES, locator);
+         getEnumAttValue("public", attrs, YESNO_VALUES, context);
       // default value depends on the parent:
       // "yes" (true) for top-level procedures,
       // "no" (false) for others
@@ -97,12 +95,12 @@ public final class ProcedureFactory extends FactoryBase
 
       // default is "no" (false)
       boolean newScope = 
-         getEnumAttValue("new-scope", attrs, YESNO_VALUES, locator)
+         getEnumAttValue("new-scope", attrs, YESNO_VALUES, context)
          == YES_VALUE;
 
-      checkAttributes(qName, attrs, attrNames, locator);
+      checkAttributes(qName, attrs, attrNames, context);
 
-      return new Instance(qName, parent, locator,
+      return new Instance(qName, parent, context,
                           nameAtt, expName, visibility, isPublic, newScope);
    }
 
@@ -122,12 +120,12 @@ public final class ProcedureFactory extends FactoryBase
 
 
       // Constructor
-      protected Instance(String qName, NodeBase parent, Locator locator,
+      protected Instance(String qName, NodeBase parent, ParseContext context,
                          String procName, String expName, 
                          int visibility, boolean isPublic, boolean newScope)
          throws SAXParseException
       {
-         super(qName, parent, locator, visibility, isPublic, newScope);
+         super(qName, parent, context, visibility, isPublic, newScope);
          this.expName = expName;
          this.procName = procName;
       }

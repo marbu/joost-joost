@@ -1,5 +1,5 @@
 /*
- * $Id: WithParamFactory.java,v 2.2 2003/04/30 15:08:18 obecker Exp $
+ * $Id: WithParamFactory.java,v 2.3 2003/06/03 14:30:27 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,17 +25,16 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.Vector;
 
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.stx.Value;
 
@@ -43,7 +42,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>with-param</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2003/04/30 15:08:18 $
+ * @version $Revision: 2.3 $ $Date: 2003/06/03 14:30:27 $
  * @author Oliver Becker
  */
 
@@ -66,20 +65,19 @@ final public class WithParamFactory extends FactoryBase
       return "with-param";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
       if (parent == null || !(parent instanceof ProcessBase)) {
          throw new SAXParseException(
             "`" + qName + "' must be used only as a child of " +
             "stx:call-procedure or an stx:process-... instruction",
-            locator);
+            context.locator);
       }
 
-      String nameAtt = getAttribute(qName, attrs, "name", locator);
-      String expName = getExpandedName(nameAtt, nsSet, locator);
+      String nameAtt = getAttribute(qName, attrs, "name", context);
+      String expName = getExpandedName(nameAtt, context);
 
       // Check for uniqueness
       Vector siblings = ((ProcessBase)parent).children;
@@ -89,17 +87,17 @@ final public class WithParamFactory extends FactoryBase
                throw new SAXParseException(
                   "Parameter `" + nameAtt + "' already passed in line " +
                   ((NodeBase)siblings.elementAt(i)).lineNo,
-                  locator);
+                  context.locator);
 
       String selectAtt = attrs.getValue("select");
       Tree selectExpr;
       if (selectAtt != null) 
-         selectExpr = parseExpr(selectAtt, nsSet, parent, locator);
+         selectExpr = parseExpr(selectAtt, context);
       else
          selectExpr = null;
 
-      checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, nameAtt, expName, 
+      checkAttributes(qName, attrs, attrNames, context);
+      return new Instance(qName, parent, context, nameAtt, expName, 
                           selectExpr);
    }
 
@@ -111,10 +109,10 @@ final public class WithParamFactory extends FactoryBase
       private Tree select;
 
 
-      protected Instance(String qName, NodeBase parent, Locator locator, 
+      protected Instance(String qName, NodeBase parent, ParseContext context,
                          String paraName, String expName, Tree select)
       {
-         super(qName, parent, locator,
+         super(qName, parent, context,
                // this element may have children if there is no select attr
                select == null);
          this.paraName = paraName;

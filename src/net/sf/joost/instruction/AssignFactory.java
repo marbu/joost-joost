@@ -1,5 +1,5 @@
 /*
- * $Id: AssignFactory.java,v 2.2 2003/05/14 11:53:08 obecker Exp $
+ * $Id: AssignFactory.java,v 2.3 2003/06/03 14:30:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,7 +25,6 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -35,6 +34,7 @@ import java.util.HashSet;
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.stx.Value;
 
@@ -42,7 +42,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>assign</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2003/05/14 11:53:08 $
+ * @version $Revision: 2.3 $ $Date: 2003/06/03 14:30:18 $
  * @author Oliver Becker
  */
 
@@ -65,23 +65,22 @@ final public class AssignFactory extends FactoryBase
       return "assign";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String nameAtt = getAttribute(qName, attrs, "name", locator);
-      String varName = getExpandedName(nameAtt, nsSet, locator);
+      String nameAtt = getAttribute(qName, attrs, "name", context);
+      String varName = getExpandedName(nameAtt, context);
 
       String selectAtt = attrs.getValue("select");
       Tree selectExpr;
       if (selectAtt != null) 
-         selectExpr = parseExpr(selectAtt, nsSet, parent, locator);
+         selectExpr = parseExpr(selectAtt, context);
       else
          selectExpr = null;
 
-      checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, nameAtt, varName,
+      checkAttributes(qName, attrs, attrNames, context);
+      return new Instance(qName, parent, context, nameAtt, varName,
                           selectExpr);
    }
 
@@ -92,10 +91,10 @@ final public class AssignFactory extends FactoryBase
       private String varName, expName;
       private Tree select;
 
-      protected Instance(String qName, NodeBase parent, Locator locator, 
+      protected Instance(String qName, NodeBase parent, ParseContext context,
                          String varName, String expName, Tree select)
       {
-         super(qName, parent, locator, 
+         super(qName, parent, context,
                // this element must be empty if there is a select attribute
                select == null);
          this.varName = varName;

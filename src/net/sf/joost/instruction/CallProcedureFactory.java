@@ -1,5 +1,5 @@
 /*
- * $Id: CallProcedureFactory.java,v 2.5 2003/05/23 11:04:47 obecker Exp $
+ * $Id: CallProcedureFactory.java,v 2.6 2003/06/03 14:30:19 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,20 +25,19 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import java.util.HashSet;
-import java.util.Hashtable;
 
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 
 
 /**
  * Factory for <code>call-procedure</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.5 $ $Date: 2003/05/23 11:04:47 $
+ * @version $Revision: 2.6 $ $Date: 2003/06/03 14:30:19 $
  * @author Oliver Becker
  */
 
@@ -64,18 +63,17 @@ public class CallProcedureFactory extends FactoryBase
       return "call-procedure";
    }
 
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String nameAtt = getAttribute(qName, attrs, "name", locator);
-      String procName = getExpandedName(nameAtt, nsSet, locator);
+      String nameAtt = getAttribute(qName, attrs, "name", context);
+      String procName = getExpandedName(nameAtt, context);
 
       String groupAtt = attrs.getValue("group");
 
-      checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, nsSet, locator, nameAtt, procName,
+      checkAttributes(qName, attrs, attrNames, context);
+      return new Instance(qName, parent, context, nameAtt, procName,
                           groupAtt);
    }
 
@@ -87,13 +85,12 @@ public class CallProcedureFactory extends FactoryBase
       ProcedureFactory.Instance procedure = null;
 
       // Constructor
-      public Instance(String qName, NodeBase parent, 
-                      Hashtable nsSet, Locator locator, 
+      public Instance(String qName, NodeBase parent, ParseContext context,
                       String procQName, String procExpName,
                       String groupQName)
          throws SAXParseException
       {
-         super(qName, parent, nsSet, locator, groupQName, null, null);
+         super(qName, parent, context, groupQName, null, null);
          // external filter not possible here (last two params = null)
          this.procQName = procQName;
          this.procExpName = procExpName;

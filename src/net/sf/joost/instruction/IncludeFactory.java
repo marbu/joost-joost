@@ -1,5 +1,5 @@
 /*
- * $Id: IncludeFactory.java,v 2.2 2003/06/03 07:05:05 obecker Exp $
+ * $Id: IncludeFactory.java,v 2.3 2003/06/03 14:30:23 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,9 +31,9 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
 import java.net.URL;
-import java.util.Hashtable;
 import java.util.HashSet;
 
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Parser;
 import net.sf.joost.stx.Processor;
 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Processor;
 /** 
  * Factory for <code>include</code> elements, which will be replaced by
  * groups for the included transformation sheet
- * @version $Revision: 2.2 $ $Date: 2003/06/03 07:05:05 $
+ * @version $Revision: 2.3 $ $Date: 2003/06/03 14:30:23 $
  * @author Oliver Becker
  */
 
@@ -64,35 +64,34 @@ final public class IncludeFactory extends FactoryBase
    }
 
    /** Returns an instance of {@link TransformFactory.Instance} */
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
-                              Hashtable nsSet, Locator locator)
+   public NodeBase createNode(NodeBase parent, String qName, 
+                              Attributes attrs, ParseContext context)
       throws SAXParseException
    {
       // check parent
       if (parent != null && !(parent instanceof GroupBase))
          throw new SAXParseException("`" + qName + 
                                      "' not allowed as child of `" +
-                                     parent.qName + "'", locator);
+                                     parent.qName + "'", context.locator);
 
-      String hrefAtt = getAttribute(qName, attrs, "href", locator);
+      String hrefAtt = getAttribute(qName, attrs, "href", context);
 
-      checkAttributes(qName, attrs, attrNames, locator);
+      checkAttributes(qName, attrs, attrNames, context);
 
       // TODO: use URIResolver
 
-      Parser stxParser = new Parser(null); // errorHandler ... TBD
+      Parser stxParser = new Parser(context.errorHandler);
       stxParser.includingGroup = (GroupBase)parent;
       try {
          XMLReader reader = Processor.getXMLReader();
          reader.setContentHandler(stxParser);
-//          reader.setErrorHandler(errorHandler);
-         reader.parse(new URL(new URL(locator.getSystemId()), 
+         reader.setErrorHandler(context.errorHandler);
+         reader.parse(new URL(new URL(context.locator.getSystemId()), 
                                       hrefAtt).toExternalForm());
       }
       catch (java.io.IOException ex) {
          // TODO: better error handling
-         throw new SAXParseException(ex.toString(), locator);
+         throw new SAXParseException(ex.toString(), context.locator);
       }
       catch (SAXParseException ex) {
          // propagate
@@ -100,7 +99,7 @@ final public class IncludeFactory extends FactoryBase
       }
       catch (SAXException ex) {
          // add locator information
-         throw new SAXParseException(ex.toString(), locator);
+         throw new SAXParseException(ex.toString(), context.locator);
       }
 
       TransformFactory.Instance tfi = stxParser.getTransformNode();
