@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 1.3 2002/10/21 11:37:09 obecker Exp $
+ * $Id: FunctionTable.java,v 1.4 2002/10/31 11:20:57 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,11 +37,16 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 1.3 $ $Date: 2002/10/21 11:37:09 $
+ * @version $Revision: 1.4 $ $Date: 2002/10/31 11:20:57 $
  * @author Oliver Becker
  */
 public final class FunctionTable
 {
+   // Log4J initialization
+   private static org.apache.log4j.Logger log4j = 
+      org.apache.log4j.Logger.getLogger(FunctionTable.class);
+
+
    /** Contains one instance for each function. */
    private Hashtable functionHash;
 
@@ -62,6 +67,8 @@ public final class FunctionTable
          new Concat(),
          new StringLength(),
          new NormalizeSpace(),
+         new Contains(),
+         new Substring(),
          new StartsWith()
       };
       functionHash = new Hashtable(functions.length);
@@ -534,6 +541,88 @@ public final class FunctionTable
          }
          v.string = res.toString().trim();
          return v;
+      }
+   }
+
+
+   /**
+    * The <code>contains</code> function.
+    * Returns <code>true</code> if the string in the first parameter
+    * contains the substring provided as second parameter.
+    */
+   public class Contains implements Instance 
+   {
+      /** @return 2 **/
+      public int getMinParCount() { return 2; }
+      /** @return 2 **/
+      public int getMaxParCount() { return 2; }
+      /** @return "{}contains" */
+      public String getName() { return "{}contains"; }
+      
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         String s1 = args.left.evaluate(context, events, top)
+                              .convertToString().string;
+         String s2 = args.right.evaluate(context, events, top)
+                               .convertToString().string;
+         return new Value(s1.indexOf(s2) != -1);
+      }
+   }
+
+
+   /**
+    * The <code>substring</code> function.
+    * Returns the substring from the first parameter, beginning at
+    * an offset given by the second parameter with a length given
+    * by an optional third parameter.
+    */
+   public class Substring implements Instance 
+   {
+      /** @return 2 **/
+      public int getMinParCount() { return 2; }
+      /** @return 3 **/
+      public int getMaxParCount() { return 3; }
+      /** @return "{}substring" */
+      public String getName() { return "{}substring"; }
+      
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         String str;
+
+         // Note: This implementation isn't final. Currently it is
+         // neither XPath 1.0 conformant nor the same as xf:substring 
+         // from XPath/XQuery 2.0
+         try {
+            if (args.left.type == Tree.LIST) { // three parameters
+               str = args.left.left.evaluate(context, events, top)
+                                   .convertToString().string;
+               // in Java the first character of a string is at position 0
+               int offset = 
+                  Math.round((float)(args.left.right
+                                         .evaluate(context, events, top)
+                                         .convertToNumber().number)) - 1;
+               int length =
+                  Math.round((float)(args.right.evaluate(context, events, top)
+                                         .convertToNumber().number));
+//                 log4j.debug(str + " : " + offset + " : " + length);
+               return new Value(str.substring(offset, offset+length));
+            }
+            else { // two parameters
+               str = args.left.evaluate(context, events, top)
+                              .convertToString().string;
+               // in Java the first character of a string is at position 0
+               int offset = 
+                  Math.round((float)(args.right.evaluate(context, events, top)
+                                         .convertToNumber().number)) - 1;
+//                 log4j.debug(str + " : " + offset);
+               return new Value(str.substring(offset));
+            }
+         }
+         catch (IndexOutOfBoundsException ex) {
+            return new Value("");
+         }
       }
    }
 
