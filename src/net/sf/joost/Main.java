@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: Main.java,v 1.2 2002/08/28 09:48:24 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2002/08/28 09:48:24 $
  * @author Oliver Becker
  */
 public class Main
@@ -329,7 +329,7 @@ printHelp ? 0 : 1);
    private static void usage(String msg, int code)
    {
       System.err.print(
-         "\nJoost alpha build @@@@ by Oliver Becker\n" + 
+         "\nJoost alpha build @@@DATE@@@ by Oliver Becker\n" + 
          "(Joost is Ollie's original streaming transformer)\n\n" + msg);
       System.exit(code);
    }
