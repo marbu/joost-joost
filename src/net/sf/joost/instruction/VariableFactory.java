@@ -1,5 +1,5 @@
 /*
- * $Id: VariableFactory.java,v 1.7 2002/12/17 16:46:42 obecker Exp $
+ * $Id: VariableFactory.java,v 1.8 2002/12/23 11:57:35 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>variable</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.7 $ $Date: 2002/12/17 16:46:42 $
+ * @version $Revision: 1.8 $ $Date: 2002/12/23 11:57:35 $
  * @author Oliver Becker
  */
 
@@ -104,7 +104,6 @@ final public class VariableFactory extends FactoryBase
    {
       private String varName;
       private Tree select;
-      private NodeBase parent;
 
 
       protected Instance(String qName, Locator locator, String varName,
@@ -117,7 +116,6 @@ final public class VariableFactory extends FactoryBase
          this.varName = varName;
          this.select = select;
          this.keepValue = keepValue;
-         this.parent = parent;
       }
       
       /**
