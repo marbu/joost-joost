@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerImpl.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: TransformerHandlerImpl.java,v 1.2 2002/10/08 19:19:42 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -59,7 +59,6 @@ public class TransformerHandlerImpl implements TransformerHandler {
     // Logger instance named "TransformerHandlerImpl".
     static Logger log = Logger.getLogger(TransformerHandlerImpl.class);
 
-
     /**
      * Processor is the joost-stx-engine
      */
@@ -72,16 +71,15 @@ public class TransformerHandlerImpl implements TransformerHandler {
     private String systemId         = null;
 
     /**
-     *
+     * The according Result.
      */
     private Result result           = null;
-
 
     /**
      * Constructor.
      * @param transformer
      */
-    public TransformerHandlerImpl(Transformer transformer) {
+    protected TransformerHandlerImpl(Transformer transformer) {
 
         log.debug("calling constructor");
         // Save the reference to the transformer
@@ -100,9 +98,7 @@ public class TransformerHandlerImpl implements TransformerHandler {
      * @return <code>String</code>
      */
     public String getSystemId() {
-
         return systemId;
-
     }
 
 
@@ -111,9 +107,7 @@ public class TransformerHandlerImpl implements TransformerHandler {
      * @return <code>String</code>
      */
     public Transformer getTransformer() {
-
         return transformer;
-
     }
 
 
@@ -126,11 +120,28 @@ public class TransformerHandlerImpl implements TransformerHandler {
 
         log.debug("setting Result - here SAXResult");
 
-        this.result = result;
+        if (result instanceof SAXResult) {
+            this.result = result;
+        } else {
+
+            IllegalArgumentException iE =
+                    new IllegalArgumentException("Result is not a SAXResult");
+            ErrorListener errorListener = transformer.getErrorListener();
+            // user ErrorListener if available
+            if(errorListener != null) {
+                try {
+                    errorListener.fatalError(new TransformerConfigurationException(iE.getMessage(), iE));
+                    return;
+                } catch( TransformerException e2) {
+                    return;
+                }
+            } else {
+                throw iE;
+            }
+        }
 
         //init saxresult
         init();
-
     }
 
 
@@ -139,7 +150,6 @@ public class TransformerHandlerImpl implements TransformerHandler {
      * @param systemID
      */
     public void setSystemId(String systemID) {
-
         this.systemId = systemId;
     }
 
@@ -148,40 +158,30 @@ public class TransformerHandlerImpl implements TransformerHandler {
     // Helper methods
     //*************************************************************************
 
-
     /**
      * Helpermethod
      */
     private void init() {
 
         log.debug("init emitter-class according to result");
-
         //Emitter em = new Emitter();
         StxEmitter out = null;
 
-
         if (result instanceof SAXResult) {
-
             log.debug("Result is a SAXResult");
             SAXResult target = (SAXResult)result;
             ContentHandler handler = target.getHandler();
-
             if (handler != null) {
                  out = new SAXEmitter(handler);
             }
         }
-
         if (this.transformer instanceof TransformerImpl) {
-
-          this.processor =
-            ((TransformerImpl)this.transformer).getStxProcessor();
-
-        } else {
-          log.fatal("transformer is not an instance of TransformerImpl");
+            this.processor =
+                ((TransformerImpl)this.transformer).getStxProcessor();
+            // setting Handler
+            this.processor.setContentHandler(out);
+            this.processor.setLexicalHandler(out);
         }
-
-        this.processor.setContentHandler(out);
-        this.processor.setLexicalHandler(out);
     }
 
 
@@ -189,36 +189,26 @@ public class TransformerHandlerImpl implements TransformerHandler {
     // IMPLEMENTATION of ContentHandler, LexicalHandler, DTDHandler
     //*************************************************************************
 
-
     /**
      * Propagates the Sax-Event to Joost-Processor.
      */
     public void setDocumentLocator(Locator locator) {
-
         processor.setDocumentLocator(locator);
-
     }
-
 
     /**
      * Propagates the Sax-Event to Joost-Processor.
      */
     public void startDocument() throws SAXException {
-
         processor.startDocument();
-
     }
-
 
     /**
      * Propagates the Sax-Event to Joost-Processor.
      */
     public void endDocument() throws SAXException {
-
         processor.endDocument();
-
     }
-
 
     /**
      * Propagates the Sax-Event to Joost-Processor.
@@ -227,19 +217,14 @@ public class TransformerHandlerImpl implements TransformerHandler {
         throws SAXException {
 
         processor.startPrefixMapping(prefix, uri);
-
     }
-
 
     /**
      * Propagates the Sax-Event to Joost-Processor.
      */
     public void endPrefixMapping(String prefix) throws SAXException {
-
         processor.endPrefixMapping(prefix);
-
     }
-
 
     /**
      * Propagates the Sax-Event to Joost-Processor.
@@ -249,9 +234,7 @@ public class TransformerHandlerImpl implements TransformerHandler {
         throws SAXException {
 
         processor.startElement(namespaceURI, localName, qName, atts);
-
     }
-
 
     /**
      * Propagates the Sax-Event to Joost-Processor.
@@ -260,9 +243,7 @@ public class TransformerHandlerImpl implements TransformerHandler {
         throws SAXException {
 
         processor.endElement(namespaceURI, localName, qName);
-
     }
-
 
     /**
      * Propagates the Sax-Event to Joost-Processor.
@@ -271,9 +252,7 @@ public class TransformerHandlerImpl implements TransformerHandler {
         throws SAXException {
 
         processor.characters(ch, start, length);
-
     }
-
 
     /**
      * Propagates the Sax-Event to Joost-Processor.
@@ -282,9 +261,7 @@ public class TransformerHandlerImpl implements TransformerHandler {
         throws SAXException {
 
         processor.ignorableWhitespace(ch, start, length);
-
     }
-
 
     /**
      * Propagates the Sax-Event to Joost-Processor.
@@ -293,19 +270,14 @@ public class TransformerHandlerImpl implements TransformerHandler {
         throws SAXException {
 
         processor.processingInstruction(target, data);
-
     }
-
 
     /**
      * Propagates the Sax-Event to Joost-Processor.
      */
     public void skippedEntity(String name) throws SAXException {
-
         processor.skippedEntity(name);
-
     }
-
 
     /**
      * Propagates the Sax-Event to Joost-Processor.
@@ -314,79 +286,57 @@ public class TransformerHandlerImpl implements TransformerHandler {
         throws SAXException {
 
         processor.startDTD(name, publicId, systemId);
-
     }
-
 
     /**
      * Propagates the Sax-Event to Joost-Processor.
      */
     public void endDTD() throws SAXException {
-
         processor.endDTD();
-
     }
-
 
     /**
      * Propagates the Sax-Event to Joost-Processor.
      */
     public void startEntity(String name) throws SAXException {
-
         processor.startEntity(name);
-
     }
-
 
     /**
      * Propagates the Sax-Event to Joost-Processor.
      */
     public void endEntity(String name) throws SAXException {
-
         processor.endEntity(name);
-
     }
-
 
     /**
      * Propagates the Sax-Event to Joost-Processor.
      */
     public void startCDATA() throws SAXException {
-
         processor.startCDATA();
-
     }
-
 
     /**
      * Propagates the Sax-Event to Joost-Processor.
      */
     public void endCDATA() throws SAXException {
-
         processor.endCDATA();
-
     }
-
 
     /**
      * Propagates the Sax-Event to Joost-Processor.
      */
     public void comment(char[] ch, int start, int length) throws SAXException {
-
         processor.comment(ch, start, length);
-
     }
-
 
     /**
      * Sax-Event - empty
      */
     public void notationDecl(String name, String publicId, String systemId)
         throws SAXException {
-
         //what do with this ??? no analogon in Processor-class
     }
-
 
     /**
      * Sax-Event - empty
@@ -394,7 +344,6 @@ public class TransformerHandlerImpl implements TransformerHandler {
     public void unparsedEntityDecl(String name, String publicId,
                                     String systemId, String notationName)
         throws SAXException {
-
         //what do with this ??? no analogon in Processor-class
     }
 }

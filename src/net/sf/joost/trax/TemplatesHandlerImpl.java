@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesHandlerImpl.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: TemplatesHandlerImpl.java,v 1.2 2002/10/08 19:19:11 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,17 +25,25 @@
 
 package net.sf.joost.trax;
 
+//import JAXP
 import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.ErrorListener;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.parsers.ParserConfigurationException;
+
+//import SAX
 import org.xml.sax.Locator;
 import org.xml.sax.Attributes;
 
 //import joost-Representation of an stx-stylesheet
 import net.sf.joost.stx.Parser;
+
 //import joost-STX-Processor
 import net.sf.joost.stx.Processor;
 
-// Import log4j classes.
+//import log4j classes.
 import org.apache.log4j.Logger;
 
 
@@ -49,15 +57,13 @@ import org.apache.log4j.Logger;
  */
 public class TemplatesHandlerImpl implements TemplatesHandler {
 
-
     // Define a static logger variable so that it references the
     // Logger instance named "TemplatesHandlerImpl".
     static Logger log = Logger.getLogger(TemplatesHandlerImpl.class);
 
-    //member fields
+    // member fields
     private Parser stxparser                = null;
     private String systemId                 = null;
-
     private TransformerFactoryImpl tfactory = null;
 
 
@@ -65,14 +71,12 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
      * Constructor
      * @param tfactory A Reference to <code>TransformerFactoryImpl</code>
      */
-    public TemplatesHandlerImpl(TransformerFactoryImpl tfactory) {
+    protected TemplatesHandlerImpl(TransformerFactoryImpl tfactory) {
 
         log.debug("calling constructor");
-
         this.tfactory = tfactory;
-
+        // construct a tree representation of an STX stylesheet
         stxparser = new Parser();
-
     }
 
 
@@ -100,11 +104,28 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
     public Templates getTemplates() {
 
         log.debug("calling getTemplates()");
+        Templates templates = null;
+        try {
+            // construct TrAX-representation of an compiled STX stylesheet
+            templates = new TemplatesImpl(stxparser);
+        } catch (TransformerConfigurationException tE) {
+            ErrorListener eListener = tfactory.getErrorListener();
 
-        Templates templates = new TemplatesImpl(stxparser);
-
+            // use ErrorListener when available
+            if (eListener != null) {
+                try {
+                    eListener.fatalError(new TransformerConfigurationException(tE));
+                    return null;
+                } catch (TransformerException trE) {
+                    log.fatal(trE);
+                    return null;
+                }
+            } else {
+                log.fatal(tE);
+                return null;
+            }
+        }
         return templates;
-
     }
 
     /**
@@ -127,9 +148,7 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
      * {@link net.sf.joost.stx.Parser} - here the {@link #stxparser}
      */
     public void setDocumentLocator(Locator locator) {
-
         stxparser.setDocumentLocator(locator);
-
     }
 
 
@@ -138,9 +157,7 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
      * {@link net.sf.joost.stx.Parser} - here the {@link #stxparser}
      */
     public void startDocument() throws org.xml.sax.SAXException {
-
         stxparser.startDocument();
-
     }
 
 
@@ -149,9 +166,7 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
      * {@link net.sf.joost.stx.Parser} - here the {@link #stxparser}
      */
     public void endDocument() throws org.xml.sax.SAXException {
-
         stxparser.endDocument();
-
     }
 
 
@@ -160,9 +175,7 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
      * {@link net.sf.joost.stx.Parser} - here the {@link #stxparser}
      */
     public void startPrefixMapping(String parm1, String parm2) throws org.xml.sax.SAXException {
-
         stxparser.startPrefixMapping(parm1, parm2);
-
     }
 
 
@@ -171,9 +184,7 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
      * {@link net.sf.joost.stx.Parser} - here the {@link #stxparser}
      */
     public void endPrefixMapping(String parm) throws org.xml.sax.SAXException {
-
         stxparser.endPrefixMapping(parm);
-
     }
 
 
@@ -182,9 +193,7 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
      * {@link net.sf.joost.stx.Parser} - here the {@link #stxparser}
      */
     public void startElement(String parm1, String parm2, String parm3, Attributes parm4) throws org.xml.sax.SAXException {
-
         stxparser.startElement(parm1, parm2, parm3, parm4);
-
     }
 
 
@@ -193,9 +202,7 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
      * {@link net.sf.joost.stx.Parser} - here the {@link #stxparser}
      */
     public void endElement(String parm1, String parm2, String parm3) throws org.xml.sax.SAXException {
-
         stxparser.endElement(parm1, parm2, parm3);
-
     }
 
 
@@ -204,9 +211,7 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
      * {@link net.sf.joost.stx.Parser} - here the {@link #stxparser}
      */
     public void characters(char[] parm1, int parm2, int parm3) throws org.xml.sax.SAXException {
-
         stxparser.characters(parm1, parm2, parm3);
-
     }
 
 
@@ -215,9 +220,7 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
      * {@link net.sf.joost.stx.Parser} - here the {@link #stxparser}
      */
     public void ignorableWhitespace(char[] parm1, int parm2, int parm3) throws org.xml.sax.SAXException {
-
         stxparser.ignorableWhitespace(parm1, parm2, parm3);
-
     }
 
 
@@ -226,9 +229,7 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
      * {@link net.sf.joost.stx.Parser} - here the {@link #stxparser}
      */
     public void processingInstruction(String parm1, String parm2) throws org.xml.sax.SAXException {
-
         stxparser.processingInstruction(parm1, parm2);
-
     }
 
 
@@ -237,8 +238,6 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
      * {@link net.sf.joost.stx.Parser} - here the {@link #stxparser}
      */
     public void skippedEntity(String parm1) throws org.xml.sax.SAXException {
-
         stxparser.skippedEntity(parm1);
-
     }
 }

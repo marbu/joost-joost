@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.2 2002/08/29 18:38:31 zubow Exp $
+ * $Id: TransformerImpl.java,v 1.3 2002/10/08 19:19:42 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -86,24 +86,18 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
      */
     private Boolean reentryGuard = new Boolean(true);
 
-
-
     /**
      * Defaultconstrucor
      */
-    public TransformerImpl() {}
-
+    protected TransformerImpl() {}
 
     /**
      * Constructor
      * @param processor A <code>Processor</code> object.
      */
-    public TransformerImpl(Processor processor) {
-
-      this.processor = processor;
-
+    protected TransformerImpl(Processor processor) {
+        this.processor = processor;
     }
-
 
     /**
      * Transforms a xml-source : SAXSource, DOMSource, StreamSource to
@@ -117,61 +111,116 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
 
         //should be synchronized
         synchronized (reentryGuard) {
-
             log.debug("perform transformation from xml-source(SAXSource, " +
                 "DOMSource, StreamSource) to  SAXResult, DOMResult or " +
                 "StreamResult");
-
             try {
 
-                //init StxEmitter
-                StxEmitter out = initStxEmitter(result);
+                StxEmitter out = null;
+                try {
+                    //init StxEmitter
+                    out = initStxEmitter(result);
+                } catch (TransformerException tE) {
+                    // use ErrorListener
+                    if(errorListener != null) {
+                        try {
+                            errorListener.fatalError(tE);
+                            return;
+                        } catch( TransformerException e2) {
+                            new TransformerConfigurationException(e2);
+                        }
+                    } else {
+                        log.fatal(tE);
+                        throw tE;
+                    }
+                }
 
                 this.processor.setContentHandler(out);
                 this.processor.setLexicalHandler(out);
 
                 //register ErrorListener
                 if (this.errorListener != null) {
-
                     this.processor.setErrorListener(errorListener);
-
                 }
 
-                SAXSource saxSource = getSAXSource(xmlSource, true);
+                SAXSource saxSource = null;
+                try {
+                    saxSource = getSAXSource(xmlSource, true);
+                } catch (TransformerConfigurationException trE) {
+                    // use ErrorListener
+                    if(errorListener != null) {
+                        try {
+                            errorListener.fatalError(trE);
+                            return;
+                        } catch( TransformerException e2) {
+                            new TransformerConfigurationException(e2);
+                        }
+                    } else {
+                        log.fatal(trE);
+                        throw trE;
+                    }
+                }
+
                 InputSource isource = saxSource.getInputSource();
 
                 if(isource != null) {
-
                     log.debug("perform transformation");
-
-                    //perform transformation
-                    if (isource.getSystemId() == null) {
-                        this.processor.setParent(saxSource.getXMLReader());
+                    //perform transformation - @todo fix me
+                    //if (isource.getSystemId() == null) {
+                    //    this.processor.setParent(saxSource.getXMLReader());
+                    //}
+                    if (saxSource.getXMLReader() != null) {
+                        // should not be an DOMSource
+                        if (!(xmlSource instanceof DOMSource)) {
+                            this.processor.setParent(saxSource.getXMLReader());
+                        }
                     }
+
                     //perform transformation
                     this.processor.parse(isource);
-
                 } else {
-
-                    log.error("InputSource is null - could not perform " +
-                        "transformation");
-
+                    // use ErrorListener
+                    if(errorListener != null) {
+                        try {
+                            errorListener.fatalError(new TransformerConfigurationException("InputSource is null - could not perform transformation"));
+                            return;
+                        } catch( TransformerException e2) {
+                            new TransformerConfigurationException(e2);
+                        }
+                    } else {
+                        log.fatal("InputSource is null - could not perform transformation");
+                        throw new TransformerException("InputSource is null - could not perform transformation");
+                    }
                 }
-
                 //perform result
                 performResults(result, out);
-
-            }
-            catch (Exception ex) {
-
-                log.error(ex);
-                ex.printStackTrace();
-                throw new TransformerException(ex);
-
+            } catch (SAXException ex) {
+                if(errorListener != null) {
+                    try {
+                        errorListener.fatalError(new TransformerException(ex));
+                        return;
+                    } catch( TransformerException e2) {
+                        new TransformerException(e2);
+                    }
+                } else {
+                    log.fatal(ex);
+                    throw new TransformerException(ex.getMessage(), ex);
+                }
+            } catch (IOException iE) {
+                if(errorListener != null) {
+                    try {
+                        errorListener.fatalError(new TransformerConfigurationException(iE));
+                        return;
+                    } catch( TransformerException e2) {
+                        new TransformerConfigurationException(e2);
+                    }
+                } else {
+                    log.fatal(iE);
+                    throw new TransformerConfigurationException(iE.getMessage(), iE);
+                }
             }
         }
     }
-
 
     /**
      * Performs the <code>Result</code>.
@@ -181,32 +230,25 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
     private void performResults(Result result, StxEmitter out) {
 
         log.debug("perform result");
-
         //DOMResult
         if (result instanceof DOMResult) {
-
             log.debug("result is a DOMResult");
             Node nodeResult = ((DOMEmitter)out).getDOMTree();
             //DOM specific Implementation
             ((DOMResult)result).setNode(nodeResult);
-
+            return;
         }
-
         //StreamResult
         if (result instanceof StreamResult) {
-
             log.debug("result is a StreamResult");
+            return;
         }
-
         //SAXResult
         if (result instanceof SAXResult) {
-
             log.debug("result is a SAXResult");
-
+            return;
         }
     }
-
-
 
     /**
     * Converts a supplied <code>Source</code> to a <code>SAXSource</code>.
@@ -214,80 +256,44 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
     * @param isStyleSheet true if the source is a stylesheet
     * @return a <code>SAXSource</code>
     */
-    public SAXSource getSAXSource(Source source, boolean isStyleSheet)
+    private SAXSource getSAXSource(Source source, boolean isStyleSheet)
         throws TransformerConfigurationException {
 
         log.debug("getting a SAXSource from a Source");
-
         //SAXSource
         if (source instanceof SAXSource) {
-
             log.debug("source is an instance of SAXSource, so simple return");
-
             return (SAXSource)source;
-
         }
-
         //DOMSource
         if (source instanceof DOMSource) {
-
             log.debug("source is an instance of DOMSource");
-
             InputSource is = new InputSource("dummy");
-
             Node startNode = ((DOMSource)source).getNode();
-
             Document doc;
-
             if (startNode instanceof Document) {
-
                 doc = (Document)startNode;
-
             } else {
-
                 doc = startNode.getOwnerDocument();
             }
-
             log.debug("using DOMDriver");
-
-            DOMDriver driver;
-
-            //if (doc instanceof DocumentInfo) {
-
-            //    driver = new TreeDriver();
-
-            //} else {
-
-                driver = new DOMDriver();
-
-            //}
-
+            DOMDriver driver = new DOMDriver();
             driver.setDocument(doc);
-
             is.setSystemId(source.getSystemId());
-
             driver.setSystemId(source.getSystemId());
-
             return new SAXSource(driver, is);
         }
-
         //StreamSource
         if (source instanceof StreamSource) {
-
             log.debug("source is an instance of StreamSource");
-
-            InputSource isource = TrAXHelper.getInputSourceForStreamSources(source);
-
+            InputSource isource =
+                    TrAXHelper.getInputSourceForStreamSources(source, errorListener);
             return new SAXSource(isource);
-
         } else {
-
             log.error("Unknown type of source");
-
             throw new IllegalArgumentException("Unknown type of source");
         }
     }
-
 
     /**
      * Setter for OutputProperty (not implemented).
@@ -296,15 +302,10 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
      * @throws IllegalArgumentException
      */
     public void setOutputProperty(String name, String value) throws java.lang.IllegalArgumentException {
-
-        synchronized (reentryGuard)
-        {
-
+        synchronized (reentryGuard) {
             prophash.put(name, value);
-
         }
     }
-
 
     /**
      * Setter for OutputProperties (not implemented).
@@ -312,60 +313,44 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
      * @throws IllegalArgumentException
      */
     public void setOutputProperties(Properties oformat) throws java.lang.IllegalArgumentException {
-
-        synchronized (reentryGuard)
-        {
-
+        synchronized (reentryGuard) {
             prophash = oformat;
-
         }
     }
-
 
     /**
      * Getter for {@link #prophash}
      * @return <code>Properties</code>
      */
     public Properties getOutputProperties() {
-
         return prophash;
     }
-
 
     /**
      * Getter for {@link #uriRes}
      * @return <code>URIResolver</code>
      */
     public URIResolver getURIResolver() {
-
         return uriRes;
     }
-
 
     /**
      * Setter for {@link #uriRes}
      * @param resolver A <code>URIResolver</code> object.
      */
     public void setURIResolver(URIResolver resolver) {
-
         synchronized (reentryGuard) {
-
             uriRes = resolver;
         }
     }
-
 
     /**
      * @todo : implement
      */
     public void clearParameters() {
-
         synchronized (reentryGuard) {
-
-
         }
     }
-
 
     /**
      * Setter for parameter.
@@ -373,11 +358,8 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
      * @param value The value of the parameter.
      */
     public void setParameter(String name, Object value) {
-
         paramhash.put(name, value);
-
     }
-
 
     /**
      * Getter for parameter.
@@ -385,11 +367,8 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
      * @return An <code>Object</code> according to the key-value.
      */
     public Object getParameter(String name) {
-
         return paramhash.get(name);
-
     }
-
 
     /**
      *
@@ -400,23 +379,17 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
         throws IllegalArgumentException {
 
         synchronized (reentryGuard) {
-
             errorListener = listener;
         }
     }
-
-
 
     /**
      * Setter for {@link #errorListener}
      * @return A <code>ErrorListener</code>
      */
     public ErrorListener getErrorListener() {
-
         return errorListener;
-
     }
-
 
     /**
      * Getter for outputProperties.
@@ -429,9 +402,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
         throws IllegalArgumentException {
 
         return null;
-
     }
-
 
     /**
      * HelperMethod for initiating StxEmitter.
@@ -443,175 +414,99 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
         throws TransformerException {
 
         log.debug("init STXEmitter");
-
     	// Try to get the encoding from the stx-Parser <class>Parser</class>
-
         //String encFromStx = stx.getEncoding();
         String encFromStx = processor.getOutputEncoding();
-
         if (encFromStx != null) {
-
-          encoding = encFromStx;
-
+            encoding = encFromStx;
         } else {
-
-          encoding = DEFAULT_ENCODING; // default output encoding
-
+            encoding = DEFAULT_ENCODING; // default output encoding
         }
-
         // Return the content handler for this Result object
         try {
-
             // Result object could be SAXResult, DOMResult, or StreamResult
-
             if (result instanceof SAXResult) {
-
-                    final SAXResult target = (SAXResult)result;
-
-                    final ContentHandler handler = target.getHandler();
-
-                    if (handler != null) {
-
-                        log.debug("return SAX specific Implementation for " +
-                            "STXEmitter");
-
-                        //SAX specific Implementation
-
-                        return new SAXEmitter(handler);
-                    }
-
+                final SAXResult target = (SAXResult)result;
+                final ContentHandler handler = target.getHandler();
+                if (handler != null) {
+                    log.debug("return SAX specific Implementation for " +
+                        "STXEmitter");
+                    //SAX specific Implementation
+                    return new SAXEmitter(handler);
+                }
             } else if (result instanceof DOMResult) {
-
-                    log.debug("return DOM specific Implementation for STXEmitter");
-
-                    //DOM specific Implementation
-
-                    return new DOMEmitter();
-
+                log.debug("return DOM specific Implementation for STXEmitter");
+                //DOM specific Implementation
+                return new DOMEmitter();
             } else if (result instanceof StreamResult) {
-
                 log.debug("return StreamRsult specific Implementation for " +
                     "STXEmitter");
-
                 // Get StreamResult
-
                 final StreamResult target = (StreamResult)result;
-
                 // StreamResult may have been created with a java.io.File,
                 // java.io.Writer, java.io.OutputStream or just a String
                 // systemId.
-
                 // try to get a Writer from Result object
-
                 final Writer writer = target.getWriter();
-
                 if (writer != null) {
-
                     log.debug("get a Writer object from Result object");
-
                     return new StreamEmitter(writer);
-
                 }
-
                 // or try to get an OutputStream from Result object
                 final OutputStream ostream = target.getOutputStream();
-
                 if (ostream != null) {
-
                     log.debug("get an OutputStream from Result object");
-
                     return new StreamEmitter(ostream, encoding);
-
                 }
-
-
                 // or try to get just a systemId string from Result object
                 String systemId = result.getSystemId();
-
                 log.debug("get a systemId string from Result object");
-
                 if (systemId == null) {
-
-                    log.error("JAXP_NO_RESULT_ERR");
-
+                    log.debug("JAXP_NO_RESULT_ERR");
                     throw new TransformerException("JAXP_NO_RESULT_ERR");
-
                 }
-
-
                 // System Id may be in one of several forms, (1) a uri
                 // that starts with 'file:', (2) uri that starts with 'http:'
                 // or (3) just a filename on the local system.
                 OutputStream os = null;
-
                 URL url = null;
-
                 if (systemId.startsWith("file:")) {
-
                     url = new URL(systemId);
-
                     os = new FileOutputStream(url.getFile());
-
                     return new StreamEmitter(os, encoding);
-
                 }
-
                     else if (systemId.startsWith("http:")) {
-
                         url = new URL(systemId);
-
                         URLConnection connection = url.openConnection();
-
                         os = connection.getOutputStream();
-
                         return new StreamEmitter(os, encoding);
-
                     }
-
                     else {
-
                         // system id is just a filename
-
-                        File tmp = new File(systemId);
-
-                        url = tmp.toURL();
-
-                        os = new FileOutputStream(url.getFile());
-
+                        File tmp    = new File(systemId);
+                        url         = tmp.toURL();
+                        os          = new FileOutputStream(url.getFile());
                         return new StreamEmitter(os, encoding);
-
                     }
             }
-
          // If we cannot create the file specified by the SystemId
         } catch (IOException iE) {
-
-            log.error(iE);
-
+            log.debug(iE);
             throw new TransformerException(iE);
-
         } catch (ParserConfigurationException pE) {
-
-            log.error(pE);
-
+            log.debug(pE);
             throw new TransformerException(pE);
-
         }
-
         return null;
     }
-
 
     /**
      * Getter for {@link #processor}
      * @return A <code>Processor</code> object.
      */
     public Processor getStxProcessor() {
-
         //Processor tempProcessor = new Processor(processor);
-
         return processor;
-
     }
 }
 

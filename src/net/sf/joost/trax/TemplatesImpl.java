@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: TemplatesImpl.java,v 1.2 2002/10/08 19:19:27 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,30 +25,24 @@
 
 package net.sf.joost.trax;
 
-//JAXP
-import javax.xml.transform.Templates;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.Source;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.ErrorListener;
+//import JAXP
+import javax.xml.transform.*;
 
-//JDK
+//import JDK
 import java.util.Properties;
 import java.io.IOException;
 
-//SAX
+//import SAX
 import org.xml.sax.XMLReader;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.XMLReaderFactory;
 import org.xml.sax.InputSource;
 
-//Joost
+//import Joost
 import net.sf.joost.stx.Parser;
 import net.sf.joost.stx.Processor;
 
-// Import log4j classes.
+//import log4j classes.
 import org.apache.log4j.Logger;
 
 
@@ -82,36 +76,21 @@ public class TemplatesImpl implements Templates, TrAXConstants {
     private Boolean reentryGuard = new Boolean(true);
 
 
-
-
-    /**
-     * Empty default-constructor
-     * @todo : should be implemented
-     */
-    public TemplatesImpl() {
-
-        log.debug("calling empty constructor");
-
-    }
-
-
     /**
      * Constructor used by {@link net.sf.joost.trax.TemplatesHandlerImpl}
      *
      * @param stxParser A parsed stylesheet in form of <code>Parser</code>
      */
-    public TemplatesImpl(Parser stxParser) {
+    protected TemplatesImpl(Parser stxParser)
+        throws TransformerConfigurationException {
 
         log.debug("calling constructor with existing Parser");
-
         try {
-
+            //configure the template
             init(stxParser);
-
-        } catch (ParserConfigurationException pE) {
-
-            log.fatal(pE);
-
+        } catch (TransformerConfigurationException tE) {
+            log.fatal(tE);
+            throw tE;
         }
     }
 
@@ -120,24 +99,31 @@ public class TemplatesImpl implements Templates, TrAXConstants {
      * Constructor.
      * @param isource The <code>InputSource</code> of the stylesheet
      * @param factory A reference on a <code>TransformerFactoryImpl</code>
-     * @throws ParserConfigurationException When an error occurs.
+     * @throws TransformerConfigurationException When an error occurs.
      */
-    public TemplatesImpl(InputSource isource, TransformerFactoryImpl factory)
-        throws ParserConfigurationException {
+    protected TemplatesImpl(InputSource isource, TransformerFactoryImpl factory)
+        throws TransformerConfigurationException {
 
         log.debug("calling constructor with SystemId " + isource.getSystemId());
-
         this.factory = factory;
-
         try {
-
             //configure template
             init(isource);
+        } catch (TransformerConfigurationException tE) {
 
-        } catch (ParserConfigurationException pE) {
-
-            log.fatal(pE);
-
+            ErrorListener eListener = factory.getErrorListener();
+            // user ErrorListener if available
+            if(eListener != null) {
+                try {
+                    eListener.fatalError(new TransformerConfigurationException(tE));
+                    return;
+                } catch( TransformerException e2) {
+                    new TransformerConfigurationException(e2);
+                }
+            } else {
+                log.debug(tE);
+                throw tE;
+            }
         }
     }
 
@@ -146,28 +132,21 @@ public class TemplatesImpl implements Templates, TrAXConstants {
      * Configures the <code>Templates</code> - initializing with a completed
      *  <code>Parser</code> object.
      * @param stxParser A <code>Parser</code>
-     * @throws ParserConfigurationException When an error occurs while
+     * @throws TransformerConfigurationException When an error occurs while
      *  initializing the <code>Templates</code>.
      */
-    private void init(Parser stxParser) throws ParserConfigurationException {
+    private void init(Parser stxParser) throws TransformerConfigurationException {
 
         log.debug("init without InputSource ");
-
         try {
-
             //new Processor
             processor = new Processor(stxParser);
-
         } catch (org.xml.sax.SAXException sE) {
-
-            log.error(sE);
-            throw new ParserConfigurationException(sE.getMessage());
-
+            log.fatal(sE);
+            throw new TransformerConfigurationException(sE.getMessage());
         } catch (java.lang.NullPointerException nE) {
-
-            log.error(nE);
-            throw new ParserConfigurationException("could not found value for property javax.xml.parsers.SAXParser");
-
+            log.fatal(nE);
+            throw new TransformerConfigurationException("Could not found value for property javax.xml.parsers.SAXParser " + nE.getMessage());
         }
     }
 
@@ -176,38 +155,28 @@ public class TemplatesImpl implements Templates, TrAXConstants {
      * Configures the <code>Templates</code> - initializing by parsing the
      * stylesheet.
      * @param isource The <code>InputSource</code> of the stylesheet
-     * @throws ParserConfigurationException When an error occurs while
+     * @throws TransformerConfigurationException When an error occurs while
      *  initializing the <code>Templates</code>.
      */
-    private void init(InputSource isource) throws ParserConfigurationException {
+    private void init(InputSource isource) throws TransformerConfigurationException {
 
         log.debug("init with InputSource " + isource.getSystemId());
-
         try {
-
             /**
              * Register ErrorListener from
              * {@link TransformerFactoryImpl#getErrorListener()}
              * if available.
              */
             processor = new Processor(isource, factory.getErrorListener());
-
-
         } catch (java.io.IOException iE) {
-
-            log.error(iE);
-            throw new ParserConfigurationException(iE.getMessage());
-
+            log.debug(iE);
+            throw new TransformerConfigurationException(iE.getMessage(), iE);
         } catch (org.xml.sax.SAXException sE) {
-
-            log.error(sE);
-            throw new ParserConfigurationException(sE.getMessage());
-
+            log.debug(sE);
+            throw new TransformerConfigurationException(sE.getMessage(), sE);
         } catch (java.lang.NullPointerException nE) {
-
-            log.error(nE);
-            throw new ParserConfigurationException("could not found value for property javax.xml.parsers.SAXParser");
-
+            log.debug(nE);
+            throw new TransformerConfigurationException("could not found value for property javax.xml.parsers.SAXParser ", nE);
         }
     }
 
@@ -220,15 +189,11 @@ public class TemplatesImpl implements Templates, TrAXConstants {
     public Transformer newTransformer() throws TransformerConfigurationException {
 
         synchronized (reentryGuard) {
-
             log.debug("calling newTransformer to get a Transformer object for Transformation");
-
             //create a copy of the processor-instance
             //Processor processorPerTransformer = new Processor(processor);
-
             //register the processor
             Transformer transformer = new TransformerImpl(processor);
-
             return transformer;
         }
     }
@@ -237,20 +202,29 @@ public class TemplatesImpl implements Templates, TrAXConstants {
     /**
      * Gets the static properties for stx:output.
      * @todo : Implementation.
-     * @return Properties according to JAXP-Spec.
+     * @return Properties according to JAXP-Spec or null if an error
+     *  is occured.
      */
     public Properties getOutputProperties() {
 
 	    try {
-
 	        Transformer transformer = newTransformer();
 	        return transformer.getOutputProperties();
-
-	    } catch (TransformerConfigurationException e) {
-
-            log.error(e);
-	        return null;
-
+	    } catch (TransformerConfigurationException tE) {
+            ErrorListener eListener = factory.getErrorListener();
+            // use ErrorListener if available
+            if(eListener != null) {
+                try {
+                    eListener.fatalError(new TransformerConfigurationException(tE));
+                    return null;
+                } catch( TransformerException trE) {
+                    new TransformerConfigurationException(trE);
+                    return null;
+                }
+            } else {
+                log.error(tE);
+                return null;
+            }
 	    }
     }
 }

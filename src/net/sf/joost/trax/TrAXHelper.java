@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXHelper.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: TrAXHelper.java,v 1.2 2002/10/08 19:19:42 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -28,6 +28,8 @@ package net.sf.joost.trax;
 //JAXP
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.ErrorListener;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 
 //SAX
@@ -55,87 +57,86 @@ public class TrAXHelper {
     /**
      * Defaultconstructor
      */
-    public TrAXHelper() {
+    protected TrAXHelper() {
     }
 
 
     /**
      * Helpermethod for getting an InputSource from a StreamSource.
      * @param source <code>Source</code>
-     * @return An <code>InputSource</code> object.
+     * @return An <code>InputSource</code> object or null
      * @throws TransformerConfigurationException
      */
-    public static InputSource getInputSourceForStreamSources(Source source)
+    protected static InputSource getInputSourceForStreamSources(Source source, ErrorListener errorListener)
     	throws TransformerConfigurationException {
 
         log.debug("getting an InputSource from a StreamSource");
-
         InputSource input   = null;
-
         String systemId     = source.getSystemId();
 
         if (systemId == null) {
-
             systemId = "";
-
         }
-
         try {
-
             if (source instanceof StreamSource) {
-
                 log.debug("Source is a StreamSource");
-
-                final StreamSource stream = (StreamSource)source;
-
-                final InputStream istream = stream.getInputStream();
-
-                final Reader reader = stream.getReader();
-
+                StreamSource stream   = (StreamSource)source;
+                InputStream istream   = stream.getInputStream();
+                Reader reader         = stream.getReader();
                 // Create InputSource from Reader or InputStream in Source
                 if (istream != null) {
-
                     input = new InputSource(istream);
-
                 } else {
-
                     if (reader != null) {
-
                         input = new InputSource(reader);
-
                     } else {
-
                         input = new InputSource(systemId);
-
                     }
-
                 }
-
             } else {
-
-                log.error("Source is not a StreamSource");
-                throw new TransformerConfigurationException();
-
+                //Source type is not supported
+                if(errorListener != null) {
+                    try {
+                        errorListener.fatalError(new TransformerConfigurationException("Source is not a StreamSource"));
+                        return null;
+                    } catch( TransformerException e2) {
+                        new TransformerConfigurationException(e2);
+                    }
+                }
+                log.debug("Source is not a StreamSource");
+                throw new TransformerConfigurationException("Source is not a StreamSource");
             }
-
+            //setting systemId
             input.setSystemId(systemId);
-
         } catch (NullPointerException nE) {
-
-            log.error(nE);
-
+            //catching NullPointerException
+            if(errorListener != null) {
+                try {
+                    errorListener.fatalError(
+                            new TransformerConfigurationException(nE));
+                    return null;
+                } catch( TransformerException e2) {
+                    new TransformerConfigurationException(e2);
+                }
+            }
+            log.debug(nE);
             throw new TransformerConfigurationException(nE.getMessage());
-
         } catch (SecurityException sE) {
-
-            log.error(sE);
-
+            //catching SecurityException
+            if(errorListener != null) {
+                try {
+                    errorListener.fatalError(
+                            new TransformerConfigurationException(sE));
+                    return null;
+                } catch( TransformerException e2) {
+                    new TransformerConfigurationException(e2);
+                }
+            }
+            log.debug(sE);
             throw new TransformerConfigurationException(sE.getMessage());
-
         } finally {
-
+            //always return something, maybe null
             return(input);
-
         }
     }
 }

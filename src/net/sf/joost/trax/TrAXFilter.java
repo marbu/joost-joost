@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXFilter.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: TrAXFilter.java,v 1.2 2002/10/08 19:19:42 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -28,12 +28,11 @@ package net.sf.joost.trax;
 //SAX
 import org.xml.sax.XMLFilter;
 import org.xml.sax.helpers.XMLFilterImpl;
+import org.xml.sax.helpers.XMLReaderFactory;
 import org.xml.sax.*;
 
 //JAXP
-import javax.xml.transform.Templates;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.*;
 
 //JDK
 import java.io.IOException;
@@ -59,24 +58,19 @@ public class TrAXFilter extends XMLFilterImpl {
     static Logger log = Logger.getLogger(TrAXFilter.class);
 
     private Templates templates = null;
-
     private Processor processor = null;
-
-
 
     /**
      * Constructor
      * @param templates A <code>Templates</code>
      * @throws TransformerConfigurationException
      */
-    public TrAXFilter(Templates templates)
+    protected TrAXFilter(Templates templates)
         throws TransformerConfigurationException {
 
         log.debug("calling constructor");
         this.templates = templates;
-
     }
-
 
     /**
      * Parses the <code>InputSource</code>
@@ -88,80 +82,71 @@ public class TrAXFilter extends XMLFilterImpl {
     	throws SAXException, IOException {
 
         log.debug("parsing InputSource " + input.getSystemId());
-
         Transformer transformer = null;
-
         try {
-
+            // get a new Transformer
             transformer = this.templates.newTransformer();
-
         } catch (TransformerConfigurationException tE) {
 
-            log.error(tE);
-            throw new SAXException(tE);
-
+            ErrorListener eListener = transformer.getErrorListener();
+            // use ErrorListener if available
+            if(eListener != null) {
+                try {
+                    eListener.fatalError(new TransformerConfigurationException(tE));
+                    return;
+                } catch( TransformerException trE) {
+                    new TransformerConfigurationException(trE);
+                    return;
+                }
+            } else {
+                log.fatal(tE);
+                throw new SAXException(tE);
+            }
         }
-
         if ( transformer instanceof TransformerImpl ) {
-
             this.processor = ((TransformerImpl)transformer).getStxProcessor();
-
         } else {
-
-            log.error("an error is occured, because transfomer is not an " +
+            log.error("An error is occured, because the given transfomer is not an " +
                 "instance of TransformerImpl");
-
         }
-
         XMLReader parent = this.getParent();
 
+        if (parent == null) {
+            parent= XMLReaderFactory.createXMLReader();
+            setParent(parent);
+        }
         ContentHandler handler = this.getContentHandler();
 
         if(handler == null) {
-
             handler = parent.getContentHandler();
-
         }
-
-
         if(handler == null) {
-
             throw new SAXException("no ContentHandler registered");
-
         }
-
         //init StxEmitter
         StxEmitter out = null;
 
         if (handler != null) {
-
             //SAX specific Implementation
             out = new SAXEmitter(handler);
-
         }
-
-        this.processor.setContentHandler(out);
-        this.processor.setLexicalHandler(out);
-
-
+        if (this.processor != null) {
+            this.processor.setContentHandler(out);
+            this.processor.setLexicalHandler(out);
+        } else {
+            throw new SAXException("Joost-Processor is not correct configured.");
+        }
+        if (parent == null) {
+           throw new NullPointerException("No parent for filter");
+        }
         parent.setContentHandler(this.processor);
         parent.setProperty("http://xml.org/sax/properties/lexical-handler",
                          this.processor);
-
-
-        if (parent == null) {
-
-           throw new NullPointerException("No parent for filter");
-
-        }
-
         //parent.setEntityResolver(this);
         //parent.setDTDHandler(this);
         //parent.setContentHandler(this);
         //parent.setErrorHandler(this);
-
         parent.parse(input);
-
     }
 }
 

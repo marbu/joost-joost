@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXConstants.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: TrAXConstants.java,v 1.2 2002/10/08 19:19:42 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -40,7 +40,9 @@ public interface TrAXConstants {
      */
     public static String DEFAULT_ENCODING   = "UTF-8";
 
-
+    /*
+     * Used for unique transformation.
+     */
     public static final String IDENTITY_TRANSFORM =
         "<?xml version='1.0'?>" +
         "<stx:transform " + "xmlns:stx='" + Parser.STX_NS + "'" +
