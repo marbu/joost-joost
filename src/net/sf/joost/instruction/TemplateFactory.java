@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateFactory.java,v 1.8 2002/12/30 11:53:46 obecker Exp $
+ * $Id: TemplateFactory.java,v 1.9 2003/01/15 14:08:54 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>template</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 1.8 $ $Date: 2002/12/30 11:53:46 $
+ * @version $Revision: 1.9 $ $Date: 2003/01/15 14:08:54 $
  * @author Oliver Becker
  */
 
@@ -77,7 +77,7 @@ public final class TemplateFactory extends FactoryBase
       attrNames.add("match");
       attrNames.add("priority");
       attrNames.add("visibility");
-      attrNames.add("recursion-entry-point");
+      attrNames.add("new-scope");
    }
 
    /** @return <code>"template"</code> */
@@ -139,14 +139,14 @@ public final class TemplateFactory extends FactoryBase
          visibility =  PRIVATE_VISIBLE; // default value
 
       // default is false
-      boolean recursionEntry = 
-         getEnumAttValue("recursion-entry-point", attrs,YESNO_VALUES, 
-                         locator) == YES_VALUE;
+      boolean newScope = 
+         getEnumAttValue("new-scope", attrs,YESNO_VALUES, locator)
+         == YES_VALUE;
 
       checkAttributes(qName, attrs, attrNames, locator);
 
       return new Instance(qName, parent, locator,
-                          matchPattern, priority, visibility, recursionEntry);
+                          matchPattern, priority, visibility, newScope);
    }
 
 
@@ -200,8 +200,8 @@ public final class TemplateFactory extends FactoryBase
       /** The visibility of this template */
       public int visibility;
 
-      /** Is this template a recursion entry point? */
-      private boolean recursionEntryPoint;
+      /** Does this template establish a new scope for group variables? */
+      private boolean newScope;
 
       /** stack for local variables */
       private Stack localVarStack = new Stack();
@@ -215,7 +215,7 @@ public final class TemplateFactory extends FactoryBase
       
       protected Instance(String qName, NodeBase parent, Locator locator,
                          Tree match, double priority, int visibility,
-                         boolean recursionEntryPoint)
+                         boolean newScope)
          throws SAXParseException
       {
          super(qName, parent, locator, false);
@@ -223,7 +223,7 @@ public final class TemplateFactory extends FactoryBase
          this.match = match;
          this.priority = priority;
          this.visibility = visibility;
-         this.recursionEntryPoint = recursionEntryPoint;
+         this.newScope = newScope;
       }
 
 
@@ -305,7 +305,7 @@ public final class TemplateFactory extends FactoryBase
          if ((processStatus & ST_PROCESSING) != 0) {
             // template entered, remove existing local variables
             context.localVars.clear();
-            if (recursionEntryPoint) {
+            if (newScope) {
                // initialize group variables
                parentGroup.enterRecursionLevel(emitter, eventStack, context);
             }
@@ -325,7 +325,7 @@ public final class TemplateFactory extends FactoryBase
          }
          else {
             // end of template encountered
-            if (recursionEntryPoint)
+            if (newScope)
                parentGroup.exitRecursionLevel();
          }
 
