@@ -1,5 +1,5 @@
 /*
- * $Id: DebugEmitter.java,v 1.6 2004/09/29 06:21:04 obecker Exp $
+ * $Id: DebugEmitter.java,v 1.7 2004/10/06 07:46:37 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -28,6 +28,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Hashtable;
 
+import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.ErrorHandlerImpl;
 import net.sf.joost.stx.SAXEvent;
@@ -39,7 +40,7 @@ import org.xml.sax.helpers.LocatorImpl;
 
 /**
  * Extends the {@link net.sf.joost.stx.Emitter} with debug features.
- * @version $Revision: 1.6 $ $Date: 2004/09/29 06:21:04 $
+ * @version $Revision: 1.7 $ $Date: 2004/10/06 07:46:37 $
  * @author Zubow
  */
 public class DebugEmitter extends Emitter {
@@ -64,6 +65,24 @@ public class DebugEmitter extends Emitter {
         super(errorHandler);
     }
 
+    /**
+     * Called from {@link #pushEmitter(StxEmitter)}
+     * @param prev the previous emitter
+     * @param handler the new content handler
+     */
+    private DebugEmitter(Emitter prev, StxEmitter handler)
+    {
+        super(prev, handler);
+    }
+    
+    /* (non-Javadoc)
+     * @see net.sf.joost.stx.Emitter#pushEmitter(net.sf.joost.emitter.StxEmitter)
+     */
+    public Emitter pushEmitter(StxEmitter handler)
+    {
+        return new DebugEmitter(this, handler);
+    }
+   
     /**
      * setter for {@link #tmgr} property
      */

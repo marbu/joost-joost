@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.26 2004/09/29 06:20:36 obecker Exp $
+ * $Id: Emitter.java,v 1.27 2004/10/06 07:46:25 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -48,7 +48,7 @@ import org.xml.sax.helpers.NamespaceSupport;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.26 $ $Date: 2004/09/29 06:20:36 $
+ * @version $Revision: 1.27 $ $Date: 2004/10/06 07:46:25 $
  * @author Oliver Becker
  */
 
@@ -90,7 +90,8 @@ public class Emitter implements Constants
       this.errorHandler = errorHandler;
    }
 
-   public Emitter(Emitter prev, StxEmitter handler)
+   /** Called from {@link #pushEmitter(StxEmitter)} */
+   protected Emitter(Emitter prev, StxEmitter handler)
    {
       this.prev = prev;
       this.contH = handler;
@@ -103,6 +104,18 @@ public class Emitter implements Constants
 
       openedElements = new Stack();
       this.errorHandler = prev.errorHandler;
+   }
+   
+   
+   /**
+    * Put the current emitter object on a stack and return a new emitter, 
+    * which uses the given handler. This method may be overridden.
+    * @param handler the STX handler for the new emitter
+    * @return a new emitter object
+    */
+   public Emitter pushEmitter(StxEmitter handler)
+   {
+      return new Emitter(this, handler);
    }
 
    public void beforeRemoval()
