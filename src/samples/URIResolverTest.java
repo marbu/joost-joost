@@ -1,5 +1,5 @@
 /*
- * $Id: URIResolverTest.java,v 1.1 2003/09/04 11:15:01 obecker Exp $
+ * $Id: URIResolverTest.java,v 1.2 2004/09/29 05:47:51 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -26,12 +26,8 @@ package samples;
 
 import java.io.StringReader;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
-import javax.xml.transform.Result;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.Transformer;
@@ -42,10 +38,13 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 
 /**
  * Example class that demonstrates the usage of URI resolvers in Joost.
- * @version $Revision: 1.1 $ $Date: 2003/09/04 11:15:01 $
+ * @version $Revision: 1.2 $ $Date: 2004/09/29 05:47:51 $
  * @author Oliver Becker
  */
 

@@ -1,5 +1,5 @@
 /*
- * $Id: NSFilter.java,v 1.4 2003/07/23 16:26:48 obecker Exp $
+ * $Id: NSFilter.java,v 1.5 2004/09/29 05:47:51 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,6 +25,7 @@
 package samples;
 
 import java.util.Hashtable;
+
 import javax.xml.transform.Result;
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.Transformer;
@@ -35,16 +36,14 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import net.sf.joost.TransformerHandlerResolver;
+import net.sf.joost.trax.TrAXConstants;
+
 import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.XMLFilterImpl;
-
-import net.sf.joost.TransformerHandlerResolver;
-import net.sf.joost.trax.TrAXConstants;
 
 
 /**
@@ -58,7 +57,7 @@ import net.sf.joost.trax.TrAXConstants;
  * <li>acting as a TransformerHandler, that removes all elements in a
  *     given namespace (passed as a parameter)</li>
  * </ul>
- * @version $Revision: 1.4 $ $Date: 2003/07/23 16:26:48 $
+ * @version $Revision: 1.5 $ $Date: 2004/09/29 05:47:51 $
  * @author Oliver Becker
  */
 
