@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 1.5 2002/12/13 17:52:50 obecker Exp $
+ * $Id: GroupBase.java,v 1.6 2002/12/15 17:06:47 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -26,6 +26,7 @@ package net.sf.joost.instruction;
 
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -43,7 +44,7 @@ import net.sf.joost.stx.Value;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 1.5 $ $Date: 2002/12/13 17:52:50 $
+ * @version $Revision: 1.6 $ $Date: 2002/12/15 17:06:47 $
  * @author Oliver Becker
  */
 
@@ -64,8 +65,14 @@ abstract public class GroupBase extends NodeBase
     */
    public TemplateFactory.Instance[] visibleTemplates;
    
-   /** contained groups in this group */
+   /** Contained groups in this group */
    protected GroupFactory.Instance[] containedGroups;
+
+   /** 
+    * Table of named groups: key = group name, value = visible templates.
+    * All groups will have a reference to the same object.
+    */
+   public Hashtable namedGroups;
 
    /** parent group */
    public GroupBase parentGroup;
@@ -75,6 +82,9 @@ abstract public class GroupBase extends NodeBase
 
    /** Group variable values */
    public Stack groupVars = new Stack();
+
+   /** Expanded name of this group */
+   protected String groupName;
 
    // Log4J initialization
    private static org.apache.log4j.Logger log4j = 
@@ -89,6 +99,12 @@ abstract public class GroupBase extends NodeBase
       containedTemplates = new Vector();
       containedPublicTemplates = new Vector();
       containedGlobalTemplates = new Vector();
+      if (parentGroup != null)
+         namedGroups = parentGroup.namedGroups;
+
+      // all groups have at least an empty vector of children to simplify
+      // parsing
+      children = new Vector();
    }
    
    
@@ -140,18 +156,28 @@ abstract public class GroupBase extends NodeBase
       containedGroups = new GroupFactory.Instance[gvec.size()];
       gvec.toArray(containedGroups);
 
-      // first category (strict and loose)
+      // visible templates:
       // templates from the same group
-      Vector firstCategory = new Vector(containedTemplates);
+      Vector visibleVec = new Vector(containedTemplates);
+
       // plus public templates from children groups
-      
       for (int i=0; i<containedGroups.length; i++)
-         firstCategory.addAll(containedGroups[i].containedPublicTemplates);
+         visibleVec.addAll(containedGroups[i].containedPublicTemplates);
       
       visibleTemplates =
-         new TemplateFactory.Instance[firstCategory.size()];
-      firstCategory.toArray(visibleTemplates);
+         new TemplateFactory.Instance[visibleVec.size()];
+      visibleVec.toArray(visibleTemplates);
       Arrays.sort(visibleTemplates); // in descending priority order
+
+      if (groupName != null) {
+         // register group in the transform object
+//          GroupBase transformGroup = this;
+//          while (transformGroup.parentGroup != null)
+//             transformGroup = transformGroup.parentGroup;
+
+//          ((TransformFactory.Instance)transformGroup).
+            namedGroups.put(groupName, visibleTemplates);
+      }
 
       for (int i=0; i<containedGroups.length; i++) {
          // add global templates of all sub-groups 

@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 1.6 2002/12/13 17:47:22 obecker Exp $
+ * $Id: TransformFactory.java,v 1.7 2002/12/15 17:06:47 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Emitter;
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 1.6 $ $Date: 2002/12/13 17:47:22 $
+ * @version $Revision: 1.7 $ $Date: 2002/12/15 17:06:47 $
  * @author Oliver Becker
  */
 
@@ -99,14 +99,14 @@ public class TransformFactory extends FactoryBase
       public OptionsFactory.Instance options;
 
       /** names of global parameters (<code>stx:param</code>) */
-      public Hashtable globalParams;
+      public Hashtable globalParams = new Hashtable();
 
+
+      // Constructor
       public Instance(String qName, Locator locator)
       {
          super(qName, null /* parent */, locator);
-         // the only stx node with at least an empty vector of children
-         children = new Vector(); 
-         globalParams = new Hashtable();
+         namedGroups = new Hashtable(); // shared with all sub-groups
       }
 
 
