@@ -1,5 +1,5 @@
 /*
- * $Id: FactoryBase.java,v 1.3 2002/11/02 15:09:51 obecker Exp $
+ * $Id: FactoryBase.java,v 1.4 2002/12/15 16:56:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.grammar.ExprParser;
 /**
  * Abstract base class for all factory classes which produce nodes
  * ({@link NodeBase}) for the tree representation of an STX stylesheet.
- * @version $Revision: 1.3 $ $Date: 2002/11/02 15:09:51 $
+ * @version $Revision: 1.4 $ $Date: 2002/12/15 16:56:44 $
  * @author Oliver Becker
  */
 
@@ -159,6 +159,36 @@ public abstract class FactoryBase
                                         "' must not have a `" +
                                         attrs.getQName(i) + "' attribute",
                                         locator);
+   }
+
+
+   /**
+    * Parses a qualified name by extracting local name and namespace URI.
+    * The result string has the form "{namespace-uri}local-name".
+    * @param qName string representing the qualified name
+    * @param nsSet table of the in-scope namespaces
+    * @param locator the Locator, needed for reporting errors
+    */
+   protected static String 
+      getExpandedName(String qName, Hashtable nsSet, Locator locator)
+      throws SAXParseException
+   {
+      StringBuffer result = new StringBuffer("{");
+
+      int colon = qName.indexOf(':');
+      if (colon != -1) { // prefixed name
+         String prefix = qName.substring(0, colon);
+         String uri = (String)nsSet.get(prefix);
+         if (uri == null)
+            throw new SAXParseException("Undeclared prefix `" + prefix + "'",
+                                        locator);
+         result.append(uri);
+         qName = qName.substring(colon+1); // the local part
+      }
+      // else: nothing to do for the namespace-uri, because
+      //       the default namespace is not used
+
+      return result.append('}').append(qName).toString();
    }
 
 
