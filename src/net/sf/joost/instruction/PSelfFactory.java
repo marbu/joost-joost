@@ -1,5 +1,5 @@
 /*
- * $Id: PSelfFactory.java,v 1.10 2003/02/03 13:14:29 obecker Exp $
+ * $Id: PSelfFactory.java,v 1.11 2003/02/08 16:23:54 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.Context;
 /**
  * Factory for <code>process-self</code> elements, which are represented by 
  * the inner Instance class.
- * @version $Revision: 1.10 $ $Date: 2003/02/03 13:14:29 $
+ * @version $Revision: 1.11 $ $Date: 2003/02/08 16:23:54 $
  * @author Oliver Becker
  */
 
@@ -68,24 +68,6 @@ public class PSelfFactory extends FactoryBase
                               Hashtable nsSet, Locator locator)
       throws SAXParseException
    {
-      // prohibit this instruction inside of group variables
-      // and stx:with-param instructions
-      NodeBase ancestor = parent;
-      while (ancestor != null &&
-             !(ancestor instanceof TemplateBase) &&
-             !(ancestor instanceof WithParamFactory.Instance))
-         ancestor = ancestor.parent;
-      if (ancestor == null)
-         throw new SAXParseException(
-            "`" + qName + "' must be a descendant of stx:template or " +
-            "stx:procedure",
-            locator);
-      if (ancestor instanceof WithParamFactory.Instance)
-         throw new SAXParseException(
-            "`" + qName + "' must not be a descendant of `" +
-            ancestor.qName + "'",
-            locator);
-
       String groupAtt = attrs.getValue("group");
       String groupName = null;
       if (groupAtt != null)
@@ -103,6 +85,7 @@ public class PSelfFactory extends FactoryBase
       // Constructor
       public Instance(String qName, NodeBase parent, Locator locator,
                       String groupQName, String groupExpName)
+         throws SAXParseException
       {
          super(qName, parent, locator, groupQName, groupExpName);
       }

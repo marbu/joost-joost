@@ -1,5 +1,5 @@
 /*
- * $Id: ProcessBase.java,v 1.2 2003/02/02 15:16:29 obecker Exp $
+ * $Id: ProcessBase.java,v 1.3 2003/02/08 16:23:54 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -53,10 +53,33 @@ public class ProcessBase extends NodeBase
 
    public ProcessBase(String qName, NodeBase parent, Locator locator,
                       String groupQName, String groupExpName)
+      throws SAXParseException
    {
       super(qName, parent, locator, false);
       this.groupQName = groupQName;
       this.groupExpName = groupExpName;
+
+      if (this instanceof PDocumentFactory.Instance || 
+          this instanceof PBufferFactory.Instance)
+         return;
+
+      // prohibit this instruction inside of group variables
+      // and stx:with-param instructions
+      NodeBase ancestor = parent;
+      while (ancestor != null &&
+             !(ancestor instanceof TemplateBase) &&
+             !(ancestor instanceof WithParamFactory.Instance))
+         ancestor = ancestor.parent;
+      if (ancestor == null)
+         throw new SAXParseException(
+            "`" + qName + "' must be a descendant of stx:template or " + 
+            "stx:procedure",
+            locator);
+      if (ancestor instanceof WithParamFactory.Instance)
+         throw new SAXParseException(
+            "`" + qName + "' must not be a descendant of `" +
+            ancestor.qName + "'",
+            locator);
    }
 
 
