@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerResolverImpl.java,v 2.4 2003/06/12 11:36:59 obecker Exp $
+ * $Id: TransformerHandlerResolverImpl.java,v 2.5 2003/08/29 13:31:23 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -44,6 +44,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import net.sf.joost.Constants;
 import net.sf.joost.TransformerHandlerResolver;
 import net.sf.joost.trax.TrAXConstants;
 
@@ -51,7 +52,7 @@ import net.sf.joost.trax.TrAXConstants;
 /**
  * The default implementation of an {@link TransformerHandlerResolver}.
  * It supports currently only XSLT transformers.
- * @version $Revision: 2.4 $ $Date: 2003/06/12 11:36:59 $
+ * @version $Revision: 2.5 $ $Date: 2003/08/29 13:31:23 $
  * @author Oliver Becker
  */
 
@@ -59,8 +60,21 @@ public final class TransformerHandlerResolverImpl
    implements TransformerHandlerResolver
 {
    /** The URI identifying an XSLT transformation (the XSLT namespace) */
-   public static final String XSLT_FILTER = 
+   public static final String XSLT_METHOD = 
       "http://www.w3.org/1999/XSL/Transform";
+
+   /** The URI identifying a SAX parser */
+   public static final String SAX_METHOD =
+      "http://xml.org/sax";
+
+
+   private static String[] knownMethods = {
+      Constants.STX_NS, XSLT_METHOD, SAX_METHOD
+   };
+
+   // indexes in @knownMethods
+   private static int M_STX = 0, M_XSLT = 1, M_SAX = 2;
+
 
    /** A custom resolver object registered via
        {@link Processor#setTransformerHandlerResolver} */ 
@@ -83,65 +97,94 @@ public final class TransformerHandlerResolverImpl
    }
 
 
-   public TransformerHandler resolve(String filter, String href, String base,
+   public TransformerHandler resolve(String method, String href, String base,
                                      Hashtable params)
       throws SAXException
    {
       if (customResolver != null) {
          TransformerHandler handler =
-            customResolver.resolve(filter, href, base,
+            customResolver.resolve(method, href, base,
                                    createExternalParameters(params));
          if (handler != null)
             return handler;
       }
 
-      return resolve(filter, href, base, null, params);
+      return resolve(method, href, base, null, params);
    }
 
 
-   public TransformerHandler resolve(String filter, XMLReader reader, 
+   public TransformerHandler resolve(String method, XMLReader reader, 
                                      Hashtable params)
       throws SAXException
    {
       if (customResolver != null) {
          TransformerHandler handler =
-            customResolver.resolve(filter, reader,
+            customResolver.resolve(method, reader,
                                    createExternalParameters(params));
          if (handler != null)
             return handler;
       }
 
-      return resolve(filter, null, null, reader, params);
+      return resolve(method, null, null, reader, params);
    }
 
 
-   private TransformerHandler resolve(String filter, 
+   private TransformerHandler resolve(String method, 
                                       String href, String base,
                                       XMLReader reader, Hashtable params)
       throws SAXException
    {
-      if (XSLT_FILTER.equals(filter)) {
+      // determine index of a known filter method
+      int mIndex;
+      for (mIndex=0; mIndex<knownMethods.length; mIndex++)
+         if (knownMethods[mIndex].equals(method))
+            break;
+      // mIndex == knownMethods.length means: unknown
+
+      if (mIndex == M_STX || mIndex == M_XSLT) {
          final String TFPROP = "javax.xml.transform.TransformerFactory";
+         final String STXIMP = "net.sf.joost.trax.TransformerFactoryImpl";
          String propVal = System.getProperty(TFPROP);
-         String xsltFac = System.getProperty(TrAXConstants.KEY_XSLT_FACTORY);
          boolean propChanged = false;
-         if (xsltFac != null ||
-             "net.sf.joost.trax.TransformerFactoryImpl".equals(propVal)) {
-            // change this property, 
-            // otherwise we wouldn't get an XSLT transformer
-            Properties props = System.getProperties();
-            if (xsltFac != null)
-               props.setProperty(TFPROP, xsltFac);
-            else
-               props.remove(TFPROP);
-            System.setProperties(props);
-            propChanged = true;
+
+         if(mIndex == M_STX) {
+            // ensure that Joost's implementation will be used
+            if (!STXIMP.equals(propVal)) {
+               System.setProperty(TFPROP, STXIMP);
+               propChanged = true;
+            }
          }
+         else {
+            // use an XSLT engine
+            String xsltFac = 
+               System.getProperty(TrAXConstants.KEY_XSLT_FACTORY);
+            if (xsltFac != null || STXIMP.equals(propVal)) {
+               // change this property, 
+               // otherwise we wouldn't get an XSLT transformer
+               if (xsltFac != null)
+                  System.setProperty(TFPROP, xsltFac);
+               else {
+                  Properties props = System.getProperties();
+                  props.remove(TFPROP);
+                  System.setProperties(props);
+               }
+               propChanged = true;
+            }
+         }
+
          TransformerFactory tf = TransformerFactory.newInstance();
+
          if (propChanged) {
             // reset property
-            System.setProperty(TFPROP, propVal);
+            if (propVal != null)
+               System.setProperty(TFPROP, propVal);
+            else {
+               Properties props = System.getProperties();
+               props.remove(TFPROP);
+               System.setProperties(props);
+            }
          }
+
          if (tf.getFeature(SAXTransformerFactory.FEATURE)) {
             SAXTransformerFactory stf = (SAXTransformerFactory)tf;
             // distinguish the two Source (href or reader) variants
@@ -150,8 +193,9 @@ public final class TransformerHandlerResolverImpl
                source = new SAXSource(reader, new InputSource());
             else {
                if (href == null)
-                  throw new SAXException(
-                     "Missing source for XSLT transformation");
+                  throw new SAXException("Missing source for " + 
+                                         (mIndex == M_STX ? "STX" : "XSLT") + 
+                                         " transformation");
                try {
                   source = new StreamSource(
                               new URL(new URL(base), href).toExternalForm());
@@ -181,14 +225,24 @@ public final class TransformerHandlerResolverImpl
          }
       }
 
+      if (mIndex == M_SAX) {
+         if (href != null || reader != null)
+            throw new SAXException("Attribute `filter-src' not allowed " +
+                                   "for method `" + method + "'");
+         return new SAXWrapperHandler();
+      }
+
       return null;
    }
 
 
-   public boolean available(String filter)
+   public boolean available(String method)
    {
-      if (customResolver != null && customResolver.available(filter))
+      if (customResolver != null && customResolver.available(method))
          return true;
-      return XSLT_FILTER.equals(filter);
+      for (int i=0; i<knownMethods.length; i++)
+         if (knownMethods[i].equals(method))
+            return true;
+      return false;
    }
 }
