@@ -1,5 +1,5 @@
 /*
- * $Id: ElseFactory.java,v 1.1 2002/11/14 17:56:57 obecker Exp $
+ * $Id: ElseFactory.java,v 1.2 2002/11/15 18:23:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,6 +30,7 @@ import org.xml.sax.SAXParseException;
 
 import java.util.Hashtable;
 import java.util.Stack;
+import java.util.Vector;
 
 
 /** 
@@ -37,7 +38,7 @@ import java.util.Stack;
  * the inner Instance class. Such <code>else</code> elements will be replaced
  * afterwards by an <code>stx:choose</code> construction during
  * {@link NodeBase#parsed} in the parent element.
- * @version $Revision: 1.1 $ $Date: 2002/11/14 17:56:57 $
+ * @version $Revision: 1.2 $ $Date: 2002/11/15 18:23:03 $
  * @author Oliver Becker
  */
 
@@ -62,10 +63,9 @@ public class ElseFactory extends FactoryBase
           !((ifObj = parent.children.lastElement())
                instanceof IfFactory.Instance))
             throw new SAXParseException(
-               "Found `" + qName + "' without `if'", locator);
+               "Found `" + qName + "' without stx:if", locator);
 
-      parent.containsElse = true;
-      return new Instance(qName, locator);
+      return new Instance(qName, locator, parent);
    }
 
 
@@ -76,9 +76,37 @@ public class ElseFactory extends FactoryBase
     */
    final public class Instance extends NodeBase
    {
-      public Instance(String qName, Locator locator)
+      /** The children vector of the parent node */
+      private Vector siblings;
+
+      public Instance(String qName, Locator locator, NodeBase parent)
       {
          super(qName, locator, false);
+         siblings = parent.children;
+      }
+
+      /** 
+       * Called after <code>stx:else</code> was parsed completely.
+       * This method replaces the preceding <code>stx:if</code> with
+       * an appropriate <code>stx:choose/stx:when</code> and this
+       * <code>stx:else</code> node with an <code>stx:otherwise</code> 
+       * within the newly created <code>stx:choose</code>. This node 
+       * for <code>stx:else</code> itself won't be used later during the
+       * STX transformation process.
+       */
+      public void parsed()
+         throws SAXParseException
+      {
+         // this node must be the last in the siblings list
+         int index = siblings.size() - 1;
+         // replace the stx:if with an stx:choose
+         siblings.setElementAt(
+            ChooseFactory.singleton
+                         .cloneIfElse(siblings.elementAt(index-1),
+                                      siblings.elementAt(index)), 
+            index-1);
+         // remove the stx:else (this node)
+         siblings.removeElementAt(index);
       }
    }
 }
