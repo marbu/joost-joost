@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.23 2004/01/15 15:32:57 obecker Exp $
+ * $Id: Emitter.java,v 1.24 2004/02/12 11:45:41 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.emitter.StxEmitter;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.23 $ $Date: 2004/01/15 15:32:57 $
+ * @version $Revision: 1.24 $ $Date: 2004/02/12 11:45:41 $
  * @author Oliver Becker
  */
 
@@ -122,6 +122,10 @@ public class Emitter
 
    /**
     * Adds a dynamic created attribute (via <code>stx:attribute</code>)
+    * @param publicId public ID of the transformation sheet
+    * @param systemId system ID of the transformation sheet
+    * @param lineNo line number of the instruction that added the attribute
+    * @param colNo column number of the instruction that added the attribute
     */
    public void addAttribute(String uri, String qName, String lName, 
                             String value,
@@ -167,6 +171,13 @@ public class Emitter
    }
 
 
+   /**
+    * Closes a document.
+    * @param publicId public ID of the transformation sheet
+    * @param systemId system ID of the transformation sheet
+    * @param lineNo line number of the STX instruction 
+    * @param colNo column number of the STX instruction
+    */
    public void endDocument(String publicId, String systemId, 
                            int lineNo, int colNo) 
       throws SAXException
@@ -185,6 +196,13 @@ public class Emitter
    }
 
 
+   /**
+    * Opens a new element.
+    * @param publicId public ID of the transformation sheet
+    * @param systemId system ID of the transformation sheet
+    * @param lineNo line number of the STX instruction
+    * @param colNo column number of the STX instruction
+    */
    public void startElement(String uri, String lName, String qName,
                             Attributes attrs, Hashtable namespaces,
                             String publicId, String systemId, 
@@ -265,6 +283,13 @@ public class Emitter
    }
 
 
+   /**
+    * Closes an element.
+    * @param publicId public ID of the transformation sheet
+    * @param systemId system ID of the transformation sheet
+    * @param lineNo line number of the STX instruction
+    * @param colNo column number of the STX instruction
+    */
    public void endElement(String uri, String lName, String qName,
                           String publicId, String systemId, 
                           int lineNo, int colNo)
@@ -346,6 +371,13 @@ public class Emitter
    }
 
 
+   /**
+    * Creates a processing instruction.
+    * @param publicId public ID of the transformation sheet
+    * @param systemId system ID of the transformation sheet
+    * @param lineNo line number of the STX instruction
+    * @param colNo column number of the STX instruction
+    */
    public void processingInstruction(String target, String data,
                                      String publicId, String systemId, 
                                      int lineNo, int colNo)
@@ -365,6 +397,13 @@ public class Emitter
    }
 
    
+   /**
+    * Creates a comment.
+    * @param publicId public ID of the transformation sheet
+    * @param systemId system ID of the transformation sheet
+    * @param lineNo line number of the STX instruction
+    * @param colNo column number of the STX instruction
+    */
    public void comment(char[] ch, int start, int length,
                        String publicId, String systemId, 
                        int lineNo, int colNo)
@@ -384,6 +423,13 @@ public class Emitter
    }
 
 
+   /**
+    * Creates a CDATA section.
+    * @param publicId public ID of the transformation sheet
+    * @param systemId system ID of the transformation sheet
+    * @param lineNo line number of the STX instruction
+    * @param colNo column number of the STX instruction
+    */
    public void startCDATA(String publicId, String systemId, 
                           int lineNo, int colNo)
       throws SAXException
@@ -439,6 +485,10 @@ public class Emitter
       emitterStack.push(nsSupport);
       nsSupport = new NamespaceSupport();
       nsDefault = "";
+
+      // save and reset current result ancestor stack
+      emitterStack.push(openedElements);
+      openedElements = new Stack();
    }
 
 
@@ -454,6 +504,9 @@ public class Emitter
       if (contH instanceof StxEmitter) {
          // save current emitter for returning
          ret = (StxEmitter)contH;
+
+         // restore previous result ancestor stack
+         openedElements = (Stack)emitterStack.pop();
 
          // restore previous namespaces
          nsSupport = (NamespaceSupport)emitterStack.pop();
