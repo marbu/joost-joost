@@ -1,5 +1,5 @@
 /*
- * $Id: PSelfFactory.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: PSelfFactory.java,v 1.2 2002/09/10 07:32:16 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -27,6 +27,7 @@ package net.sf.joost.instruction;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import java.util.Hashtable;
 import java.util.Stack;
@@ -38,7 +39,7 @@ import net.sf.joost.stx.Context;
 /**
  * Factory for <code>process-self</code> elements, which are represented by 
  * the inner Instance class.
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2002/09/10 07:32:16 $
  * @author Oliver Becker
  */
 
@@ -54,7 +55,9 @@ public class PSelfFactory extends FactoryBase
    public NodeBase createNode(NodeBase parent, String uri, String lName, 
                               String qName, Attributes attrs, 
                               Hashtable nsSet, Locator locator)
+      throws SAXParseException
    {
+      checkAttributes(qName, attrs, null, locator);
       return new Instance(qName, locator);
    }
 
