@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 2.10 2003/11/03 14:41:59 zubow Exp $
+ * $Id: GroupBase.java,v 2.11 2004/01/13 17:57:42 zubow Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.Value;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 2.10 $ $Date: 2003/11/03 14:41:59 $
+ * @version $Revision: 2.11 $ $Date: 2004/01/13 17:57:42 $
  * @author Oliver Becker
  */
 
@@ -438,5 +438,11 @@ abstract public class GroupBase extends NodeBase
    {
       throw new SAXParseException("process called for " + qName,
                                   publicId, systemId, lineNo, colNo);
+   }
+
+   /** returns the value of {@link #visibleTemplates} */
+   public TemplateFactory.Instance[] getVisibleTemplates()
+   {
+      return visibleTemplates;
    }
 }

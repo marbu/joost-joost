@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.32 2004/01/08 12:08:12 obecker Exp $
+ * $Id: Processor.java,v 2.33 2004/01/13 17:57:45 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -56,7 +56,7 @@ import net.sf.joost.trace.DebugProcessor;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.32 $ $Date: 2004/01/08 12:08:12 $
+ * @version $Revision: 2.33 $ $Date: 2004/01/13 17:57:45 $
  * @author Oliver Becker
  */
 
@@ -162,37 +162,37 @@ public class Processor extends XMLFilterImpl
        * The values used are defined in {@link Constants} as "process state
        * values".
        */
-      public short lastProcStatus;
+      private short lastProcStatus;
 
       /** The last instantiated template */
       public TemplateFactory.Instance template;
 
       /** The next instruction to be executed */
-      public AbstractInstruction instruction;
+      private AbstractInstruction instruction;
 
       /** The current group */
       public GroupBase currentGroup;
 
       /** The context position of the current node (from {@link Context}) */
-      public long contextPosition;
+      private long contextPosition;
 
       /** Next group in the processing, contains the visible templates */
-      public GroupBase targetGroup;
+      private GroupBase targetGroup;
 
       /** current table of local variables in {@link #template} */
-      public Hashtable localVars;
+      private Hashtable localVars;
 
       /** passed parameters to {@link #template} (only for the debugging) */
-      public Hashtable passedParams;
+      private Hashtable passedParams;
 
       /**
        * <code>stx:process-siblings</code> instruction
        * (for stx:process-siblings)
        */
-      public PSiblingsFactory.Instance psiblings;
+      private PSiblingsFactory.Instance psiblings;
 
       /** current event (for stx:process-siblings) */
-      public SAXEvent sibEvent;
+      private SAXEvent sibEvent;
 
       /**
        * Constructor for the initialization of all fields, needed for
@@ -247,6 +247,24 @@ public class Processor extends XMLFilterImpl
          targetGroup = data.targetGroup;
          currentGroup = data.currentGroup;
          // other fields are default initialized with 0 or null resp.
+      }
+
+      // methods
+
+      /** returns the value of {@link #passedParams} */
+      public Hashtable getPassedParams()
+      {
+         return passedParams;
+      }
+
+       /** returns the value of {@link #localVars} */
+      public Hashtable getLocalVars() {
+         return localVars;
+      }
+
+       /** returns the value of {@link #targetGroup} */
+      public GroupBase getTargetGroup() {
+         return targetGroup;
       }
 
       /** just for debugging */
