@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 1.13 2003/01/20 17:31:01 obecker Exp $
+ * $Id: Tree.java,v 1.14 2003/01/21 10:19:51 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 1.13 $ $Date: 2003/01/20 17:31:01 $
+ * @version $Revision: 1.14 $ $Date: 2003/01/21 10:19:51 $
  * @author Oliver Becker
  */
 public class Tree
@@ -634,6 +634,8 @@ public class Tree
             return v1.copy(); 
          }
 
+         // node properties
+         case TEXT_TEST:
          case ATTR:
          case NAMESPACE:
          case ATTR_WILDCARD:
@@ -646,9 +648,10 @@ public class Tree
                   return v1;
                if (v1.type != Value.NODE)
                   throw new EvalException("sub expression before `/" + 
+                                          (type == TEXT_TEST ? "text()" : 
                                           (type == NAMESPACE ? "namespace::" 
-                                                             : "@") +
-                                          value + "' must evaluate to a " +
+                                           : "@") + value) +
+                                          "' must evaluate to a " +
                                           "node (got " + v1 + ")");
             }
             else if(top > 0) // use current node
@@ -660,7 +663,18 @@ public class Tree
             Value ret = null, last = null; // for constructing the result seq
             while (v1 != null) {
                SAXEvent e = v1.event;
-               if (type == ATTR) { // @qname
+               if (type == TEXT_TEST) { // text()
+                  if (e != null && e.type == SAXEvent.ELEMENT
+                                && e.value != null) {
+                     v2 = new Value(e.value);
+                     if (last != null)
+                        last.next = v2;
+                     else
+                        ret = v2;
+                     last = v2;
+                  }
+               }
+               else if (type == ATTR) { // @qname
                   int index;
                   // retrieve attribute index
                   if (e != null && e.attrs != null &&
@@ -761,17 +775,6 @@ public class Tree
             else
                // path selects nothing
                return new Value();
-
-         case TEXT_TEST:
-            // return the string value of the look-ahead node if it's a text
-            // node and the empty string otherwise
-            // (Note: this is currently independent from the event stack!)
-            if (context.lookAhead != null &&
-                  (context.lookAhead.type == SAXEvent.TEXT ||
-                   context.lookAhead.type == SAXEvent.CDATA))
-               return new Value(context.lookAhead.value);
-            else
-               return new Value("");
 
          case ROOT:
             // set top to 1

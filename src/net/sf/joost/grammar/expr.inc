@@ -1,5 +1,5 @@
 /*
- * $Id: expr.inc,v 1.4 2003/01/12 16:44:01 obecker Exp $
+ * $Id: expr.inc,v 1.5 2003/01/21 10:19:50 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -111,8 +111,6 @@ BasicExpr ::=
       {: RESULT = new Tree(Tree.NUMBER, n); :}
  | LPAR ExprSeq:t RPAR  /* ParenthesizedExpr */
       {: RESULT = (t == null ? new Tree(Tree.LIST, null, null) : t); :}
- | TEXT
-      {: RESULT = new Tree(Tree.TEXT_TEST, null); :}
  ;
 
 Accessor ::= 
@@ -246,6 +244,8 @@ PropAccessor ::=
       {: RESULT = t; :}
  | NamespaceNameTest:t
       {: RESULT = t; :}
+ | TEXT
+      {: RESULT = new Tree(Tree.TEXT_TEST, null); :}
  ;
 
 AttributeNameTest ::=
