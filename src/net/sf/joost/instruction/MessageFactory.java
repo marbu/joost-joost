@@ -1,5 +1,5 @@
 /*
- * $Id: MessageFactory.java,v 2.3 2004/02/10 12:12:50 obecker Exp $
+ * $Id: MessageFactory.java,v 2.4 2004/02/10 12:39:39 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Factory for <code>message</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.3 $ $Date: 2004/02/10 12:12:50 $
+ * @version $Revision: 2.4 $ $Date: 2004/02/10 12:39:39 $
  * @author Oliver Becker
  */
 
@@ -69,7 +69,11 @@ final public class MessageFactory extends FactoryBase
       
 
       /**
-       * Create and activate a new StreamEmitter that outputs to stderr.
+       * Activate the object {@link Context#messageEmitter} for the contents
+       * of this element. If this object is <code>null</code> this method
+       * first creates a {@link StreamEmitter} object that writes to stderr
+       * and saves it in {@link Context#messageEmitter} for other 
+       * <code>stx:message</code> instructions.
        */
       public short process(Context context)
          throws SAXException
@@ -97,7 +101,7 @@ final public class MessageFactory extends FactoryBase
 
 
       /**
-       * Deactivate and flush the StreamEmitter.
+       * Deactivate the message emitter.
        */
       public short processEnd(Context context)
          throws SAXException
