@@ -1,5 +1,5 @@
 /*
- * $Id: ElementFactory.java,v 2.2 2003/06/03 14:30:21 obecker Exp $
+ * $Id: ElementFactory.java,v 2.3 2004/01/21 11:18:16 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>element</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2003/06/03 14:30:21 $
+ * @version $Revision: 2.3 $ $Date: 2004/01/21 11:18:16 $
  * @author Oliver Becker
  */
 
@@ -170,7 +170,8 @@ final public class ElementFactory extends FactoryBase
          String elLocal = (String)localFieldStack.pop();
          String elUri = (String)localFieldStack.pop();
          context.emitter.endElement(elUri, elLocal, elName,
-                                    publicId, systemId, lineNo, colNo);
+                                    publicId, systemId, 
+                                    nodeEnd.lineNo, nodeEnd.colNo);
          return super.processEnd(context);
       }
    }

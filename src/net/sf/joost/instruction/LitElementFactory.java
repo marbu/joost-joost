@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 2.7 2004/01/16 14:38:47 obecker Exp $
+ * $Id: LitElementFactory.java,v 2.8 2004/01/21 11:18:16 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for literal result elements, which are represented by the
  * inner Instance class. 
- * @version $Revision: 2.7 $ $Date: 2004/01/16 14:38:47 $
+ * @version $Revision: 2.8 $ $Date: 2004/01/21 11:18:16 $
  * @author Oliver Becker
 */
 
@@ -225,7 +225,8 @@ final public class LitElementFactory
          throws SAXException
       {
          context.emitter.endElement(uri, lName, qName,
-                                    publicId, systemId, lineNo, colNo);
+                                    publicId, systemId, 
+                                    nodeEnd.lineNo, nodeEnd.colNo);
          return super.processEnd(context);
       }
 
