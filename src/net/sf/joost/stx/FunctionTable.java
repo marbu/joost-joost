@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: FunctionTable.java,v 1.2 2002/09/20 12:52:02 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2002/09/20 12:52:02 $
  * @author Oliver Becker
  */
 public final class FunctionTable
@@ -266,6 +266,7 @@ public final class FunctionTable
 
          switch (e.type) {
          case SAXEvent.ELEMENT:
+         case SAXEvent.ATTRIBUTE:
          case SAXEvent.PI:
             return new Value(e.qName);
          default:
@@ -307,6 +308,7 @@ public final class FunctionTable
 
          switch (e.type) {
          case SAXEvent.ELEMENT:
+         case SAXEvent.ATTRIBUTE:
             return new Value(e.lName);
          case SAXEvent.PI:
             return new Value(e.qName);
@@ -347,7 +349,7 @@ public final class FunctionTable
          else // use current node (last event)
             e = (SAXEvent)events.elementAt(top-1);
 
-         if (e.type == SAXEvent.ELEMENT)
+         if (e.type == SAXEvent.ELEMENT || e.type == SAXEvent.ATTRIBUTE)
             return new Value(e.uri);
          else
             return new Value("");

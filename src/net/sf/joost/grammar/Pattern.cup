@@ -1,5 +1,5 @@
 /*
- * $Id: Pattern.cup,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: Pattern.cup,v 1.2 2002/09/20 12:52:02 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -145,10 +145,17 @@ NodeNameTest ::=
  ;
 
 AttributeNameTest ::=
-   AT QNAME:n
+   AT Name:n
+      {: RESULT = new Tree(Tree.ATTR, (String)n,
+                           parser.j_nsSet, parser.j_locator); :}
  | AT STAR
- | AT STAR COLON NCNAME
- | AT NCNAME COLON STAR
+      {: RESULT = new Tree(Tree.ATTR_WILDCARD, null); :}
+ | AT STAR COLON NCNAME:n
+      {: RESULT = new Tree(Tree.ATTR_URI_WILDCARD, "*", (String)n,
+                           parser.j_nsSet, parser.j_locator); :}
+ | AT NCNAME:n COLON STAR
+      {: RESULT = new Tree(Tree.ATTR_LOCAL_WILDCARD, (String)n, "*",
+                           parser.j_nsSet, parser.j_locator); :}
  ;
 
 KindTest ::=

@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: Tree.java,v 1.2 2002/09/20 12:52:02 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,47 +40,51 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2002/09/20 12:52:02 $
  * @author Oliver Becker
  */
 public class Tree
 {
    /** Node type constants for {@link #type} */
-   public static final int ROOT           = 1,
-                           CHILD          = 2,
-                           DESC           = 3,
-                           UNION          = 4,
-                           NAME_TEST      = 5,
-                           WILDCARD       = 6,
-                           URI_WILDCARD   = 7,
-                           LOCAL_WILDCARD = 8,
-                           NODE_TEST      = 9,
-                           TEXT_TEST      = 10,
-                           COMMENT_TEST   = 11,
-                           PI_TEST        = 12,
-                           FUNCTION       = 13,
-                           PREDICATE      = 14,
-                           NUMBER         = 15,
-                           STRING         = 16,
-                           ADD            = 17,
-                           SUB            = 18,
-                           MULT           = 19,
-                           DIV            = 20,
-                           MOD            = 21,
-                           AND            = 22,
-                           OR             = 23,
-                           EQ             = 24,
-                           NE             = 25,
-                           LT             = 26,
-                           LE             = 27,
-                           GT             = 28,
-                           GE             = 29,
-                           ATTR           = 30,
-                           LIST           = 31,
-                           AVT            = 32,
-                           VAR            = 33,
-                           DOT            = 34,
-                           DDOT           = 35;
+   public static final int 
+      ROOT                = 1,   // root node
+      CHILD               = 2,   // child axis "/"
+      DESC                = 3,   // descendend axis "//"
+      UNION               = 4,   // "|"
+      NAME_TEST           = 5,   // an element name (qname)
+      WILDCARD            = 6,   // "*"
+      URI_WILDCARD        = 7,   // "*:ncname"
+      LOCAL_WILDCARD      = 8,   // "prefix:*"
+      NODE_TEST           = 9,   // "node()"
+      TEXT_TEST           = 10,  // "text()"
+      COMMENT_TEST        = 11,  // "comment()"
+      PI_TEST             = 12,  // "pi()", "pi(...)"
+      FUNCTION            = 13,  // a function call
+      PREDICATE           = 14,  // a predicate "[" ... "]"
+      NUMBER              = 15,  // a number
+      STRING              = 16,  // a quoted string
+      ADD                 = 17,  // "+"
+      SUB                 = 18,  // "-"
+      MULT                = 19,  // "*"
+      DIV                 = 20,  // "div"
+      MOD                 = 21,  // "mod"
+      AND                 = 22,  // "and"
+      OR                  = 23,  // "or"
+      EQ                  = 24,  // "="
+      NE                  = 25,  // "!="
+      LT                  = 26,  // "<"
+      LE                  = 27,  // "<="
+      GT                  = 28,  // ">"
+      GE                  = 29,  // ">="
+      ATTR                = 30,  // "@qname"
+      ATTR_WILDCARD       = 31,  // "@*"
+      ATTR_URI_WILDCARD   = 32,  // "@*:ncname"
+      ATTR_LOCAL_WILDCARD = 33,  // "@prefix:*"
+      LIST                = 34,  // "," 
+      AVT                 = 35,  // "{" ... "}"
+      VAR                 = 36,  // "$qname"
+      DOT                 = 37,  // "."
+      DDOT                = 38;  // ".."
 
    /** The type of the node in the Tree. */
    public int type;
@@ -194,12 +198,14 @@ public class Tree
       throws SAXParseException
    {
       this(type, null, null, prefix + ":" + lName);
-      if (type != URI_WILDCARD && type != LOCAL_WILDCARD)
+      if (type != URI_WILDCARD && type != LOCAL_WILDCARD &&
+          type != ATTR_URI_WILDCARD && type != ATTR_LOCAL_WILDCARD) {
+         log4j.fatal("Unexpected type " + type);
          throw new SAXParseException("FATAL: Tree constructor: Unexpected type " +
                                 type, locator);
-
+      }
       this.lName = lName;
-      if (type == URI_WILDCARD)
+      if (type == URI_WILDCARD || type == ATTR_URI_WILDCARD)
          uri = "*";
       else {
          uri = (String)nsSet.get(prefix);
@@ -325,8 +331,10 @@ public class Tree
 
          case NODE_TEST:
             // the node must be a child of another node,
-            // i.e. we need at least two events
-            if (top < 2)
+            // i.e. we need at least two events and it is no attribute node
+            if (top < 2 ||
+                ((SAXEvent)events.elementAt(top-1)).type == 
+                                                         SAXEvent.ATTRIBUTE)
                return false;
             context.position = ((SAXEvent)events.elementAt(top-2))
                                                 .getPositionOfNode();
@@ -366,6 +374,37 @@ public class Tree
             }
             return false;
          }
+
+         case ATTR:
+         case ATTR_WILDCARD:
+         case ATTR_URI_WILDCARD:
+         case ATTR_LOCAL_WILDCARD:
+            // an attribute requires at least two ancestors
+            if (top < 3)
+               return false;
+            SAXEvent e = (SAXEvent)events.elementAt(top-1);
+            if (e.type != SAXEvent.ATTRIBUTE) 
+               return false;
+            context.position = 1; // position for attributes is undefined
+//                    ((SAXEvent)events.elementAt(top-2))
+//                                     .getPositionOf("@{*}*");
+            switch (type) {
+            case ATTR_WILDCARD:
+               return true;
+            case ATTR:
+               if (uri.equals(e.uri) && lName.equals(e.lName))
+                  return true;
+               break;
+            case ATTR_URI_WILDCARD:
+               if (lName.equals(e.lName))
+                  return true;
+               break;
+            case ATTR_LOCAL_WILDCARD:
+               if (uri.equals(e.uri))
+                  return true;
+               break;
+            }
+            return false;
 
          default:
             log4j.warn("unprocessed type: " + type);

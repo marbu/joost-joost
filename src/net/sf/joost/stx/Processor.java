@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.2 2002/09/05 14:52:55 obecker Exp $
+ * $Id: Processor.java,v 1.3 2002/09/20 12:52:02 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -60,7 +60,7 @@ import net.sf.joost.instruction.VariableFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.2 $ $Date: 2002/09/05 14:52:55 $
+ * @version $Revision: 1.3 $ $Date: 2002/09/20 12:52:02 $
  * @author Oliver Becker
  */
 
@@ -642,32 +642,41 @@ public class Processor extends XMLFilterImpl
 
       TemplateFactory.Instance temp = findMatchingTemplate();
       if (temp != null) {
-         short procStatus = temp.process(emitter, eventStack, context,
-                                         ST_PROCESSING);
-         if ((procStatus & ST_CHILDREN) != 0) {
-            // processing suspended due to a process-children
-            dataStack.push(
-               new Data(temp, context.position, context.lookAhead,
-                        temp.parent.precedenceCategories,
-                        procStatus));
-            if (log4j.isDebugEnabled())
-               log4j.debug("dataStack.push " + dataStack.peek());
-         }
-         else if ((procStatus & ST_SELF) != 0) {
-            // processing suspended due to a process-self
-            dataStack.push(
-               new Data(temp, context.position, context.lookAhead,
-                        ((Data)dataStack.peek()).precedenceCategories,
-                        procStatus));
-            if (log4j.isDebugEnabled())
-               log4j.debug("dataStack.push " + dataStack.peek());
-            processLastElement(currentEvent); // recurse (process-self)
-         }
-         else {
-            // end of template reached, skip contents
-            skipDepth = 1;
-            collectedCharacters.setLength(0); // clear text
-         }
+         boolean attributeLoop;
+         short procStatus = ST_PROCESSING;
+         do {
+            attributeLoop = false;
+            procStatus = temp.process(emitter, eventStack, context,
+                                      procStatus);
+            if ((procStatus & ST_CHILDREN) != 0) {
+               // processing suspended due to a process-children
+               dataStack.push(
+                  new Data(temp, context.position, context.lookAhead,
+                           temp.parent.precedenceCategories,
+                           procStatus));
+               if (log4j.isDebugEnabled())
+                  log4j.debug("dataStack.push " + dataStack.peek());
+            }
+            else if ((procStatus & ST_SELF) != 0) {
+               // processing suspended due to a process-self
+               dataStack.push(
+                  new Data(temp, context.position, context.lookAhead,
+                           ((Data)dataStack.peek()).precedenceCategories,
+                           procStatus));
+               if (log4j.isDebugEnabled())
+                  log4j.debug("dataStack.push " + dataStack.peek());
+               processLastElement(currentEvent); // recurse (process-self)
+            }
+            else if ((procStatus & ST_ATTRIBUTES) != 0) {
+               processAttributes(lastElement.attrs);
+               attributeLoop = true;
+            }
+            else {
+               // end of template reached, skip contents
+               skipDepth = 1;
+               collectedCharacters.setLength(0); // clear text
+            }
+         } while(attributeLoop);
       }
       else { // no matching template found, perform default action
          if((context.noMatchEvents & COPY_ELEMENT_NO_MATCH) != 0)
@@ -683,6 +692,51 @@ public class Processor extends XMLFilterImpl
       context.lookAhead = null; // reset look-ahead
    }
 
+
+   /**
+    * Simulate events for each of the attributes of the current element.
+    * This method will be called due to an <code>stx:process-attributes</code>
+    * instruction.
+    * @param attrs the attributes to be processed
+    */
+   private void processAttributes(Attributes attrs)
+      throws SAXException
+   {
+      for (int i=0; i<attrs.getLength(); i++) {
+         log4j.debug(attrs.getQName(i));
+//           ((SAXEvent)eventStack.peek()).countAttribute(attrs.getURI(i), 
+//                                                        attrs.getLocalName(i));
+         eventStack.push(SAXEvent.newAttribute(attrs, i));
+         processCurrentAttribute();
+         eventStack.pop();
+      }
+   }
+
+
+   /**
+    * Process the current attribute on the event stack.
+    */
+   private void processCurrentAttribute()
+      throws SAXException
+   {
+      TemplateFactory.Instance temp = findMatchingTemplate();
+      if (temp != null) {
+         short procStatus = temp.process(emitter, eventStack, context, 
+                                         ST_PROCESSING);
+         if ((procStatus & ST_SELF) != 0) {
+            dataStack.push(
+               new Data(temp, context.position, context.lookAhead,
+                        ((Data)dataStack.peek()).precedenceCategories,
+                        procStatus));
+            if (log4j.isDebugEnabled())
+               log4j.debug("dataStack.push " + dataStack.peek());
+            processCurrentAttribute(); // recurse
+            if (log4j.isDebugEnabled())
+               log4j.debug("dataStack.pop " + dataStack.peek());
+            dataStack.pop();
+         }
+      }
+   }
 
 
 
@@ -842,8 +896,17 @@ public class Processor extends XMLFilterImpl
          else if ((prStatus & (ST_CHILDREN | ST_SELF)) != 0) {
             context.position = data.contextPosition; // restore position
             context.lookAhead = data.lookAhead;      // restore look ahead
-            data.lastTemplate.process(emitter, eventStack, context,
-                                      prStatus);
+            boolean attributeLoop;
+            do {
+               attributeLoop = false;
+               prStatus = data.lastTemplate.process(emitter, eventStack, 
+                                                    context, prStatus);
+               if ((prStatus & ST_ATTRIBUTES) != 0) {
+                  // TODO: attribute processing
+                  processAttributes(((SAXEvent)eventStack.peek()).attrs);
+                  attributeLoop = true;
+               }
+            } while (attributeLoop);
          }
          else {
             log4j.error("encountered 'else'");

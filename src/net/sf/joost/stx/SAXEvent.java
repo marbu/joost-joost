@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEvent.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: SAXEvent.java,v 1.2 2002/09/20 12:52:02 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,7 +32,7 @@ import java.util.Hashtable;
 
 /** 
  * SAXEvent stores all information attached to an incoming SAX event 
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2002/09/20 12:52:02 $
  * @author Oliver Becker
  */
 final public class SAXEvent
@@ -42,6 +42,7 @@ final public class SAXEvent
    public static final int TEXT = 2;
    public static final int PI = 3;
    public static final int COMMENT = 4;
+   public static final int ATTRIBUTE = 5;
 
    public int type;
    public String uri;
@@ -88,6 +89,16 @@ final public class SAXEvent
       this.value = data;
    }
 
+   private SAXEvent(int type, String uri, String lName, String qName,
+                    String value)
+   {
+      this(type);
+      this.uri = uri;
+      this.lName = lName;
+      this.qName = qName;
+      this.value = value;
+   }
+
 
    //
    // Factory methods
@@ -118,6 +129,12 @@ final public class SAXEvent
       return new SAXEvent(PI, target, data);
    }
 
+   public static SAXEvent newAttribute(Attributes attrs, int index)
+   {
+      return new SAXEvent(ATTRIBUTE, 
+                          attrs.getURI(index), attrs.getLocalName(index),
+                          attrs.getQName(index), attrs.getValue(index));
+   }
 
 
    /** 
@@ -172,6 +189,17 @@ final public class SAXEvent
       String[] keys = { "node()", "pi()", "pi(" + target + ")" };
       _countPosition(keys);
    }
+
+//     /**
+//      * Increment the associated counters for an attribute node.
+//      */
+//     public void countAttribute(String uri, String lName)
+//     {
+//        String[] keys = { "@{*}*", "@{" + uri + "}" + lName,
+//                          "@{*}" + lName, "@{" + uri + "}*" };
+//        _countPosition(keys);
+//     }
+
 
    /**
     * Performs the real counting. Will be used by the count* functions.
@@ -265,6 +293,8 @@ final public class SAXEvent
          return ret + "<!--" + value + "-->";
       case PI:
          return ret + "<?" + qName + " " + value + "?>";
+      case ATTRIBUTE:
+         return ret + qName + "='" + value + "'";
       default:
          return "SAXEvent ???";
       }

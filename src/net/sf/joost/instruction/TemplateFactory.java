@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateFactory.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: TemplateFactory.java,v 1.2 2002/09/20 12:52:02 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>template</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2002/09/20 12:52:02 $
  * @author Oliver Becker
  */
 
@@ -180,12 +180,16 @@ public final class TemplateFactory extends FactoryBase
          return Double.NaN; 
 
       if (match.type == Tree.NAME_TEST ||
+               match.type == Tree.ATTR || 
               (match.type == Tree.PI_TEST && match.value != ""))
          return 0;
       else if (match.type == Tree.URI_WILDCARD ||
-               match.type == Tree.LOCAL_WILDCARD)
+               match.type == Tree.LOCAL_WILDCARD ||
+               match.type == Tree.ATTR_LOCAL_WILDCARD ||
+               match.type == Tree.ATTR_URI_WILDCARD)
          return -0.25;
       else if (match.type == Tree.WILDCARD ||
+               match.type == Tree.ATTR_WILDCARD ||
                match.type == Tree.PI_TEST ||
                match.type == Tree.COMMENT_TEST ||
                match.type == Tree.TEXT_TEST ||

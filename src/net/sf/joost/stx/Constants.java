@@ -1,5 +1,5 @@
 /*
- * $Id: Constants.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: Constants.java,v 1.2 2002/09/20 12:52:02 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -27,15 +27,16 @@ package net.sf.joost.stx;
 
 /**
  * This interface contains constants shared between different classes. 
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2002/09/20 12:52:02 $
  * @author Oliver Becker
  */
 public interface Constants
 {
    /** Process state values */
    public static final short
-      ST_PROCESSING = 0x1, // if set: perform processing
-      ST_CHILDREN   = 0x2, // look for / found process-children
-      ST_SELF       = 0x4, // look for / found process-self
-      ST_SIBLINGS   = 0x8; // look for / found process-siblings
+      ST_PROCESSING = 0x1,  // if set: perform processing
+      ST_CHILDREN   = 0x2,  // look for / found process-children
+      ST_SELF       = 0x4,  // look for / found process-self
+      ST_SIBLINGS   = 0x8,  // look for / found process-siblings
+      ST_ATTRIBUTES = 0x10; // found process-attributes
 }
