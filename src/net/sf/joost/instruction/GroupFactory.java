@@ -1,5 +1,5 @@
 /*
- * $Id: GroupFactory.java,v 1.4 2002/11/27 10:00:37 obecker Exp $
+ * $Id: GroupFactory.java,v 1.5 2002/12/13 17:47:25 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.stx.Emitter;
 /** 
  * Factory for <code>group</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.4 $ $Date: 2002/11/27 10:00:37 $
+ * @version $Revision: 1.5 $ $Date: 2002/12/13 17:47:25 $
  * @author Oliver Becker
  */
 
@@ -56,7 +56,6 @@ final public class GroupFactory extends FactoryBase
    public GroupFactory()
    {
       attrNames = new HashSet();
-      attrNames.add("strict-mode");
    }
 
    /** @return <code>"group"</code> */
@@ -76,21 +75,8 @@ final public class GroupFactory extends FactoryBase
                                      "' not allowed as child of `" +
                                      parent.qName + "'", locator);
 
-      String modeAtt = attrs.getValue("strict-mode");
-      if (modeAtt != null) 
-         log4j.warn("Attribute `strict-mode' is deprecated");
-      short mode = 0;
-      switch (getEnumAttValue("strict-mode", attrs, YESNO_VALUES, locator)) {
-      case -1: mode = ((GroupBase)parent).mode; // inherit from parent group
-               break;
-      case  0: mode = GroupBase.STRICT_MODE;
-               break;
-      case  1: mode = GroupBase.LOOSE_MODE;
-               break;
-      }
-
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, mode);
+      return new Instance(qName, parent, locator);
    }
 
 
@@ -101,10 +87,9 @@ final public class GroupFactory extends FactoryBase
    final public class Instance extends GroupBase
    {
       // Constructor
-      protected Instance(String qName, NodeBase parent, Locator locator, 
-                         short mode)
+      protected Instance(String qName, NodeBase parent, Locator locator)
       {
-         super(qName, parent, locator, mode);
+         super(qName, parent, locator);
       }
 
       

@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 1.5 2002/11/27 10:03:12 obecker Exp $
+ * $Id: TransformFactory.java,v 1.6 2002/12/13 17:47:22 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Emitter;
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 1.5 $ $Date: 2002/11/27 10:03:12 $
+ * @version $Revision: 1.6 $ $Date: 2002/12/13 17:47:22 $
  * @author Oliver Becker
  */
 
@@ -60,7 +60,6 @@ public class TransformFactory extends FactoryBase
    {
       attrNames = new HashSet();
       attrNames.add("version");
-      attrNames.add("strict-mode");
    }
 
    /** @return <code>"transform"</code> */
@@ -85,17 +84,9 @@ public class TransformFactory extends FactoryBase
                                      "'. The only supported version is 1.0.",
                                      locator); 
 
-      String modeAtt = attrs.getValue("strict-mode");
-      if (modeAtt != null) 
-         log4j.warn("Attribute `strict-mode' is deprecated");
-      short mode = 
-         getEnumAttValue("strict-mode", attrs, YESNO_VALUES, locator) == 1
-            ? GroupBase.LOOSE_MODE 
-            : GroupBase.STRICT_MODE;
-
       checkAttributes(qName, attrs, attrNames, locator);
 
-      return new Instance(qName, locator, mode);
+      return new Instance(qName, locator);
    }
 
 
@@ -110,9 +101,9 @@ public class TransformFactory extends FactoryBase
       /** names of global parameters (<code>stx:param</code>) */
       public Hashtable globalParams;
 
-      public Instance(String qName, Locator locator, short mode)
+      public Instance(String qName, Locator locator)
       {
-         super(qName, null /* parent */, locator, mode);
+         super(qName, null /* parent */, locator);
          // the only stx node with at least an empty vector of children
          children = new Vector(); 
          globalParams = new Hashtable();
