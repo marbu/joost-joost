@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.12 2003/06/02 11:28:07 zubow Exp $
+ * $Id: Processor.java,v 2.13 2003/06/15 11:48:47 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -54,8 +54,7 @@ import java.io.IOException;
 
 import net.sf.joost.Constants;
 import net.sf.joost.TransformerHandlerResolver;
-import net.sf.joost.trace.DebugEmitter;
-import net.sf.joost.trace.DebugProcessor;
+import net.sf.joost.grammar.EvalException;
 import net.sf.joost.instruction.AbstractInstruction;
 import net.sf.joost.instruction.GroupBase;
 import net.sf.joost.instruction.GroupFactory;
@@ -63,12 +62,14 @@ import net.sf.joost.instruction.NodeBase;
 import net.sf.joost.instruction.PSiblingsFactory;
 import net.sf.joost.instruction.TemplateFactory;
 import net.sf.joost.instruction.TransformFactory;
+import net.sf.joost.trace.DebugEmitter;
+import net.sf.joost.trace.DebugProcessor;
 
 
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.12 $ $Date: 2003/06/02 11:28:07 $
+ * @version $Revision: 2.13 $ $Date: 2003/06/15 11:48:47 $
  * @author Oliver Becker
  */
 
@@ -589,9 +590,9 @@ public class Processor extends XMLFilterImpl
    /** 
     * Sets a global parameter of the STX transformation sheet
     * @param name the (expanded) parameter name
-    * @param value the parameter value as a string
+    * @param value the parameter value
     */
-   public void setParameter(String name, String value)
+   public void setParameter(String name, Object value)
    {
       if (!name.startsWith("{"))
          name = "{}" + name;
@@ -610,8 +611,14 @@ public class Processor extends XMLFilterImpl
       if (!name.startsWith("{"))
          name = "{}" + name;
       Value param = (Value)transformNode.globalParams.get(name);
-      // we know that this parameter was initialized with a string
-      return param != null ? param.string : null;
+      try {
+         if (param != null)
+            return param.toJavaObject(Object.class);
+      }
+      catch (EvalException ex) { // shouldn't happen here
+         log.fatal(ex);
+      }
+      return null;
    }
 
 

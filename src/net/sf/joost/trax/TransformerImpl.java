@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.15 2003/06/02 11:41:51 zubow Exp $
+ * $Id: TransformerImpl.java,v 1.16 2003/06/15 11:48:47 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -419,7 +419,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
      * @param value The value of the parameter.
      */
     public void setParameter(String name, Object value) {
-        processor.setParameter(name, value.toString());
+        processor.setParameter(name, value);
     }
 
     /**
