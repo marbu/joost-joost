@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.4 2002/10/08 19:14:19 zubow Exp $
+ * $Id: Processor.java,v 1.5 2002/10/22 10:15:17 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -60,7 +60,7 @@ import net.sf.joost.instruction.VariableFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.4 $ $Date: 2002/10/08 19:14:19 $
+ * @version $Revision: 1.5 $ $Date: 2002/10/22 10:15:17 $
  * @author Oliver Becker
  */
 
@@ -583,10 +583,7 @@ public class Processor extends XMLFilterImpl
       if (temp != null) {
          short procStatus = temp.process(emitter, eventStack, context,
                                          ST_PROCESSING);
-         // simulate end event, if there is a process-children statement
-         if ((procStatus & ST_CHILDREN) != 0)
-            temp.process(emitter, eventStack, context, ST_CHILDREN);
-         else if ((procStatus & ST_SELF) != 0) {
+         if ((procStatus & ST_SELF) != 0) {
             // marker for findMatchingTemplate()
             dataStack.push(
                new Data(null, 0, null,
@@ -979,10 +976,7 @@ public class Processor extends XMLFilterImpl
       if (temp != null) {
          short procStatus = temp.process(emitter, eventStack, context,
                                          ST_PROCESSING);
-         // simulate end event if there is a process-children statement
-         if ((procStatus & ST_CHILDREN) != 0)
-            temp.process(emitter, eventStack, context, ST_CHILDREN);
-         else if ((procStatus & ST_SELF) != 0) {
+         if ((procStatus & ST_SELF) != 0) {
             // marker for findMatchingTemplate()
             dataStack.push(
                new Data(null, 0, null,
@@ -1089,10 +1083,7 @@ public class Processor extends XMLFilterImpl
       if (temp != null) {
          short procStatus = temp.process(emitter, eventStack, context,
                                          ST_PROCESSING);
-         // simulate end event if there is a process-children statement
-         if ((procStatus & ST_CHILDREN) != 0)
-            temp.process(emitter, eventStack, context, ST_CHILDREN);
-         else if ((procStatus & ST_SELF) != 0) {
+         if ((procStatus & ST_SELF) != 0) {
             // marker for findMatchingTemplate()
             dataStack.push(
                new Data(null, 0, null,
