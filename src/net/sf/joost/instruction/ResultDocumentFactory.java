@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 2.9 2004/02/12 11:46:40 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 2.10 2004/02/12 12:30:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -47,7 +47,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.9 $ $Date: 2004/02/12 11:46:40 $
+ * @version $Revision: 2.10 $ $Date: 2004/02/12 12:30:32 $
  * @author Oliver Becker
  */
 
@@ -190,6 +190,9 @@ final public class ResultDocumentFactory extends FactoryBase
             if (method != null)
                props.setProperty(OutputKeys.METHOD, method);
             se = new StreamEmitter(osw, props);
+            se.setSystemId((new java.net.URL("file", "/", filename))
+                                .toExternalForm());
+
             localFieldStack.push(osw);
          }
          catch (java.io.IOException ex) {

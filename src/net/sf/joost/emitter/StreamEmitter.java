@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.14 2004/02/12 09:10:45 zubow Exp $
+ * $Id: StreamEmitter.java,v 1.15 2004/02/12 12:30:36 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -22,7 +22,6 @@
  * Contributor(s): Anatolij Zubow
  */
 
- //Joost
 package net.sf.joost.emitter;
 
 //SAX2
@@ -40,17 +39,16 @@ import javax.xml.transform.OutputKeys;
  *  Is is designed for using <code>StreamResult</code>.
  *  So this class outputs a StreamResult to the output target -
  *  {@link #outwriter} (e.g. a registered <code>FileWriter</code>).
- *  @version $Revision: 1.14 $ $Date: 2004/02/12 09:10:45 $
+ *  @version $Revision: 1.15 $ $Date: 2004/02/12 12:30:36 $
  *  @author Oliver Becker, Anatolij Zubow
  */
 public class StreamEmitter implements StxEmitter {
 
-    /**
-     * A output writer could be: <code>Writer</code>, <code>OutputStream</code>
-     * or simple try to get just a systemId string from Result object
-     */
+    /** Writer for the resulting XML text */
     private Writer outwriter;
 
+    /** System ID of this stream (<code>null</code> if not set) */
+    private String systemId; 
 
     /** output property: encoding */
     private String propEncoding = DEFAULT_ENCODING;
@@ -158,7 +156,9 @@ public class StreamEmitter implements StxEmitter {
 
 
     /**
-    * Constructor - Set output to a <code>File</code> file and output encoding
+    * Constructor - Set output to a <code>File</code> file. This constructor
+    * sets also a system ID ({@link #systemId}), unlike the other
+    * constructors
     * @param filename The Filename of the output file.
     * @param outputProperties The set of output properties to be used.
     * @throws IOException When an error occurs while accessing the
@@ -168,6 +168,7 @@ public class StreamEmitter implements StxEmitter {
         throws IOException {
 
         this(new FileOutputStream(filename), outputProperties);
+        systemId = (new java.net.URL("file","/",filename)).toExternalForm();
 
     }
 
@@ -207,13 +208,27 @@ public class StreamEmitter implements StxEmitter {
         propOmitXmlDeclaration = flag;
     }
 
+
     /**
      * Defines which Writer should be used for the output.
-     * @param outwriter a <code>Writer</code> receives the output.
+     * @param outwriter a <code>Writer</code> receiving the output.
      */
     public void setOutWriter(Writer outwriter) {
         this.outwriter = outwriter;
     }
+
+
+    /** Sets the system ID of this emitter */
+    public void setSystemId(String systemId) {
+        this.systemId = systemId;
+    }
+
+
+    /** @return the system ID of this emitter */
+    public String getSystemId() {
+        return systemId;
+    }
+
 
     /**
     * Outputs a start or empty element tag if there is one stored.
