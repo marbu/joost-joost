@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.13 2003/06/16 13:24:37 obecker Exp $
+ * $Id: FunctionTable.java,v 2.14 2003/09/02 17:03:28 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,7 +46,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.13 $ $Date: 2003/06/16 13:24:37 $
+ * @version $Revision: 2.14 $ $Date: 2003/09/02 17:03:28 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -97,6 +97,9 @@ final public class FunctionTable implements Constants
          new Subsequence(),
          new Count(),
          new Sum(),
+         new Min(),
+         new Max(),
+         new Avg(),
          new FilterAvailable(),
          new ExtSequence()
       };
@@ -1369,6 +1372,125 @@ final public class FunctionTable implements Constants
             v = next;
          }
          return new Value(sum);
+      }
+   }
+
+
+   /**
+    * The <code>min</code> function.
+    * Returns the smallest value in the sequence.
+    */
+   final public class Min implements Instance
+   {
+      /** @return 1 */
+      public int getMinParCount() { return 1; }
+      /** @return 1 */
+      public int getMaxParCount() { return 1; }
+      /** @return "min" */
+      public String getName() { return FNSP + "min"; }
+
+      public Value evaluate(Context context, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value v = args.evaluate(context, top);
+         if (v.type == Value.EMPTY) // empty sequence
+            return v;
+         boolean set = false;
+         double min = 0;
+         while (v != null) {
+            Value next = v.next;
+            if (!Double.isNaN(v.convertToNumber().number)) {
+               if (set)
+                  min = v.number < min ? v.number : min;
+               else {
+                  min = v.number;
+                  set = true;
+               }
+            }
+            v = next;
+         }
+         if (set)
+            return new Value(min);
+         else
+            return new Value();
+      }
+   }
+
+
+   /**
+    * The <code>max</code> function.
+    * Returns the greatest value in the sequence.
+    */
+   final public class Max implements Instance
+   {
+      /** @return 1 */
+      public int getMinParCount() { return 1; }
+      /** @return 1 */
+      public int getMaxParCount() { return 1; }
+      /** @return "max" */
+      public String getName() { return FNSP + "max"; }
+
+      public Value evaluate(Context context, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value v = args.evaluate(context, top);
+         if (v.type == Value.EMPTY) // empty sequence
+            return v;
+         boolean set = false;
+         double max = 0;
+         while (v != null) {
+            Value next = v.next;
+            if (!Double.isNaN(v.convertToNumber().number)) {
+               if (set)
+                  max = v.number > max ? v.number : max;
+               else {
+                  max = v.number;
+                  set = true;
+               }
+            }
+            v = next;
+         }
+         if (set)
+            return new Value(max);
+         else
+            return new Value();
+      }
+   }
+
+
+   /**
+    * The <code>avg</code> function.
+    * Returns the average value of the sequence.
+    */
+   final public class Avg implements Instance
+   {
+      /** @return 1 */
+      public int getMinParCount() { return 1; }
+      /** @return 1 */
+      public int getMaxParCount() { return 1; }
+      /** @return "avg" */
+      public String getName() { return FNSP + "avg"; }
+
+      public Value evaluate(Context context, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value v = args.evaluate(context, top);
+         if (v.type == Value.EMPTY) // empty sequence
+            return v;
+         double avg = 0;
+         int count = 0;
+         while (v != null) {
+            Value next = v.next;
+            if (!Double.isNaN(v.convertToNumber().number)) {
+               avg += v.number;
+               count++;
+            }
+            v = next;
+         }
+         if (count == 0)
+            return new Value();
+         else
+            return new Value(avg / count);
       }
    }
 
