@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.27 2002/12/23 08:18:49 obecker Exp $
+ * $Id: Processor.java,v 1.28 2002/12/25 08:27:15 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -61,7 +61,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.27 $ $Date: 2002/12/23 08:18:49 $
+ * @version $Revision: 1.28 $ $Date: 2002/12/25 08:27:15 $
  * @author Oliver Becker
  */
 
@@ -941,8 +941,14 @@ public class Processor extends XMLFilterImpl
          else {
             log4j.error("encountered 'else' " + prStatus);
          }
+      }
+      else {
+         // no stx:process-children in match="/"
+         skipDepth--;
+      }
 
-         // look at the next process status on the stack
+      if (skipDepth == 0) {
+         // look at the previous process status on the stack
          if ((((Data)dataStack.peek()).lastProcStatus & ST_SELF) != 0)
             endDocument(); // recurse (process-self)
          else {
@@ -959,23 +965,8 @@ public class Processor extends XMLFilterImpl
                eventStack = (Stack)bufferStack.pop();
          }
       }
-      else {
-         // no stx:process-children in match="/"
-         if (skipDepth != 1)
-            log4j.error("skipDepth != 1");
-
-         if (log4j.isDebugEnabled())
-            log4j.debug("eventStack.pop " + eventStack.pop());
-         else
-            eventStack.pop();
-
-         if (bufferStack.empty())
-            emitter.endDocument(transformNode.publicId, 
-                                transformNode.systemId,
-                                transformNode.lineNo, transformNode.colNo);
-         else
-            eventStack = (Stack)bufferStack.pop();
-      }
+      else
+         log4j.error("skipDepth at document end: " + skipDepth);
    }
 
 
@@ -1059,21 +1050,16 @@ public class Processor extends XMLFilterImpl
          else {
             log4j.error("encountered 'else'");
          }
+      }
+      else
+         skipDepth--;
 
-         // look at the next processing element
+      if (skipDepth == 0) {
+         // look at the previous process status on the data stack
          if ((((Data)dataStack.peek()).lastProcStatus & ST_SELF) != 0) {
             endElement(uri, lName, qName); // recurse (process-self)
          }
          else {
-            if (log4j.isDebugEnabled())
-               log4j.debug("eventStack.pop " + eventStack.pop());
-            else
-               eventStack.pop();
-            nsSupport.popContext();
-         }
-      }
-      else {
-         if (--skipDepth == 0) {
             if (log4j.isDebugEnabled())
                log4j.debug("eventStack.pop " + eventStack.pop());
             else
