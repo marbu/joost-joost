@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.9 2003/03/20 14:57:08 obecker Exp $
+ | $Id: build.xml,v 1.10 2003/04/29 15:19:47 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -125,7 +125,6 @@
     <javac srcdir="${src}" destdir="${classes}" classpathref="cp" />
     <!-- restore ${main.src} -->
     <move file="main${DSTAMP}.tmp" tofile="${main.src}" />
-    <copy file="conf/log4j.properties" todir="${classes}" />
     <jar jarfile="${ant.project.name}.jar"
          basedir="${classes}" excludes="test/**"
          manifest="conf/manifest.mf" />
