@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.21 2004/03/29 09:40:37 obecker Exp $
+ * $Id: FunctionTable.java,v 2.22 2004/03/29 16:55:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -51,7 +51,7 @@ import net.sf.joost.instruction.AnalyzeTextFactory;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.21 $ $Date: 2004/03/29 09:40:37 $
+ * @version $Revision: 2.22 $ $Date: 2004/03/29 16:55:18 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -112,7 +112,7 @@ final public class FunctionTable implements Constants
          new Min(),
          new Max(),
          new Avg(),
-         new RegexGroup(),
+//           new RegexGroup(),
          new FilterAvailable(),
          new ExtSequence()
       };
