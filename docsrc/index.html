@@ -109,10 +109,9 @@
       <ul>
       <li>stx:transform (version)</li>
       <li>stx:options (default-stxpath-namespace?, output-encoding?,
-          no-match-events?, strip-space?)</li>
+          pass-through?, strip-space?)</li>
       <li>stx:group (name?)</li>
-      <li>stx:template (match, priority?, visibility?,
-          recursion-entry-point?)</li>
+      <li>stx:template (match, priority?, visibility?, new-scope?)</li>
       <li>stx:copy (attributes?)</li>
       <li>stx:process-children (group?)</li>
       <li>stx:process-self (group?)</li>
@@ -131,8 +130,8 @@
       <li>stx:text</li>
       <li>stx:cdata</li>
       <li>stx:element (name, namespace?)</li>
-      <li>stx:element-start (name, namespace?)</li>
-      <li>stx:element-end (name, namespace?)</li>
+      <li>stx:start-element (name, namespace?)</li>
+      <li>stx:end-element (name, namespace?)</li>
       <li>stx:attribute (name, namespace?, select)</li>
       <li>stx:comment</li>
       <li>stx:processing-instruction (name)</li>
