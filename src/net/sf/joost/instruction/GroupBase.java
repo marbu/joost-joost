@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 2.8 2003/06/03 14:30:22 obecker Exp $
+ * $Id: GroupBase.java,v 2.9 2003/11/01 14:41:09 zubow Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.Value;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 2.8 $ $Date: 2003/06/03 14:30:22 $
+ * @version $Revision: 2.9 $ $Date: 2003/11/01 14:41:09 $
  * @author Oliver Becker
  */
 
@@ -120,7 +120,7 @@ abstract public class GroupBase extends NodeBase
    public Stack groupVars = new Stack();
 
    /** Expanded name of this group */
-   protected String groupName;
+   public String groupName;
 
    /** Vector of the children */
    protected Vector children = new Vector();
