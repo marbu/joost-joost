@@ -1,5 +1,5 @@
 /*
- * $Id: PChildrenFactory.java,v 1.8 2002/12/23 08:25:24 obecker Exp $
+ * $Id: PChildrenFactory.java,v 1.9 2003/01/16 14:08:30 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.SAXEvent;
 /** 
  * Factory for <code>process-children</code> elements, which are represented 
  * by the inner Instance class. 
- * @version $Revision: 1.8 $ $Date: 2002/12/23 08:25:24 $
+ * @version $Revision: 1.9 $ $Date: 2003/01/16 14:08:30 $
  * @author Oliver Becker
  */
 
@@ -161,6 +161,9 @@ public class PChildrenFactory extends FactoryBase
                return ST_CHILDREN;
             }
             else {
+               // Have to call this here, because the processing will *not*
+               // be suspended. This cleans up the parameter stack.
+               super.process(emitter, eventStack, context, ST_CHILDREN);
                // stay in processing mode, ST_CHILDREN on
                return (short)(processStatus | ST_CHILDREN);
             }
