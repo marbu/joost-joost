@@ -1,5 +1,5 @@
 /*
- * $Id: DebugProcessor.java,v 1.18 2004/12/16 19:58:35 obecker Exp $
+ * $Id: DebugProcessor.java,v 1.19 2004/12/17 18:25:19 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -51,7 +51,7 @@ import org.xml.sax.XMLReader;
 
 /**
  * Extends the {@link net.sf.joost.stx.Processor} with debug features.
- * @version $Revision: 1.18 $ $Date: 2004/12/16 19:58:35 $
+ * @version $Revision: 1.19 $ $Date: 2004/12/17 18:25:19 $
  * @author Zubow
  */
 public class DebugProcessor extends Processor {
@@ -87,43 +87,45 @@ public class DebugProcessor extends Processor {
     }
 
     /**
-     * See {@link net.sf.joost.stx.Processor#Processor(org.xml.sax.InputSource)}
+     * See {@link net.sf.joost.stx.Processor#Processor(org.xml.sax.InputSource, boolean)}
      */
-    public DebugProcessor(InputSource src)
+    public DebugProcessor(InputSource src, boolean allowExtFunc)
             throws IOException, SAXException {
-        super(src);
+        super(src, allowExtFunc);
     }
 
     /**
-     * See {@link net.sf.joost.stx.Processor#Processor(InputSource, ErrorListener, URIResolver)}
+     * See {@link net.sf.joost.stx.Processor#Processor(InputSource, ErrorListener, URIResolver, boolean)}
      */
     public DebugProcessor(InputSource src, ErrorListener errorListener,
-                          URIResolver uriResolver)
+                          URIResolver uriResolver, boolean allowExtFunc)
             throws IOException, SAXException {
-        super(src, errorListener, uriResolver);
+        super(src, errorListener, uriResolver, allowExtFunc);
     }
 
     /**
-     * See {@link net.sf.joost.stx.Processor#Processor(XMLReader, InputSource, ErrorListener, URIResolver, ParserListener)}
+     * See {@link net.sf.joost.stx.Processor#Processor(XMLReader, InputSource, ErrorListener, URIResolver, ParserListener, boolean)}
      */
     public DebugProcessor(XMLReader reader, InputSource src,
                           ErrorListener errorListener,
                           URIResolver uriResolver,
                           ParserListener parserListener,
-                          StxEmitter messageEmitter)
+                          StxEmitter messageEmitter,
+                          boolean allowExtFunc)
             throws IOException, SAXException {
-        super(reader, src, errorListener, uriResolver, parserListener);
+        super(reader, src, errorListener, uriResolver, parserListener, 
+              allowExtFunc);
         setMessageEmitter(messageEmitter);
     }
 
     /**
-     * See {@link net.sf.joost.stx.Processor#Processor(XMLReader, InputSource, ErrorListener, URIResolver)}
+     * See {@link net.sf.joost.stx.Processor#Processor(XMLReader, InputSource, ErrorListener, URIResolver, boolean)}
      */
     public DebugProcessor(XMLReader reader, InputSource src,
                           ErrorListener errorListener,
-                          URIResolver uriResolver)
+                          URIResolver uriResolver, boolean allowExtFunc)
             throws IOException, SAXException {
-        super(reader, src, errorListener, uriResolver);
+        super(reader, src, errorListener, uriResolver, allowExtFunc);
     }
 
 

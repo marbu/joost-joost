@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.47 2004/12/16 19:58:49 obecker Exp $
+ * $Id: Processor.java,v 2.48 2004/12/17 18:25:44 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -69,7 +69,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.47 $ $Date: 2004/12/16 19:58:49 $
+ * @version $Revision: 2.48 $ $Date: 2004/12/17 18:25:44 $
  * @author Oliver Becker
  */
 
@@ -380,10 +380,10 @@ public class Processor extends XMLFilterImpl
     * @throws SAXException if a SAX parser couldn't be created
     */
    public Processor(InputSource src, ErrorListener errorListener,
-                    URIResolver uriResolver)
+                    URIResolver uriResolver, boolean allowExtFunc)
       throws IOException, SAXException
    {
-      this(null, src, errorListener, uriResolver, null);
+      this(null, src, errorListener, uriResolver, null, allowExtFunc);
    }
 
 
@@ -395,10 +395,10 @@ public class Processor extends XMLFilterImpl
     * @throws IOException if <code>src</code> couldn't be retrieved
     * @throws SAXException if a SAX parser couldn't be created
     */
-   public Processor(InputSource src)
+   public Processor(InputSource src, boolean allowExtFunc)
       throws IOException, SAXException
    {
-      this(null, src, null, null, null);
+      this(null, src, null, null, null, allowExtFunc);
    }
 
 
@@ -418,10 +418,10 @@ public class Processor extends XMLFilterImpl
     */
    public Processor(XMLReader reader, InputSource src,
                     ErrorListener errorListener,
-                    URIResolver uriResolver)
+                    URIResolver uriResolver, boolean allowExtFunc)
       throws IOException, SAXException
    {
-      this(reader, src, errorListener, uriResolver, null);
+      this(reader, src, errorListener, uriResolver, null, allowExtFunc);
    }
 
 
@@ -440,10 +440,11 @@ public class Processor extends XMLFilterImpl
     * @throws IOException if <code>src</code> couldn't be retrieved
     * @throws SAXException if a SAX parser couldn't be created
     */
-   public Processor(XMLReader reader, InputSource src,
-                    ErrorListener errorListener,
-                    URIResolver uriResolver,
-                    ParserListener parserListener)
+   protected Processor(XMLReader reader, InputSource src,
+                       ErrorListener errorListener,
+                       URIResolver uriResolver,
+                       ParserListener parserListener,
+                       boolean allowExtFunc)
       throws IOException, SAXException
    {
       if (reader == null)
@@ -452,7 +453,7 @@ public class Processor extends XMLFilterImpl
       // create a Parser for parsing the STX transformation sheet
       ErrorHandlerImpl errorHandler = new ErrorHandlerImpl(errorListener,
                                                            true);
-      stxParser = new Parser();
+      stxParser = new Parser(allowExtFunc);
       stxParser.setErrorHandler(errorHandler);
       stxParser.setURIResolver(uriResolver);
       stxParser.setParserListener(parserListener);

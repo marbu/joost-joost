@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.23 2004/12/16 19:58:48 obecker Exp $
+ * $Id: TemplatesImpl.java,v 1.24 2004/12/17 18:25:48 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -185,11 +185,13 @@ public class TemplatesImpl implements Templates, TrAXConstants {
                                                factory.getErrorListener(),
                                                factory.getURIResolver(),
                                                factory.getParserListenerMgr(),
-                                               factory.getMessageEmitter());
+                                               factory.getMessageEmitter(),
+                                               factory.allowExternalFunctions);
             } else {
                 processor = new Processor(reader, isource, 
                                           factory.getErrorListener(),
-                                          factory.getURIResolver());
+                                          factory.getURIResolver(),
+                                          factory.allowExternalFunctions);
             }
             if (factory.thResolver != null)
                 processor.setTransformerHandlerResolver(factory.thResolver);

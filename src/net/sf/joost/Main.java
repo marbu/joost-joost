@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.24 2004/11/06 13:10:28 obecker Exp $
+ * $Id: Main.java,v 1.25 2004/12/17 18:25:49 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.24 $ $Date: 2004/11/06 13:10:28 $
+ * @version $Revision: 1.25 $ $Date: 2004/12/17 18:25:49 $
  * @author Oliver Becker
  */
 public class Main implements Constants
@@ -81,6 +81,9 @@ public class Main implements Constants
       
       // set to true if -nodecl was specified on the command line
       boolean nodecl = false;
+      
+      // set to true if -noext was specified on the command line
+      boolean noext = false;
 
       // debugging
       boolean dontexit = false;
@@ -118,6 +121,10 @@ public class Main implements Constants
                }
                else if ("-nodecl".equals(args[i])) {
                   nodecl = true;
+                  continue;
+               }
+               else if ("-noext".equals(args[i])) {
+                  noext = true;
                   continue;
                }
                else if ("-wait".equals(args[i])) {
@@ -254,7 +261,7 @@ public class Main implements Constants
                // xmlFile != null, i.e. this is an STX sheet
                if (measureTime)
                   timeStart = System.currentTimeMillis();
-               Processor proc = new Processor(new InputSource(args[i]));
+               Processor proc = new Processor(new InputSource(args[i]), !noext);
                if (measureTime) {
                   timeEnd = System.currentTimeMillis();
                   System.err.println("Parsing " + args[i] + ": " +
@@ -337,6 +344,7 @@ public class Main implements Constants
 + "  -o <filename>    write the result to the file <filename>\n"
 + "  -m <classname>   use a <classname> object for stx:message output\n"
 + "  -nodecl          omit XML declaration in the result\n"
++ "  -noext           prevent calls on Java extension functions\n"
 + "  -time            print timing information on standard error output\n"
 + "  -pdf             pass the result to FOP for PDF generation (requires -o)\n"
 + (DEBUG ?

@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.21 2004/10/30 12:34:37 obecker Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.22 2004/12/17 18:25:48 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -78,6 +78,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     private   URIResolver uriResolver               = null;
     private   ErrorListener errorListener           = null;
     protected TransformerHandlerResolver thResolver = null;
+    protected boolean allowExternalFunctions        = true;
 
     // init default errorlistener
     // visible for TemplatesImpl
@@ -177,7 +178,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
             this.debugmode = ((Boolean)value).booleanValue();
         } else if (name.equals(MESSAGE_EMITTER_CLASS)) {
             // object is of type string, so use reflection
-        	if (value instanceof String) {
+            if (value instanceof String) {
                 try {
                     msgEmitter = buildMessageEmitter((String)value);
                 } catch (TransformerConfigurationException e) {
@@ -191,6 +192,8 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
                 throw new IllegalArgumentException("Emitter is of wrong type,"
                         + "should be either a String or a StxEmitter");
             }
+        } else if (name.equals(ALLOW_EXTERNAL_FUNCTIONS)) {
+           this.allowExternalFunctions = ((Boolean)value).booleanValue();
         } else {
             if (log != null)
                 log.warn("Feature not supported: " + name);

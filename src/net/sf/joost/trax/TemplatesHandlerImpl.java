@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesHandlerImpl.java,v 1.10 2004/10/25 20:39:34 obecker Exp $
+ * $Id: TemplatesHandlerImpl.java,v 1.11 2004/12/17 18:25:47 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -72,7 +72,7 @@ public class TemplatesHandlerImpl implements TemplatesHandler, Constants {
             log.debug("calling constructor");
         this.tfactory = tfactory;
         // construct a tree representation of an STX stylesheet
-        stxparser = new Parser();
+        stxparser = new Parser(tfactory.allowExternalFunctions);
     }
 
 

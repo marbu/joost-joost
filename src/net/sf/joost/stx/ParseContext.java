@@ -1,5 +1,5 @@
 /*
- * $Id: ParseContext.java,v 2.4 2004/09/19 13:45:55 obecker Exp $
+ * $Id: ParseContext.java,v 2.5 2004/12/17 18:25:40 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import org.xml.sax.Locator;
 /**
  * Instances of this class provide context information while parsing
  * an STX document.
- * @version $Revision: 2.4 $ $Date: 2004/09/19 13:45:55 $
+ * @version $Revision: 2.5 $ $Date: 2004/12/17 18:25:40 $
  * @author Oliver Becker
  */
 public final class ParseContext
@@ -59,4 +59,7 @@ public final class ParseContext
 
    /** The root element of the transform sheet */
    public TransformFactory.Instance transformNode;
+   
+   /** Are calls on Java extension functions allowed? */
+   public boolean allowExternalFunctions = true;
 }

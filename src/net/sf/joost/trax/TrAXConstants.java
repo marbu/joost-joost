@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXConstants.java,v 1.12 2003/12/28 12:33:38 zubow Exp $
+ * $Id: TrAXConstants.java,v 1.13 2004/12/17 18:25:49 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -29,7 +29,7 @@ import net.sf.joost.Constants;
 
 /**
  * Common interface for TrAX related constants.
- * @version $Revision: 1.12 $ $Date: 2003/12/28 12:33:38 $
+ * @version $Revision: 1.13 $ $Date: 2004/12/17 18:25:49 $
  * @author Anatolij Zubow
  */
 public interface TrAXConstants extends Constants {
@@ -69,10 +69,19 @@ public interface TrAXConstants extends Constants {
         "http://joost.sf.net/attributes/debug-feature";
 
     /**
-     * Key for the Joost property (must be the class name of an STXEmitter)
-     * {@link net.sf.joost.trax.TransformerFactoryImpl#debugmode}
+     * Key for the Joost message emitter property (must be the class name or
+     * an instance of an STXEmitter)
+     * {@link net.sf.joost.trax.TransformerFactoryImpl#msgEmitter}
      * @see javax.xml.transform.TransformerFactory#setAttribute
      */
     public final static String MESSAGE_EMITTER_CLASS =
         "http://joost.sf.net/attributes/messageEmitterClass";
+    
+    /**
+     * Key for a Joost property that determines whether calls to Java
+     * extension functions are allowed. It's property value must be a Boolean.
+     * @see javax.xml.transform.TransformerFactory#setAttribute
+     */
+    public final static String ALLOW_EXTERNAL_FUNCTIONS =
+       "http://joost.sf.net/attributes/allow-external-functions";
 }

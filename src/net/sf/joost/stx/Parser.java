@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 2.15 2004/09/19 13:48:01 obecker Exp $
+ * $Id: Parser.java,v 2.16 2004/12/17 18:25:42 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -47,7 +47,7 @@ import org.xml.sax.helpers.NamespaceSupport;
 /** 
  * Creates the tree representation of an STX transformation sheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 2.15 $ $Date: 2004/09/19 13:48:01 $
+ * @version $Revision: 2.16 $ $Date: 2004/12/17 18:25:42 $
  * @author Oliver Becker
  */
 
@@ -91,7 +91,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
    //
 
    /** Constructs a new Parser instance. */
-   public Parser()
+   public Parser(boolean allowExtFunc)
    {
       FactoryBase[] facs = {
          new TransformFactory(),
@@ -146,6 +146,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
       newNamespaces = new Hashtable();
 
       context = new ParseContext();
+      context.allowExternalFunctions = allowExtFunc;
    }
 
 

@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.27 2004/10/30 15:04:35 obecker Exp $
+ * $Id: FunctionTable.java,v 2.28 2004/12/17 18:25:42 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,19 +24,13 @@
 
 package net.sf.joost.stx;
 
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -50,10 +44,14 @@ import net.sf.joost.grammar.tree.EqTree;
 import net.sf.joost.grammar.tree.ValueTree;
 import net.sf.joost.instruction.AnalyzeTextFactory;
 
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.27 $ $Date: 2004/10/30 15:04:35 $
+ * @version $Revision: 2.28 $ $Date: 2004/12/17 18:25:42 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -126,24 +124,31 @@ final public class FunctionTable implements Constants
     * @param uri URI of the expanded function name
     * @param lName local function name
     * @param args parameters (needed here just for counting)
-    * @param locator the SAX Locator
+    * @param pContext the parse context
     *
     * @return the implementation instance for this function
     * @exception SAXParseException if the function wasn't found or the number
     *            of parameters is wrong
     */
    public static Instance getFunction(String uri, String lName, String qName,
-                               Tree args, Locator locator)
+                                      Tree args, ParseContext pContext)
       throws SAXParseException
    {
-      if (uri.startsWith("java:"))
-         return new ExtensionFunction(uri.substring(5), lName, args, locator);
-
+      if (uri.startsWith("java:")) {
+         if (pContext.allowExternalFunctions)
+            return new ExtensionFunction(uri.substring(5), lName, args, 
+                                         pContext.locator);
+         else
+            throw new SAXParseException(
+               "No permission to call extension function `" + qName + "'",
+               pContext.locator);
+      }
+      
       Instance function = 
          (Instance)functionHash.get("{" + uri + "}" + lName);
       if (function == null)
          throw new SAXParseException("Unknown function `" + qName + "'", 
-                                     locator);
+                                     pContext.locator);
 
       // Count parameters in args
       int argc = 0;
@@ -158,12 +163,12 @@ final public class FunctionTable implements Constants
          throw new SAXParseException("Too few parameters in call of " +
                                      "function `" + qName + "' (" + 
                                      function.getMinParCount() + " needed)", 
-                                     locator);
+                                     pContext.locator);
       if (argc > function.getMaxParCount())
          throw new SAXParseException("Too many parameters in call of " +
                                      "function `" + qName + "' (" + 
                                      function.getMaxParCount() + " allowed)",
-                                     locator);
+                                     pContext.locator);
       return function;
    }
 
