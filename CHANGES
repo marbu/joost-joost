@@ -4,6 +4,7 @@ Changes since 20021128
 - added support for named groups
 - added stx:process-document
 - changed: buffers (stx:process-buffer) don't create their own ancestor stack
+- added support for template parameters, stx:with-param
 
 Changes since 20021107
 - added stx:choose, stx:when, stx:otherwise, stx:else
