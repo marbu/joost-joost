@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerImpl.java,v 1.10 2004/10/06 07:39:13 obecker Exp $
+ * $Id: TransformerHandlerImpl.java,v 1.11 2004/10/25 20:36:50 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -33,10 +33,12 @@ import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.sax.TransformerHandler;
 
 import net.sf.joost.Constants;
+import net.sf.joost.OptionalLog;
 import net.sf.joost.emitter.DOMEmitter;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.stx.Processor;
 
+import org.apache.commons.logging.Log;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
@@ -57,9 +59,8 @@ public class TransformerHandlerImpl implements TransformerHandler, Constants {
 
     // Define a static logger variable so that it references the
     // Logger instance named "TransformerHandlerImpl".
-    private static org.apache.commons.logging.Log log = 
-        org.apache.commons.logging.
-        LogFactory.getLog(TransformerHandlerImpl.class);
+    private static Log log = 
+        OptionalLog.getLog(TransformerHandlerImpl.class);
 
     /**
      * Processor is the joost-stx-engine
@@ -144,7 +145,8 @@ public class TransformerHandlerImpl implements TransformerHandler, Constants {
                     throw new IllegalArgumentException(innerE.getMessage());
                 }
             } else {
-                log.fatal(e);
+                if (log != null)
+                    log.fatal(e);
                 throw new IllegalArgumentException("result is invalid.");
             }
         }

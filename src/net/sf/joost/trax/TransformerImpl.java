@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.22 2004/01/08 21:52:40 zubow Exp $
+ * $Id: TransformerImpl.java,v 1.23 2004/10/25 20:36:50 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,16 +25,10 @@
 
 package net.sf.joost.trax;
 
-import net.sf.joost.emitter.DOMEmitter;
-import net.sf.joost.emitter.StxEmitter;
-import net.sf.joost.stx.Processor;
-import net.sf.joost.trace.TraceManager;
-
-//JAXP
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Properties;
 
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.OutputKeys;
@@ -47,14 +41,21 @@ import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.IOException;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Properties;
 
-import net.sf.joost.trace.DebugProcessor;
-import net.sf.joost.trace.DebugEmitter;
+import net.sf.joost.OptionalLog;
+import net.sf.joost.emitter.DOMEmitter;
+import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.stx.Emitter;
+import net.sf.joost.stx.Processor;
+import net.sf.joost.trace.DebugEmitter;
+import net.sf.joost.trace.DebugProcessor;
+import net.sf.joost.trace.TraceManager;
+
+import org.apache.commons.logging.Log;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /**
  * This class implements the Transformer-Interface for TraX.
@@ -67,8 +68,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
 
     // Define a static logger variable so that it references the
     // Logger instance named "TransformerImpl".
-    private static org.apache.commons.logging.Log log =
-        org.apache.commons.logging.LogFactory.getLog(TransformerImpl.class);
+    private static Log log = OptionalLog.getLog(TransformerImpl.class);
 
     private Processor processor = null; // Bugfix
 
@@ -299,7 +299,8 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
             return processor.outputProperties.getProperty(name);
         IllegalArgumentException iE =
                 new IllegalArgumentException("Unsupported property " + name);
-        log.error(iE.getMessage(), iE);
+        if (log != null)
+            log.error(iE.getMessage(), iE);
         throw iE;
     }
 
@@ -317,14 +318,16 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
             if (OutputKeys.METHOD.equals(name) && !"xml".equals(value)) {
                 iE = new IllegalArgumentException(
                               "Unsupported output method " + value);
-                log.error(iE.getMessage(), iE);
+                if (log != null)
+                    log.error(iE.getMessage(), iE);
                 throw iE;
             }
             processor.outputProperties.setProperty(name, value);
         } else {
             iE = new IllegalArgumentException("Unsupported property " +
                                                name);
-            log.error(iE.getMessage(), iE);
+            if (log != null)
+                log.error(iE.getMessage(), iE);
             throw iE;
         }
     }
@@ -355,7 +358,8 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
                 if (!supportedProperties.contains(prop)) {
                     iE = new IllegalArgumentException(
                                   "Unsupported property " + prop);
-                    log.error(iE);
+                    if (log != null)
+                        log.error(iE);
                     throw iE;
                 }
                 if (OutputKeys.METHOD.equals(prop) &&
@@ -363,7 +367,8 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
                     iE = new IllegalArgumentException(
                                   "Unsupported output method " +
                                   oformat.getProperty((String)prop));
-                    log.error(iE);
+                    if (log != null)
+                        log.error(iE);
                     throw iE;
                 }
             }

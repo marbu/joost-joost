@@ -1,5 +1,5 @@
 /*
- * $Id: TransformationErrListener.java,v 1.3 2004/09/19 13:41:38 obecker Exp $
+ * $Id: TransformationErrListener.java,v 1.4 2004/10/25 20:36:50 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -28,6 +28,10 @@ package net.sf.joost.trax;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.TransformerException;
 
+import net.sf.joost.OptionalLog;
+
+import org.apache.commons.logging.Log;
+
 /**
  * This class acts as a default ErrorListener for the
  * {@link TransformerImpl TransformerImpl}.
@@ -35,10 +39,9 @@ import javax.xml.transform.TransformerException;
 public class TransformationErrListener implements ErrorListener {
 
     // Define a static logger variable so that it references the
-    // Logger instance named "TransformerFactoryImpl".
-    private static org.apache.commons.logging.Log log =
-        org.apache.commons.logging.
-        LogFactory.getLog(TransformationErrListener.class);
+    // Logger instance named "TransformationErrListener".
+    private static Log log =
+        OptionalLog.getLog(TransformationErrListener.class);
 
     private ErrorListener userErrorListener;
 
@@ -65,11 +68,17 @@ public class TransformationErrListener implements ErrorListener {
             try {
                 userErrorListener.warning(tE);
             } catch( TransformerException e2) {
-                log.warn(e2);
+                if (log != null)
+                    log.warn(e2);
+                else
+                    System.err.println("Warning - " + e2);
                 throw e2;
             }
         } else {
-            log.warn(tE);
+            if (log != null)
+                log.warn(tE);
+            else
+                System.err.println("Warning - " + tE);
         }
     }
 
@@ -83,11 +92,17 @@ public class TransformationErrListener implements ErrorListener {
             try {
                 userErrorListener.error(tE);
             } catch( TransformerException e2) {
-                log.error(e2);
+                if (log != null)
+                    log.error(e2);
+                else
+                    System.err.println("Error - " + e2);
                 throw e2;
             }
         } else {
-            log.error(tE);
+            if (log != null)
+                log.error(tE);
+            else
+                System.err.println("Error - " + tE);
             // no user defined errorlistener, so throw this exception
             throw tE;
         }
@@ -103,11 +118,17 @@ public class TransformationErrListener implements ErrorListener {
             try {
                 userErrorListener.fatalError(tE);
             } catch( TransformerException e2) {
-                log.fatal(e2);
+                if (log != null)
+                    log.fatal(e2);
+                else
+                    System.err.println("Fatal error - " + e2);
                 throw e2;
             }
         } else {
-            log.fatal(tE);
+            if (log != null)
+                log.fatal(tE);
+            else
+                System.err.print("Fatal error - " + tE);
             // no user defined errorlistener, so throw this exception
             throw tE;
         }

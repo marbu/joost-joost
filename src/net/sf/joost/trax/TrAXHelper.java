@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXHelper.java,v 1.11 2004/10/17 20:37:25 obecker Exp $
+ * $Id: TrAXHelper.java,v 1.12 2004/10/25 20:36:50 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -49,12 +49,14 @@ import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import net.sf.joost.OptionalLog;
 import net.sf.joost.emitter.DOMEmitter;
 import net.sf.joost.emitter.SAXEmitter;
 import net.sf.joost.emitter.StreamEmitter;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.stx.Processor;
 
+import org.apache.commons.logging.Log;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
@@ -70,8 +72,7 @@ public class TrAXHelper implements TrAXConstants {
 
     // Define a static logger variable so that it references the
     // Logger instance named "TrAXHelper".
-    private static org.apache.commons.logging.Log log = 
-       org.apache.commons.logging.LogFactory.getLog(TrAXHelper.class);
+    private static Log log = OptionalLog.getLog(TrAXHelper.class);
 
     /**
      * Defaultconstructor
@@ -317,7 +318,8 @@ public class TrAXHelper implements TrAXConstants {
             return new SAXSource(isource);
         } else {
             String errMsg = "Unknown type of source";
-            log.error(errMsg);
+            if (log != null)
+                log.error(errMsg);
             IllegalArgumentException iE =
                     new IllegalArgumentException(errMsg);
             TransformerConfigurationException tE =

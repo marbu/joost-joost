@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXFilter.java,v 1.6 2003/07/27 10:37:41 zubow Exp $
+ * $Id: TrAXFilter.java,v 1.7 2004/10/25 20:36:50 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,11 +25,19 @@
 
 package net.sf.joost.trax;
 
+import java.io.IOException;
+
+import javax.xml.transform.Templates;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+
+import net.sf.joost.Constants;
+import net.sf.joost.OptionalLog;
 import net.sf.joost.emitter.SAXEmitter;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.stx.Processor;
 
-//SAX
+import org.apache.commons.logging.Log;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -37,22 +45,18 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-import javax.xml.transform.*;
-import java.io.IOException;
-
 
 /**
  * TrAXFilter
  * @author Zubow
  * @version 1.0
  */
-public class TrAXFilter extends XMLFilterImpl {
+public class TrAXFilter extends XMLFilterImpl implements Constants {
 
 
     // Define a static logger variable so that it references the
     // Logger instance named "TransformerImpl".
-    private static org.apache.commons.logging.Log log = 
-        org.apache.commons.logging.LogFactory.getLog(TrAXFilter.class);
+    private static Log log = OptionalLog.getLog(TrAXFilter.class);
 
     private Templates templates = null;
     private Processor processor = null;
@@ -68,7 +72,8 @@ public class TrAXFilter extends XMLFilterImpl {
     protected TrAXFilter(Templates templates)
         throws TransformerConfigurationException {
 
-        log.debug("calling constructor");
+        if (DEBUG)
+            log.debug("calling constructor");
         this.templates = templates;
         if (templates instanceof TemplatesImpl) {
             configErrListener =
@@ -86,8 +91,10 @@ public class TrAXFilter extends XMLFilterImpl {
     	throws SAXException, IOException {
 
         Transformer transformer = null;
-        if (log.isDebugEnabled())
-            log.debug("parsing InputSource " + input.getSystemId());
+        if (DEBUG) {
+            if (log.isDebugEnabled())
+                log.debug("parsing InputSource " + input.getSystemId());
+        }
 
         try {
             // get a new Transformer
@@ -95,8 +102,14 @@ public class TrAXFilter extends XMLFilterImpl {
             if ( transformer instanceof TransformerImpl ) {
                 this.processor = ((TransformerImpl)transformer).getStxProcessor();
             } else {
-                log.fatal("An error is occured, because the given transfomer is not an " +
-                    "instance of TransformerImpl");
+                String msg = 
+                   "An error is occured, because the given transformer is " +
+                   "not an instance of TransformerImpl";
+                if (log != null)
+                    log.fatal(msg);
+                else
+                    System.err.println("Fatal error - " + msg);
+                
             }
             XMLReader parent = this.getParent();
 

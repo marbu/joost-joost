@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.19 2004/10/17 20:37:25 obecker Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.20 2004/10/25 20:36:50 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -45,12 +45,14 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import net.sf.joost.OptionalLog;
 import net.sf.joost.TransformerHandlerResolver;
 import net.sf.joost.emitter.StreamEmitter;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.stx.Processor;
 import net.sf.joost.trace.ParserListenerMgr;
 
+import org.apache.commons.logging.Log;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLFilter;
 import org.xml.sax.XMLReader;
@@ -69,9 +71,8 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
 
     // Define a static logger variable so that it references the
     // Logger instance named "TransformerFactoryImpl".
-    private static org.apache.commons.logging.Log log =
-        org.apache.commons.logging.
-        LogFactory.getLog(TransformerFactoryImpl.class);
+    private static Log log =
+        OptionalLog.getLog(TransformerFactoryImpl.class);
 
     // Member
     private   URIResolver uriResolver               = null;
@@ -153,7 +154,8 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         } else if (name.equals(MESSAGE_EMITTER_CLASS)) {
         	return msgEmitter;
         } else {
-            log.warn("Feature not supported: " + name);
+            if (log != null)
+                log.warn("Feature not supported: " + name);
             throw new IllegalArgumentException("Feature not supported: " + name);
         }
     }
@@ -179,7 +181,8 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
                 try {
                     msgEmitter = buildMessageEmitter((String)value);
                 } catch (TransformerConfigurationException e) {
-                    log.fatal(e.getMessage(), e);
+                    if (log != null)
+                        log.fatal(e.getMessage(), e);
                     throw new IllegalArgumentException(e.getMessage());
                 }
             } else if (value instanceof StxEmitter) { // already instantiated
@@ -189,7 +192,8 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
                         + "should be either a String or a StxEmitter");
             }
         } else {
-            log.warn("Feature not supported: " + name);
+            if (log != null)
+                log.warn("Feature not supported: " + name);
             throw new IllegalArgumentException("Feature not supported: " + name);
         }
     }
