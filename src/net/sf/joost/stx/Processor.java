@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.42 2004/10/03 19:07:39 zubow Exp $
+ * $Id: Processor.java,v 2.43 2004/10/03 20:08:48 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -67,7 +67,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.42 $ $Date: 2004/10/03 19:07:39 $
+ * @version $Revision: 2.43 $ $Date: 2004/10/03 20:08:48 $
  * @author Oliver Becker
  */
 
@@ -309,7 +309,7 @@ public class Processor extends XMLFilterImpl
       void push(Data d)
       {
          if (objCount == stack.length) {
-            Data[] tmp = new Data[2 * objCount];
+            Data[] tmp = new Data[objCount << 1];
             System.arraycopy(stack, 0, tmp, 0, objCount);
             stack = tmp;
          }
