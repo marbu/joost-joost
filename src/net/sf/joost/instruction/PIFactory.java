@@ -1,5 +1,5 @@
 /*
- * $Id: PIFactory.java,v 2.4 2004/10/01 18:10:28 obecker Exp $
+ * $Id: PIFactory.java,v 2.5 2004/10/30 11:23:52 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>processing-instruction</code> elements, which are 
  * represented by the inner Instance class. 
- * @version $Revision: 2.4 $ $Date: 2004/10/01 18:10:28 $
+ * @version $Revision: 2.5 $ $Date: 2004/10/30 11:23:52 $
  * @author Oliver Becker
  */
 
@@ -135,9 +135,7 @@ final public class PIFactory extends FactoryBase
                while ((index = pi.lastIndexOf("?>", --index)) != -1);
                pi = piBuf.toString();
             }
-            context.emitter.processingInstruction(piName, pi,
-                                                  publicId, systemId, 
-                                                  lineNo, colNo);
+            context.emitter.processingInstruction(piName, pi, this);
          }
          return PR_CONTINUE;
       }
@@ -158,8 +156,7 @@ final public class PIFactory extends FactoryBase
                buffer.insert(index+1, ' ');
          }
          context.emitter.processingInstruction(piName, buffer.toString(),
-                                               publicId, systemId, 
-                                               lineNo, colNo);
+                                               this);
          return super.processEnd(context);
       }
    }

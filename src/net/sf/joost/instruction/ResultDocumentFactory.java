@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 2.13 2004/10/17 20:37:25 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 2.14 2004/10/30 11:23:52 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.13 $ $Date: 2004/10/17 20:37:25 $
+ * @version $Revision: 2.14 $ $Date: 2004/10/30 11:23:52 $
  * @author Oliver Becker
  */
 
@@ -153,8 +153,7 @@ final public class ResultDocumentFactory extends FactoryBase
       public short processEnd(Context context)
          throws SAXException
       {
-         context.emitter.endDocument(publicId, systemId, 
-                                     nodeEnd.lineNo, nodeEnd.colNo);
+         context.emitter.endDocument(nodeEnd);
          context.popEmitter();
          try {
             ((Writer)localFieldStack.pop()).close();

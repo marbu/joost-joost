@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 2.9 2004/09/29 06:07:48 obecker Exp $
+ * $Id: LitElementFactory.java,v 2.10 2004/10/30 11:23:52 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.xml.sax.helpers.NamespaceSupport;
 /** 
  * Factory for literal result elements, which are represented by the
  * inner Instance class. 
- * @version $Revision: 2.9 $ $Date: 2004/09/29 06:07:48 $
+ * @version $Revision: 2.10 $ $Date: 2004/10/30 11:23:52 $
  * @author Oliver Becker
 */
 
@@ -213,7 +213,7 @@ final public class LitElementFactory
             attrs.setValue(i, avtList[i].evaluate(context, this)
                                         .getString());
          context.emitter.startElement(uri, lName, qName, attrs, namespaces,
-                                      publicId, systemId, lineNo, colNo);
+                                      this);
          return PR_CONTINUE;
       }
 
@@ -224,9 +224,7 @@ final public class LitElementFactory
       public short processEnd(Context context)
          throws SAXException
       {
-         context.emitter.endElement(uri, lName, qName,
-                                    publicId, systemId, 
-                                    nodeEnd.lineNo, nodeEnd.colNo);
+         context.emitter.endElement(uri, lName, qName, nodeEnd);
          return super.processEnd(context);
       }
 

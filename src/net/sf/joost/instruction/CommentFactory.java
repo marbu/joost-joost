@@ -1,5 +1,5 @@
 /*
- * $Id: CommentFactory.java,v 2.3 2004/10/01 18:10:28 obecker Exp $
+ * $Id: CommentFactory.java,v 2.4 2004/10/30 11:23:51 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>comment</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.3 $ $Date: 2004/10/01 18:10:28 $
+ * @version $Revision: 2.4 $ $Date: 2004/10/30 11:23:51 $
  * @author Oliver Becker
  */
 
@@ -125,7 +125,7 @@ public class CommentFactory extends FactoryBase
                // produce the comment immediately
                context.emitter.comment(comment.toCharArray(), 
                                        0, comment.length(),
-                                       publicId, systemId, lineNo, colNo);
+                                       this);
          }
          
          return PR_CONTINUE;
@@ -182,8 +182,7 @@ public class CommentFactory extends FactoryBase
          }
 
          context.emitter.comment(comment.toString().toCharArray(), 
-                                 0, comment.length(),
-                                 publicId, systemId, lineNo, colNo);
+                                 0, comment.length(), this);
       }
    }
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.29 2004/10/29 18:58:14 obecker Exp $
+ * $Id: Emitter.java,v 1.30 2004/10/30 11:23:52 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -34,6 +34,8 @@ import java.util.Stack;
 
 import net.sf.joost.Constants;
 import net.sf.joost.emitter.StxEmitter;
+import net.sf.joost.instruction.AbstractInstruction;
+import net.sf.joost.instruction.NodeBase;
 import net.sf.joost.stx.helpers.MutableAttributes;
 import net.sf.joost.stx.helpers.MutableAttributesImpl;
 
@@ -48,7 +50,7 @@ import org.xml.sax.helpers.NamespaceSupport;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.29 $ $Date: 2004/10/29 18:58:14 $
+ * @version $Revision: 1.30 $ $Date: 2004/10/30 11:23:52 $
  * @author Oliver Becker
  */
 
@@ -70,12 +72,10 @@ public class Emitter implements Constants
        A new one will be created for each new result event stream. */
    public Emitter prev;
    
-   // last properties of the element 
+   // properties of the last element 
    private String lastUri, lastLName, lastQName;
    private MutableAttributes lastAttrs;
-   private String lastPublicId, lastSystemId;
-   private int lastLineNo, lastColNo;
-
+   private NodeBase lastInstruction;
 
    private boolean insideCDATA = false;
 
@@ -133,8 +133,10 @@ public class Emitter implements Constants
       }
       catch (SAXException se) {
          errorHandler.error(se.getMessage(),
-                            lastPublicId, lastSystemId, 
-                            lastLineNo, lastColNo);
+                            lastInstruction.publicId,
+                            lastInstruction.systemId, 
+                            lastInstruction.lineNo, 
+                            lastInstruction.colNo);
       }
 
       openedElements.push(lastUri);
@@ -146,21 +148,17 @@ public class Emitter implements Constants
 
    /**
     * Adds a dynamic created attribute (via <code>stx:attribute</code>)
-    * @param publicId public ID of the transformation sheet
-    * @param systemId system ID of the transformation sheet
-    * @param lineNo line number of the instruction that added the attribute
-    * @param colNo column number of the instruction that added the attribute
+    * @param instruction the instruction that causes this method invocation
     */
    public void addAttribute(String uri, String qName, String lName, 
-                            String value,
-                            String publicId, String systemId, 
-                            int lineNo, int colNo)
+                            String value, NodeBase instruction)
       throws SAXException
    {
       if (lastAttrs == null) {
          errorHandler.error("Can't create an attribute if there's " +
                             "no opened element", 
-                            publicId, systemId, lineNo, colNo);
+                            instruction.publicId, instruction.systemId,
+                            instruction.lineNo, instruction.colNo);
          return; // if #errorHandler returns
       }
 
@@ -197,13 +195,9 @@ public class Emitter implements Constants
 
    /**
     * Closes a document.
-    * @param publicId public ID of the transformation sheet
-    * @param systemId system ID of the transformation sheet
-    * @param lineNo line number of the STX instruction 
-    * @param colNo column number of the STX instruction
+    * @param instruction the instruction that causes this method invocation
     */
-   public void endDocument(String publicId, String systemId, 
-                           int lineNo, int colNo) 
+   public void endDocument(AbstractInstruction instruction)
       throws SAXException
    {
       if (contH != null) {
@@ -213,7 +207,8 @@ public class Emitter implements Constants
             errorHandler.fatalError(
                "Missing end tag for `" + openedElements.pop() + 
                "' at the document end", 
-               publicId, systemId, lineNo, colNo);
+               instruction.getNode().publicId, instruction.getNode().systemId, 
+               instruction.lineNo, instruction.colNo);
          }
          contH.endDocument();
       }
@@ -222,15 +217,11 @@ public class Emitter implements Constants
 
    /**
     * Opens a new element.
-    * @param publicId public ID of the transformation sheet
-    * @param systemId system ID of the transformation sheet
-    * @param lineNo line number of the STX instruction
-    * @param colNo column number of the STX instruction
+    * @param instruction the instruction that causes this method invocation
     */
    public void startElement(String uri, String lName, String qName,
                             Attributes attrs, Hashtable namespaces,
-                            String publicId, String systemId, 
-                            int lineNo, int colNo)
+                            NodeBase instruction)
       throws SAXException
    {
       if (contH != null) {
@@ -294,24 +285,17 @@ public class Emitter implements Constants
          // else: happens for dynamically created elements
          // e.g. <stx:start-element name="foo" />
 
-         lastPublicId = publicId;
-         lastSystemId = systemId;
-         lastLineNo = lineNo;
-         lastColNo = colNo;
+         lastInstruction = instruction;
       }
    }
 
 
    /**
     * Closes an element.
-    * @param publicId public ID of the transformation sheet
-    * @param systemId system ID of the transformation sheet
-    * @param lineNo line number of the STX instruction
-    * @param colNo column number of the STX instruction
+    * @param instruction the instruction that causes this method invocation
     */
    public void endElement(String uri, String lName, String qName,
-                          String publicId, String systemId, 
-                          int lineNo, int colNo)
+                          AbstractInstruction instruction)
       throws SAXException
    {
       if (contH != null) {
@@ -323,7 +307,8 @@ public class Emitter implements Constants
                "Attempt to emit unmatched end tag " +
                (qName != null ? "`" + qName + "' " : "") +
                "(no element opened)",
-               publicId, systemId, lineNo, colNo);
+               instruction.getNode().publicId, instruction.getNode().systemId, 
+               instruction.lineNo, instruction.colNo);
             return; // if #errorHandler returns
          }
          String elQName = (String)openedElements.pop();
@@ -332,14 +317,16 @@ public class Emitter implements Constants
             errorHandler.fatalError(
                "Attempt to emit unmatched end tag `"+
                qName + "' (`" + elQName + "' expected)",
-               publicId, systemId, lineNo, colNo);
+               instruction.getNode().publicId, instruction.getNode().systemId, 
+               instruction.lineNo, instruction.colNo);
             return; // if #errorHandler returns
          }
          if (!uri.equals(elUri)) {
             errorHandler.fatalError(
                "Attempt to emit unmatched end tag `{" + uri + "}" + qName + 
-               "' (`{" + elUri + "}" +           elQName + "' expected)",
-               publicId, systemId, lineNo, colNo);
+               "' (`{" + elUri + "}" + elQName + "' expected)",
+               instruction.getNode().publicId, instruction.getNode().systemId, 
+               instruction.lineNo, instruction.colNo);
             return; // if #errorHandler returns
          }
 
@@ -361,7 +348,12 @@ public class Emitter implements Constants
    }
 
 
-   public void characters(char[] ch, int start, int length)
+   /**
+    * Emits characters.
+    * @param instruction the instruction that causes this method invocation
+    */
+   public void characters(char[] ch, int start, int length,
+                          NodeBase instruction)
       throws SAXException
    {
       if (length == 0)
@@ -369,37 +361,42 @@ public class Emitter implements Constants
       if (contH != null) {
          if (lastAttrs != null)
             processLastElement();
-         if (insideCDATA) { // prevent output of "]]>" in this CDATA section
-            String str = new String(ch, start, length);
-            int index = str.indexOf("]]>");
-            while (index != -1) {
-               // "]]>" found; split between "]]" and ">"
-               index += 2;
-               contH.characters(str.substring(0,index).toCharArray(),
-                                0, index);
-               lexH.endCDATA();   // #lexH will be != null,
-               lexH.startCDATA(); // because #insideCDATA was true
-               str = str.substring(index);
-               index = str.indexOf("]]>");
+         try {
+            if (insideCDATA) { // prevent output of "]]>" in this CDATA section
+               String str = new String(ch, start, length);
+               int index = str.indexOf("]]>");
+               while (index != -1) {
+                  // "]]>" found; split between "]]" and ">"
+                  index += 2;
+                  contH.characters(str.substring(0,index).toCharArray(),
+                                   0, index);
+                  lexH.endCDATA();   // #lexH will be != null,
+                  lexH.startCDATA(); // because #insideCDATA was true
+                  str = str.substring(index);
+                  index = str.indexOf("]]>");
+               }
+               contH.characters(str.toCharArray(), 0, str.length());
             }
-            contH.characters(str.toCharArray(), 0, str.length());
+            else
+               contH.characters(ch, start, length);
          }
-         else
-            contH.characters(ch, start, length);
+         catch (SAXException ex) {
+            errorHandler.fatalError(ex.getMessage(),
+                                    instruction.publicId,
+                                    instruction.systemId, 
+                                    instruction.lineNo, 
+                                    instruction.colNo);
+         }
       }
    }
 
 
    /**
     * Creates a processing instruction.
-    * @param publicId public ID of the transformation sheet
-    * @param systemId system ID of the transformation sheet
-    * @param lineNo line number of the STX instruction
-    * @param colNo column number of the STX instruction
+    * @param instruction the instruction that causes this method invocation
     */
    public void processingInstruction(String target, String data,
-                                     String publicId, String systemId, 
-                                     int lineNo, int colNo)
+                                     NodeBase instruction)
       throws SAXException 
    {
       if (contH != null) {
@@ -410,7 +407,8 @@ public class Emitter implements Constants
          }
          catch (SAXException se) {
             errorHandler.error(se.getMessage(),
-                               publicId, systemId, lineNo, colNo);
+                               instruction.publicId, instruction.systemId, 
+                               instruction.lineNo, instruction.colNo);
          }
       }
    }
@@ -418,14 +416,10 @@ public class Emitter implements Constants
    
    /**
     * Creates a comment.
-    * @param publicId public ID of the transformation sheet
-    * @param systemId system ID of the transformation sheet
-    * @param lineNo line number of the STX instruction
-    * @param colNo column number of the STX instruction
+    * @param instruction the instruction that causes this method invocation
     */
    public void comment(char[] ch, int start, int length,
-                       String publicId, String systemId, 
-                       int lineNo, int colNo)
+                       NodeBase instruction)
       throws SAXException
    {
       if (contH != null && lastAttrs != null)
@@ -436,7 +430,8 @@ public class Emitter implements Constants
          }
          catch (SAXException se) {
             errorHandler.error(se.getMessage(),
-                               publicId, systemId, lineNo, colNo);
+                               instruction.publicId, instruction.systemId, 
+                               instruction.lineNo, instruction.colNo);
          }
       }
    }
@@ -444,13 +439,9 @@ public class Emitter implements Constants
 
    /**
     * Creates a CDATA section.
-    * @param publicId public ID of the transformation sheet
-    * @param systemId system ID of the transformation sheet
-    * @param lineNo line number of the STX instruction
-    * @param colNo column number of the STX instruction
+    * @param instruction the instruction that causes this method invocation
     */
-   public void startCDATA(String publicId, String systemId, 
-                          int lineNo, int colNo)
+   public void startCDATA(NodeBase instruction)
       throws SAXException
    {
       if (contH != null && lastAttrs != null)
@@ -461,7 +452,8 @@ public class Emitter implements Constants
          }
          catch (SAXException se) {
             errorHandler.error(se.getMessage(),
-                               publicId, systemId, lineNo, colNo);
+                               instruction.publicId, instruction.systemId, 
+                               instruction.lineNo, instruction.colNo);
          }
          insideCDATA = true;
       }

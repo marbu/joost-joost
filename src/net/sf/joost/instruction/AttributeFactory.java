@@ -1,5 +1,5 @@
 /*
- * $Id: AttributeFactory.java,v 2.3 2004/09/29 06:17:16 obecker Exp $
+ * $Id: AttributeFactory.java,v 2.4 2004/10/30 11:23:50 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>attribute</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.3 $ $Date: 2004/09/29 06:17:16 $
+ * @version $Revision: 2.4 $ $Date: 2004/10/30 11:23:50 $
  * @author Oliver Becker
  */
 
@@ -185,8 +185,7 @@ final public class AttributeFactory extends FactoryBase
          if (select != null) {
             context.emitter.addAttribute(
                attUri, attName, attLocal, 
-               select.evaluate(context, this).getStringValue(), 
-               publicId, systemId, lineNo, colNo);
+               select.evaluate(context, this).getStringValue(), this);
          }
          else {
             localFieldStack.push(attUri);
@@ -210,8 +209,8 @@ final public class AttributeFactory extends FactoryBase
          String attUri = (String)localFieldStack.pop();
          context.popEmitter();
          context.emitter.addAttribute(attUri, attName, attLocal, 
-                                      strEmitter.getBuffer().toString(), 
-                                      publicId, systemId, lineNo, colNo);
+                                      strEmitter.getBuffer().toString(),
+                                      this);
          return super.processEnd(context);
       }
    }

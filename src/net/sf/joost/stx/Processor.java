@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.45 2004/10/25 20:39:34 obecker Exp $
+ * $Id: Processor.java,v 2.46 2004/10/30 11:23:53 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -69,7 +69,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.45 $ $Date: 2004/10/25 20:39:34 $
+ * @version $Revision: 2.46 $ $Date: 2004/10/30 11:23:53 $
  * @author Oliver Becker
  */
 
@@ -1163,25 +1163,22 @@ public class Processor extends XMLFilterImpl
          case SAXEvent.ELEMENT:
             if ((tg.passThrough & PASS_THROUGH_ELEMENT) != 0)
                emitter.startElement(event.uri, event.lName, event.qName,
-                                    event.attrs, event.namespaces,
-                                    tg.publicId, tg.systemId,
-                                    tg.lineNo, tg.colNo);
+                                    event.attrs, event.namespaces, tg);
             dataStack.push(new Data(dataStack.peek()));
             break;
 
          case SAXEvent.TEXT:
             if ((tg.passThrough & PASS_THROUGH_TEXT) != 0) {
                emitter.characters(event.value.toCharArray(),
-                                  0, event.value.length());
+                                  0, event.value.length(), tg);
             }
             break;
 
          case SAXEvent.CDATA:
             if ((tg.passThrough & PASS_THROUGH_TEXT) != 0) {
-               emitter.startCDATA(tg.publicId, tg.systemId,
-                                  tg.lineNo, tg.colNo);
+               emitter.startCDATA(tg);
                emitter.characters(event.value.toCharArray(),
-                                  0, event.value.length());
+                                  0, event.value.length(), tg);
                emitter.endCDATA();
             }
             break;
@@ -1189,24 +1186,18 @@ public class Processor extends XMLFilterImpl
          case SAXEvent.COMMENT:
             if ((tg.passThrough & PASS_THROUGH_COMMENT) != 0)
                emitter.comment(event.value.toCharArray(),
-                               0, event.value.length(),
-                               tg.publicId, tg.systemId,
-                               tg.lineNo, tg.colNo);
+                               0, event.value.length(), tg);
             break;
 
          case SAXEvent.PI:
             if ((tg.passThrough & PASS_THROUGH_PI) != 0)
-               emitter.processingInstruction(event.qName, event.value,
-                                             tg.publicId, tg.systemId,
-                                             tg.lineNo, tg.colNo);
+               emitter.processingInstruction(event.qName, event.value, tg);
             break;
 
          case SAXEvent.ATTRIBUTE:
             if ((tg.passThrough & PASS_THROUGH_ATTRIBUTE) != 0)
                emitter.addAttribute(event.uri, event.qName, event.lName,
-                                    event.value,
-                                    tg.publicId, tg.systemId,
-                                    tg.lineNo, tg.colNo);
+                                    event.value, tg);
             break;
 
          default:
@@ -1650,9 +1641,7 @@ public class Processor extends XMLFilterImpl
 
             if (innerProcStack.empty()) {
                transformNode.exitRecursionLevel(context);
-               context.emitter.endDocument(transformNode.publicId,
-                                   transformNode.systemId,
-                                   transformNode.lineNo, transformNode.colNo);
+               context.emitter.endDocument(transformNode);
             }
             else
                eventStack = context.ancestorStack =
@@ -1740,11 +1729,7 @@ public class Processor extends XMLFilterImpl
          if (data.template == null) {
             // perform default action?
             if ((data.targetGroup.passThrough & PASS_THROUGH_ELEMENT) != 0)
-               context.emitter.endElement(uri, lName, qName,
-                                  data.targetGroup.publicId,
-                                  data.targetGroup.systemId,
-                                  data.targetGroup.lineNo,
-                                  data.targetGroup.colNo);
+               context.emitter.endElement(uri, lName, qName, data.targetGroup);
          }
          else if (prStatus == PR_CHILDREN || prStatus == PR_SELF) {
             context.position = data.contextPosition; // restore position

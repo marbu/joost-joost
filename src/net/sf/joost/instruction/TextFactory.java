@@ -1,5 +1,5 @@
 /*
- * $Id: TextFactory.java,v 2.4 2004/10/17 20:37:25 obecker Exp $
+ * $Id: TextFactory.java,v 2.5 2004/10/30 11:23:52 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>text</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.4 $ $Date: 2004/10/17 20:37:25 $
+ * @version $Revision: 2.5 $ $Date: 2004/10/30 11:23:52 $
  * @author Oliver Becker
  */
 
@@ -138,7 +138,7 @@ public class TextFactory extends FactoryBase
          if (--recursionLevel == 0) { // outermost invocation
             context.popEmitter();
             context.emitter.characters(buffer.toString().toCharArray(), 
-                                       0, buffer.length());
+                                       0, buffer.length(), this);
          }
          return super.processEnd(context);
       }

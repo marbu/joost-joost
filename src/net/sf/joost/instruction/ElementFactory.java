@@ -1,5 +1,5 @@
 /*
- * $Id: ElementFactory.java,v 2.4 2004/09/29 06:07:48 obecker Exp $
+ * $Id: ElementFactory.java,v 2.5 2004/10/30 11:23:52 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import org.xml.sax.helpers.AttributesImpl;
 /** 
  * Factory for <code>element</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.4 $ $Date: 2004/09/29 06:07:48 $
+ * @version $Revision: 2.5 $ $Date: 2004/10/30 11:23:52 $
  * @author Oliver Becker
  */
 
@@ -149,8 +149,7 @@ final public class ElementFactory extends FactoryBase
          }
 
          context.emitter.startElement(elUri, elLocal, elName, 
-                                      new AttributesImpl(), null,
-                                      publicId, systemId, lineNo, colNo);
+                                      new AttributesImpl(), null, this);
          localFieldStack.push(elUri);
          localFieldStack.push(elLocal);
          localFieldStack.push(elName);
@@ -168,9 +167,7 @@ final public class ElementFactory extends FactoryBase
          String elName = (String)localFieldStack.pop();
          String elLocal = (String)localFieldStack.pop();
          String elUri = (String)localFieldStack.pop();
-         context.emitter.endElement(elUri, elLocal, elName,
-                                    publicId, systemId, 
-                                    nodeEnd.lineNo, nodeEnd.colNo);
+         context.emitter.endElement(elUri, elLocal, elName, nodeEnd);
          return super.processEnd(context);
       }
    }

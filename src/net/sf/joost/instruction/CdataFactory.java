@@ -1,5 +1,5 @@
 /*
- * $Id: CdataFactory.java,v 2.2 2004/09/29 06:14:20 obecker Exp $
+ * $Id: CdataFactory.java,v 2.3 2004/10/30 11:23:50 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>cdata</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2004/09/29 06:14:20 $
+ * @version $Revision: 2.3 $ $Date: 2004/10/30 11:23:50 $
  * @author Oliver Becker
  */
 
@@ -100,9 +100,9 @@ final public class CdataFactory extends FactoryBase
       {
          context.popEmitter();
          Emitter emitter = context.emitter;
-         emitter.startCDATA(publicId, systemId, lineNo, colNo);
+         emitter.startCDATA(this);
          emitter.characters(buffer.toString().toCharArray(),
-                            0, buffer.length());
+                            0, buffer.length(), this);
          emitter.endCDATA();
          return super.processEnd(context);
       }

@@ -1,5 +1,5 @@
 /*
- * $Id: EmitterAdapter.java,v 1.1 2003/05/16 14:58:46 obecker Exp $
+ * $Id: EmitterAdapter.java,v 1.2 2004/10/30 11:23:50 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,15 +24,16 @@
 
 package net.sf.joost.emitter;
 
+import java.util.Hashtable;
+
+import net.sf.joost.instruction.NodeBase;
+import net.sf.joost.stx.Emitter;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
-
-import java.util.Hashtable;
-
-import net.sf.joost.stx.Emitter;
 
 
 /**
@@ -40,26 +41,21 @@ import net.sf.joost.stx.Emitter;
  * <code>LexicalHandler</code> to {@link Emitter}. Such an intermediate
  * object is needed because {@link Emitter} itself doesn't implement
  * these interfaces.
- * @version $Revision: 1.1 $ $Date: 2003/05/16 14:58:46 $
+ * @version $Revision: 1.2 $ $Date: 2004/10/30 11:23:50 $
  * @author Oliver Becker
  */
 
 public class EmitterAdapter implements ContentHandler, LexicalHandler
 {
    private Emitter emitter;
-   private String publicId, systemId;
-   private int lineNo, colNo;
    private Hashtable nsTable = new Hashtable();
    
-   public EmitterAdapter(Emitter emitter, 
-                         String publicId, String systemId, 
-                         int lineNo, int colNo) 
+   private NodeBase instruction;
+   
+   public EmitterAdapter(Emitter emitter, NodeBase instruction)
    {
       this.emitter = emitter;
-      this.publicId = publicId;
-      this.systemId = systemId;
-      this.lineNo = lineNo;
-      this.colNo = colNo;
+      this.instruction = instruction;
    }
 
 
@@ -89,34 +85,32 @@ public class EmitterAdapter implements ContentHandler, LexicalHandler
       throws SAXException
    {
       emitter.startElement(uri, lName, qName, atts, nsTable, 
-                           publicId, systemId, lineNo, colNo);
+                           instruction);
       nsTable.clear();
    }
 
    public void endElement(String uri, String lName, String qName)
       throws SAXException
    {
-      emitter.endElement(uri, lName, qName, 
-                         publicId, systemId, lineNo, colNo);
+      emitter.endElement(uri, lName, qName, instruction);
    }
 
    public void characters(char[] ch, int start, int length)
       throws SAXException
    {
-      emitter.characters(ch, start, length);
+      emitter.characters(ch, start, length, instruction);
    }
 
    public void ignorableWhitespace(char[] ch, int start, int length)
       throws SAXException
    {
-      emitter.characters(ch, start, length);
+      emitter.characters(ch, start, length, instruction);
    }
 
    public void processingInstruction(String target, String data)
       throws SAXException
    {
-      emitter.processingInstruction(target, data, 
-                                    publicId, systemId, lineNo, colNo);
+      emitter.processingInstruction(target, data, instruction);
    }
 
    public void skippedEntity(String name)
@@ -142,7 +136,7 @@ public class EmitterAdapter implements ContentHandler, LexicalHandler
    public void startCDATA()
       throws SAXException
    {
-      emitter.startCDATA(publicId, systemId, lineNo, colNo);
+      emitter.startCDATA(instruction);
    }
 
    public void endCDATA()
@@ -154,6 +148,6 @@ public class EmitterAdapter implements ContentHandler, LexicalHandler
    public void comment(char[] ch, int start, int length)
       throws SAXException
    {
-      emitter.comment(ch, start, length, publicId, systemId, lineNo, colNo);
+      emitter.comment(ch, start, length, instruction);
    }
 }

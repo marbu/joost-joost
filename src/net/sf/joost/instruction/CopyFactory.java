@@ -1,5 +1,5 @@
 /*
- * $Id: CopyFactory.java,v 2.9 2004/10/25 20:39:33 obecker Exp $
+ * $Id: CopyFactory.java,v 2.10 2004/10/30 11:23:51 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.xml.sax.helpers.AttributesImpl;
 /** 
  * Factory for <code>copy</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.9 $ $Date: 2004/10/25 20:39:33 $
+ * @version $Revision: 2.10 $ $Date: 2004/10/30 11:23:51 $
  * @author Oliver Becker
  */
 
@@ -141,8 +141,7 @@ final public class CopyFactory extends FactoryBase
             super.process(context);
             Attributes attList = attrWildcard ? event.attrs : emptyAttList;
             context.emitter.startElement(event.uri, event.lName, event.qName,
-                                         attList, event.namespaces,
-                                         publicId, systemId, lineNo, colNo);
+                                         attList, event.namespaces, this);
             if (attPattern != null && !attrWildcard) {
                // attribute pattern present, but no wildcard (@*)
                int attrNum = event.attrs.getLength();
@@ -157,8 +156,7 @@ final public class CopyFactory extends FactoryBase
                         (SAXEvent)context.ancestorStack.peek();
                      context.emitter.addAttribute(
                         attrEvent.uri, attrEvent.qName, attrEvent.lName,
-                        attrEvent.value,
-                        publicId, systemId, lineNo, colNo);
+                        attrEvent.value, this);
                   }
                   // remove attribute
                   context.ancestorStack.pop();
@@ -169,32 +167,29 @@ final public class CopyFactory extends FactoryBase
          }
          case SAXEvent.TEXT:
             context.emitter.characters(event.value.toCharArray(), 
-                                       0, event.value.length());
+                                       0, event.value.length(), this);
             next = successor;
             break;
          case SAXEvent.CDATA:
-            context.emitter.startCDATA(publicId, systemId, lineNo, colNo);
+            context.emitter.startCDATA(this);
             context.emitter.characters(event.value.toCharArray(), 
-                                       0, event.value.length());
+                                       0, event.value.length(), this);
             context.emitter.endCDATA();
             next = successor;
             break;
          case SAXEvent.PI:
             context.emitter.processingInstruction(event.qName, event.value,
-                                                  publicId, systemId, 
-                                                  lineNo, colNo);
+                                                  this);
             next = successor;
             break;
          case SAXEvent.COMMENT:
             context.emitter.comment(event.value.toCharArray(), 
-                                    0, event.value.length(),
-                                    publicId, systemId, lineNo, colNo);
+                                    0, event.value.length(), this);
             next = successor;
             break;
          case SAXEvent.ATTRIBUTE:
             context.emitter.addAttribute(event.uri, event.qName, event.lName,
-                                         event.value,
-                                         publicId, systemId, lineNo, colNo);
+                                         event.value, this);
             next = successor;
             break;
          default:
@@ -216,7 +211,7 @@ final public class CopyFactory extends FactoryBase
          SAXEvent event = (SAXEvent)context.ancestorStack.peek();
          if (event.type == SAXEvent.ELEMENT)
             context.emitter.endElement(event.uri, event.lName, event.qName,
-                                       publicId, systemId, lineNo, colNo);
+                                       this);
          return super.processEnd(context);
       }
    }

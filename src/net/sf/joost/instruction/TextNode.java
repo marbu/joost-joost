@@ -1,5 +1,5 @@
 /*
- * $Id: TextNode.java,v 2.1 2003/06/03 14:30:26 obecker Exp $
+ * $Id: TextNode.java,v 2.2 2004/10/30 11:23:52 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,7 +33,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Instances created by this factory represent text nodes in the 
  * transformation sheet
- * @version $Revision: 2.1 $ $Date: 2003/06/03 14:30:26 $
+ * @version $Revision: 2.2 $ $Date: 2004/10/30 11:23:52 $
  * @author Oliver Becker
  */
 
@@ -54,7 +54,8 @@ public class TextNode extends NodeBase
    public short process(Context context)
       throws SAXException
    {
-      context.emitter.characters(string.toCharArray(), 0, string.length());
+      context.emitter.characters(string.toCharArray(), 0, string.length(), 
+                                 this);
       return PR_CONTINUE;
    }
 
