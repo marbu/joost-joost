@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.70 2004/10/30 15:04:35 obecker Exp $ -->
+<!-- $Id: index.html,v 1.71 2004/11/02 19:24:25 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -75,14 +75,10 @@
             Project</a>
          </li>
          <li>
-            the JAXP 1.1 interfaces (also included in Java 1.4 or
-            downloadable from the Sun link above)
-         </li>
-         <li>
-            the <a target="_top"
-            href="http://jakarta.apache.org/commons/logging.html">Logging
+            optionally (see below) the <a target="_top"
+            href="http://jakarta.apache.org/commons/logging/">Logging
             Component</a> from Apache Jakarta Commons</li>
-         <li>and of course a Java platform, at least version 1.2</li>
+         <li>and of course a Java platform, at least version 1.4</li>
       </ul>
       <p>
       Run <em>Joost</em> with<br>
@@ -124,6 +120,10 @@
               net.sf.joost.emitter.StxEmitter</td>
         </tr>
         <tr>
+          <td valign="top"><strong><code>-nodecl</code></strong></td>
+          <td>don't include an XML declaration in the result</td>
+        </tr>
+        <tr>
           <td valign="top"><strong><code>-time</code></strong></td>
           <td>print timing information on standard error output</td>
         </tr>
@@ -134,6 +134,11 @@
         </tr>
       </table>
 
+      <p>If Commons Logging is available, <em>Joost</em> will log possible
+      runtime errors using its logger. You can check whether logging is
+      available or not using the <code>-help</code> or <code>-version</code>
+      command line option.</p>
+        
       <p><em>Joost</em> is able to pass its output to <a target="_top"
       href="http://xml.apache.org/fop/">FOP</a> for producing PDF output
       from a stream of XSLFO SAX events. To use this function you
