@@ -1,5 +1,5 @@
 /*
- * $Id: AssignFactory.java,v 2.5 2003/10/23 14:53:35 obecker Exp $
+ * $Id: AssignFactory.java,v 2.6 2004/01/10 16:34:18 zubow Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>assign</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.5 $ $Date: 2003/10/23 14:53:35 $
+ * @version $Revision: 2.6 $ $Date: 2004/01/10 16:34:18 $
  * @author Oliver Becker
  */
 
@@ -88,7 +88,7 @@ final public class AssignFactory extends FactoryBase
    /** Represents an instance of the <code>assign</code> element. */
    final public class Instance extends NodeBase
    {
-      private String varName, expName;
+      public String varName, expName;
       private Tree select;
 
       protected Instance(String qName, NodeBase parent, ParseContext context,

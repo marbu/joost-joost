@@ -1,5 +1,5 @@
 /*
- * $Id: DebugProcessor.java,v 1.7 2004/01/08 21:52:38 zubow Exp $
+ * $Id: DebugProcessor.java,v 1.8 2004/01/10 16:34:20 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -29,6 +29,7 @@ import net.sf.joost.stx.*;
 import net.sf.joost.instruction.TemplateFactory;
 import net.sf.joost.instruction.AbstractInstruction;
 import net.sf.joost.instruction.NodeBase;
+import net.sf.joost.instruction.AssignFactory;
 import net.sf.joost.trax.TransformerImpl;
 import net.sf.joost.Constants;
 import org.xml.sax.InputSource;
@@ -44,7 +45,7 @@ import java.util.Arrays;
 
 /**
  * Extends the {@link net.sf.joost.stx.Processor} with debug features.
- * @version $Revision: 1.7 $ $Date: 2004/01/08 21:52:38 $
+ * @version $Revision: 1.8 $ $Date: 2004/01/10 16:34:20 $
  * @author Zubow
  */
 public class DebugProcessor extends Processor {
@@ -103,7 +104,7 @@ public class DebugProcessor extends Processor {
 
 
     /**
-     * AZu - overriden method for debug purpose
+     * Overriden method for debug purpose
      */
     protected Emitter initializeEmitter(Context ctx, Parser parser) {
         log.info("init debug-processor");
@@ -138,20 +139,22 @@ public class DebugProcessor extends Processor {
         meta.saxEvent = event;
 
         // found end element
-        if ( inst instanceof NodeBase.End ) {
+        if (inst instanceof NodeBase.End) {
             tmgr.fireLeaveStylesheetNode(meta);
         } else {
             // no corresponding endElement
-            if ( inst.getNode().getNodeEnd() == null ) {
+            if (inst.getNode().getNodeEnd() == null) {
                 // remind this
                 atomicnode = true;
             }
             tmgr.fireEnterStylesheetNode(meta);
         }
+
+
         // process instruction
         ret = inst.process(getContext());
 
-        if (atomicnode && tmgr != null ) {
+        if (atomicnode && tmgr != null) {
             meta = new TraceMetaInfo();
             meta.inst = inst;
             meta.eventStack = getEventStack();
