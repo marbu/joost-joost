@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 1.13 2003/02/08 16:21:00 obecker Exp $
+ * $Id: PBufferFactory.java,v 1.14 2003/03/04 18:21:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.13 $ $Date: 2003/02/08 16:21:00 $
+ * @version $Revision: 1.14 $ $Date: 2003/03/04 18:21:37 $
  * @author Oliver Becker
  */
 
@@ -138,6 +138,9 @@ public class PBufferFactory extends FactoryBase
             return processStatus; // if the errorHandler returns
          }
 
+         // store current group
+         GroupBase prevGroup = context.currentGroup;
+
          // process stx:with-param
          super.process(emitter, eventStack, context, processStatus);
 
@@ -189,6 +192,9 @@ public class PBufferFactory extends FactoryBase
          // process stx:with-param after processing; clean up the
          // parameter stack
          super.process(emitter, eventStack, context, (short)0);
+
+         // restore current group
+         context.currentGroup = prevGroup;
 
          return processStatus;
       }
