@@ -1,0 +1,16 @@
+Limitations of Joost:
+
+dynamically generated names for elements, attributes, and PIs are not 
+checked for XML correctness
+
+STXPath Lexer accepts only ASCII characters within identifiers
+
+stx:process-document
+- if href evaluates to a node then the base of the *current* input stream
+  is used, not the base of the node. This will give different results only
+  if the node comes from another document with a different base URI, i.e.
+  the node must have been stored in a variable.
+- URIResolver (TrAX) will not be used
+
+stx:result-document
+- no check for multiple openings of the same file (leads to invalid contents)
