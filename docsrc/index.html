@@ -117,7 +117,7 @@
       <li>stx:process-children (group?)</li>
       <li>stx:process-self (group?)</li>
       <li>stx:process-attributes (group?)</li>
-      <li>stx:process-document (href, group?)</li>
+      <li>stx:process-document (href, base?, group?)</li>
       <li>stx:buffer (name)</li>
       <li>stx:result-buffer (name, clear?)</li>
       <li>stx:process-buffer (name, group?)</li>
@@ -138,14 +138,9 @@
       <li>stx:variable (name, select?, keep-value?) for local and group
           variables</li>
       <li>stx:assign (name, select)</li>
-      <li>stx:param (name, select?)</li>
+      <li>stx:param (name, select?, required?)</li>
       <li>stx:with-param (name, select?)</li>
       </ul>
-      <p>
-      The <code>name</code> and <code>namespace</code> attributes of
-      <code>element-start</code>, <code>element-end</code>, and
-      <code>attribute</code>, as well as all attributes of literal
-      result elements may contain attribute value templates.
       <p>
       Supported STXPath functions
       <ul>

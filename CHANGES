@@ -1,3 +1,7 @@
+Changes since 20021223
+- added 'required' attribute to stx:param
+- added 'base' attribute to stx:process-document
+
 Changes since 20021128
 - added 'markup' attribute to stx:text
 - removed strict-mode (stx:transform, stx:group)
