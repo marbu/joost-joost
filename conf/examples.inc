@@ -9,6 +9,7 @@ group-fsm.*
 html2docbook.*
 java*
 join.*
+magic*
 order*
 play*
 rename.*
