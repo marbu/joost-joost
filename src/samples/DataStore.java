@@ -1,5 +1,5 @@
 /*
- * $Id: DataStore.java,v 1.1 2003/06/30 13:04:08 obecker Exp $
+ * $Id: DataStore.java,v 1.2 2003/06/30 19:29:27 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -55,7 +55,7 @@ import javax.xml.transform.stream.StreamSource;
  * <li>a proper STX sheet {@link #STX_SHEET}, contained as a String object,
  *     as well as a dummy XML source {@link #XML_DUMMY}
  * </ul>
- * @version $Revision: 1.1 $ $Date: 2003/06/30 13:04:08 $
+ * @version $Revision: 1.2 $ $Date: 2003/06/30 19:29:27 $
  * @author Oliver Becker
  */
 
@@ -179,16 +179,14 @@ public class DataStore
       "        <stx:text>&#xA;</stx:text>" +
       //       generate XML for the objects
       "        <teacher>" +
+      "          <stx:if test='d:isHead($d)'>" +
+      "            <stx:attribute name='headOf' select='d:getHeadOf($d)' />" + 
+      "          </stx:if>" +
       "          <given><stx:value-of select='d:getGiven($d)' /></given>" +
       "          <name><stx:value-of select='d:getName($d)' /></name>" +
       "          <teaches>" +
       "            <stx:value-of select='d:getSubject($d)' />" +
       "          </teaches>" +
-      "          <stx:if test='d:isHead($d)'>" +
-      "             <isHeadOf>" + 
-      "               <stx:value-of select='d:getHeadOf($d)' />" + 
-      "             </isHeadOf>" +
-      "          </stx:if>" +
       "        </teacher>" +
       "      </stx:while>" +
       "      <stx:text>&#xA;</stx:text>" +
@@ -209,11 +207,11 @@ Expected Result:
 <?xml version="1.0" encoding="UTF-8"?>
 <staff>
 <teacher><given>Sibyll</given><name>Trelawney</name><teaches>Divination</teaches></teacher>
-<teacher><given>Filius</given><name>Flitwick</name><teaches>Charms</teaches><isHeadOf>Ravenclaw</isHeadOf></teacher>
-<teacher><given>Minerva</given><name>McGonagall</name><teaches>Transfiguration</teaches><isHeadOf>Gryffindor</isHeadOf></teacher>
+<teacher headOf="Ravenclaw"><given>Filius</given><name>Flitwick</name><teaches>Charms</teaches></teacher>
+<teacher headOf="Gryffindor"><given>Minerva</given><name>McGonagall</name><teaches>Transfiguration</teaches></teacher>
 <teacher><given>Rolanda</given><name>Hooch</name><teaches>Flying</teaches></teacher>
-<teacher><given>Pomona</given><name>Sprout</name><teaches>Herbology</teaches><isHeadOf>Hufflepuff</isHeadOf></teacher>
-<teacher><given>Severus</given><name>Snape</name><teaches>Potions</teaches><isHeadOf>Slytherin</isHeadOf></teacher>
+<teacher headOf="Hufflepuff"><given>Pomona</given><name>Sprout</name><teaches>Herbology</teaches></teacher>
+<teacher headOf="Slytherin"><given>Severus</given><name>Snape</name><teaches>Potions</teaches></teacher>
 </staff>
 */
 
