@@ -1,0 +1,4 @@
+Open questions:
+- Replace the JLex/CUP part by ANTLR?
+- Replace net.sf.joost.emitter.StreamEmitter by an other already
+  developed class (e.g. gnu.xml.util.XMLWriter or similar)?
