@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 1.3 2002/11/04 14:55:57 obecker Exp $
+ * $Id: TransformFactory.java,v 1.4 2002/11/06 16:45:20 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Emitter;
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 1.3 $ $Date: 2002/11/04 14:55:57 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/06 16:45:20 $
  * @author Oliver Becker
  */
 
@@ -104,15 +104,18 @@ public class TransformFactory extends FactoryBase
    /** Represents an instance of the <code>transform</code> element. */
    final public class Instance extends GroupBase
    {
-      /** the stx:options object */
+      /** the <code>stx:options</code> object */
       public OptionsFactory.Instance options;
 
+      /** names of global parameters (<code>stx:param</code>) */
+      public Hashtable globalParams;
 
       public Instance(String qName, Locator locator, short mode)
       {
          super(qName, locator, mode, null /* parent group */);
          // the only stx node with at least an empty vector of children
          children = new Vector(); 
+         globalParams = new Hashtable();
       }
 
 
@@ -136,8 +139,7 @@ public class TransformFactory extends FactoryBase
          }
          else if (node instanceof TemplateFactory.Instance ||
                   node instanceof GroupFactory.Instance ||
-                  node instanceof BufferFactory.Instance ||
-                  node instanceof VariableFactory.Instance)
+                  node instanceof VariableBase) // param, variable, buffer
             super.append(node);
          else
             throw new SAXParseException("`" + node.qName + 

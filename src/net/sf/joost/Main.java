@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.3 2002/09/20 12:51:09 obecker Exp $
+ * $Id: Main.java,v 1.4 2002/11/06 16:45:19 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,17 +32,17 @@ import javax.xml.transform.SourceLocator;
 import javax.xml.transform.TransformerException;
 
 import net.sf.joost.stx.Processor;
-import net.sf.joost.emitter.StreamEmitter;
 import net.sf.joost.emitter.FOPEmitter;
+import net.sf.joost.emitter.StreamEmitter;
 
 // log4j classes
-import org.apache.log4j.Logger;
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.3 $ $Date: 2002/09/20 12:51:09 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/06 16:45:19 $
  * @author Oliver Becker
  */
 public class Main
@@ -173,6 +173,9 @@ public class Main
             }
          }
          // command line argument doesn't have a leading '-'
+         else if (args[i].indexOf('=') != -1) {
+            // parameter assignment, skip here, process later
+         }
          else if (xmlFile == null) {
             xmlFile = args[i];
             continue;
@@ -235,6 +238,15 @@ printHelp ? 0 : 1);
       try {
          // Create a new STX Processor object
          Processor processor = new Processor(new InputSource(stxFile));
+
+         // Set global parameters
+         int index;
+         for (int i=0; i<args.length; i++)
+            if (args[i].charAt(0) != '-' && 
+                (index = args[i].indexOf('=')) != -1) {
+               processor.setParameter(args[i].substring(0,index),
+                                      args[i].substring(index+1));
+            }
 
          // This processor re-uses its XMLReader for parsing the input xmlFile.
          // For a real XMLFilter usage you have to call 

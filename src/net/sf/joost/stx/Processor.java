@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.14 2002/11/06 14:26:29 obecker Exp $
+ * $Id: Processor.java,v 1.15 2002/11/06 16:45:20 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -43,6 +43,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 import javax.xml.transform.ErrorListener;
 
 import java.util.Arrays;
+//  import java.util.Enumeration;
 import java.util.EmptyStackException;
 import java.util.Hashtable;
 import java.util.Stack;
@@ -61,7 +62,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.14 $ $Date: 2002/11/06 14:26:29 $
+ * @version $Revision: 1.15 $ $Date: 2002/11/06 16:45:20 $
  * @author Oliver Becker
  */
 
@@ -388,13 +389,9 @@ public class Processor extends XMLFilterImpl
 
       // array of global templates
       Vector tempVec = transformNode.getGlobalTemplates();
-      globalTemplates = 
-         new TemplateFactory.Instance[tempVec.size()];
+      globalTemplates = new TemplateFactory.Instance[tempVec.size()];
       tempVec.toArray(globalTemplates);
       Arrays.sort(globalTemplates);
-
-      // initialize all group stx:variables
-      transformNode.initGroupVariables(emitter, eventStack, context);
    }
 
 
@@ -477,6 +474,40 @@ public class Processor extends XMLFilterImpl
    public String getOutputEncoding()
    {
       return outputEncoding;
+   }
+
+
+   /** 
+    * Sets a global parameter of the STX stylesheet
+    * @param name the (expanded) parameter name
+    * @param value the parameter value as a string
+    */
+   public void setParameter(String name, String value)
+   {
+      if (!name.startsWith("{"))
+         name = "{}" + name;
+      transformNode.globalParams.put(name, new Value(value));
+   }
+
+   /**
+    * Returns a global parameter of the STX stylesheet
+    * @param name the (expanded) parameter name
+    * @return the parameter value or <code>null</code> if this parameter
+    *    isn't present
+    */
+   public Object getParameter(String name)
+   {
+      if (!name.startsWith("{"))
+         name = "{}" + name;
+      return transformNode.globalParams.get(name);
+   }
+
+   /**
+    * Clear all preset parameters
+    */
+   public void clearParameters()
+   {
+      transformNode.globalParams.clear();
    }
 
 
@@ -785,6 +816,16 @@ public class Processor extends XMLFilterImpl
 
       // perform this only once (in case of a stx:process-self statement)
       if (eventStack.empty()) {
+         // initialize all group stx:variables
+         transformNode.initGroupVariables(emitter, eventStack, context);
+//           if (!transformNode.globalParams.isEmpty()) {
+//              String msg = "Supernumerous parameters specified: ";
+//              for (Enumeration e = transformNode.globalParams.keys();
+//                   e.hasMoreElements();)
+//                 msg += e.nextElement() + " ";
+//              context.errorHandler.warning(msg, null);
+//           }
+
          eventStack.push(SAXEvent.newRoot());
          emitter.startDocument();
       }

@@ -1,3 +1,7 @@
+Changes since 20021104
+- added support for global parameters
+- Bugfixes: 634388, 634440
+
 Changes since 20021018
 - implemented the "attributes" attribute of stx:copy
 - new functions: 

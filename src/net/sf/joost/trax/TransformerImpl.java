@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.7 2002/10/21 13:35:29 obecker Exp $
+ * $Id: TransformerImpl.java,v 1.8 2002/11/06 16:45:20 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -389,31 +389,28 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
     }
 
     /**
-     * Feature is not supported.
-     *
+     * Clears all parameters
      */
     public void clearParameters() {
-        // not supported
+        processor.clearParameters();
     }
 
     /**
-     * Setter for parameter.
-     * Feature is not supported.
+     * Setter for parameters.
      * @param name The key of the parameter.
      * @param value The value of the parameter.
      */
     public void setParameter(String name, Object value) {
-        // not supported
+        processor.setParameter(name, value.toString());
     }
 
     /**
-     * Getter for parameter.
-     * Feature is not supported.
+     * Getter for parameters.
      * @param name The key-value of the parameter.
      * @return An <code>Object</code> according to the key-value or null.
      */
     public Object getParameter(String name) {
-        return null;
+        return processor.getParameter(name);
     }
 
     /**
