@@ -1,5 +1,5 @@
 /*
- * $Id: DebugProcessor.java,v 1.5 2003/11/01 14:49:12 zubow Exp $
+ * $Id: DebugProcessor.java,v 1.6 2003/12/28 12:32:40 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -42,7 +42,7 @@ import java.util.Arrays;
 
 /**
  * Extends the {@link net.sf.joost.stx.Processor} with debug features.
- * @version $Revision: 1.5 $ $Date: 2003/11/01 14:49:12 $
+ * @version $Revision: 1.6 $ $Date: 2003/12/28 12:32:40 $
  * @author Zubow
  */
 public class DebugProcessor extends Processor {
@@ -187,9 +187,11 @@ public class DebugProcessor extends Processor {
         meta.innerProcessStack = getInnerProcessStack();
         meta.context = getContext();
 
+        // process event
+        super.startDocument();
+
         // fire startprocessing event to tracelistener
         this.tmgr.fireStartProcessingEvent(meta);
-        super.startDocument();
     }
 
     /**
@@ -202,9 +204,11 @@ public class DebugProcessor extends Processor {
         meta.innerProcessStack = getInnerProcessStack();
         meta.context = getContext();
 
+        // process event
+        super.endDocument();
+
         // fire endprocessing event to tracelistener
         this.tmgr.fireEndProcessingEvent(meta);
-        super.endDocument();
     }
 
     /**
@@ -224,8 +228,11 @@ public class DebugProcessor extends Processor {
         meta.context = getContext();
         meta.lastElement = getLastElement();
 
-        this.tmgr.fireStartElementEvent(meta);
+        // process event
         super.startElement(uri, lName, qName, attrs);
+
+        // inform debugger
+        this.tmgr.fireStartElementEvent(meta);
     }
 
     /**
@@ -244,8 +251,11 @@ public class DebugProcessor extends Processor {
         meta.context = getContext();
         meta.lastElement = getLastElement();
 
-        this.tmgr.fireEndElementEvent(meta);
+        // process event
         super.endElement(uri, lName, qName);
+
+        // inform debugger
+        this.tmgr.fireEndElementEvent(meta);
     }
 
 
@@ -259,8 +269,11 @@ public class DebugProcessor extends Processor {
         meta.saxEvent = saxevent;
         meta.context = getContext();
 
-        this.tmgr.fireTextEvent(meta);
+        // process event
         super.characters(ch, start, length);
+
+        // inform debugger
+        this.tmgr.fireTextEvent(meta);
     }
 
 
@@ -273,8 +286,11 @@ public class DebugProcessor extends Processor {
         meta.saxEvent = saxevent;
         meta.context = getContext();
 
-        this.tmgr.firePIEvent(meta);
+        // process event
         super.processingInstruction(target, data);
+
+        // inform debugger
+        this.tmgr.firePIEvent(meta);
     }
 
     /**
@@ -286,8 +302,11 @@ public class DebugProcessor extends Processor {
         meta.saxEvent = saxevent;
         meta.context = getContext();
 
-        this.tmgr.fireMappingEvent(meta);
+        // process event
         super.startPrefixMapping(prefix, uri);
+
+        // inform debugger
+        this.tmgr.fireMappingEvent(meta);
     }
 
     /**
@@ -300,8 +319,11 @@ public class DebugProcessor extends Processor {
         meta.saxEvent = saxevent;
         meta.context = getContext();
 
-        this.tmgr.fireCommentEvent(meta);
+        // process event
         super.comment(ch, start, length);
+
+        // inform debugger
+        this.tmgr.fireCommentEvent(meta);
     }
 
     /**
@@ -325,15 +347,21 @@ public class DebugProcessor extends Processor {
      * overloaded method (joost specific) for debug information
      */
     public void startInnerProcessing() throws SAXException {
-        this.tmgr.fireStartInnerProcessing();
+        // process event
         super.startInnerProcessing();
+
+        // inform debugger
+        this.tmgr.fireStartInnerProcessing();
     }
 
     /**
      * overloaded method (joost specific) for debug information
      */
     public void endInnerProcessing() throws SAXException {
-        this.tmgr.fireEndInnerProcessing();
+        // process event
         super.endInnerProcessing();
+
+        // inform debugger
+        this.tmgr.fireEndInnerProcessing();
     }
 }
