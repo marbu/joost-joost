@@ -1,5 +1,5 @@
 /*
- * $Id: CommentFactory.java,v 1.2 2002/11/21 16:41:08 obecker Exp $
+ * $Id: CommentFactory.java,v 1.3 2002/11/22 16:26:59 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.emitter.StringEmitter;
 /** 
  * Factory for <code>comment</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2002/11/21 16:41:08 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/22 16:26:59 $
  * @author Oliver Becker
  */
 
@@ -65,8 +65,8 @@ public class CommentFactory extends FactoryBase
    /** Represents an instance of the <code>comment</code> element. */
    public class Instance extends NodeBase
    {
-      StringEmitter strEmitter;
-      StringBuffer buffer;
+      private StringEmitter strEmitter;
+      private StringBuffer buffer;
 
       public Instance(String qName, Locator locator)
       {
@@ -102,6 +102,7 @@ public class CommentFactory extends FactoryBase
                   publicId, systemId, lineNo, colNo);
                return processStatus; // if the errorHandler returns
             }
+            buffer.setLength(0);
             emitter.pushEmitter(strEmitter);
          }
 
@@ -111,14 +112,22 @@ public class CommentFactory extends FactoryBase
          if ((processStatus & ST_PROCESSING) != 0) {
             emitter.popEmitter();
 
-            if (buffer.length() != 0) {
+            int index = buffer.length();
+            if (index != 0) {
                // does the new comment start with '-'?
                if (buffer.charAt(0) == '-')
                   buffer.insert(0, ' ');
+
                // are there any "--" in the inner of the new comment?
-               int index;
-               while ((index = buffer.indexOf("--")) != -1)
+//                // this compiles only in JDK1.4 or above
+//                int index;
+//                while ((index = buffer.indexOf("--")) != -1)
+//                   buffer.insert(index+1, ' ');
+               // 1.0 solution:
+               String str = buffer.toString();
+               while ((index = str.lastIndexOf("--", --index)) != -1) 
                   buffer.insert(index+1, ' ');
+
                // does the new comment end with '-'?
                if (buffer.charAt(buffer.length()-1) == '-')
                   buffer.append(' ');
