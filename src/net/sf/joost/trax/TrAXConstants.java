@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXConstants.java,v 1.9 2003/05/26 11:55:55 obecker Exp $
+ * $Id: TrAXConstants.java,v 1.10 2003/06/02 11:32:55 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -29,7 +29,7 @@ import net.sf.joost.Constants;
 
 /**
  * Common interface for TrAX related constants.
- * @version $Revision: 1.9 $ $Date: 2003/05/26 11:55:55 $
+ * @version $Revision: 1.10 $ $Date: 2003/06/02 11:32:55 $
  * @author Anatolij Zubow
  */
 public interface TrAXConstants extends Constants {
@@ -37,18 +37,25 @@ public interface TrAXConstants extends Constants {
     /**
      * Internally used for the identity transformation.
      */
-    static final String IDENTITY_TRANSFORM =
+    public final static String IDENTITY_TRANSFORM =
         "<?xml version='1.0'?>" +
         "<stx:transform xmlns:stx='" + STX_NS + "'" +
         " version='1.0' pass-through='all' />";
 
 
-    /** 
-     * Key for the Joost property 
+    /**
+     * Key for the Joost property
      * {@link net.sf.joost.TransformerHandlerResolver}
      * @see javax.xml.transform.TransformerFactory#setAttribute
      */
-    public static String KEY_TH_RESOLVER = 
+    public static String KEY_TH_RESOLVER =
         "http://joost.sf.net/attributes/transformer-handler-resolver";
 
+    /**
+     * Key for the Joost property
+     * {@link net.sf.joost.trax.TransformerFactoryImpl#debugmode}
+     * @see javax.xml.transform.TransformerFactory#setAttribute
+     */
+    public final static String DEBUG_FEATURE =
+        "http://joost.sf.net/attributes/debug-feature";
 }
