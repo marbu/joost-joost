@@ -1,5 +1,5 @@
 /*
- * $Id: IncludeFactory.java,v 2.8 2004/12/17 18:25:51 obecker Exp $
+ * $Id: IncludeFactory.java,v 2.9 2004/12/27 18:51:07 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -47,7 +47,7 @@ import org.xml.sax.XMLReader;
 /** 
  * Factory for <code>include</code> elements, which will be replaced by
  * groups for the included transformation sheet
- * @version $Revision: 2.8 $ $Date: 2004/12/17 18:25:51 $
+ * @version $Revision: 2.9 $ $Date: 2004/12/27 18:51:07 $
  * @author Oliver Becker
  */
 
@@ -84,10 +84,7 @@ final public class IncludeFactory extends FactoryBase
 
       checkAttributes(qName, attrs, attrNames, context);
 
-      Parser stxParser = new Parser(context.allowExternalFunctions);
-      stxParser.setErrorHandler(context.errorHandler);
-      stxParser.setURIResolver(context.uriResolver);
-      stxParser.setParserListener(context.parserListener);
+      Parser stxParser = new Parser(context);
       stxParser.includingGroup = (GroupBase)parent;
 
       XMLReader reader = null;
@@ -109,7 +106,7 @@ final public class IncludeFactory extends FactoryBase
          if (reader == null)
             reader = Processor.getXMLReader();
          reader.setContentHandler(stxParser);
-         reader.setErrorHandler(context.errorHandler);
+         reader.setErrorHandler(context.getErrorHandler());
          reader.parse(iSource);
       }
       catch (java.io.IOException ex) {
