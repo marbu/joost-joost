@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.11 2003/08/28 16:12:44 obecker Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.12 2003/09/03 15:07:03 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -29,22 +29,27 @@ import net.sf.joost.TransformerHandlerResolver;
 import net.sf.joost.stx.Processor;
 
 //JAXP
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLFilter;
 import org.xml.sax.XMLReader;
 
-import javax.xml.transform.*;
+import javax.xml.transform.ErrorListener;
+import javax.xml.transform.Source;
+import javax.xml.transform.Templates;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.URIResolver;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.sax.*;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TemplatesHandler;
+import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.StringReader;
-import java.util.Hashtable;
 
 
 /**
@@ -260,12 +265,12 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
                 log.debug("get a Templates-instance from Source " +
                           source.getSystemId());
             try {
-                SAXSource saxSource = getSAXSource(source, true);
+                SAXSource saxSource = TrAXHelper.getSAXSource(source, errorListener);
                 Templates template = 
                     new TemplatesImpl(saxSource.getXMLReader(),
                                       saxSource.getInputSource(), this);
                 return template;
-            } catch (TransformerConfigurationException tE) {
+            } catch (TransformerException tE) {
                 defaultErrorListener.fatalError(tE);
                 return null;
             }
@@ -305,71 +310,10 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
             log.debug("get a Transformer-instance");
             Templates templates     = newTemplates(source);
             Transformer transformer = templates.newTransformer();
-            //set the URI-Resolver
-            if (uriResolver != null) {
-                transformer.setURIResolver(uriResolver);
-            }
             return(transformer);
         }
     }
 
-
-    //*************************************************************************
-    // Helper methods
-    //*************************************************************************
-
-    /**
-    * Converts a supplied Source to a SAXSource, DOMSource or StreamSource.
-    * @param source The supplied input source
-    * @param isStyleSheet true if the source is a stylesheet
-    * @return A <code>SAXSource</code> object, or <code>null</code>
-    */
-    private SAXSource getSAXSource(Source source, boolean isStyleSheet)
-        throws TransformerConfigurationException{
-
-        log.debug("Convert a supplied Source to a SAXSource, DOMSource " +
-            "or StreamSource");
-        if (source instanceof SAXSource) {
-            log.debug("Source is a SAXSource");
-            return (SAXSource)source;
-        }
-        if (source instanceof DOMSource) {
-            log.debug("Source is a DOMSource, so using DOMDriver to " +
-                "emulate a SAXSource");
-            InputSource is = new InputSource("dummy");
-            Node startNode = ((DOMSource)source).getNode();
-            Document doc;
-
-            if (startNode instanceof Document) {
-                doc = (Document)startNode;
-            } else {
-                doc = startNode.getOwnerDocument();
-            }
-            DOMDriver driver = new DOMDriver();
-            driver.setDocument(doc);
-            is.setSystemId(source.getSystemId());
-            driver.setSystemId(source.getSystemId());
-            return new SAXSource(driver, is);
-        }
-        if (source instanceof StreamSource) {
-
-            log.debug("Source is a StreamSource");
-            InputSource isource =
-                TrAXHelper.getInputSourceForStreamSources(source, errorListener);
-            return new SAXSource(isource);
-        } else {
-
-            String errMsg = "Unknown type of source";
-
-            IllegalArgumentException iE =
-                    new IllegalArgumentException(errMsg);
-            TransformerConfigurationException tE =
-                    new TransformerConfigurationException(iE.getMessage(), iE);
-
-            defaultErrorListener.fatalError(tE);
-            return null;
-        }
-    }
 
 
     //*************************************************************************

@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXHelper.java,v 1.8 2003/07/27 10:37:41 zubow Exp $
+ * $Id: TrAXHelper.java,v 1.9 2003/09/03 15:07:02 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,6 +26,9 @@
 package net.sf.joost.trax;
 
 //JAXP
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.ContentHandler;
 
@@ -33,9 +36,11 @@ import javax.xml.transform.*;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.stream.StreamSource;
+import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.net.URL;
@@ -52,7 +57,7 @@ import net.sf.joost.stx.Processor;
  * This class provides TrAX
  * @author Zubow
  */
-public class TrAXHelper {
+public class TrAXHelper implements TrAXConstants {
 
 
     // Define a static logger variable so that it references the
@@ -115,20 +120,20 @@ public class TrAXHelper {
             }
             //setting systemId
             input.setSystemId(systemId);
-        } catch (NullPointerException nE) {
-            //catching NullPointerException
-            if(errorListener != null) {
-                try {
-                    errorListener.fatalError(
-                            new TransformerConfigurationException(nE));
-                    return null;
-                } catch( TransformerException e2) {
-                    log.debug(nE);
-                    throw new TransformerConfigurationException(nE.getMessage());
-                }
-            }
-            log.debug(nE);
-            throw new TransformerConfigurationException(nE.getMessage());
+//          } catch (NullPointerException nE) {
+//              //catching NullPointerException
+//              if(errorListener != null) {
+//                  try {
+//                      errorListener.fatalError(
+//                              new TransformerConfigurationException(nE));
+//                      return null;
+//                  } catch( TransformerException e2) {
+//                      log.debug(nE);
+//                      throw new TransformerConfigurationException(nE.getMessage());
+//                  }
+//              }
+//              log.debug(nE);
+//              throw new TransformerConfigurationException(nE.getMessage());
         } catch (SecurityException sE) {
             //catching SecurityException
             if(errorListener != null) {
@@ -143,10 +148,8 @@ public class TrAXHelper {
             }
             log.debug(sE);
             throw new TransformerConfigurationException(sE.getMessage());
-        } finally {
-            //always return something, maybe null
-            return(input);
         }
+        return(input);
     }
 
 
@@ -239,5 +242,65 @@ public class TrAXHelper {
             throw new TransformerException(pE);
         }
         return null;
+    }
+
+
+    /**
+    * Converts a supplied <code>Source</code> to a <code>SAXSource</code>.
+    * @param source The supplied input source
+    * @param errorListener an ErrorListener object
+    * @return a <code>SAXSource</code>
+    */
+    public static SAXSource getSAXSource(Source source, ErrorListener errorListener)
+        throws TransformerException {
+
+        if (DEBUG)
+            log.debug("getting a SAXSource from a Source");
+        //SAXSource
+        if (source instanceof SAXSource) {
+            if (DEBUG)
+                log.debug("source is an instance of SAXSource, so simple return");
+            return (SAXSource)source;
+        }
+        //DOMSource
+        if (source instanceof DOMSource) {
+            if (DEBUG)
+                log.debug("source is an instance of DOMSource");
+            InputSource is = new InputSource();
+            Node startNode = ((DOMSource)source).getNode();
+            Document doc;
+            if (startNode instanceof Document) {
+                doc = (Document)startNode;
+            } else {
+                doc = startNode.getOwnerDocument();
+            }
+            if (DEBUG)
+                log.debug("using DOMDriver");
+            DOMDriver driver = new DOMDriver();
+            driver.setDocument(doc);
+            is.setSystemId(source.getSystemId());
+            driver.setSystemId(source.getSystemId());
+            return new SAXSource(driver, is);
+        }
+        //StreamSource
+        if (source instanceof StreamSource) {
+            if (DEBUG)
+                log.debug("source is an instance of StreamSource");
+            InputSource isource =
+                    getInputSourceForStreamSources(source, errorListener);
+            return new SAXSource(isource);
+        } else {
+            String errMsg = "Unknown type of source";
+            log.error(errMsg);
+            IllegalArgumentException iE =
+                    new IllegalArgumentException(errMsg);
+            TransformerConfigurationException tE =
+                    new TransformerConfigurationException(iE.getMessage(), iE);
+            if (errorListener != null)
+                errorListener.error(tE);
+            else
+                throw tE;
+            return null;
+        }
     }
 }

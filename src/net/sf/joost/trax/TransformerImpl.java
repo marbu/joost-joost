@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.18 2003/07/27 10:40:18 zubow Exp $
+ * $Id: TransformerImpl.java,v 1.19 2003/09/03 15:07:03 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -31,20 +31,22 @@ import net.sf.joost.stx.Processor;
 import net.sf.joost.trace.TraceManager;
 
 //JAXP
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-import javax.xml.transform.*;
+import javax.xml.transform.ErrorListener;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -166,7 +168,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
                 }
 
                 // construct from source a SAXSource
-                saxSource = getSAXSource(xmlSource, true);
+                saxSource = TrAXHelper.getSAXSource(xmlSource, errorListener);
 
                 InputSource isource = saxSource.getInputSource();
 
@@ -275,56 +277,6 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
     }
 
     /**
-    * Converts a supplied <code>Source</code> to a <code>SAXSource</code>.
-    * @param source The supplied input source
-    * @param isStyleSheet true if the source is a stylesheet
-    * @return a <code>SAXSource</code>
-    */
-    private SAXSource getSAXSource(Source source, boolean isStyleSheet)
-        throws TransformerConfigurationException {
-
-        if (DEBUG)
-            log.debug("getting a SAXSource from a Source");
-        //SAXSource
-        if (source instanceof SAXSource) {
-            if (DEBUG)
-                log.debug("source is an instance of SAXSource, so simple return");
-            return (SAXSource)source;
-        }
-        //DOMSource
-        if (source instanceof DOMSource) {
-            if (DEBUG)
-                log.debug("source is an instance of DOMSource");
-            InputSource is = new InputSource("dummy");
-            Node startNode = ((DOMSource)source).getNode();
-            Document doc;
-            if (startNode instanceof Document) {
-                doc = (Document)startNode;
-            } else {
-                doc = startNode.getOwnerDocument();
-            }
-            if (DEBUG)
-                log.debug("using DOMDriver");
-            DOMDriver driver = new DOMDriver();
-            driver.setDocument(doc);
-            is.setSystemId(source.getSystemId());
-            driver.setSystemId(source.getSystemId());
-            return new SAXSource(driver, is);
-        }
-        //StreamSource
-        if (source instanceof StreamSource) {
-            if (DEBUG)
-                log.debug("source is an instance of StreamSource");
-            InputSource isource =
-                    TrAXHelper.getInputSourceForStreamSources(source, errorListener);
-            return new SAXSource(isource);
-        } else {
-            log.error("Unknown type of source");
-            throw new IllegalArgumentException("Unknown type of source");
-        }
-    }
-
-    /**
      * Getter for an output property.
      * @param name The key of the output property.
      * @return The value for that property, <code>null</code> if not set.
@@ -424,6 +376,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
     public void setURIResolver(URIResolver resolver) {
         synchronized (reentryGuard) {
             uriRes = resolver;
+            processor.setURIResolver(resolver);
         }
     }
 
