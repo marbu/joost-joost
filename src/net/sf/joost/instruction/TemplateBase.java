@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateBase.java,v 2.5 2004/01/07 10:03:39 obecker Exp $
+ * $Id: TemplateBase.java,v 2.6 2004/09/29 06:13:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -34,7 +34,7 @@ import net.sf.joost.stx.ParseContext;
 /**
  * Common base class for {@link TemplateFactory.Instance} and
  * {@link ProcedureFactory.Instance}.
- * @version $Revision: 2.5 $ $Date: 2004/01/07 10:03:39 $
+ * @version $Revision: 2.6 $ $Date: 2004/09/29 06:13:03 $
  * @author Oliver Becker
  */
 
@@ -93,7 +93,7 @@ public abstract class TemplateBase extends NodeBase
       throws SAXException
    {
       if (newScope)
-         parentGroup.exitRecursionLevel();
+         parentGroup.exitRecursionLevel(context);
       return PR_CONTINUE;
    }
 }

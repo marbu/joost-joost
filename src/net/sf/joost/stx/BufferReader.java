@@ -1,5 +1,5 @@
 /*
- * $Id: BufferReader.java,v 1.2 2004/09/19 13:45:08 obecker Exp $
+ * $Id: BufferReader.java,v 1.3 2004/09/29 06:12:21 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,6 +24,13 @@
 
 package net.sf.joost.stx;
 
+import java.util.Hashtable;
+import java.util.Stack;
+
+import net.sf.joost.Constants;
+import net.sf.joost.emitter.BufferEmitter;
+import net.sf.joost.instruction.GroupBase;
+
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
 import org.xml.sax.EntityResolver;
@@ -35,16 +42,10 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 
-import java.util.Hashtable;
-
-import net.sf.joost.Constants;
-import net.sf.joost.emitter.BufferEmitter;
-import net.sf.joost.instruction.GroupBase;
-
 
 /**
  * An XMLReader object that uses the events from a buffer.
- * @version $Revision: 1.2 $ $Date: 2004/09/19 13:45:08 $
+ * @version $Revision: 1.3 $ $Date: 2004/09/29 06:12:21 $
  * @author Oliver Becker
  */
 
@@ -82,7 +83,8 @@ public class BufferReader implements XMLReader, Constants
       if (buffer == null) {
          GroupBase group = context.currentGroup;
          while (buffer == null && group != null) {
-            buffer = ((Hashtable)group.groupVars.peek()).get(bufExpName);
+            buffer = ((Hashtable)((Stack)context.groupVars.get(group))
+                                         .peek()).get(bufExpName);
             group = group.parentGroup;
          }
       }
@@ -273,6 +275,3 @@ public class BufferReader implements XMLReader, Constants
       }
    }
 }
-
-
-
