@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 1.8 2003/02/04 16:16:21 obecker Exp $
+ * $Id: NodeBase.java,v 1.9 2003/02/23 13:45:39 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,13 +24,12 @@
 
 package net.sf.joost.instruction;
 
+import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.Locator;
 
-import java.util.Vector;
 import java.util.Stack;
-import java.util.Hashtable;
+import java.util.Vector;
 
 import net.sf.joost.Constants;
 import net.sf.joost.stx.Context;
@@ -39,7 +38,7 @@ import net.sf.joost.stx.Emitter;
 
 /**
  * Abstract base class for all instances of nodes in a STX stylesheet.
- * @version $Revision: 1.8 $ $Date: 2003/02/04 16:16:21 $
+ * @version $Revision: 1.9 $ $Date: 2003/02/23 13:45:39 $
  * @author Oliver Becker
  */
 public abstract class NodeBase implements Constants
@@ -172,10 +171,8 @@ public abstract class NodeBase implements Constants
                            Context context, short processStatus)
       throws SAXException
    {
-//        System.err.println(this + ": " +
-//                           start + " / " + childrenProcessed);
-
-//        log4j.debug("process");
+      if (log4j.isDebugEnabled())
+         log4j.debug(this + ": " + processStatus);
 
       short newStatus = processStatus;
       if (children != null) {
@@ -190,8 +187,6 @@ public abstract class NodeBase implements Constants
          }
 
          int size = children.size();
-//           log4j.debug("children: " + size);
-//           log4j.debug("localFieldStack size: " + localFieldStack.size());
 
          for (int i=0; i<size; i++) {
             NodeBase node = (NodeBase)children.elementAt(i);
@@ -200,13 +195,14 @@ public abstract class NodeBase implements Constants
             if (processNode == null) {
                newStatus = node.process(emitter, eventStack, context,
                                         newStatus);
-               if ((newStatus & ST_PROCESSING) == 0) {
+               if ((newStatus & ST_PROCESSING) == 0) { // suspend processing
                   processNode = node; // store node
                   break; // for
                }
             }
          }
-         if ((newStatus & ST_PROCESSING) != 0) { // processing completed
+         if ((newStatus & ST_PROCESSING) != 0 || // processing completed
+             newStatus == 0) {                   // special case for stx:choose
             // remove local declared variables
             Object[] objs = scopedVariables.toArray();
             for (int i=0; i<objs.length; i++)
