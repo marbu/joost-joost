@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.14 2003/02/21 11:43:36 obecker Exp $
+ * $Id: Emitter.java,v 1.15 2003/03/13 10:58:40 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.emitter.StxEmitter;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.14 $ $Date: 2003/02/21 11:43:36 $
+ * @version $Revision: 1.15 $ $Date: 2003/03/13 10:58:40 $
  * @author Oliver Becker
  */
 
@@ -423,6 +423,10 @@ public final class Emitter
    public void pushEmitter(StxEmitter emitter)
       throws SAXException
    {
+      // put temporary empty namespace table on the stack;
+      // causes all current namespaces to be declared again
+      namespaceStack.push(namespaceStack.elementAt(0));
+
       // save old handlers
       emitterStack.push(contH);
       emitterStack.push(lexH);
@@ -463,6 +467,8 @@ public final class Emitter
          // restore previous handlers
          lexH = (LexicalHandler)emitterStack.pop();
          contH = (ContentHandler)emitterStack.pop();
+         // remove temporary empty namespace table
+         namespaceStack.pop();
       }
       else
          log4j.fatal("No StxEmitter on the emitter stack");
