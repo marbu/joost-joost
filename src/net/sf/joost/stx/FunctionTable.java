@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.1 2003/04/29 11:38:15 obecker Exp $
+ * $Id: FunctionTable.java,v 2.2 2003/04/29 11:58:49 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,20 +32,24 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Stack;
 
+import net.sf.joost.Constants;
 import net.sf.joost.grammar.EvalException;
 import net.sf.joost.grammar.Tree;
 
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.1 $ $Date: 2003/04/29 11:38:15 $
+ * @version $Revision: 2.2 $ $Date: 2003/04/29 11:58:49 $
  * @author Oliver Becker
  */
-final public class FunctionTable
+final public class FunctionTable implements Constants
 {
-   // Log4J initialization
-   private static org.apache.log4j.Logger log4j = 
-      org.apache.log4j.Logger.getLogger(FunctionTable.class);
+   private static org.apache.log4j.Logger log;
+   static {
+      if (DEBUG)
+         // Log4J initialization
+         log = org.apache.log4j.Logger.getLogger(FunctionTable.class);
+   }
 
 
    /** Contains one instance for each function. */
@@ -59,8 +63,6 @@ final public class FunctionTable
          new NumberConv(),
          new BooleanConv(),
          new Position(), 
-         new Level(),
-         new GetNode(),
          new HasChildNodes(),
          new NodeKind(),
          new Name(),
@@ -153,7 +155,7 @@ final public class FunctionTable
          return args.evaluate(context, top);
       else if (top > 0)                     // use current node
          return 
-            new Value((SAXEvent)context.ancestorStack.elementAt(top-1), top);
+            new Value((SAXEvent)context.ancestorStack.elementAt(top-1));
       else // no event available (e.g. init of global variables)
          return new Value();
    }
@@ -294,55 +296,6 @@ final public class FunctionTable
 
 
    /**
-    * The <code>level</code> function.
-    * Returns the size of the ancestor stack for this node.
-    */
-   final public class Level implements Instance
-   {
-      /** @return 0 */
-      public int getMinParCount() { return 0; }
-      /** @return 0 */
-      public int getMaxParCount() { return 0; }
-      /** @return "level" */
-      public String getName() { return "{}level"; }
-
-      public Value evaluate(Context context, int top, Tree args)
-      {
-         log4j.warn("The level function is deprecated. Use count(//node()) instead");
-         return new Value(top-1);
-      }
-   }
-
-
-   /**
-    * The <code>get-node</code> function.
-    * Returns the node in the ancestor stack at a certain position
-    */
-   final public class GetNode implements Instance
-   {
-      /** @return 1 */
-      public int getMinParCount() { return 1; }
-      /** @return 1 */
-      public int getMaxParCount() { return 1; }
-      /** @return "get-node" */
-      public String getName() { return "{}get-node"; }
-
-      public Value evaluate(Context context, int top, Tree args)
-         throws SAXException, EvalException
-      {
-         log4j.warn("The get-node function is deprecated. Use item-at(//node(), position) instead.");
-         int arg = (int)args.evaluate(context, top)
-                            .convertToNumber().number;
-         if (arg < 0 || arg > top-1)
-            return new Value();
-         else
-            return new Value((SAXEvent)context.ancestorStack.elementAt(arg),
-                             arg+1);
-      }
-   }
-
-
-   /**
     * The <code>has-child-nodes</code> function.
     * Returns true if the context node has children (is not empty)
     */
@@ -397,8 +350,7 @@ final public class FunctionTable
          case SAXEvent.PI: return new Value("processing-instruction");
          case SAXEvent.COMMENT: return new Value("comment");
          }
-         log4j.error("unexpected node type");
-         return new Value(v.event.toString());
+         throw new SAXException("unexpected node type: " + v.event);
       }
    }
 
@@ -1058,8 +1010,7 @@ final public class FunctionTable
          }
          catch (IndexOutOfBoundsException ex) {
             // shouldn't happen
-            log4j.error(ex);
-            return new Value("");
+            throw new SAXException(ex);
          }
       }
    }
