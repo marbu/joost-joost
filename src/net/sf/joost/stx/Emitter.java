@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.10 2002/11/25 13:38:56 obecker Exp $
+ * $Id: Emitter.java,v 1.11 2002/11/27 09:48:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.emitter.StxEmitter;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.10 $ $Date: 2002/11/25 13:38:56 $
+ * @version $Revision: 1.11 $ $Date: 2002/11/27 09:48:03 $
  * @author Oliver Becker
  */
 
@@ -432,14 +432,23 @@ public final class Emitter
    /**
     * Discards the current emitter and uses the previous handlers
     */
-   public void popEmitter()
+   public StxEmitter popEmitter()
       throws SAXException
    {
       if (lastAttrs != null)
          processStartElement();
-      // restore previous handlers
-      lexH = (LexicalHandler)emitterStack.pop();
-      contH = (ContentHandler)emitterStack.pop();
+      StxEmitter ret = null;
+      if (contH instanceof StxEmitter) {
+         // save current emitter for returning
+         ret = (StxEmitter)contH;
+         // restore previous handlers
+         lexH = (LexicalHandler)emitterStack.pop();
+         contH = (ContentHandler)emitterStack.pop();
+      }
+      else
+         log4j.fatal("No StxEmitter on the emitter stack");
+
+      return ret;
    }
 
 
