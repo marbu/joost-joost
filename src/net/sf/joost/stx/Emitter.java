@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.24 2004/02/12 11:45:41 obecker Exp $
+ * $Id: Emitter.java,v 1.25 2004/02/13 12:22:08 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,6 +32,11 @@ import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.NamespaceSupport;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+
 import java.util.EmptyStackException;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -45,11 +50,11 @@ import net.sf.joost.emitter.StxEmitter;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.24 $ $Date: 2004/02/12 11:45:41 $
+ * @version $Revision: 1.25 $ $Date: 2004/02/13 12:22:08 $
  * @author Oliver Becker
  */
 
-public class Emitter
+public class Emitter implements Constants
 {
    private ContentHandler contH;
    private LexicalHandler lexH;
@@ -540,5 +545,71 @@ public class Emitter
    public boolean isEmitterActive(StxEmitter emitter)
    {
       return (contH == emitter) || (emitterStack.search(emitter) != -1);
+   }
+
+
+   /**
+    * Provides a <code>Writer</code> object that will be used for
+    * <code>stx:result-document</code> instructions.
+    * @param href the filename
+    * @param encoding the requested encoding
+    * @param publicId public ID of the transformation sheet
+    * @param systemId system ID of the transformation sheet
+    * @param lineNo line number of the <code>stx:result-document</code>
+                    instruction
+    * @param colNo column number of the <code>stx:result-document</code>
+                   instruction
+    */
+   public Writer getResultWriter(String href, String encoding,
+                                 String publicId, String systemId, 
+                                 int lineNo, int colNo)
+      throws java.io.IOException, SAXException
+   {
+      // Variant 1:
+      int sepPos = href.lastIndexOf('/');
+      if (sepPos != -1) {
+         // filename contains directory parts, try to create it
+         File dir = new File(href.substring(0, sepPos));
+         dir.mkdirs();
+      }
+
+      // Note: currently we don't check if a file is already open.
+      // Opening a file twice may lead to unexpected results.
+      FileOutputStream fos = new FileOutputStream(href);
+
+//              // Variant 2:
+//              FileOutputStream fos;
+//              try {
+//                 fos = new FileOutputStream(href);
+//              }
+//              catch (java.io.FileNotFoundException fnfe) {
+//                 int sepPos = href.lastIndexOf('/');
+//                 if (sepPos == -1)
+//                    throw fnfe;
+//                 // else: filename contains directory parts,
+//                 // possibly this directoty doesn't exist yet
+//                 File dir = new File(href.substring(0, sepPos));
+//                 // create it
+//                 dir.mkdirs();
+//                 // try again
+//                 fos = new FileOutputStream(href);
+//              }
+
+      // Note: both variants have the same average performance,
+      // no matter whether directories have to be created or not.
+      
+      OutputStreamWriter osw;
+      try {
+         osw = new OutputStreamWriter(fos, encoding);
+      }
+      catch (java.io.UnsupportedEncodingException e) {
+         String msg = 
+            "Unsupported encoding `" + encoding + "', using " + 
+            DEFAULT_ENCODING;
+         errorHandler.warning(
+            msg, publicId, systemId, lineNo, colNo);
+         osw = new OutputStreamWriter(fos, encoding = DEFAULT_ENCODING);
+      }
+      return osw;
    }
 }

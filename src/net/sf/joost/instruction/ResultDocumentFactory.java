@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 2.10 2004/02/12 12:30:32 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 2.11 2004/02/13 12:22:19 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,9 +28,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
+import java.io.Writer;
 
 import java.util.HashSet;
 import java.util.Properties;
@@ -47,7 +45,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.10 $ $Date: 2004/02/12 12:30:32 $
+ * @version $Revision: 2.11 $ $Date: 2004/02/13 12:22:19 $
  * @author Oliver Becker
  */
 
@@ -122,7 +120,7 @@ final public class ResultDocumentFactory extends FactoryBase
       
 
       /**
-       * Redirects the output stream to the specified URI
+       * Redirects the result stream to the specified URI
        */
       public short process(Context context)
          throws SAXException
@@ -132,67 +130,22 @@ final public class ResultDocumentFactory extends FactoryBase
             // use global encoding att
             encoding = context.currentProcessor.getOutputEncoding();
 
-         String filename = 
-            href.evaluate(context, this).string;
+         String filename = href.evaluate(context, this).string;
             
-         // Note: currently we don't check if a file is already open.
-         // Opening a file twice may lead to unexpected results.
          StreamEmitter se = null;
          try {
-            // Variant 1:
-            int sepPos = filename.lastIndexOf('/');
-            if (sepPos != -1) {
-               // filename contains directory parts, try to create it
-               File dir = new File(filename.substring(0, sepPos));
-               dir.mkdirs();
-            }
-            FileOutputStream fos = new FileOutputStream(filename);
+            // TO DO: introduce OutputURIResolver and request
+            // a Result object
+            Writer osw = context.emitter.getResultWriter(
+                            filename, encoding, 
+                            publicId, systemId, lineNo, colNo);
 
-//              // Variant 2:
-//              FileOutputStream fos;
-//              try {
-//                 fos = new FileOutputStream(filename);
-//              }
-//              catch (java.io.FileNotFoundException fnfe) {
-//                 int sepPos = filename.lastIndexOf('/');
-//                 if (sepPos == -1)
-//                    throw fnfe;
-//                 // else: filename contains directory parts,
-//                 // possibly this directoty doesn't exist yet
-//                 File dir = new File(filename.substring(0, sepPos));
-//                 // create it
-//                 dir.mkdirs();
-//                 // try again
-//                 fos = new FileOutputStream(filename);
-//              }
-
-            // Note: both variants have the same average performance,
-            // no matter whether directories have to be created or not.
-
-            OutputStreamWriter osw;
-            try {
-               osw = new OutputStreamWriter(fos, encoding);
-            }
-            catch (java.io.UnsupportedEncodingException e) {
-               String msg = 
-                  "Unsupported encoding `" + encoding + "', using " + 
-                  DEFAULT_ENCODING;
-               context.errorHandler.warning(
-                  msg, publicId, systemId, lineNo, colNo);
-               if (log != null)
-                  log.warn(msg);
-               osw = new OutputStreamWriter(fos, 
-                                            encoding = DEFAULT_ENCODING);
-            }
             Properties props = (Properties)context.currentProcessor
                                                   .outputProperties.clone();
             props.setProperty(OutputKeys.ENCODING, encoding);
             if (method != null)
                props.setProperty(OutputKeys.METHOD, method);
             se = new StreamEmitter(osw, props);
-            se.setSystemId((new java.net.URL("file", "/", filename))
-                                .toExternalForm());
-
             localFieldStack.push(osw);
          }
          catch (java.io.IOException ex) {
@@ -207,6 +160,7 @@ final public class ResultDocumentFactory extends FactoryBase
       }
 
 
+      /** Close the current result stream */
       public short processEnd(Context context)
          throws SAXException
       {
@@ -214,7 +168,7 @@ final public class ResultDocumentFactory extends FactoryBase
                                      nodeEnd.lineNo, nodeEnd.colNo);
          context.emitter.popEmitter();
          try {
-            ((OutputStreamWriter)localFieldStack.pop()).close();
+            ((Writer)localFieldStack.pop()).close();
          }
          catch (java.io.IOException ex) {
             context.errorHandler.error(ex.toString(), 
