@@ -1,2 +1,2 @@
 Main-Class: net.sf.joost.Main
-Class-Path: log4j.jar lib/log4j.jar
+Class-Path: commons-logging.jar lib/commons-logging.jar
