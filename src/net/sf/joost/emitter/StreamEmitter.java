@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.23 2004/10/25 20:39:33 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.24 2004/10/30 15:22:08 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -37,6 +37,7 @@ import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
 
+import net.sf.joost.Constants;
 import net.sf.joost.OptionalLog;
 
 import org.apache.commons.logging.Log;
@@ -46,15 +47,17 @@ import org.xml.sax.SAXException;
 
 /**
  * Base class for emitter classes that produce a character stream.
- * @version $Revision: 1.23 $ $Date: 2004/10/25 20:39:33 $
+ * @version $Revision: 1.24 $ $Date: 2004/10/30 15:22:08 $
  * @author Oliver Becker
  */
 public abstract class StreamEmitter
-   implements StxEmitter
+   implements Constants, StxEmitter
 {
    // Log initialization
    private static Log log = OptionalLog.getLog(StreamEmitter.class);
 
+   /** Joost's HTML extension output method */
+   private static String HTML_METHOD = "{" + JOOST_EXT_NS + "}html";
 
    /** Writer for the resulting text */
    protected Writer writer;
@@ -102,7 +105,7 @@ public abstract class StreamEmitter
             return new XmlEmitter(writer, encoding, outputProperties);
          else if (outputMethod.equals("text"))
             return new TextEmitter(writer, encoding);
-         else if (outputMethod.equals("html"))
+         else if (outputMethod.equals(HTML_METHOD))
             return new HtmlEmitter(writer, encoding);
          String msg = "Unsupported output method `" + outputMethod + 
                       "', use default `xml' method instead"; 
