@@ -1,5 +1,5 @@
 /*
- * $Id: TraceManager.java,v 1.7 2004/11/07 12:18:43 zubow Exp $
+ * $Id: TraceManager.java,v 1.8 2004/11/07 13:47:05 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,7 +24,6 @@
 
 package net.sf.joost.trace;
 
-import java.util.TooManyListenersException;
 import java.util.Vector;
 
 import net.sf.joost.instruction.AbstractInstruction;
@@ -34,7 +33,7 @@ import net.sf.joost.trax.TransformerImpl;
 /**
  * This class manages a collection of {@link TraceListener}, and acts as an
  * interface for the tracing functionality in Joost.
- * @version $Revision: 1.7 $ $Date: 2004/11/07 12:18:43 $
+ * @version $Revision: 1.8 $ $Date: 2004/11/07 13:47:05 $
  * @author Zubow
  */
 public class TraceManager {
