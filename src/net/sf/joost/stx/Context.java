@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 1.2 2002/10/29 19:09:10 obecker Exp $
+ * $Id: Context.java,v 1.3 2002/11/02 15:19:17 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import java.util.Hashtable;
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 1.2 $ $Date: 2002/10/29 19:09:10 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/02 15:19:17 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
@@ -52,6 +52,9 @@ public final class Context implements Cloneable
 
    /** The group, the current template is a child of */
    public GroupBase currentGroup;
+
+   /** The Processor object (needed by <code>process-buffer</code>) */
+   public Processor currentProcessor;
 
    /** The next event to be processed */
    public SAXEvent lookAhead = null;

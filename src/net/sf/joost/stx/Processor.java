@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.10 2002/10/31 13:31:18 obecker Exp $
+ * $Id: Processor.java,v 1.11 2002/11/02 15:19:17 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -43,26 +43,25 @@ import org.xml.sax.helpers.XMLReaderFactory;
 import javax.xml.transform.ErrorListener;
 
 import java.util.Arrays;
-import java.util.Stack;
 import java.util.EmptyStackException;
 import java.util.Hashtable;
+import java.util.Stack;
 import java.util.Vector;
 
 import java.io.IOException;
 
 import net.sf.joost.Constants;
+import net.sf.joost.instruction.GroupFactory;
 import net.sf.joost.instruction.NodeBase;
-import net.sf.joost.instruction.TransformFactory;
 import net.sf.joost.instruction.OptionsFactory;
 import net.sf.joost.instruction.TemplateFactory;
-import net.sf.joost.instruction.GroupFactory;
-import net.sf.joost.instruction.VariableFactory;
+import net.sf.joost.instruction.TransformFactory;
 
 
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.10 $ $Date: 2002/10/31 13:31:18 $
+ * @version $Revision: 1.11 $ $Date: 2002/11/02 15:19:17 $
  * @author Oliver Becker
  */
 
@@ -368,6 +367,7 @@ public class Processor extends XMLFilterImpl
 
       setErrorHandler(context.errorHandler); // register error handler
 
+      context.currentProcessor = this;
       context.currentGroup = transformNode = stxParser.getTransformNode();
       if (transformNode.options != null) {
          OptionsFactory.Instance optionsNode = transformNode.options;
