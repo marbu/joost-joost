@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 1.15 2003/01/25 07:21:42 obecker Exp $
+ * $Id: Tree.java,v 1.16 2003/01/29 08:12:56 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 1.15 $ $Date: 2003/01/25 07:21:42 $
+ * @version $Revision: 1.16 $ $Date: 2003/01/29 08:12:56 $
  * @author Oliver Becker
  */
 public class Tree
@@ -668,6 +668,9 @@ public class Tree
             while (v1 != null) {
                SAXEvent e = v1.event;
                if (type == TEXT_TEST) { // text()
+                  log4j.warn("`text()' is deprecated, " + 
+                             (left == null ? "use `.' instead" 
+                                           : "simply remove this last step"));
                   if (e != null && e.type == SAXEvent.ELEMENT
                                 && e.value != null) {
                      v2 = new Value(e.value);
