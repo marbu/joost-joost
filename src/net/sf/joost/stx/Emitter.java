@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.4 2002/10/31 14:09:22 obecker Exp $
+ * $Id: Emitter.java,v 1.5 2002/11/02 15:25:48 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -36,14 +36,14 @@ import java.util.EmptyStackException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Stack;
-
+import java.util.Vector;
 
 
 /** 
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.4 $ $Date: 2002/10/31 14:09:22 $
+ * @version $Revision: 1.5 $ $Date: 2002/11/02 15:25:48 $
  * @author Oliver Becker
  */
 
@@ -54,7 +54,15 @@ public final class Emitter
 
    private Hashtable inScopeNamespaces;
    private Stack namespaceStack;
+
+   /** Stack for emitted events, allows well-formedness check */
    private Stack outputEvents;
+
+   /** Stack of result buffers ({@link #currentResultBuffer}) */
+   private Stack bufferStack;
+
+   /** The result buffer currently in use */
+   private Vector currentResultBuffer = null;
 
    private String lastUri, lastLName, lastQName;
    private AttributesImpl lastAttrs;
@@ -74,6 +82,7 @@ public final class Emitter
       namespaceStack = new Stack();
       namespaceStack.push(inScopeNamespaces.clone());
       outputEvents = new Stack();
+      bufferStack = new Stack();
    }
 
 
@@ -126,16 +135,24 @@ public final class Emitter
            e.hasMoreElements(); ) {
          String prefix = (String)e.nextElement();
          String ns = (String)inScopeNamespaces.get(prefix);
-         if (!ns.equals(lastNs.get(prefix)))
-            contH.startPrefixMapping(prefix, ns);
+         if (!ns.equals(lastNs.get(prefix))) {
+            if (currentResultBuffer != null)
+               currentResultBuffer.addElement(SAXEvent.newMapping(prefix, ns));
+            else
+               contH.startPrefixMapping(prefix, ns);
+         }
       }
          
       // remember the current mapping
       namespaceStack.push(inScopeNamespaces.clone());
          
-      contH.startElement(lastUri, lastLName, lastQName, lastAttrs);
-      outputEvents.push(SAXEvent.newElement(lastUri, lastLName, lastQName, 
-                                            lastAttrs, null));
+      SAXEvent elEvent = SAXEvent.newElement(lastUri, lastLName, lastQName, 
+                                             lastAttrs, null);
+      if (currentResultBuffer != null)
+         currentResultBuffer.addElement(elEvent);
+      else
+         contH.startElement(lastUri, lastLName, lastQName, lastAttrs);
+      outputEvents.push(elEvent);
 
       lastAttrs = null; // flag: there's no startElement pending
    }
@@ -170,7 +187,7 @@ public final class Emitter
 
    public void startDocument() throws SAXException
    {
-      if (contH != null) {
+      if (contH != null && currentResultBuffer == null) {
          contH.startDocument();
          outputEvents.push(SAXEvent.newRoot());
       }
@@ -192,7 +209,8 @@ public final class Emitter
                "Missing end tag for `" + ev.qName + "' at the document end", 
                publicId, systemId, lineNo, colNo);
          }
-         contH.endDocument();
+         if (currentResultBuffer == null)
+            contH.endDocument();
          outputEvents.pop();
       }
    }
@@ -270,7 +288,11 @@ public final class Emitter
             return; // if the errorHandler returns
          }
 
-         contH.endElement(uri, lName, qName);
+         if (currentResultBuffer != null)
+            currentResultBuffer.addElement(
+               SAXEvent.newElement(uri, lName, qName, null, null));
+         else
+            contH.endElement(uri, lName, qName);
 
          // Recall the namespaces in scope
          inScopeNamespaces = (Hashtable)namespaceStack.pop();
@@ -283,8 +305,13 @@ public final class Emitter
               e.hasMoreElements(); ) {
             String prefix = (String)e.nextElement();
             String ns = (String)inScopeNamespaces.get(prefix);
-            if (!ns.equals(lastNs.get(prefix)))
-               contH.endPrefixMapping(prefix);
+            if (!ns.equals(lastNs.get(prefix))) {
+               if (currentResultBuffer != null)
+                  currentResultBuffer.addElement(
+                     SAXEvent.newMapping(prefix, null));
+               else
+                  contH.endPrefixMapping(prefix);
+            }
          }
 
          // Forget and reset the current namespace mapping
@@ -304,17 +331,31 @@ public final class Emitter
             int index = str.indexOf("]]>");
             while (index != -1) {
                // "]]>" found; split between "]]" and ">"
-               contH.characters(str.substring(0,index+2).toCharArray(),
-                                0, index+2);
-               lexH.endCDATA();   // lexH must be != null,
-               lexH.startCDATA(); // because insideCDATA was true
-               str = str.substring(index+2);
+               index += 2;
+               if (currentResultBuffer != null) 
+                  currentResultBuffer.addElement(
+                     SAXEvent.newCDATA(str.substring(0, index)));
+               else {
+                  contH.characters(str.substring(0,index).toCharArray(),
+                                   0, index);
+                  lexH.endCDATA();   // lexH will be != null,
+                  lexH.startCDATA(); // because insideCDATA was true
+               }
+               str = str.substring(index);
                index = str.indexOf("]]>");
             }
-            contH.characters(str.toCharArray(), 0, str.length());
+            if (currentResultBuffer != null)
+               currentResultBuffer.addElement(SAXEvent.newCDATA(str));
+            else
+               contH.characters(str.toCharArray(), 0, str.length());
          }
-         else
-            contH.characters(ch, start, length);
+         else {
+            if (currentResultBuffer != null) 
+               currentResultBuffer.addElement(
+                  SAXEvent.newText(new String(ch, start, length)));
+            else
+               contH.characters(ch, start, length);
+         }
       }
    }
 
@@ -325,7 +366,10 @@ public final class Emitter
       if (contH != null) {
          if (lastAttrs != null)
             processStartElement();
-         contH.processingInstruction(target, data);
+         if (currentResultBuffer != null) 
+            currentResultBuffer.addElement(SAXEvent.newPI(target, data));
+         else
+            contH.processingInstruction(target, data);
       }
    }
 
@@ -335,8 +379,13 @@ public final class Emitter
    {
       if (contH != null && lastAttrs != null)
          processStartElement();
-      if (lexH != null)
-         lexH.comment(ch, start, length);
+      if (lexH != null) {
+         if (currentResultBuffer != null)
+            currentResultBuffer.addElement(
+               SAXEvent.newComment(new String(ch, start, length)));
+         else
+            lexH.comment(ch, start, length);
+      }
    }
 
 
@@ -346,7 +395,8 @@ public final class Emitter
       if (contH != null && lastAttrs != null)
          processStartElement();
       if (lexH != null) {
-         lexH.startCDATA();
+         if (currentResultBuffer == null)
+            lexH.startCDATA();
          insideCDATA = true;
       }
    }
@@ -356,11 +406,38 @@ public final class Emitter
       throws SAXException
    {
       if (lexH != null) {
-         lexH.endCDATA();
+         if (currentResultBuffer == null)
+            lexH.endCDATA();
          insideCDATA = false;
       }
    }
 
+
+   /**
+    * Instructs the Emitter to output all following SAX events to a buffer.
+    * @param buffer the buffer to be used
+    */
+   public void pushBuffer(Vector buffer)
+      throws SAXException
+   {
+      if (contH != null && lastAttrs != null)
+         processStartElement();
+      bufferStack.push(currentResultBuffer);
+      currentResultBuffer = buffer;
+   }
+
+
+   /**
+    * Discards the current buffer and uses the previous one (or none if
+    * there's no previous buffer)
+    */
+   public void popBuffer()
+      throws SAXException
+   {
+      if (lastAttrs != null)
+         processStartElement();
+      currentResultBuffer = (Vector)bufferStack.pop();
+   }
 
 //     private void traceMemory()
 //     {

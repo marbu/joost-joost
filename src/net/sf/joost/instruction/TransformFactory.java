@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: TransformFactory.java,v 1.2 2002/11/02 15:22:58 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,20 +28,20 @@ import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
 
-import java.util.Hashtable;
-import java.util.HashSet;
-import java.util.Vector;
-import java.util.Stack;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Stack;
+import java.util.Vector;
 
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.Emitter;
 
 
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2002/11/02 15:22:58 $
  * @author Oliver Becker
  */
 
@@ -138,6 +138,7 @@ public class TransformFactory extends FactoryBase
          }
          else if (node instanceof TemplateFactory.Instance ||
                   node instanceof GroupFactory.Instance ||
+                  node instanceof BufferFactory.Instance ||
                   node instanceof VariableFactory.Instance)
             super.append(node);
          else
