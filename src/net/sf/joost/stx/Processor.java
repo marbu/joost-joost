@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.3 2002/09/20 12:52:02 obecker Exp $
+ * $Id: Processor.java,v 1.4 2002/10/08 19:14:19 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -60,7 +60,7 @@ import net.sf.joost.instruction.VariableFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.3 $ $Date: 2002/09/20 12:52:02 $
+ * @version $Revision: 1.4 $ $Date: 2002/10/08 19:14:19 $
  * @author Oliver Becker
  */
 
@@ -300,7 +300,7 @@ public class Processor extends XMLFilterImpl
     * Create an <code>XMLReader</code> object (a SAX Parser)
     * @throws SAXException if a SAX Parser couldn't be created
     */
-   private XMLReader getXMLReader()
+   public static XMLReader getXMLReader()
       throws SAXException
    {
       // Using pure SAX2, not JAXP
