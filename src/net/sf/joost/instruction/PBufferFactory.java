@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 2.6 2003/06/03 14:30:23 obecker Exp $
+ * $Id: PBufferFactory.java,v 2.7 2003/06/19 15:39:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.6 $ $Date: 2003/06/03 14:30:23 $
+ * @version $Revision: 2.7 $ $Date: 2003/06/19 15:39:32 $
  * @author Oliver Becker
  */
 
@@ -158,13 +158,10 @@ public class PBufferFactory extends FactoryBase
             catch (RuntimeException e) {
                // wrap exception
                java.io.StringWriter sw = null;
-               if (DEBUG) {
-                  sw = new java.io.StringWriter();
-                  e.printStackTrace(new java.io.PrintWriter(sw));
-               }
+               sw = new java.io.StringWriter();
+               e.printStackTrace(new java.io.PrintWriter(sw));
                context.errorHandler.fatalError(
-                  "External processing failed: " + (DEBUG ? ("\n" + sw) 
-                                                          : e.toString()),
+                  "External processing failed: " + sw,
                   publicId, systemId, lineNo, colNo);
                return PR_ERROR;
             }
