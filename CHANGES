@@ -13,7 +13,7 @@ Changes since 20030502
 - added (partial) support for TrAX output properties
 - added support for Java extension functions
 - added Joost extension function sequence(), which converts a Java array into
-  a sequence; extension namespace is "http://joost.sourceforge.net/functions"
+  a sequence; extension namespace is "http://joost.sf.net/functions"
 
 Changes since 20030320
 - increased performance by switching to a new processing model
