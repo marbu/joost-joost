@@ -1,5 +1,5 @@
 /*
- * $Id: IfFactory.java,v 1.4 2002/11/14 17:57:33 obecker Exp $
+ * $Id: IfFactory.java,v 1.5 2002/11/27 10:03:11 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.grammar.EvalException;
 /** 
  * Factory for <code>if</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.4 $ $Date: 2002/11/14 17:57:33 $
+ * @version $Revision: 1.5 $ $Date: 2002/11/27 10:03:11 $
  * @author Oliver Becker
  */
 
@@ -58,7 +58,7 @@ final public class IfFactory extends FactoryBase
       attrNames.add("test");
    }
 
-   /** @return <code>if</code> */
+   /** @return <code>"if"</code> */
    public String getName()
    {
       return "if";
@@ -72,7 +72,7 @@ final public class IfFactory extends FactoryBase
       String testAtt = getAttribute(qName, attrs, "test", locator);
       Tree testExpr = parseExpr(testAtt, nsSet, locator);
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, locator, testExpr);
+      return new Instance(qName, parent, locator, testExpr);
    }
 
 
@@ -81,9 +81,10 @@ final public class IfFactory extends FactoryBase
    {
       protected Tree test;
 
-      protected Instance(String qName, Locator locator, Tree test)
+      protected Instance(String qName, NodeBase parent, Locator locator, 
+                         Tree test)
       {
-         super(qName, locator, false);
+         super(qName, parent, locator, false);
          this.test = test;
       }
       

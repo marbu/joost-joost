@@ -1,5 +1,5 @@
 /*
- * $Id: CommentFactory.java,v 1.3 2002/11/22 16:26:59 obecker Exp $
+ * $Id: CommentFactory.java,v 1.4 2002/11/27 10:03:10 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.emitter.StringEmitter;
 /** 
  * Factory for <code>comment</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.3 $ $Date: 2002/11/22 16:26:59 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/27 10:03:10 $
  * @author Oliver Becker
  */
 
@@ -58,7 +58,7 @@ public class CommentFactory extends FactoryBase
       throws SAXParseException
    {
       checkAttributes(qName, attrs, null, locator);
-      return new Instance(qName, locator);
+      return new Instance(qName, parent, locator);
    }
 
 
@@ -68,9 +68,9 @@ public class CommentFactory extends FactoryBase
       private StringEmitter strEmitter;
       private StringBuffer buffer;
 
-      public Instance(String qName, Locator locator)
+      public Instance(String qName, NodeBase parent, Locator locator)
       {
-         super(qName, locator, false);
+         super(qName, parent, locator, false);
 
          buffer = new StringBuffer();
          strEmitter = new StringEmitter(buffer, 

@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 1.5 2002/11/19 10:28:35 obecker Exp $
+ * $Id: NodeBase.java,v 1.6 2002/11/27 10:03:11 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,13 +39,16 @@ import net.sf.joost.stx.Emitter;
 
 /**
  * Abstract base class for all instances of nodes in a STX stylesheet.
- * @version $Revision: 1.5 $ $Date: 2002/11/19 10:28:35 $
+ * @version $Revision: 1.6 $ $Date: 2002/11/27 10:03:11 $
  * @author Oliver Becker
  */
 public abstract class NodeBase implements Constants
 {
    /** The qualified name of this stx element */
    protected String qName;
+
+   /** The parent of this node */
+   protected NodeBase parent;
 
    /** The public identifier of the stylesheet */
    public String publicId;
@@ -84,9 +87,11 @@ public abstract class NodeBase implements Constants
    // Constructors
    //
 
-   protected NodeBase(String qName, Locator locator, boolean mustBeEmpty)
+   protected NodeBase(String qName, NodeBase parent, Locator locator, 
+                      boolean mustBeEmpty)
    {
       this.qName = qName;
+      this.parent = parent;
       publicId = locator.getPublicId();
       systemId = locator.getSystemId();
       lineNo = locator.getLineNumber();
@@ -98,6 +103,7 @@ public abstract class NodeBase implements Constants
    protected NodeBase(NodeBase obj)
    {
       qName = obj.qName;
+      parent = obj.parent;
       publicId = obj.publicId;
       systemId = obj.systemId;
       lineNo = obj.lineNo;

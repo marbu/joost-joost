@@ -1,5 +1,5 @@
 /*
- * $Id: CopyFactory.java,v 1.10 2002/11/25 13:38:57 obecker Exp $
+ * $Id: CopyFactory.java,v 1.11 2002/11/27 10:03:10 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,7 +46,7 @@ import net.sf.joost.grammar.PatternParser;
 /** 
  * Factory for <code>copy</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.10 $ $Date: 2002/11/25 13:38:57 $
+ * @version $Revision: 1.11 $ $Date: 2002/11/27 10:03:10 $
  * @author Oliver Becker
  */
 
@@ -102,7 +102,7 @@ final public class CopyFactory extends FactoryBase
                                         locator);
          }
       }
-      return new Instance(qName, locator, attributesPattern);
+      return new Instance(qName, parent, locator, attributesPattern);
    }
 
 
@@ -117,9 +117,10 @@ final public class CopyFactory extends FactoryBase
       // Constructor
       //
 
-      public Instance(String qName, Locator locator, Tree attPattern)
+      public Instance(String qName, NodeBase parent, Locator locator, 
+                      Tree attPattern)
       {
-         super(qName, locator, false);
+         super(qName, parent, locator, false);
          this.attPattern = attPattern;
       }
 

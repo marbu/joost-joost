@@ -1,5 +1,5 @@
 /*
- * $Id: TextFactory.java,v 1.2 2002/10/22 10:23:23 obecker Exp $
+ * $Id: TextFactory.java,v 1.3 2002/11/27 10:03:12 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,17 +37,16 @@ import java.util.Stack;
 /** 
  * Factory for <code>text</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2002/10/22 10:23:23 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/27 10:03:12 $
  * @author Oliver Becker
  */
 
 public class TextFactory extends FactoryBase
 {
-   private static final String name = "text";
-
+   /** @return <code>"text"</code> */ 
    public String getName()
    {
-      return name;
+      return "text";
    }
 
    public NodeBase createNode(NodeBase parent, String uri, String lName, 
@@ -56,16 +55,16 @@ public class TextFactory extends FactoryBase
       throws SAXParseException
    {
       checkAttributes(qName, attrs, null, locator);
-      return new Instance(qName, locator);
+      return new Instance(qName, parent, locator);
    }
 
 
    /** The inner Instance class */
    public class Instance extends NodeBase
    {
-      public Instance(String qName, Locator locator)
+      public Instance(String qName, NodeBase parent, Locator locator)
       {
-         super(qName, locator, false);
+         super(qName, parent, locator, false);
       }
 
 

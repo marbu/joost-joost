@@ -1,5 +1,5 @@
 /*
- * $Id: OtherwiseFactory.java,v 1.3 2002/11/15 18:24:53 obecker Exp $
+ * $Id: OtherwiseFactory.java,v 1.4 2002/11/27 10:03:12 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.stx.Emitter;
 /** 
  * Factory for <code>otherwise</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.3 $ $Date: 2002/11/15 18:24:53 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/27 10:03:12 $
  * @author Oliver Becker
  */
 
@@ -59,7 +59,7 @@ public class OtherwiseFactory extends FactoryBase
    }
 
 
-   /** @return <code>otherwise</code> */
+   /** @return <code>"otherwise"</code> */
    public String getName()
    {
       return "otherwise";
@@ -76,7 +76,7 @@ public class OtherwiseFactory extends FactoryBase
             locator);
 
       checkAttributes(qName, attrs, null, locator);
-      return new Instance(qName, locator);
+      return new Instance(qName, parent, locator);
    }
 
 
@@ -92,9 +92,9 @@ public class OtherwiseFactory extends FactoryBase
    /** Represents an instance of the <code>otherwise</code> element. */
    final public class Instance extends NodeBase
    {
-      public Instance(String qName, Locator locator)
+      public Instance(String qName, NodeBase parent, Locator locator)
       {
-         super(qName, locator, false);
+         super(qName, parent, locator, false);
       }
 
       /** for {@link #cloneFromElse} */

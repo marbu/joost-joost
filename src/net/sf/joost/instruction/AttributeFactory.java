@@ -1,5 +1,5 @@
 /*
- * $Id: AttributeFactory.java,v 1.3 2002/11/21 16:41:08 obecker Exp $
+ * $Id: AttributeFactory.java,v 1.4 2002/11/27 10:03:09 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,7 +46,7 @@ import net.sf.joost.grammar.EvalException;
 /** 
  * Factory for <code>attribute</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.3 $ $Date: 2002/11/21 16:41:08 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/27 10:03:09 $
  * @author Oliver Becker
  */
 
@@ -90,7 +90,7 @@ final public class AttributeFactory extends FactoryBase
 
       checkAttributes(qName, attrs, attrNames, locator);
 
-      return new Instance(qName, locator, nsSet, 
+      return new Instance(qName, parent, locator, nsSet, 
                           nameAVT, namespaceAVT, selectExpr);
    }
 
@@ -101,10 +101,11 @@ final public class AttributeFactory extends FactoryBase
       private Tree name, namespace, select;
       private Hashtable nsSet;
 
-      protected Instance(String elementName, Locator locator, Hashtable nsSet,
+      protected Instance(String elementName, NodeBase parent, Locator locator,
+                         Hashtable nsSet,
                          Tree name, Tree namespace, Tree select)
       {
-         super(elementName, locator, true);
+         super(elementName, parent, locator, true);
          this.nsSet = (Hashtable)nsSet.clone();
          this.name = name;
          this.namespace = namespace;

@@ -1,5 +1,5 @@
 /*
- * $Id: PIFactory.java,v 1.1 2002/11/22 16:29:22 obecker Exp $
+ * $Id: PIFactory.java,v 1.2 2002/11/27 10:03:12 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>processing-instruction</code> elements, which are 
  * represented by the inner Instance class. 
- * @version $Revision: 1.1 $ $Date: 2002/11/22 16:29:22 $
+ * @version $Revision: 1.2 $ $Date: 2002/11/27 10:03:12 $
  * @author Oliver Becker
  */
 
@@ -76,7 +76,7 @@ final public class PIFactory extends FactoryBase
 
       checkAttributes(qName, attrs, attrNames, locator);
 
-      return new Instance(qName, locator, nameAVT);
+      return new Instance(qName, parent, locator, nameAVT);
    }
 
 
@@ -91,9 +91,10 @@ final public class PIFactory extends FactoryBase
       private StringBuffer buffer;
       private String piName;
 
-      protected Instance(String qName, Locator locator, Tree name)
+      protected Instance(String qName, NodeBase parent, Locator locator, 
+                         Tree name)
       {
-         super(qName, locator, false);
+         super(qName, parent, locator, false);
          this.name = name;
          buffer = new StringBuffer();
          strEmitter = new StringEmitter(buffer, 

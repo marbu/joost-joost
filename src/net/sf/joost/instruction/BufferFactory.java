@@ -1,5 +1,5 @@
 /*
- * $Id: BufferFactory.java,v 1.3 2002/11/03 11:37:24 obecker Exp $
+ * $Id: BufferFactory.java,v 1.4 2002/11/27 10:03:10 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Context;
 /** 
  * Factory for <code>buffer</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.3 $ $Date: 2002/11/03 11:37:24 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/27 10:03:10 $
  * @author Oliver Becker
  */
 
@@ -94,9 +94,8 @@ final public class BufferFactory extends FactoryBase
       // Buffers will be treated as special variables -- the same scoping 
       // rules apply. To avoid name conflicts with variables the expanded 
       // name of a buffer carries a "@" prefix
-      return new Instance(qName, locator, nameAtt,
-                          "@{" + nameUri + "}" + nameLocal, 
-                          parent);
+      return new Instance(qName, parent, locator, nameAtt,
+                          "@{" + nameUri + "}" + nameLocal);
    }
 
 
@@ -104,14 +103,12 @@ final public class BufferFactory extends FactoryBase
    final public class Instance extends VariableBase
    {
       private String varName;
-      private NodeBase parent;
 
-      protected Instance(String qName, Locator locator, String varName,
-                         String expName, NodeBase parent)
+      protected Instance(String qName, NodeBase parent, Locator locator, 
+                         String varName, String expName)
       {
-         super(qName, locator, expName, false, true);
+         super(qName, parent, locator, expName, false, true);
          this.varName = varName;
-         this.parent = parent;
       }
       
       /**

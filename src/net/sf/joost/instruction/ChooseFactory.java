@@ -1,5 +1,5 @@
 /*
- * $Id: ChooseFactory.java,v 1.5 2002/11/18 19:54:18 obecker Exp $
+ * $Id: ChooseFactory.java,v 1.6 2002/11/27 10:03:10 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.stx.Context;
 /** 
  * Factory for <code>choose</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.5 $ $Date: 2002/11/18 19:54:18 $
+ * @version $Revision: 1.6 $ $Date: 2002/11/27 10:03:10 $
  * @author Oliver Becker
  */
 
@@ -64,7 +64,7 @@ final public class ChooseFactory extends FactoryBase
    }
 
 
-   /** @return <code>choose</code> */
+   /** @return <code>"choose"</code> */
    public String getName()
    {
       return "choose";
@@ -76,7 +76,7 @@ final public class ChooseFactory extends FactoryBase
       throws SAXParseException
    {
       checkAttributes(qName, attrs, null, locator);
-      return new Instance(qName, locator);
+      return new Instance(qName, parent, locator);
    }
 
 
@@ -101,9 +101,9 @@ final public class ChooseFactory extends FactoryBase
    {
       private boolean otherwisePresent;
 
-      protected Instance(String qName, Locator locator)
+      protected Instance(String qName, NodeBase parent, Locator locator)
       {
-         super(qName, locator, false);
+         super(qName, parent, locator, false);
          otherwisePresent = false;
       }
 

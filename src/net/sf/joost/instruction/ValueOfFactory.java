@@ -1,5 +1,5 @@
 /*
- * $Id: ValueOfFactory.java,v 1.3 2002/11/14 13:38:46 obecker Exp $
+ * $Id: ValueOfFactory.java,v 1.4 2002/11/27 10:03:13 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,15 +43,12 @@ import net.sf.joost.grammar.EvalException;
 /** 
  * Factory for <code>value-of</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.3 $ $Date: 2002/11/14 13:38:46 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/27 10:03:13 $
  * @author Oliver Becker
  */
 
 final public class ValueOfFactory extends FactoryBase
 {
-   /** The local element name. */
-   private static final String name = "value-of";
-
    /** allowed attributes for this element */
    private HashSet attrNames;
 
@@ -62,9 +59,10 @@ final public class ValueOfFactory extends FactoryBase
       attrNames.add("select");
    }
 
+   /** @return <code>"value-of"</code> */
    public String getName()
    {
-      return name;
+      return "value-of";
    }
 
    public NodeBase createNode(NodeBase parent, String uri, String lName, 
@@ -75,7 +73,7 @@ final public class ValueOfFactory extends FactoryBase
       String selectAtt = getAttribute(qName, attrs, "select", locator);
       Tree selectExpr = parseExpr(selectAtt, nsSet, locator);
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, locator, selectExpr);
+      return new Instance(qName, parent, locator, selectExpr);
    }
 
 
@@ -84,9 +82,10 @@ final public class ValueOfFactory extends FactoryBase
    {
       private Tree select;
 
-      protected Instance(String qName, Locator locator, Tree select)
+      protected Instance(String qName, NodeBase parent, Locator locator, 
+                         Tree select)
       {
-         super(qName, locator, true);
+         super(qName, parent, locator, true);
          this.select = select;
       }
       

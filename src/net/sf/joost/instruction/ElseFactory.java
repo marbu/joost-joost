@@ -1,5 +1,5 @@
 /*
- * $Id: ElseFactory.java,v 1.2 2002/11/15 18:23:03 obecker Exp $
+ * $Id: ElseFactory.java,v 1.3 2002/11/27 10:03:11 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,13 +38,13 @@ import java.util.Vector;
  * the inner Instance class. Such <code>else</code> elements will be replaced
  * afterwards by an <code>stx:choose</code> construction during
  * {@link NodeBase#parsed} in the parent element.
- * @version $Revision: 1.2 $ $Date: 2002/11/15 18:23:03 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/27 10:03:11 $
  * @author Oliver Becker
  */
 
 public class ElseFactory extends FactoryBase
 {
-   /** @return <code>else</code> */
+   /** @return <code>"else"</code> */
    public String getName()
    {
       return "else";
@@ -65,7 +65,7 @@ public class ElseFactory extends FactoryBase
             throw new SAXParseException(
                "Found `" + qName + "' without stx:if", locator);
 
-      return new Instance(qName, locator, parent);
+      return new Instance(qName, parent, locator);
    }
 
 
@@ -76,13 +76,9 @@ public class ElseFactory extends FactoryBase
     */
    final public class Instance extends NodeBase
    {
-      /** The children vector of the parent node */
-      private Vector siblings;
-
-      public Instance(String qName, Locator locator, NodeBase parent)
+      public Instance(String qName, NodeBase parent, Locator locator)
       {
-         super(qName, locator, false);
-         siblings = parent.children;
+         super(qName, parent, locator, false);
       }
 
       /** 
@@ -97,6 +93,7 @@ public class ElseFactory extends FactoryBase
       public void parsed()
          throws SAXParseException
       {
+         Vector siblings = parent.children;
          // this node must be the last in the siblings list
          int index = siblings.size() - 1;
          // replace the stx:if with an stx:choose

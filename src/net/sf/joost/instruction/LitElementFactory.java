@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 1.3 2002/11/21 16:41:08 obecker Exp $
+ * $Id: LitElementFactory.java,v 1.4 2002/11/27 10:03:11 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for literal result elements, which are represented by the
  * inner Instance class. 
- * @version $Revision: 1.3 $ $Date: 2002/11/21 16:41:08 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/27 10:03:11 $
  * @author Oliver Becker
 */
 
@@ -76,7 +76,8 @@ final public class LitElementFactory extends FactoryBase
       for (int i=0; i<avtList.length; i++) 
          avtList[i] = parseAVT(attrs.getValue(i), nsSet, locator);
 
-      return new Instance(uri, lName, qName, attrs, avtList, nsSet, locator);
+      return new Instance(uri, lName, qName, attrs, avtList, nsSet, parent,
+                          locator);
    }
 
 
@@ -92,9 +93,9 @@ final public class LitElementFactory extends FactoryBase
       
       protected Instance(String uri, String lName, String qName,
                          Attributes attrs, Tree[] avtList, Hashtable nsTable,
-                         Locator locator)
+                         NodeBase parent, Locator locator)
       {
-         super(qName, locator, false);
+         super(qName, parent, locator, false);
          this.uri = uri;
          this.lName = lName;
          this.attrs = new AttributesImpl(attrs);

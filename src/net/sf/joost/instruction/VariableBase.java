@@ -1,5 +1,5 @@
 /*
- * $Id: VariableBase.java,v 1.1 2002/11/02 15:16:50 obecker Exp $
+ * $Id: VariableBase.java,v 1.2 2002/11/27 10:03:13 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -36,11 +36,11 @@ public class VariableBase extends NodeBase
    protected String expName;
    protected boolean keepValue;
 
-   public VariableBase(String qName, Locator locator, 
+   public VariableBase(String qName, NodeBase parent, Locator locator, 
                        String expName, boolean keepValue,
                        boolean mustBeEmpty)
    {
-      super(qName, locator, mustBeEmpty);
+      super(qName, parent, locator, mustBeEmpty);
       this.expName = expName;
       this.keepValue = keepValue;
    }

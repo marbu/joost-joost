@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 1.5 2002/11/20 16:56:28 obecker Exp $
+ * $Id: PBufferFactory.java,v 1.6 2002/11/27 10:03:12 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.5 $ $Date: 2002/11/20 16:56:28 $
+ * @version $Revision: 1.6 $ $Date: 2002/11/27 10:03:12 $
  * @author Oliver Becker
  */
 
@@ -66,6 +66,7 @@ public class PBufferFactory extends FactoryBase
       attrNames.add("name");
    }
 
+   /** @return <code>"process-buffer"</code> */
    public String getName()
    {
       return "process-buffer";
@@ -94,7 +95,7 @@ public class PBufferFactory extends FactoryBase
       }
 
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, locator, nameAtt, 
+      return new Instance(qName, parent, locator, nameAtt, 
                           "@{" + nameUri + "}" + nameLocal);
       // buffers are special variables with an "@" prefix
    }
@@ -106,10 +107,10 @@ public class PBufferFactory extends FactoryBase
       String bufName;
       String expName;
 
-      public Instance(String qName, Locator locator, String bufName, 
-                      String expName)
+      public Instance(String qName, NodeBase parent, Locator locator, 
+                      String bufName, String expName)
       {
-         super(qName, locator, true);
+         super(qName, parent, locator, true);
          this.bufName = bufName;
          this.expName = expName;
       }
@@ -126,7 +127,7 @@ public class PBufferFactory extends FactoryBase
             GroupBase group = context.currentGroup;
             while (buffer == null && group != null) {
                buffer = ((Hashtable)group.groupVars.peek()).get(expName);
-               group = group.parent;
+               group = group.parentGroup;
             }
          }
          if (buffer == null) {

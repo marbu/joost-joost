@@ -1,5 +1,5 @@
 /*
- * $Id: ElementFactory.java,v 1.2 2002/11/21 16:41:08 obecker Exp $
+ * $Id: ElementFactory.java,v 1.3 2002/11/27 10:03:11 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>element</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2002/11/21 16:41:08 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/27 10:03:11 $
  * @author Oliver Becker
  */
 
@@ -83,7 +83,8 @@ final public class ElementFactory extends FactoryBase
 
       checkAttributes(qName, attrs, attrNames, locator);
 
-      return new Instance(qName, locator, nsSet, nameAVT, namespaceAVT);
+      return new Instance(qName, parent, locator, nsSet, 
+                          nameAVT, namespaceAVT);
    }
 
 
@@ -93,10 +94,11 @@ final public class ElementFactory extends FactoryBase
       private Tree name, namespace;
       private Hashtable nsSet;
 
-      protected Instance(String qName, Locator locator, Hashtable nsSet,
+      protected Instance(String qName, NodeBase parent, Locator locator, 
+                         Hashtable nsSet,
                          Tree name, Tree namespace)
       {
-         super(qName, locator, false);
+         super(qName, parent, locator, false);
          this.nsSet = (Hashtable)nsSet.clone();
          this.name = name;
          this.namespace = namespace;

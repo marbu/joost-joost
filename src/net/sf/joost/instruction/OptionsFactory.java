@@ -1,5 +1,5 @@
 /*
- * $Id: OptionsFactory.java,v 1.3 2002/11/04 14:58:20 obecker Exp $
+ * $Id: OptionsFactory.java,v 1.4 2002/11/27 10:03:11 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Processor;
 /**
  * Factory for <code>options</code> elements, which are represented by 
  * the inner Instance class.
- * @version $Revision: 1.3 $ $Date: 2002/11/04 14:58:20 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/27 10:03:11 $
  * @author Oliver Becker
  */
 
@@ -69,7 +69,7 @@ final public class OptionsFactory extends FactoryBase
       attrNames.add("strip-space");
    }
 
-   /** @return "options" */
+   /** @return <code>"options"</code> */
    public String getName()
    {
       return "options";
@@ -110,7 +110,7 @@ final public class OptionsFactory extends FactoryBase
                          locator) != 1;
 
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, locator, encodingAtt, defStxpNsAtt,
+      return new Instance(qName, parent, locator, encodingAtt, defStxpNsAtt,
                           noMatchEvents, stripSpace, recognizeCdata);
    }
 
@@ -124,12 +124,13 @@ final public class OptionsFactory extends FactoryBase
       public boolean stripSpace;
       public boolean recognizeCdata;
 
-      public Instance(String qName, Locator locator, String outputEncoding,
+      public Instance(String qName, NodeBase parent, Locator locator, 
+                      String outputEncoding,
                       String defaultSTXPathNamespace,
                       byte noMatchEvents, boolean stripSpace,
                       boolean recognizeCdata)
       {
-         super(qName, locator, true);
+         super(qName, parent, locator, true);
          this.outputEncoding = outputEncoding;
          this.defaultSTXPathNamespace = defaultSTXPathNamespace;
          this.noMatchEvents = noMatchEvents;

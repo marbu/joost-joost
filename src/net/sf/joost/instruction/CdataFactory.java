@@ -1,5 +1,5 @@
 /*
- * $Id: CdataFactory.java,v 1.2 2002/11/25 13:41:15 obecker Exp $
+ * $Id: CdataFactory.java,v 1.3 2002/11/27 10:03:10 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,17 +41,16 @@ import net.sf.joost.stx.Emitter;
 /** 
  * Factory for <code>cdata</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2002/11/25 13:41:15 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/27 10:03:10 $
  * @author Oliver Becker
  */
 
 final public class CdataFactory extends FactoryBase
 {
-   private static final String name = "cdata";
-
+   /** @return <code>"cdata"</code> */
    public String getName()
    {
-      return name;
+      return "cdata";
    }
 
    public NodeBase createNode(NodeBase parent, String uri, String lName, 
@@ -60,7 +59,7 @@ final public class CdataFactory extends FactoryBase
       throws SAXParseException
    {
       checkAttributes(qName, attrs, null, locator);
-      return new Instance(qName, locator);
+      return new Instance(qName, parent, locator);
    }
 
 
@@ -70,9 +69,9 @@ final public class CdataFactory extends FactoryBase
       private StringEmitter strEmitter;
       private StringBuffer buffer;
 
-      public Instance(String qName, Locator locator)
+      public Instance(String qName, NodeBase parent, Locator locator)
       {
-         super(qName, locator, false);
+         super(qName, parent, locator, false);
          buffer = new StringBuffer();
          strEmitter = new StringEmitter(buffer, 
                                         "(`" + qName + "' started in line " +

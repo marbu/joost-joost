@@ -1,5 +1,5 @@
 /*
- * $Id: WhenFactory.java,v 1.3 2002/11/15 18:24:53 obecker Exp $
+ * $Id: WhenFactory.java,v 1.4 2002/11/27 10:03:13 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.grammar.EvalException;
 /** 
  * Factory for <code>when</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.3 $ $Date: 2002/11/15 18:24:53 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/27 10:03:13 $
  * @author Oliver Becker
  */
 
@@ -67,7 +67,7 @@ final public class WhenFactory extends FactoryBase
       singleton = this;
    }
 
-   /** @return <code>when</code> */
+   /** @return <code>"when"</code> */
    public String getName()
    {
       return "when";
@@ -86,7 +86,7 @@ final public class WhenFactory extends FactoryBase
       String testAtt = getAttribute(qName, attrs, "test", locator);
       Tree testExpr = parseExpr(testAtt, nsSet, locator);
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, locator, testExpr);
+      return new Instance(qName, parent, locator, testExpr);
    }
 
 
@@ -105,9 +105,10 @@ final public class WhenFactory extends FactoryBase
    {
       private Tree test;
 
-      protected Instance(String qName, Locator locator, Tree test)
+      protected Instance(String qName, NodeBase parent, Locator locator, 
+                         Tree test)
       {
-         super(qName, locator, false);
+         super(qName, parent, locator, false);
          this.test = test;
       }
 
