@@ -1,5 +1,5 @@
 /*
- * $Id: terminals.inc,v 1.2 2002/10/29 19:09:09 obecker Exp $
+ * $Id: terminals.inc,v 1.3 2003/01/05 21:16:16 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -27,6 +27,7 @@
 terminal BAR, SLASH, DSLASH, LBRACK, RBRACK, STAR, COLON;
 terminal DOT, DDOT, AT, DOLLAR;
 terminal QNAME, NCNAME, STRING, NUMBER;
+terminal PARENT, ANCESTOR, NAMESPACE;
 terminal NODE, TEXT, CDATA, PI_START, COMMENT;
 terminal OR, AND, PLUS, MINUS, DIV, MOD, LPAR, RPAR, COMMA;
 terminal EQ, NE, LT, LE, GT, GE;
