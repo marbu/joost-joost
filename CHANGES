@@ -1,11 +1,12 @@
 Changes since 20021107
 - added stx:choose, stx:when, stx:otherwise, stx:else
 - added stx:comment, stx:processing-instruction
-- stx:cdata, stx:variable, stx:assign, stx:param 
+- stx:cdata, stx:variable, stx:assign, stx:param, stx:attribute 
   may now contain arbitrary text producing instructions (aka "text template")
+- added translate()
 
 Changes since 20021104
-- added support for global parameters
+- added support for global parameters (stx:param)
 - Bugfixes: 634388, 634440
 
 Changes since 20021018
