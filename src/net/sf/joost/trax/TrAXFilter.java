@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXFilter.java,v 1.3 2002/10/15 19:02:14 zubow Exp $
+ * $Id: TrAXFilter.java,v 1.4 2002/11/11 18:44:49 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -91,8 +91,8 @@ public class TrAXFilter extends XMLFilterImpl {
                     eListener.fatalError(new TransformerConfigurationException(tE));
                     return;
                 } catch( TransformerException trE) {
-                    new TransformerConfigurationException(trE);
-                    return;
+                    log.fatal(tE);
+                    throw new SAXException(tE);
                 }
             } else {
                 log.fatal(tE);
