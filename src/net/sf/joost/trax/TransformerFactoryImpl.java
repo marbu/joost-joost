@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.5 2003/04/29 15:09:11 obecker Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.6 2003/05/19 14:48:49 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -19,12 +19,13 @@
  * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________.
+ * Contributor(s): Oliver Becker.
  */
 
 
 package net.sf.joost.trax;
 
+import net.sf.joost.TransformerHandlerResolver;
 import net.sf.joost.stx.Processor;
 
 //JAXP
@@ -49,7 +50,7 @@ import java.util.Hashtable;
 /**
  * This class implements the TransformerFactory-Interface for TraX.
  * With the help of this factory you can get a templates-object or
- * directly a tranformer-object for transformation process. If you
+ * directly a transformer-object for the transformation process. If you
  * use a SAXResult you can simply downcast to SAXTransformerFactory
  * and use it like a Sax-Parser.
  * @author Zubow
@@ -64,15 +65,16 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         LogFactory.getLog(TransformerFactoryImpl.class);
 
     //Member
-    private URIResolver resolver        = null;
-    private ErrorListener errorListener = null;
+    private   URIResolver uriResolver               = null;
+    private   ErrorListener errorListener           = null;
+    protected TransformerHandlerResolver thResolver = null;
 
-    // Synch object to gaurd against setting values from the TrAX interface
+    // Synch object to guard against setting values from the TrAX interface
     // or reentry while the transform is going on.
     private Boolean reentryGuard = new Boolean(true);
 
     /**
-     * defaultconstructor
+     * default constructor
      */
     public TransformerFactoryImpl() {}
 
@@ -116,7 +118,6 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     /**
      * Allows the user to retrieve specific attributes of the underlying
      * implementation.
-     * Feature not supported.
      * @param name The attribute name.
      * @return An object according to the attribute-name
      * @throws IllegalArgumentException When such a attribute does not exists.
@@ -124,14 +125,16 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     public Object getAttribute(String name)
         throws IllegalArgumentException {
 
-        throw new IllegalArgumentException("Feature not supported");
+        if (name.equals(KEY_TH_RESOLVER))
+            return thResolver;
+        else
+            throw new IllegalArgumentException("Feature not supported: " + name);
     }
 
     /**
      * Allows the user to set specific attributes on the underlying
      * implementation. An attribute in this context is defined to
      * be an option that the implementation provides.
-     * Feature not supported.
      * @param name Name of the attribute (key)
      * @param value Value of the attribute.
      * @throws IllegalArgumentException
@@ -139,7 +142,10 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     public void setAttribute(String name, Object value)
         throws IllegalArgumentException {
 
-        throw new IllegalArgumentException("Feature not supported");
+        if (name.equals(KEY_TH_RESOLVER))
+            thResolver = (TransformerHandlerResolver)value;
+        else
+            throw new IllegalArgumentException("Feature not supported: " + name);
     }
 
     /**
@@ -168,21 +174,21 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     }
 
     /**
-     * Getter for {@link #resolver}
+     * Getter for {@link #uriResolver}
      * @return The registered <code>URIResolver</code>
      */
     public URIResolver getURIResolver() {
-        return resolver;
+        return uriResolver;
     }
 
     /**
-     * Setter for {@link #resolver}
+     * Setter for {@link #uriResolver}
      * @param resolver The <code>URIResolver</code> object.
      */
     public void setURIResolver(URIResolver resolver) {
 
         synchronized (reentryGuard) {
-            this.resolver = resolver;
+            this.uriResolver = resolver;
         }
     }
 
@@ -303,8 +309,8 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
             Templates templates     = newTemplates(source);
             Transformer transformer = templates.newTransformer();
             //set the URI-Resolver
-            if (resolver != null) {
-                transformer.setURIResolver(resolver);
+            if (uriResolver != null) {
+                transformer.setURIResolver(uriResolver);
             }
             return(transformer);
         }
