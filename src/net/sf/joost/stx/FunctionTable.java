@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.4 2003/04/30 15:02:34 obecker Exp $
+ * $Id: FunctionTable.java,v 2.5 2003/04/30 15:53:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.4 $ $Date: 2003/04/30 15:02:34 $
+ * @version $Revision: 2.5 $ $Date: 2003/04/30 15:53:37 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -105,14 +105,14 @@ final public class FunctionTable implements Constants
     * @exception SAXParseException if the function wasn't found or the number
     *            of parameters is wrong
     */
-   public Instance getFunction(String uri, String lName, Tree args, 
-                               Locator locator)
+   public Instance getFunction(String uri, String lName, String qName,
+                               Tree args, Locator locator)
       throws SAXParseException
    {
       Instance function = 
          (Instance)functionHash.get("{" + uri + "}" + lName);
       if (function == null)
-         throw new SAXParseException("Unknown function `" + lName + "'", 
+         throw new SAXParseException("Unknown function `" + qName + "'", 
                                      locator);
 
       // Count parameters in args
@@ -126,12 +126,12 @@ final public class FunctionTable implements Constants
       }
       if (argc < function.getMinParCount())
          throw new SAXParseException("Too few parameters in call of " +
-                                     "function `" + lName + "' (" + 
+                                     "function `" + qName + "' (" + 
                                      function.getMinParCount() + " needed)", 
                                      locator);
       if (argc > function.getMaxParCount())
          throw new SAXParseException("Too many parameters in call of " +
-                                     "function `" + lName + "' (" + 
+                                     "function `" + qName + "' (" + 
                                      function.getMaxParCount() + " allowed)",
                                      locator);
       return function;

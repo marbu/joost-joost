@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 2.3 2003/04/30 15:05:16 obecker Exp $
+ * $Id: Tree.java,v 2.4 2003/04/30 15:53:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 2.3 $ $Date: 2003/04/30 15:05:16 $
+ * @version $Revision: 2.4 $ $Date: 2003/04/30 15:53:33 $
  * @author Oliver Becker
  */
 final public class Tree
@@ -238,7 +238,7 @@ final public class Tree
    {
       this(type, qName, t, nsSet, locator);
       this.left = left;
-      func = funcTable.getFunction(uri, lName, left, locator);
+      func = funcTable.getFunction(uri, lName, qName, left, locator);
    }
 
 
