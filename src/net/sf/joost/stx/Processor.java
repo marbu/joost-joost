@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.20 2003/08/28 16:09:49 obecker Exp $
+ * $Id: Processor.java,v 2.21 2003/08/29 13:30:27 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -69,7 +69,7 @@ import net.sf.joost.trace.DebugProcessor;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.20 $ $Date: 2003/08/28 16:09:49 $
+ * @version $Revision: 2.21 $ $Date: 2003/08/29 13:30:27 $
  * @author Oliver Becker
  */
 
@@ -339,8 +339,7 @@ public class Processor extends XMLFilterImpl
    public Processor(InputSource src, ErrorListener errorListener)
       throws IOException, SAXException
    {
-      // create one XMLReader for parsing *and* processing
-      this(getXMLReader(), src, errorListener);
+      this(null, src, errorListener);
    }
 
 
@@ -372,6 +371,9 @@ public class Processor extends XMLFilterImpl
                     ErrorListener errorListener)
       throws IOException, SAXException
    {
+      if (reader == null)
+         reader = getXMLReader();
+
       // create a Parser for parsing the STX transformation sheet
       ErrorHandlerImpl errorHandler = new ErrorHandlerImpl(errorListener,
                                                            true);
