@@ -1,5 +1,5 @@
 /*
- * $Id: StxEmitter.java,v 1.3 2002/10/22 13:05:26 obecker Exp $
+ * $Id: StxEmitter.java,v 1.4 2002/11/03 11:32:50 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -31,8 +31,9 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.ext.LexicalHandler;
 
 /**
- * Common interface - All EmitterImplementations have to implement this
+ * Common interface - All emitter implementations have to implement this
  * interface.
+ * @version $Revision: 1.4 $ $Date: 2002/11/03 11:32:50 $
  * @author Zubow
  */
 public interface StxEmitter

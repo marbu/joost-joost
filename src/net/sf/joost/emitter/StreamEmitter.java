@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.3 2002/10/29 19:09:08 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.4 2002/11/03 11:32:50 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -36,11 +36,12 @@ import java.util.Hashtable;
 
 
 /**
- *  This class implements the common interface <code>StxEmitter</code>.
+ *  This class implements an emitter for byte or character streams.
  *  Is is designed for using <code>StreamResult</code>.
  *  So this class outputs a StreamResult to the output target -
  *  {@link #outwriter} (e.g. a registered <code>FileWriter</code>).
- *  @author Zubow
+ *  @version $Revision: 1.4 $ $Date: 2002/11/03 11:32:50 $
+ *  @author Oliver Becker, Anatolij Zubow
  */
 public class StreamEmitter implements StxEmitter {
 
