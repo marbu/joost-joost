@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.23 2004/08/26 14:21:25 obecker Exp $
+ * $Id: FunctionTable.java,v 2.24 2004/09/14 20:44:51 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -51,7 +51,7 @@ import net.sf.joost.instruction.AnalyzeTextFactory;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.23 $ $Date: 2004/08/26 14:21:25 $
+ * @version $Revision: 2.24 $ $Date: 2004/09/14 20:44:51 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -2238,17 +2238,17 @@ final public class FunctionTable implements Constants
 
                theInstance = values[0].toJavaObject(targetClass);
 
+               if (theInstance == null)
+                  throw new EvalException(
+                     "Target object (first parameter) in the function call " +
+                     "to `" + theMethod.getName() + "' is null");
+            
                for (int i=0; i<formalParams.length; i++) {
                   currentParams[i] = 
                      values[i+1].toJavaObject(formalParams[i]);
                }
             }
 
-            if (theInstance == null)
-               throw new EvalException(
-                  "Target object (first parameter) in the function call to `" 
-                  + theMethod.getName() + "' is null");
-            
             // call method
             try {
                return new Value(theMethod.invoke(theInstance, currentParams));
