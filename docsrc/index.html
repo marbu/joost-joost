@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.59 2003/10/20 16:56:29 obecker Exp $ -->
+<!-- $Id: index.html,v 1.60 2003/10/31 17:45:00 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -99,15 +99,21 @@
          <li>and of course a Java platform, at least version 1.2</li>
       </ul>
       <p>
-      Run <em>Joost</em> with
-      <strong><code>java net.sf.joost.Main xml-source stx-sheet</code></strong>
+      Run <em>Joost</em> with<br>
+      <strong><code>java net.sf.joost.Main [opts] <em>xml-source stx-sheet</em>
+      [pars] {<em>stx-sheet</em> [pars]}</code></strong>
       <br>
-      or simply
-      <strong><code>java -jar joost.jar xml-source stx-sheet</code></strong>
+      or simply<br>
+      <strong><code>java -jar joost.jar [opts] <em>xml-source stx-sheet</em>
+      [pars] {<em>stx-sheet</em> [pars]}</code></strong>
       </p>
-      <p>Global parameters for the STX transformation sheet may be specified
-      by adding command line arguments of the form
-      <strong><code>parameter=value</code></strong>. <code>value</code>
+      <p>The dash character "<code>-</code>" for the <code>xml-source</code>
+      parameter denotes the standard input. The specification of multiple
+       <code>stx-sheet</code>s creates a transformation chain.
+      Global parameters for each STX transformation sheet may be specified
+      by adding command line arguments (<code>pars</code>) of the form
+      <strong><code>parameter=value</code></strong> directly after
+      each <code>stx-sheet</code>. <code>value</code>
       is interpreted as a string, not as an expression.</p>
       <p>
       To get a list of possible options use the command line parameter
