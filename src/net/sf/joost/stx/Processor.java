@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.5 2003/05/02 06:01:10 obecker Exp $
+ * $Id: Processor.java,v 2.6 2003/05/02 10:38:27 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -63,7 +63,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.5 $ $Date: 2003/05/02 06:01:10 $
+ * @version $Revision: 2.6 $ $Date: 2003/05/02 10:38:27 $
  * @author Oliver Becker
  */
 
@@ -602,10 +602,7 @@ public class Processor extends XMLFilterImpl
    {
       TemplateFactory.Instance found = null;
       TemplateFactory.Instance[] category = null;
-      // init value for priority doesn't really matter
-      double priority = Double.POSITIVE_INFINITY;
-      long position = 0;
-      int i = 0;
+      int tempIndex = -1;
 
       Data top = (Data)dataStack.peek();
 
@@ -613,39 +610,43 @@ public class Processor extends XMLFilterImpl
       // used for performance (to prevent calling foundUnprocessedTemplate())
       boolean notSelf = (top.lastProcStatus != PR_SELF);
 
-      // first: lookup in the array of visible templates
-      TemplateFactory.Instance[] vt = top.targetGroup.visibleTemplates;
-      for (i=0; i<vt.length; i++)
-         if (vt[i].matches(context, true) &&
-             (notSelf || foundUnprocessedTemplate(vt[i]))) {
-            category = vt;
-            break;
-         }
+      // the three precedence categories
+      TemplateFactory.Instance precCats[][] = {
+         top.targetGroup.visibleTemplates,
+         top.targetGroup.groupTemplates,
+         globalTemplates
+      };
 
-      // second: if nothing was found, lookup in the array of global templates
-      if (category == null)
-         for (i=0; i<globalTemplates.length; i++)
-            if (globalTemplates[i].matches(context, true) &&
-                (notSelf || foundUnprocessedTemplate(globalTemplates[i]))) {
-               category = globalTemplates;
+      // look up for a matching template in the categories
+      for (int i=0; i<precCats.length && category == null; i++)
+         for (int j=0; j<precCats[i].length; j++)
+            if (precCats[i][j].matches(context, true) &&
+                (notSelf || foundUnprocessedTemplate(precCats[i][j]))) {
+               // bingo!
+               category = precCats[i];
+               tempIndex = j;
                break;
             }
 
       if (category != null) { // means, we found a template
-         found = category[i];
-         priority = found.getPriority();
+         found = category[tempIndex];
+         double priority = found.getPriority();
          // look for more templates with the same priority in the same
          // category
-         if (++i < category.length && priority == category[i].getPriority()) {
-            for (; i<category.length &&
-                   priority == category[i].getPriority(); i++) {
-               if (category[i].matches(context, false))
+         if (++tempIndex < category.length && 
+             priority == category[tempIndex].getPriority()) {
+            for (; tempIndex<category.length &&
+                   priority == category[tempIndex].getPriority(); 
+                 tempIndex++) {
+               if (category[tempIndex].matches(context, false))
                   context.errorHandler.error(
                      "Ambigous template rule with priority " + priority +
                      ", found matching template rule already in line " +
                      found.lineNo,
-                     category[i].publicId, category[i].systemId,
-                     category[i].lineNo, category[i].colNo);
+                     category[tempIndex].publicId, 
+                     category[tempIndex].systemId,
+                     category[tempIndex].lineNo, 
+                     category[tempIndex].colNo);
             }
          }
       }
