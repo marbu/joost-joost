@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 2.9 2004/01/16 13:26:13 obecker Exp $
+ * $Id: Parser.java,v 2.10 2004/01/21 11:12:45 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -47,7 +47,7 @@ import net.sf.joost.instruction.*;
 /** 
  * Creates the tree representation of an STX transformation sheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 2.9 $ $Date: 2004/01/16 13:26:13 $
+ * @version $Revision: 2.10 $ $Date: 2004/01/21 11:12:45 $
  * @author Oliver Becker
  */
 
@@ -328,6 +328,8 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
       try {
          if (collectedCharacters.length() != 0)
             processCharacters();
+
+         currentNode.setEndLocation(context);
 
          if (currentNode instanceof LitElementFactory.Instance)
             // restore the newly declared namespaces from this element
