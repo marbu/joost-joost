@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 1.11 2003/01/27 17:59:51 obecker Exp $
+ * $Id: PBufferFactory.java,v 1.12 2003/02/02 15:16:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.11 $ $Date: 2003/01/27 17:59:51 $
+ * @version $Revision: 1.12 $ $Date: 2003/02/02 15:16:29 $
  * @author Oliver Becker
  */
 
@@ -96,17 +96,16 @@ public class PBufferFactory extends FactoryBase
    /** The inner Instance class */
    public class Instance extends ProcessBase
    {
-      String bufName, expName, groupQName, groupExpName;
+      String bufName, expName;
 
+      // Constructor
       public Instance(String qName, NodeBase parent, Locator locator, 
                       String bufName, String expName, String groupQName,
                       String groupExpName)
       {
-         super(qName, parent, locator);
+         super(qName, parent, locator, groupQName, groupExpName);
          this.bufName = bufName;
          this.expName = expName;
-         this.groupQName = groupQName;
-         this.groupExpName = groupExpName;
       }
 
 
@@ -136,21 +135,6 @@ public class PBufferFactory extends FactoryBase
                "Can't process active buffer `" + bufName + "'",
                publicId, systemId, lineNo, colNo);
             return processStatus; // if the errorHandler returns
-         }
-
-         context.nextProcessGroup = null;
-         if (groupExpName != null) {
-            if (context.currentGroup.namedGroups.get(groupExpName) == null) {
-               context.errorHandler.error(
-                  "Unknown target group `" + groupQName + 
-                  "' specified for `" + qName + "'", 
-                  publicId, systemId, lineNo, colNo);
-               // recover: ignore group attribute
-            }
-            else {
-               // change to a new base group for matching
-               context.nextProcessGroup = groupExpName;
-            }
          }
 
          // process stx:with-param

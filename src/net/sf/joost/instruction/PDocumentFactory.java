@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 1.5 2003/01/27 17:59:52 obecker Exp $
+ * $Id: PDocumentFactory.java,v 1.6 2003/02/02 15:16:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,7 +46,7 @@ import net.sf.joost.stx.Value;
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.5 $ $Date: 2003/01/27 17:59:52 $
+ * @version $Revision: 1.6 $ $Date: 2003/02/02 15:16:29 $
  * @author Oliver Becker
  */
 
@@ -103,17 +103,15 @@ public class PDocumentFactory extends FactoryBase
    {
       Tree href;
       String baseUri;
-      String groupQName, groupExpName;
 
+      // Constructor
       public Instance(String qName, NodeBase parent, Locator locator, 
                       Tree href, String baseUri, 
                       String groupQName, String groupExpName)
       {
-         super(qName, parent, locator);
+         super(qName, parent, locator, groupQName, groupExpName);
          this.baseUri = baseUri;
          this.href = href;
-         this.groupQName = groupQName;
-         this.groupExpName = groupExpName;
       }
 
 
@@ -121,21 +119,6 @@ public class PDocumentFactory extends FactoryBase
                               Context context, short processStatus)
          throws SAXException
       {
-         context.nextProcessGroup = null;
-         if (groupExpName != null) {
-            if (context.currentGroup.namedGroups.get(groupExpName) == null) {
-               context.errorHandler.error(
-                  "Unknown target group `" + groupQName + 
-                  "' specified for `" + qName + "'", 
-                  publicId, systemId, lineNo, colNo);
-               // recover: ignore group attribute, use current group
-            }
-            else {
-               // change to a new base group for matching
-               context.nextProcessGroup = groupExpName;
-            }
-         }
-
          Processor proc = context.currentProcessor;
          XMLReader reader = Processor.getXMLReader();
          reader.setErrorHandler(context.errorHandler);

@@ -1,5 +1,5 @@
 /*
- * $Id: CallProcedureFactory.java,v 1.1 2003/01/30 17:19:23 obecker Exp $
+ * $Id: CallProcedureFactory.java,v 1.2 2003/02/02 15:16:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.Emitter;
 /**
  * Factory for <code>call-procedure</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.1 $ $Date: 2003/01/30 17:19:23 $
+ * @version $Revision: 1.2 $ $Date: 2003/02/02 15:16:29 $
  * @author Oliver Becker
  */
 
@@ -79,7 +79,7 @@ public class CallProcedureFactory extends FactoryBase
       String procName = getExpandedName(nameAtt, nsSet, locator);
 
       String groupAtt = attrs.getValue("group");
-      String groupName = groupAtt != null
+      String groupName = (groupAtt != null)
          ? groupName = getExpandedName(groupAtt, nsSet, locator)
          : null;
 
@@ -93,18 +93,16 @@ public class CallProcedureFactory extends FactoryBase
    public class Instance extends ProcessBase
    {
       String procQName, procExpName;
-      String groupQName, groupExpName;
       ProcedureFactory.Instance procedure = null;
 
+      // Constructor
       public Instance(String qName, NodeBase parent, Locator locator, 
                       String procQName, String procExpName,
                       String groupQName, String groupExpName)
       {
-         super(qName, parent, locator);
+         super(qName, parent, locator, groupQName, groupExpName);
          this.procQName = procQName;
          this.procExpName = procExpName;
-         this.groupQName = groupQName;
-         this.groupExpName = groupExpName;
       }
 
 
@@ -118,27 +116,13 @@ public class CallProcedureFactory extends FactoryBase
             super.process(emitter, eventStack, context, processStatus);
 
             if (procedure == null) { // very first call, determine object
-               GroupBase g;
-               if (groupExpName != null) {
-                  g = (GroupBase)
-                     context.currentGroup.namedGroups.get(groupExpName);
-                  if (g == null) {
-                     context.errorHandler.error(
-                        "Unknown target group `" + groupQName + 
-                        "' specified for `" + qName + "'", 
-                        publicId, systemId, lineNo, colNo);
-                     // recover: ignore group attribute, use current group
-                  }
-               }
-               else
-                  g = context.currentGroup;
-
+               // nextProcessGroup stems from ProcessBase
                procedure = (ProcedureFactory.Instance)
-                  g.visibleProcedures.get(procExpName);
+                  nextProcessGroup.visibleProcedures.get(procExpName);
                if (procedure == null) {
                   // not found, search global templates
                   procedure = (ProcedureFactory.Instance)
-                     g.globalProcedures.get(procExpName);
+                     nextProcessGroup.globalProcedures.get(procExpName);
                }
 
                if (procedure == null) {

@@ -1,5 +1,5 @@
 /*
- * $Id: ProcessBase.java,v 1.1 2002/12/23 08:23:18 obecker Exp $
+ * $Id: ProcessBase.java,v 1.2 2003/02/02 15:16:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,9 +43,20 @@ public class ProcessBase extends NodeBase
    // stack for parameters, used in the subclasses
    private Stack paramStack = new Stack();
 
-   public ProcessBase(String qName, NodeBase parent, Locator locator)
+   // names of the "group" attribute (if present)
+   private String groupQName, groupExpName;
+
+   // base group for the next processing; set in the first call
+   protected GroupBase nextProcessGroup = null;
+
+   private boolean incomplete = true;
+
+   public ProcessBase(String qName, NodeBase parent, Locator locator,
+                      String groupQName, String groupExpName)
    {
       super(qName, parent, locator, false);
+      this.groupQName = groupQName;
+      this.groupExpName = groupExpName;
    }
 
 
@@ -66,6 +77,30 @@ public class ProcessBase extends NodeBase
       throws SAXException
    {
       if ((processStatus & ST_PROCESSING) != 0) {
+         if (incomplete) { // first entered
+            // Evaluate group attribute
+            if (groupExpName != null) {
+               nextProcessGroup = (GroupBase)
+                  context.currentGroup.namedGroups.get(groupExpName);
+               if (nextProcessGroup == null)
+                  context.errorHandler.error(
+                     "Unknown target group `" + groupQName + 
+                     "' specified for `" + qName + "'", 
+                     publicId, systemId, lineNo, colNo);
+                  // recover: ignore group attribute, use current group
+            }
+            if (nextProcessGroup == null) { // means: still null
+               // use parent group 
+               if (!(this instanceof PSelfFactory.Instance)) {
+                  nextProcessGroup = context.currentGroup;
+               }
+               // else (process-self): next process group = last group,
+               // i.e. the group must be determined by the processor
+            }
+            incomplete = false;
+         }
+         context.nextProcessGroup = nextProcessGroup;
+
          // save and reset parameters
          paramStack.push(context.passedParameters.clone());
          context.passedParameters.clear();
