@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEvent.java,v 1.12 2003/06/16 13:24:37 obecker Exp $
+ * $Id: SAXEvent.java,v 1.13 2003/06/30 19:22:43 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -35,7 +35,7 @@ import java.util.Hashtable;
 /** 
  * SAXEvent stores all information attached to an incoming SAX event,
  * it is the representation of a node in STX.
- * @version $Revision: 1.12 $ $Date: 2003/06/16 13:24:37 $
+ * @version $Revision: 1.13 $ $Date: 2003/06/30 19:22:43 $
  * @author Oliver Becker
  */
 final public class SAXEvent
@@ -215,24 +215,6 @@ final public class SAXEvent
    }
 
 
-
-   // *******************************************************************
-
-   /** 
-    * This class replaces java.lang.Long for counting because I need to 
-    * change the wrapped value and want to avoid the creation of a new
-    * object in each increment. Is this really better (faster)?
-    */
-   private final class Counter
-   {
-      public long value;
-      public Counter()
-      {
-         value = 1;
-      }
-   }
-
-
    /**
     * Increments the associated counters for an element.
     */
@@ -296,76 +278,76 @@ final public class SAXEvent
     */
    private void _countPosition(String[] keys)
    {
-      Counter c;
+      // Use an array instead of the Long class, because the wrapped value
+      // needs to be updated.
+      long[] c;
       for (int i=0; i<keys.length; i++) {
-         c = (Counter)posHash.get(keys[i]);
+         c = (long[])posHash.get(keys[i]);
          if (c == null)
-            posHash.put(keys[i], new Counter());
-         else
-            c.value++;
-         // posHash.put(keys[i], new Long(l.longValue()+1));
+            posHash.put(keys[i], c = new long[1]);
+         c[0]++;
       }
    }
 
 
    public long getPositionOf(String expName)
    {
-      Counter c = (Counter)posHash.get(expName);
+      long[] c = (long[])posHash.get(expName);
       if (c == null) {
          // Shouldn't happen
          throw new NullPointerException();
       }
-      return c.value;
+      return c[0];
    }
 
    public long getPositionOfNode()
    {
-      Counter c = (Counter)posHash.get("node()");
+      long[] c = (long[])posHash.get("node()");
       if (c == null) {
          // Shouldn't happen
          throw new NullPointerException();
       }
-      return c.value;
+      return c[0];
    }
 
    public long getPositionOfText()
    {
-      Counter c = (Counter)posHash.get("text()");
+      long[] c = (long[])posHash.get("text()");
       if (c == null) {
          // Shouldn't happen
          throw new NullPointerException();
       }
-      return c.value;
+      return c[0];
    }
 
    public long getPositionOfCDATA()
    {
-      Counter c = (Counter)posHash.get("cdata()");
+      long[] c = (long[])posHash.get("cdata()");
       if (c == null) {
          // Shouldn't happen
          throw new NullPointerException();
       }
-      return c.value;
+      return c[0];
    }
 
    public long getPositionOfComment()
    {
-      Counter c = (Counter)posHash.get("comment()");
+      long[] c = (long[])posHash.get("comment()");
       if (c == null) {
          // Shouldn't happen
          throw new NullPointerException();
       }
-      return c.value;
+      return c[0];
    }
 
    public long getPositionOfPI(String target)
    {
-      Counter c = (Counter)posHash.get("pi(" + target + ")");
+      long[] c = (long[])posHash.get("pi(" + target + ")");
       if (c == null) {
          // Shouldn't happen
          throw new NullPointerException();
       }
-      return c.value;
+      return c[0];
    }
 
 
