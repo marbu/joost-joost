@@ -1,9 +1,11 @@
 Changes since 20021018
 - implemented the "attributes" attribute of stx:copy
 - new functions: 
-  starts-with, contains, substring, substring-before, substring-after
+  prefix, starts-with, contains, substring, substring-before, substring-after
 - CDATA processing: pattern cdata() and instruction stx:cdata
 - buffers: stx:buffer, stx:result-buffer, stx:process-buffer
+- stx:element
+- made strip-space deprecated (stx:transform, stx:group)
 - Bugfix: mappings will be reported for all namespaces currently declared,
   not only for those used in element and attribute names
   (see bug 625480)
