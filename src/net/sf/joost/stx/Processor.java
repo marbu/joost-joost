@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.3 2003/04/29 15:07:20 obecker Exp $
+ * $Id: Processor.java,v 2.4 2003/04/30 14:59:47 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -55,7 +55,6 @@ import net.sf.joost.instruction.AbstractInstruction;
 import net.sf.joost.instruction.GroupBase;
 import net.sf.joost.instruction.GroupFactory;
 import net.sf.joost.instruction.NodeBase;
-import net.sf.joost.instruction.OptionsFactory;
 import net.sf.joost.instruction.PSiblingsFactory;
 import net.sf.joost.instruction.TemplateFactory;
 import net.sf.joost.instruction.TransformFactory;
@@ -64,7 +63,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.3 $ $Date: 2003/04/29 15:07:20 $
+ * @version $Revision: 2.4 $ $Date: 2003/04/30 14:59:47 $
  * @author Oliver Becker
  */
 
@@ -83,22 +82,6 @@ public class Processor extends XMLFilterImpl
       PASS_THROUGH_PI        = 0x8,
       PASS_THROUGH_ATTRIBUTE = 0x10,
       PASS_THROUGH_ALL       = ~PASS_THROUGH_NONE; // all bits set
-
-   /**
-    * <p>
-    * We need a node from the transformation sheet whose location can be 
-    * passed to
-    * {@link Emitter#endElement Emitter.endElement}. Per default this is
-    * the root element <code>stx:transform</code>. If <code>stx:options</code>
-    * exists then it is this <code>stx:options</code>.
-    * <p>
-    * In case copy is the default action for non-matched elements,
-    * (<code>&lt;stx:options no-match-events="copy"/&gt;</code>)
-    * a single <code>stx:element-start</code> will cause an error when
-    * creating the end tag while performing the default action. The location
-    * of this error then will be the <code>stx:options</code> element.
-    */
-   private NodeBase copyLocation;
 
    /** The node representing the transformation sheet */
    private TransformFactory.Instance transformNode;
@@ -138,10 +121,6 @@ public class Processor extends XMLFilterImpl
 
    /** Last event (this Processor uses one look-ahead) */
    private SAXEvent lastElement = null;
-
-   /** The output encoding specified in the transformation sheet */
-   private String outputEncoding = "UTF-8";
-
 
    /** The namespace support object provided by SAX2 */
    private NamespaceSupport nsSupport = new NamespaceSupport();
@@ -260,8 +239,9 @@ public class Processor extends XMLFilterImpl
        * Constructor used when processing a built-in template
        * @param vt visibleTemplates
        */
-      Data(TemplateFactory.Instance[] vt)
+      Data(GroupBase cg, TemplateFactory.Instance[] vt)
       {
+         currentGroup = cg;
          visibleTemplates = vt;
          // other field are default initialized with 0 or null resp.
       }
@@ -355,11 +335,9 @@ public class Processor extends XMLFilterImpl
    public Processor(Processor proc)
    {
       transformNode = proc.transformNode;
-      copyLocation = proc.copyLocation;
       globalTemplates = proc.globalTemplates;
       dataStack.push(proc.dataStack.elementAt(0));
       context = proc.context.copy();
-      outputEncoding = proc.outputEncoding;
       setParent(proc.getParent());
    }
 
@@ -430,23 +408,11 @@ public class Processor extends XMLFilterImpl
       setErrorHandler(context.errorHandler); // register error handler
 
       context.currentProcessor = this;
-      context.currentGroup = transformNode = stxParser.getTransformNode();
-      if (transformNode.options != null) {
-         OptionsFactory.Instance optionsNode = transformNode.options;
-         outputEncoding = optionsNode.outputEncoding;
-         if (optionsNode.defaultSTXPathNamespace != null)
-            context.defaultSTXPathNamespace =
-               optionsNode.defaultSTXPathNamespace;
-         context.passThrough = optionsNode.passThrough;
-         context.stripSpace = optionsNode.stripSpace;
-         context.recognizeCdata = optionsNode.recognizeCdata;
-         copyLocation = optionsNode;
-      }
-      else
-         copyLocation = transformNode;
+      context.currentGroup = context.nextProcessGroup = transformNode = 
+         stxParser.getTransformNode();
 
       // array of visible templates from the top-level group
-      dataStack.push(new Data(transformNode.visibleTemplates));
+      dataStack.push(new Data(transformNode, transformNode.visibleTemplates));
 
       // array of global templates
       Vector tempVec = transformNode.getGlobalTemplates();
@@ -534,7 +500,7 @@ public class Processor extends XMLFilterImpl
     */
    public String getOutputEncoding()
    {
-      return outputEncoding;
+      return transformNode.outputEncoding;
    }
 
 
@@ -831,60 +797,56 @@ public class Processor extends XMLFilterImpl
       }
       else {
          // no template found, default action
+         GroupBase npg = context.nextProcessGroup;
          switch (event.type) {
          case SAXEvent.ROOT:
             dataStack.push(
-               new Data(((Data)dataStack.peek()).visibleTemplates));
+               new Data(context.currentGroup,
+                        ((Data)dataStack.peek()).visibleTemplates));
             break;
          case SAXEvent.ELEMENT:
-            if((context.passThrough & PASS_THROUGH_ELEMENT) != 0)
+            if((npg.passThrough & PASS_THROUGH_ELEMENT) != 0)
                emitter.startElement(event.uri, event.lName, event.qName,
                                     event.attrs, event.namespaces,
-                                    copyLocation.publicId,
-                                    copyLocation.systemId,
-                                    copyLocation.lineNo, copyLocation.colNo);
+                                    npg.publicId, npg.systemId,
+                                    npg.lineNo, npg.colNo);
             dataStack.push(
-               new Data(((Data)dataStack.peek()).visibleTemplates));
+               new Data(npg, ((Data)dataStack.peek()).visibleTemplates));
             break;
          case SAXEvent.TEXT:
-            if((context.passThrough & PASS_THROUGH_TEXT) != 0) {
+            if((npg.passThrough & PASS_THROUGH_TEXT) != 0) {
                emitter.characters(event.value.toCharArray(), 
                                   0, event.value.length());
             }
             break;
          case SAXEvent.CDATA:
-            if((context.passThrough & PASS_THROUGH_TEXT) != 0) {
-               emitter.startCDATA(copyLocation.publicId,
-                                  copyLocation.systemId,
-                                  copyLocation.lineNo, copyLocation.colNo);
+            if((npg.passThrough & PASS_THROUGH_TEXT) != 0) {
+               emitter.startCDATA(npg.publicId, npg.systemId,
+                                  npg.lineNo, npg.colNo);
                emitter.characters(event.value.toCharArray(), 
                                   0, event.value.length());
                emitter.endCDATA();
             }
             break;
          case SAXEvent.COMMENT:
-            if((context.passThrough & PASS_THROUGH_COMMENT) != 0)
+            if((npg.passThrough & PASS_THROUGH_COMMENT) != 0)
                emitter.comment(event.value.toCharArray(), 
                                0, event.value.length(),
-                               copyLocation.publicId,
-                               copyLocation.systemId,
-                               copyLocation.lineNo, copyLocation.colNo);
+                               npg.publicId, npg.systemId,
+                               npg.lineNo, npg.colNo);
             break;
          case SAXEvent.PI:
-            if((context.passThrough & PASS_THROUGH_PI) != 0)
+            if((npg.passThrough & PASS_THROUGH_PI) != 0)
                emitter.processingInstruction(event.qName, event.value,
-                                             copyLocation.publicId,
-                                             copyLocation.systemId,
-                                             copyLocation.lineNo, 
-                                             copyLocation.colNo);
+                                             npg.publicId, npg.systemId,
+                                             npg.lineNo, npg.colNo);
             break;
          case SAXEvent.ATTRIBUTE:
-            if((context.passThrough & PASS_THROUGH_ATTRIBUTE) != 0)
+            if((npg.passThrough & PASS_THROUGH_ATTRIBUTE) != 0)
                emitter.addAttribute(event.uri, event.qName, event.lName,
                                     event.value,
-                                    copyLocation.publicId,
-                                    copyLocation.systemId,
-                                    copyLocation.lineNo, copyLocation.colNo);
+                                    npg.publicId, npg.systemId,
+                                    npg.lineNo, npg.colNo);
             break;
          default:
             log.warn("no default action for " + event);
@@ -907,7 +869,7 @@ public class Processor extends XMLFilterImpl
       // determine if the look-ahead is a text node
       String s = collectedCharacters.toString();
       if (s.length() == 0 || 
-          (context.stripSpace && s.trim().length() == 0)) {
+          (context.nextProcessGroup.stripSpace && s.trim().length() == 0)) {
          context.lookAhead = currentEvent;
       }
       else {
@@ -942,7 +904,7 @@ public class Processor extends XMLFilterImpl
          if (log.isDebugEnabled())
             log.debug("`" + s + "'");
 
-      if (context.stripSpace && s.trim().length() == 0) {
+      if (context.nextProcessGroup.stripSpace && s.trim().length() == 0) {
          collectedCharacters.setLength(0);
          return; // white-space only characters found, do nothing
       }
@@ -1294,11 +1256,12 @@ public class Processor extends XMLFilterImpl
          short prStatus = data.lastProcStatus;
          if (data.template == null) {
             // perform default action?
-            if ((context.passThrough & PASS_THROUGH_ELEMENT) != 0)
+            if ((data.currentGroup.passThrough & PASS_THROUGH_ELEMENT) != 0)
                emitter.endElement(uri, lName, qName,
-                                  copyLocation.publicId,
-                                  copyLocation.systemId,
-                                  copyLocation.lineNo, copyLocation.colNo);
+                                  data.currentGroup.publicId,
+                                  data.currentGroup.systemId,
+                                  data.currentGroup.lineNo, 
+                                  data.currentGroup.colNo);
          }
          else if (prStatus == PR_CHILDREN || prStatus == PR_SELF) {
             context.position = data.contextPosition; // restore position
@@ -1484,7 +1447,7 @@ public class Processor extends XMLFilterImpl
    public void startCDATA()
       throws SAXException
    {
-      if (skipDepth > 0 || !context.recognizeCdata)
+      if (skipDepth > 0 || !context.nextProcessGroup.recognizeCdata)
          return;
 
       if (DEBUG)
@@ -1507,7 +1470,7 @@ public class Processor extends XMLFilterImpl
    public void endCDATA()
       throws SAXException
    {
-      if (!context.recognizeCdata)
+      if (!context.nextProcessGroup.recognizeCdata)
          return;
 
       if (lastElement != null)
