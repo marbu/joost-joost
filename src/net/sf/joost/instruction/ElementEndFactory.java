@@ -1,5 +1,5 @@
 /*
- * $Id: ElementEndFactory.java,v 1.4 2002/12/17 16:46:41 obecker Exp $
+ * $Id: ElementEndFactory.java,v 1.5 2003/01/15 14:01:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,9 +40,9 @@ import net.sf.joost.grammar.Tree;
 
 
 /**
- * Factory for <code>element-end</code> elements, which are represented by
+ * Factory for <code>end-element</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 1.4 $ $Date: 2002/12/17 16:46:41 $
+ * @version $Revision: 1.5 $ $Date: 2003/01/15 14:01:32 $
  * @author Oliver Becker
  */
 
@@ -61,10 +61,10 @@ final public class ElementEndFactory extends FactoryBase
    }
 
 
-   /** @return <code>"element-end"</code> */
+   /** @return <code>"end-element"</code> */
    public String getName()
    {
-      return "element-end";
+      return "end-element";
    }
 
    public NodeBase createNode(NodeBase parent, String uri, String lName, 
@@ -89,7 +89,7 @@ final public class ElementEndFactory extends FactoryBase
    }
 
 
-   /** Represents an instance of the <code>element-end</code> element. */
+   /** Represents an instance of the <code>end-element</code> element. */
    final public class Instance extends NodeBase
    {
       private Tree name, namespace;
