@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEmitter.java,v 1.4 2003/09/08 09:42:12 obecker Exp $
+ * $Id: SAXEmitter.java,v 1.5 2004/09/19 13:49:39 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,9 +25,6 @@
 
 package net.sf.joost.emitter;
 
-import net.sf.joost.Constants;
-
-//SAX2
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;

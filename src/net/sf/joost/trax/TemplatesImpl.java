@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.18 2004/08/21 21:39:16 obecker Exp $
+ * $Id: TemplatesImpl.java,v 1.19 2004/09/19 13:41:38 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,20 +25,18 @@
 
 package net.sf.joost.trax;
 
-import net.sf.joost.stx.Parser;
-import net.sf.joost.stx.Processor;
-
-//import JAXP
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
-
-import javax.xml.transform.*;
-import javax.xml.transform.TransformerConfigurationException;
 import java.util.Properties;
 
+import javax.xml.transform.Templates;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+
+import net.sf.joost.stx.Parser;
+import net.sf.joost.stx.Processor;
 import net.sf.joost.trace.DebugProcessor;
-import net.sf.joost.trace.ParserListenerMgr;
-import net.sf.joost.emitter.StxEmitter;
+
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
 
 /**
  * This class implements the Templates-Interface for TraX.

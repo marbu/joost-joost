@@ -1,5 +1,5 @@
 /*
- * $Id: TransformationErrListener.java,v 1.2 2003/09/03 09:44:16 obecker Exp $
+ * $Id: TransformationErrListener.java,v 1.3 2004/09/19 13:41:38 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -27,7 +27,6 @@ package net.sf.joost.trax;
 
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerConfigurationException;
 
 /**
  * This class acts as a default ErrorListener for the

@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.18 2004/08/19 19:01:00 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.19 2004/09/19 13:49:39 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,22 +24,26 @@
 
 package net.sf.joost.emitter;
 
-//SAX2
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.Properties;
+
+import javax.xml.transform.OutputKeys;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
-
-import java.io.*;
-import java.util.Enumeration;
-import java.util.Properties;
-import javax.xml.transform.OutputKeys;
 
 /**
  *  This class implements an emitter for byte or character streams.
  *  Is is designed for using <code>StreamResult</code>.
  *  So this class outputs a StreamResult to the output target -
  *  {@link #outwriter} (e.g. a registered <code>FileWriter</code>).
- *  @version $Revision: 1.18 $ $Date: 2004/08/19 19:01:00 $
+ *  @version $Revision: 1.19 $ $Date: 2004/09/19 13:49:39 $
  *  @author Oliver Becker, Anatolij Zubow
  */
 public class StreamEmitter implements StxEmitter {

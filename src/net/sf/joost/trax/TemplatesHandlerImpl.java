@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesHandlerImpl.java,v 1.7 2003/07/27 10:38:02 zubow Exp $
+ * $Id: TemplatesHandlerImpl.java,v 1.8 2004/09/19 13:41:38 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,17 +25,14 @@
 
 package net.sf.joost.trax;
 
-import net.sf.joost.stx.Parser;
-
-//import JAXP
-import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
-
-import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.TemplatesHandler;
+
+import net.sf.joost.stx.Parser;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.Locator;
 
 
 /**

@@ -1,5 +1,5 @@
 /*
- * $Id: ParseContext.java,v 2.3 2004/01/23 09:54:29 obecker Exp $
+ * $Id: ParseContext.java,v 2.4 2004/09/19 13:45:55 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,16 +25,19 @@
 package net.sf.joost.stx;
 
 import java.util.Hashtable;
+
 import javax.xml.transform.URIResolver;
+
+import net.sf.joost.instruction.TransformFactory;
+
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.Locator;
-import net.sf.joost.instruction.TransformFactory;
 
 
 /**
  * Instances of this class provide context information while parsing
  * an STX document.
- * @version $Revision: 2.3 $ $Date: 2004/01/23 09:54:29 $
+ * @version $Revision: 2.4 $ $Date: 2004/09/19 13:45:55 $
  * @author Oliver Becker
  */
 public final class ParseContext

@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 2.14 2004/03/29 16:55:18 obecker Exp $
+ * $Id: Parser.java,v 2.15 2004/09/19 13:48:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,6 +24,17 @@
 
 package net.sf.joost.stx;
 
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.Stack;
+import java.util.Vector;
+
+import javax.xml.transform.URIResolver;
+
+import net.sf.joost.Constants;
+import net.sf.joost.instruction.*;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
@@ -32,22 +43,11 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.NamespaceSupport;
 
-import java.util.EmptyStackException;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Stack;
-import java.util.Vector;
-import javax.xml.transform.URIResolver;
-
-import net.sf.joost.Constants;
-import net.sf.joost.instruction.*;
-
 
 /** 
  * Creates the tree representation of an STX transformation sheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 2.14 $ $Date: 2004/03/29 16:55:18 $
+ * @version $Revision: 2.15 $ $Date: 2004/09/19 13:48:01 $
  * @author Oliver Becker
  */
 

@@ -1,5 +1,5 @@
 /*
- * $Id: StringEmitter.java,v 1.6 2004/02/12 09:10:45 zubow Exp $
+ * $Id: StringEmitter.java,v 1.7 2004/09/19 13:49:39 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,18 +24,14 @@
 
 package net.sf.joost.emitter;
 
-//SAX2
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
-//Joost
-import net.sf.joost.stx.SAXEvent;
-
 
 /**
  * This class implements an emitter that collects characters events
- * @version $Revision: 1.6 $ $Date: 2004/02/12 09:10:45 $
+ * @version $Revision: 1.7 $ $Date: 2004/09/19 13:49:39 $
  * @author Oliver Becker
  */
 
