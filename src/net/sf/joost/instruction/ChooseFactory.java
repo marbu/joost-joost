@@ -1,5 +1,5 @@
 /*
- * $Id: ChooseFactory.java,v 1.1 2002/11/14 13:17:28 obecker Exp $
+ * $Id: ChooseFactory.java,v 1.2 2002/11/14 16:09:13 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.stx.Context;
 /** 
  * Factory for <code>choose</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.1 $ $Date: 2002/11/14 13:17:28 $
+ * @version $Revision: 1.2 $ $Date: 2002/11/14 16:09:13 $
  * @author Oliver Becker
  */
 
@@ -113,7 +113,7 @@ final public class ChooseFactory extends FactoryBase
       {
          if (children == null)
             throw new SAXParseException(
-               "`" + qName + "' mustn't be empty", 
+               "`" + qName + "' must have at least one `when' child", 
                publicId, systemId, lineNo, colNo);
       }
 
