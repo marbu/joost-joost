@@ -1,3 +1,6 @@
+Changes since 20031219
+- Bugfix: 869207
+
 Changes since 20030914
 - allow nested XPath comments (: ... :)
   (yet not covered by the STX spec)
