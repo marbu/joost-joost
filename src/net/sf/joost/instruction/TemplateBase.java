@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateBase.java,v 2.1 2003/04/29 15:03:16 obecker Exp $
+ * $Id: TemplateBase.java,v 2.2 2003/05/02 05:58:09 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,18 +43,20 @@ public abstract class TemplateBase extends NodeBase
 {
    /** Visibility values */
    public static final int
-      PRIVATE_VISIBLE = 0,
-      PUBLIC_VISIBLE = 1,
+      LOCAL_VISIBLE = 0,
+      GROUP_VISIBLE = 1,
       GLOBAL_VISIBLE = 2;
 
    /** Attribute value strings for the above visibility values */
    protected static final String[] VISIBILITY_VALUES = 
-   { "private", "public", "global" }; // note: same order required!
-
+   { "local", "group", "global" }; // note: same order required!
 
    /** The visibility of this template */
    public int visibility;
    
+   /** Whether this template is public */
+   public boolean isPublic;
+
    /** Does this template establish a new scope for group variables? */
    private boolean newScope;
    
@@ -69,12 +71,13 @@ public abstract class TemplateBase extends NodeBase
    //
 
    protected TemplateBase(String qName, NodeBase parent, Locator locator,
-                          int visibility, boolean newScope)
+                          int visibility, boolean isPublic, boolean newScope)
       throws SAXParseException
    {
       super(qName, parent, locator, true);
       parentGroup = (GroupBase)parent;
       this.visibility = visibility;
+      this.isPublic = isPublic;
       this.newScope = newScope;
    }
 

@@ -1,5 +1,5 @@
 /*
- * $Id: ProcedureFactory.java,v 2.1 2003/04/29 15:03:16 obecker Exp $
+ * $Id: ProcedureFactory.java,v 2.2 2003/05/02 05:58:08 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>procedure</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.1 $ $Date: 2003/04/29 15:03:16 $
+ * @version $Revision: 2.2 $ $Date: 2003/05/02 05:58:08 $
  * @author Oliver Becker
  */
 
@@ -55,6 +55,7 @@ public final class ProcedureFactory extends FactoryBase
       attrNames = new HashSet();
       attrNames.add("name");
       attrNames.add("visibility");
+      attrNames.add("public");
       attrNames.add("new-scope");
    }
 
@@ -83,9 +84,14 @@ public final class ProcedureFactory extends FactoryBase
                                        TemplateBase.VISIBILITY_VALUES, 
                                        locator);
       if (visibility == -1)
-         visibility =  TemplateBase.PRIVATE_VISIBLE; // default value
+         visibility =  TemplateBase.LOCAL_VISIBLE; // default value
 
-      // default is false
+      // default is "no" (false)
+      boolean isPublic =
+         getEnumAttValue("public", attrs, YESNO_VALUES, locator) 
+         == YES_VALUE;
+
+      // default is "no" (false)
       boolean newScope = 
          getEnumAttValue("new-scope", attrs, YESNO_VALUES, locator)
          == YES_VALUE;
@@ -93,7 +99,7 @@ public final class ProcedureFactory extends FactoryBase
       checkAttributes(qName, attrs, attrNames, locator);
 
       return new Instance(qName, parent, locator,
-                          nameAtt, expName, visibility, newScope);
+                          nameAtt, expName, visibility, isPublic, newScope);
    }
 
 
@@ -114,10 +120,10 @@ public final class ProcedureFactory extends FactoryBase
       // Constructor
       protected Instance(String qName, NodeBase parent, Locator locator,
                          String procName, String expName, 
-                         int visibility, boolean newScope)
+                         int visibility, boolean isPublic, boolean newScope)
          throws SAXParseException
       {
-         super(qName, parent, locator, visibility, newScope);
+         super(qName, parent, locator, visibility, isPublic, newScope);
          this.expName = expName;
          this.procName = procName;
       }
