@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.37 2003/03/13 10:52:52 obecker Exp $
+ * $Id: Processor.java,v 1.38 2003/03/13 16:27:11 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -63,7 +63,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.37 $ $Date: 2003/03/13 10:52:52 $
+ * @version $Revision: 1.38 $ $Date: 2003/03/13 16:27:11 $
  * @author Oliver Becker
  */
 
@@ -1000,8 +1000,9 @@ public class Processor extends XMLFilterImpl
    private void clearProcessSiblings(Data stopData, boolean clearLast)
       throws SAXException
    {
-      // replace top-most event
+      // replace top-most event and local variables
       Object event = eventStack.pop();
+      Hashtable storedVars = context.localVars;
       Data data;
       do {
          data = (Data)dataStack.pop();
@@ -1009,6 +1010,7 @@ public class Processor extends XMLFilterImpl
          eventStack.push(data.sibEvent);
          context.position = data.contextPosition; // restore position
          context.lookAhead = data.lookAhead;      // restore look ahead
+         context.localVars = data.localVars;      // restore variables
          short prStatus = ST_SIBLINGS;
          do {
             // ignore further stx:process-siblings instructions in this
@@ -1026,13 +1028,15 @@ public class Processor extends XMLFilterImpl
             stopData.visibleTemplates = 
                context.nextProcessGroup.visibleTemplates;
             stopData.psiblings = context.psiblings;
+            stopData.localVars = context.localVars;
             dataStack.push(stopData);
          }
          // remove this event
          eventStack.pop();
       } while (data != stopData); // last object
-      // restore old event stack
+      // restore old event stack and local variables
       eventStack.push(event);
+      context.localVars = storedVars;
    }
 
 
