@@ -1,5 +1,5 @@
 /*
- * $Id: ParamFactory.java,v 2.4 2003/06/03 14:30:24 obecker Exp $
+ * $Id: ParamFactory.java,v 2.5 2003/06/20 11:13:49 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>params</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.4 $ $Date: 2003/06/03 14:30:24 $
+ * @version $Revision: 2.5 $ $Date: 2003/06/20 11:13:49 $
  * @author Oliver Becker
  */
 
@@ -71,19 +71,11 @@ final public class ParamFactory extends FactoryBase
       throws SAXParseException
    {
       if (parent == null || 
-          !(parent instanceof TransformFactory.Instance ||
+          !(parent instanceof GroupBase ||   // transform, group
             parent instanceof TemplateBase)) // template, procedure
          throw new SAXParseException(
             "`" + qName + "' must be a top level element " +
-            "or a child of stx:template or stx:procedure",
-            context.locator);
-
-      if(parent instanceof TemplateBase &&
-         parent != parent.lastChild && // not the first
-         !(parent.lastChild.getNode() instanceof Instance)) // not a stx:param
-         throw new SAXParseException(
-            "`" + qName + "' instructions must always occur as first " +
-            "children of `" + parent.qName + "'",
+            "or a child of stx:group, stx:template, or stx:procedure",
             context.locator);
 
       String nameAtt = getAttribute(qName, attrs, "name", context);
@@ -118,6 +110,7 @@ final public class ParamFactory extends FactoryBase
       private Tree select;
       private boolean required;
       private AbstractInstruction contents, successor;
+      private Hashtable globalParams;
 
       protected Instance(String qName, NodeBase parent, ParseContext context,
                          String varName, String expName, Tree select,
@@ -131,6 +124,7 @@ final public class ParamFactory extends FactoryBase
          this.varName = varName;
          this.select = select;
          this.required = required;
+         this.globalParams = context.transformNode.globalParams;
       }
 
 
@@ -149,10 +143,9 @@ final public class ParamFactory extends FactoryBase
          throws SAXException
       {
          Value v;
-         if (parent instanceof TransformFactory.Instance) {
+         if (parent instanceof GroupBase) {
             // passed value from the outside
-            v = (Value)
-               ((TransformFactory.Instance)parent).globalParams.get(expName);
+            v = (Value)globalParams.get(expName);
          }
          else {
             // passed value from another template via stx:with-param
@@ -207,7 +200,7 @@ final public class ParamFactory extends FactoryBase
       {
          // determine scope
          Hashtable varTable;
-         if (parent instanceof TransformFactory.Instance) // global para
+         if (parent instanceof GroupBase) // global parameter
             varTable = (Hashtable)((GroupBase)parent).groupVars.peek();
          else
             varTable = context.localVars;

@@ -1,5 +1,5 @@
 /*
- * $Id: GroupFactory.java,v 2.5 2003/06/03 14:30:22 obecker Exp $
+ * $Id: GroupFactory.java,v 2.6 2003/06/20 11:13:49 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.stx.Processor;
 /** 
  * Factory for <code>group</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.5 $ $Date: 2003/06/03 14:30:22 $
+ * @version $Revision: 2.6 $ $Date: 2003/06/20 11:13:49 $
  * @author Oliver Becker
  */
 
@@ -178,8 +178,7 @@ final public class GroupFactory extends FactoryBase
       {
          if (node instanceof TemplateBase || // template, procedure
              node instanceof GroupBase ||    // group, transform (= include)
-             node instanceof BufferFactory.Instance ||
-             node instanceof VariableFactory.Instance)
+             node instanceof VariableBase)   // variable, param, buffer
             super.insert(node);
          else
             throw new SAXParseException(
