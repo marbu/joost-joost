@@ -1,5 +1,5 @@
 /*
- * $Id: HtmlEmitter.java,v 1.1 2004/10/17 20:37:24 obecker Exp $
+ * $Id: HtmlEmitter.java,v 1.2 2004/10/30 15:23:18 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,13 +26,14 @@ package net.sf.joost.emitter;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashSet;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 /**
  *  This class implements an emitter for html code.
- *  @version $Revision: 1.1 $ $Date: 2004/10/17 20:37:24 $
+ *  @version $Revision: 1.2 $ $Date: 2004/10/30 15:23:18 $
  *  @author Thomas Behrends
  */
 public class HtmlEmitter extends StreamEmitter 
@@ -40,12 +41,24 @@ public class HtmlEmitter extends StreamEmitter
    /** output property: omit-xml-declaration */
    private boolean propOmitXmlDeclaration = false;
 
-   private StringBuffer nsDeclarations = new StringBuffer();
-   private String lastQName;
-   private Attributes lastAttrs;
-
    private boolean insideCDATA = false;
 
+   /** Empty HTML 4.01 elements according to
+       http://www.w3.org/TR/1999/REC-html401-19991224/sgml/dtd.html */
+   private static final HashSet emptyHTMLElements;
+   static {
+      emptyHTMLElements = new HashSet();
+      emptyHTMLElements.add("BR");
+      emptyHTMLElements.add("AREA");
+      emptyHTMLElements.add("LINK");
+      emptyHTMLElements.add("IMG");
+      emptyHTMLElements.add("PARAM");
+      emptyHTMLElements.add("HR");
+      emptyHTMLElements.add("INPUT");
+      emptyHTMLElements.add("COL");
+      emptyHTMLElements.add("BASE");
+      emptyHTMLElements.add("META");
+   }
 
    /** Constructor */
    public HtmlEmitter(Writer writer, String encoding)
@@ -63,47 +76,6 @@ public class HtmlEmitter extends StreamEmitter
    public void setOmitXmlDeclaration(boolean flag)
    {
       propOmitXmlDeclaration = flag;
-   }
-
-
-   /**
-    * Outputs a start or empty element tag if there is one stored.
-    * @param end true if this method was called due to an endElement event,
-    *            i.e. an empty element tag has to be output.
-    * @return true if something was output (needed for endElement to
-    *         determine, if a separate end tag must be output)
-    */
-   private boolean processLastElement(boolean end)
-      throws SAXException 
-   {
-      if (lastQName != null) {
-         StringBuffer out = new StringBuffer("<");
-         out.append(lastQName);
-
-         out.append(nsDeclarations);
-         nsDeclarations.setLength(0);
-
-         int length = lastAttrs.getLength();
-         for (int i=0; i<length; i++) {
-            out.append(' ').append(lastAttrs.getQName(i)).append("=\"");
-            int startIndex = 0;
-            out.append(HtmlEncoder.encode(lastAttrs.getValue(i)));
-            out.append('\"');
-         }
-
-         out.append(end ? " />" : ">");
-
-         try {
-            writer.write(out.toString());
-         } 
-         catch (IOException ex) {
-            throw new SAXException(ex);
-         }
-
-         lastQName = null;
-         return true;
-      }
-      return false;
    }
 
 
@@ -132,8 +104,6 @@ public class HtmlEmitter extends StreamEmitter
    public void endDocument() 
       throws SAXException 
    {
-      processLastElement(false);
-
       try {
          writer.write("\n");
          writer.flush();
@@ -151,9 +121,25 @@ public class HtmlEmitter extends StreamEmitter
                             Attributes attrs)
       throws SAXException 
    {
-      processLastElement(false);
-      this.lastQName = qName;
-      this.lastAttrs = attrs;
+      StringBuffer out = new StringBuffer("<");
+      out.append(qName);
+
+      int length = attrs.getLength();
+      for (int i=0; i<length; i++) {
+         out.append(' ').append(attrs.getQName(i)).append("=\"");
+         int startIndex = 0;
+         out.append(HtmlEncoder.encode(attrs.getValue(i)));
+         out.append('\"');
+      }
+
+      out.append(">");
+
+      try {
+         writer.write(out.toString());
+      } 
+      catch (IOException ex) {
+         throw new SAXException(ex);
+      }
    }
 
 
@@ -163,9 +149,8 @@ public class HtmlEmitter extends StreamEmitter
    public void endElement(String uri, String lName, String qName)
       throws SAXException 
    {
-      // output end tag only if processLastElement didn't output
-      // something (here: empty element tag)
-      if (processLastElement(true) == false) {
+      // output end tag only if it is not an empty element in HTML
+      if (!emptyHTMLElements.contains(qName.toUpperCase())) {
          try {
             writer.write("</");  
             writer.write(qName);
@@ -184,25 +169,25 @@ public class HtmlEmitter extends StreamEmitter
    public void characters(char[] ch, int start, int length)
       throws SAXException 
    {
-      processLastElement(false);
-
       try {
-         String txt = new String(ch, start, length);
-         if (txt.indexOf("<script") != -1) {
+         if (insideCDATA) {
+            // Check that the characters can be represented in the current 
+            // encoding
+            for (int i=0; i<length; i++)
+               if (!charsetEncoder.canEncode(ch[start+i]))
+                  throw new SAXException("Cannot output character with code "
+                                         + (int)ch[start+i] 
+                                         + " in the encoding `" + encoding
+                                         + "'");
             writer.write(ch, start, length);
          }
-         else {
-            if (insideCDATA)
-               writer.write(ch, start, length);
-            else
-               writer.write(HtmlEncoder.encode(txt));
-         }
+         else
+            writer.write(HtmlEncoder.encode(new String(ch, start, length)));
       } 
       catch (IOException ex) {
          throw new SAXException(ex);
       }
    }
-
 
 
    /**
@@ -211,8 +196,6 @@ public class HtmlEmitter extends StreamEmitter
    public void comment(char[] ch, int start, int length)
       throws SAXException 
    {
-      processLastElement(false);
-
       try {
          writer.write("<!--");
          writer.write(ch, start, length);
@@ -221,5 +204,20 @@ public class HtmlEmitter extends StreamEmitter
       catch (IOException ex) {
          throw new SAXException(ex);
       }
+   }
+   
+
+   /**
+    * CDATA sections act as "disable-otput-escaping" replacement in HTML
+    * (which is of course a kind of a "hack" ...)
+    */
+   public void startCDATA() throws SAXException
+   {
+      insideCDATA = true;
+   }
+   
+   public void endCDATA() throws SAXException
+   {
+      insideCDATA = false;
    }
 }
