@@ -1,8 +1,6 @@
-ExprParser.cup ExprParser.java
-PatternParser.cup PatternParser.java 
+ExprParser.cup
+ExprParser.java
+PatternParser.cup
+PatternParser.java 
 Sym.java 
 Yylex.java 
-ExprParser.java
-PatternParser.java
-PatternParser.cup
-ExprParser.cup
