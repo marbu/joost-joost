@@ -1,5 +1,5 @@
 /*
- * $Id: IncludeFactory.java,v 2.1 2003/06/01 19:39:05 obecker Exp $
+ * $Id: IncludeFactory.java,v 2.2 2003/06/03 07:05:05 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Processor;
 /** 
  * Factory for <code>include</code> elements, which will be replaced by
  * groups for the included transformation sheet
- * @version $Revision: 2.1 $ $Date: 2003/06/01 19:39:05 $
+ * @version $Revision: 2.2 $ $Date: 2003/06/03 07:05:05 $
  * @author Oliver Becker
  */
 
@@ -106,6 +106,7 @@ final public class IncludeFactory extends FactoryBase
       TransformFactory.Instance tfi = stxParser.getTransformNode();
       // transfer compilable nodes to the calling Parser object
       tfi.compilableNodes = stxParser.compilableNodes;
+      tfi.qName = qName; // replace name for error reporting
       return tfi;
    }
 }

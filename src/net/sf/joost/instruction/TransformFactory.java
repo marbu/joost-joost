@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 2.3 2003/06/01 19:39:05 obecker Exp $
+ * $Id: TransformFactory.java,v 2.4 2003/06/03 07:05:05 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.Processor;
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 2.3 $ $Date: 2003/06/01 19:39:05 $
+ * @version $Revision: 2.4 $ $Date: 2003/06/03 07:05:05 $
  * @author Oliver Becker
  */
 
@@ -80,6 +80,7 @@ public class TransformFactory extends FactoryBase
          throw new SAXParseException("`" + qName + 
                                      "' is allowed only as root element",
                                      locator);
+      // parent.systemId != locator.systemId means: it is included
 
       String version = getAttribute(qName, attrs, "version", locator);
       if (!version.equals("1.0"))
@@ -170,7 +171,7 @@ public class TransformFactory extends FactoryBase
          if (compilableNodes != null)
             // will only happen after this transform element was inserted by
             // an stx:include instruction
-            throw new SAXParseException("stx:include must be empty",
+            throw new SAXParseException("`" + qName + "' must be empty",
                                         node.publicId, node.systemId, 
                                         node.lineNo, node.colNo);
 
