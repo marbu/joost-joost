@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 2.8 2003/06/16 13:24:36 obecker Exp $
+ * $Id: Tree.java,v 2.9 2003/07/01 11:49:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 2.8 $ $Date: 2003/06/16 13:24:36 $
+ * @version $Revision: 2.9 $ $Date: 2003/07/01 11:49:32 $
  * @author Oliver Becker
  */
 final public class Tree
@@ -314,23 +314,23 @@ final public class Tree
                return false;
             if (setPosition)
                context.position = 
-                  parent.getPositionOf("{" + uri + "}" + lName);
+                  parent.getPositionOf(uri, lName);
             break;
          case WILDCARD:
             if (setPosition)
-               context.position = parent.getPositionOf("{*}*");
+               context.position = parent.getPositionOf("*", "*");
             break;
          case LOCAL_WILDCARD:
             if (!uri.equals(e.uri))
                return false;
             if (setPosition)
-               context.position = parent.getPositionOf("{" + uri + "}*");
+               context.position = parent.getPositionOf(uri, "*");
             break;
          case URI_WILDCARD:
             if (!lName.equals(e.lName))
                return false;
             if (setPosition)
-               context.position = parent.getPositionOf("{*}" + lName);
+               context.position = parent.getPositionOf("*", lName);
             break;
          }
          return true;
