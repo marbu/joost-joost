@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.22 2004/10/17 20:37:19 obecker Exp $
+ * $Id: Main.java,v 1.23 2004/11/01 08:56:23 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.22 $ $Date: 2004/10/17 20:37:19 $
+ * @version $Revision: 1.23 $ $Date: 2004/11/01 08:56:23 $
  * @author Oliver Becker
  */
 public class Main implements Constants
@@ -85,6 +85,9 @@ public class Main implements Constants
 
       // set to true if -pdf was specified on the command line
       boolean doFOP = false;
+      
+      // set to true if -nodecl was specified on the command line
+      boolean nodecl = false;
 
       // debugging
       boolean dontexit = false;
@@ -118,6 +121,10 @@ public class Main implements Constants
                }
                else if ("-pdf".equals(args[i])) {
                   doFOP = true;
+                  continue;
+               }
+               else if ("-nodecl".equals(args[i])) {
+                  nodecl = true;
                   continue;
                }
                else if ("-wait".equals(args[i])) {
@@ -336,6 +343,7 @@ public class Main implements Constants
 + "  -version         print the version information and exit\n"
 + "  -o <filename>    write the result to the file <filename>\n"
 + "  -m <classname>   use a <classname> object for stx:message output\n"
++ "  -nodecl          omit XML declaration in the result\n"
 + "  -time            print timing information on standard error output\n"
 + "  -pdf             pass the result to FOP for PDF generation (requires -o)\n"
 + (DEBUG ?
@@ -348,7 +356,7 @@ public class Main implements Constants
 : "\n")
 + "The '-' for the xml-src parameter denotes the standard input\n"
 + "Parameters for the transformation (e.g. <stx:param name=\"par\"/>) must be"
-+ "\nspecified as par=value\n");
++ "\nspecified as par=value\n\n");
          }
 
          if (wrongParameter) {
@@ -363,7 +371,7 @@ public class Main implements Constants
 
             // set log level specified on the the command line
             if (log4jLevel != null)
-               log4j.getRootLogger().setLevel(log4jLevel);
+               Logger.getRootLogger().setLevel(log4jLevel);
          }
 
 
@@ -399,6 +407,9 @@ public class Main implements Constants
             // the last line is a short-cut for
             // processor.setProperty(
             //    "http://xml.org/sax/properties/lexical-handler", emitter);
+
+            if (nodecl)
+               emitter.setOmitXmlDeclaration(true);
          }
 
          InputSource is;
@@ -496,6 +507,11 @@ public class Main implements Constants
       System.err.print(
          "\nJoost alpha build @@@DATE@@@ by Oliver Becker\n" + 
          "(Joost is Oli's original streaming transformer)\n\n" + msg);
+      Object l = OptionalLog.getLog(Main.class);
+      System.err.println("Logging is " 
+                         + ((l != null) 
+                               ? "enabled using " + l.getClass().getName() 
+                               : "disabled"));
       System.exit(0);
    }
 }
