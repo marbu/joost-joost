@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.6 2003/05/19 14:45:33 obecker Exp $
+ * $Id: TemplatesImpl.java,v 1.7 2003/05/23 11:15:55 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -169,6 +169,9 @@ public class TemplatesImpl implements Templates, TrAXConstants {
             log.debug(iE);
             throw new TransformerConfigurationException(iE.getMessage(), iE);
         } catch (org.xml.sax.SAXException sE) {
+            Exception emb = sE.getException();
+            if (emb instanceof TransformerConfigurationException)
+                throw (TransformerConfigurationException)emb;
             log.debug(sE);
             throw new TransformerConfigurationException(sE.getMessage(), sE);
         } catch (java.lang.NullPointerException nE) {

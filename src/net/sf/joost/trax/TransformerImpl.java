@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.12 2003/05/19 15:43:42 obecker Exp $
+ * $Id: TransformerImpl.java,v 1.13 2003/05/23 11:15:55 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -206,25 +206,17 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
                 }
                 //perform result
                 performResults(result, out);
-            } catch (Exception ex) {
-                if(errorListener != null) {
-                    try {
-                        errorListener.fatalError(new TransformerException(ex.getMessage(), ex));
-                        return;
-                    } catch( TransformerException e2) {
-                        TransformerException tE =
-                                new TransformerException(ex.getMessage(), ex);
-                        log.fatal(tE);
-                        throw tE;
-                    }
-                } else {
-                    if (DEBUG)
-                        ex.printStackTrace();
-                    TransformerException tE =
-                            new TransformerException(ex.getMessage(), ex);
-                    log.fatal(tE);
-                    throw tE;
-                }
+            } catch (SAXException ex) {
+                Exception emb = ex.getException();
+                if (emb instanceof TransformerException)
+                    throw (TransformerException)emb;
+                TransformerException tE =
+                    new TransformerException(ex.getMessage(), ex);
+                log.fatal(tE);
+                throw tE;
+            } catch (IOException ex) { 
+                // will this ever happen?
+                throw new TransformerException(ex.getMessage(), ex);
             }
         }
     }
