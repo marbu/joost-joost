@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.3 2002/10/08 19:19:42 zubow Exp $
+ * $Id: TransformerImpl.java,v 1.4 2002/10/08 19:32:10 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -171,7 +171,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
                     //}
                     if (saxSource.getXMLReader() != null) {
                         // should not be an DOMSource
-                        if (!(xmlSource instanceof DOMSource)) {
+                        if (xmlSource instanceof SAXSource) {
                             this.processor.setParent(saxSource.getXMLReader());
                         }
                     }
