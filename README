@@ -1,10 +1,13 @@
-$Id: README,v 1.6 2004/03/30 08:23:36 obecker Exp $
+$Id: README,v 1.7 2004/04/19 12:28:04 obecker Exp $
 
 This module contains Java source files for Joost.
 
 The file build.xml is the Ant buildfile. Apache Ant is a Java-based build tool
 and can be downloaded from http://ant.apache.org/
 Required version: 1.6 or above
+
+If you don't have Ant and just want to use your preferred Java IDE then
+check out the section at the end of this README.
 
 For compiling you need several jars in the lib subdirectory or in your
 classpath respectively. The CVS contains only joostGen.jar, compiled from 
@@ -29,3 +32,29 @@ add manually a SAX2 compliant parser and the JAXP 1.1 interfaces, too.
 
 This software is released under the Mozilla Public License Version 1.1,
 see http://www.mozilla.org/MPL/
+
+
+
+===========================================================================
+
+
+Creating Java source files in the net.sf.joost.grammar package without Ant
+--------------------------------------------------------------------------
+
+Normally Ant calls some tools to create the missing source files. 
+This section describes how to do these steps manually.
+I assume that you are in a Unix environment. On a Windows platform 
+just change the slashes to backslashes.
+
+cd src/net/sf/joost/grammar
+java -cp ../../../../../lib/joostGen.jar JLex.Main Yylex
+java -cp ../../../../../lib/joostGen.jar net.sf.joost.helper.Preprocess Expr.cup ExprParser.cup
+java -cp ../../../../../lib/joostGen.jar net.sf.joost.helper.Preprocess Pattern.cup PatternParser.cup
+  in ExprParser.cup: replace manually "@@@START-NT@@@" with "Expr"
+  in PatternParser.cup: replace manually "@@@START-NT@@@" with "Pattern"
+java -cp ../../../../../lib/joostGen.jar java_cup.Main -parser PatternParser -symbols Sym -runtime net.sf.joost.grammar.cup -interface -compact_red -nowarn PatternParser.cup
+java -cp ../../../../../lib/joostGen.jar java_cup.Main -parser ExprParser -symbols Sym -runtime net.sf.joost.grammar.cup -interface -compact_red -nowarn ExprParser.cup
+cd ../../../../..
+
+You only need to repeat these steps if you change one of the files Yylex,
+Expr.cup, Pattern.cup, terminals.inc or expr.inc.
