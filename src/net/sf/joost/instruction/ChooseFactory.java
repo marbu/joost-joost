@@ -1,5 +1,5 @@
 /*
- * $Id: ChooseFactory.java,v 1.6 2002/11/27 10:03:10 obecker Exp $
+ * $Id: ChooseFactory.java,v 1.7 2003/02/18 17:20:27 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.stx.Context;
 /** 
  * Factory for <code>choose</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.6 $ $Date: 2002/11/27 10:03:10 $
+ * @version $Revision: 1.7 $ $Date: 2003/02/18 17:20:27 $
  * @author Oliver Becker
  */
 
@@ -117,11 +117,23 @@ final public class ChooseFactory extends FactoryBase
       public void append(NodeBase node)
          throws SAXParseException
       {
+         if (node instanceof TextNode) {
+            if (((TextNode)node).isWhitespaceNode())
+               return;
+            else
+               throw new SAXParseException(
+                  "`" + qName +
+                  "' may only contain stx:when and stx:otherwise children " +
+                  "(encountered text)",
+                  node.publicId, node.systemId, node.lineNo, node.colNo);
+         }
+
          if (!(node instanceof WhenFactory.Instance || 
                node instanceof OtherwiseFactory.Instance))
             throw new SAXParseException(
                "`" + qName + 
-               "' may only contain stx:when and stx:otherwise children",
+               "' may only contain stx:when and stx:otherwise children " +
+               "(encountered `" + node.qName + "')",
                node.publicId, node.systemId, node.lineNo, node.colNo);
 
          if (otherwisePresent)

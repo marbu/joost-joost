@@ -1,5 +1,5 @@
 /*
- * $Id: ProcessBase.java,v 1.3 2003/02/08 16:23:54 obecker Exp $
+ * $Id: ProcessBase.java,v 1.4 2003/02/18 17:20:28 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -86,9 +86,20 @@ public class ProcessBase extends NodeBase
    public void append(NodeBase node) 
       throws SAXParseException
    {
-      if (!(node instanceof WithParamFactory.Instance)) 
+      if (node instanceof TextNode) {
+         if (((TextNode)node).isWhitespaceNode())
+            return;
+         else
+            throw new SAXParseException(
+               "`" + qName + "' must have only stx:with-param children " +
+               "(encountered text)",
+               node.publicId, node.systemId, node.lineNo, node.colNo);
+      }
+
+      if (!(node instanceof WithParamFactory.Instance))
          throw new SAXParseException(
-            "`" + qName + "' must have only stx:with-param children",
+            "`" + qName + "' must have only stx:with-param children " +
+            "(encountered `" + node.qName + "')",
             node.publicId, node.systemId, node.lineNo, node.colNo);
 
       super.append(node);

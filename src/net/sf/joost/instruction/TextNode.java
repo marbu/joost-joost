@@ -1,5 +1,5 @@
 /*
- * $Id: TextNode.java,v 1.2 2002/11/27 10:03:12 obecker Exp $
+ * $Id: TextNode.java,v 1.3 2003/02/18 17:20:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -35,7 +35,7 @@ import net.sf.joost.stx.Context;
 
 /** 
  * Instances created by this factory represent text nodes in the stylesheet
- * @version $Revision: 1.2 $ $Date: 2002/11/27 10:03:12 $
+ * @version $Revision: 1.3 $ $Date: 2003/02/18 17:20:29 $
  * @author Oliver Becker
  */
 
@@ -56,5 +56,15 @@ public class TextNode extends NodeBase
       if ((processStatus & ST_PROCESSING) != 0)
          emitter.characters(string.toCharArray(), 0, string.length());
       return processStatus;
+   }
+
+
+   /**
+    * @return <code>true</code> if this text node contains only
+    *         white space characters, otherwise <code>false</code>
+    */
+   public boolean isWhitespaceNode()
+   {
+      return string.trim().length() == 0;
    }
 }
