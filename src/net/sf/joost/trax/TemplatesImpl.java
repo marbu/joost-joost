@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.10 2003/07/27 10:38:02 zubow Exp $
+ * $Id: TemplatesImpl.java,v 1.11 2003/08/28 16:12:44 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -30,6 +30,7 @@ import net.sf.joost.stx.Processor;
 
 //import JAXP
 import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
 
 import javax.xml.transform.*;
 import javax.xml.transform.TransformerConfigurationException;
@@ -91,18 +92,20 @@ public class TemplatesImpl implements Templates, TrAXConstants {
 
     /**
      * Constructor.
+     * @param reader The <code>XMLReader</code> for parsing the stylesheet
      * @param isource The <code>InputSource</code> of the stylesheet
      * @param factory A reference on a <code>TransformerFactoryImpl</code>
      * @throws TransformerConfigurationException When an error occurs.
      */
-    protected TemplatesImpl(InputSource isource, TransformerFactoryImpl factory)
+    protected TemplatesImpl(XMLReader reader, InputSource isource, 
+                            TransformerFactoryImpl factory)
         throws TransformerConfigurationException {
 
         log.debug("calling constructor with SystemId " + isource.getSystemId());
         this.factory = factory;
         try {
             //configure template
-            init(isource);
+            init(reader, isource);
         } catch (TransformerConfigurationException tE) {
             factory.defaultErrorListener.fatalError(tE);
         }
@@ -145,11 +148,13 @@ public class TemplatesImpl implements Templates, TrAXConstants {
     /**
      * Configures the <code>Templates</code> - initializing by parsing the
      * stylesheet.
+     * @param reader The <code>XMLReader</code> for parsing the stylesheet
      * @param isource The <code>InputSource</code> of the stylesheet
      * @throws TransformerConfigurationException When an error occurs while
      *  initializing the <code>Templates</code>.
      */
-    private void init(InputSource isource) throws TransformerConfigurationException {
+    private void init(XMLReader reader, InputSource isource) 
+        throws TransformerConfigurationException {
 
         log.debug("init with InputSource " + isource.getSystemId());
         try {
@@ -164,9 +169,9 @@ public class TemplatesImpl implements Templates, TrAXConstants {
 
             if (debugmode) {
                 log.info("init transformer in debug mode");
-                processor = new DebugProcessor(isource, factory.getErrorListener());
+                processor = new DebugProcessor(reader, isource, factory.getErrorListener());
             } else {
-                processor = new Processor(isource, factory.getErrorListener());
+                processor = new Processor(reader, isource, factory.getErrorListener());
             }
             if (factory.thResolver != null)
                 processor.setTransformerHandlerResolver(factory.thResolver);
@@ -181,6 +186,7 @@ public class TemplatesImpl implements Templates, TrAXConstants {
             throw new TransformerConfigurationException(sE.getMessage(), sE);
         } catch (java.lang.NullPointerException nE) {
             log.debug(nE);
+            nE.printStackTrace(System.err);
             throw new TransformerConfigurationException("could not found value for property javax.xml.parsers.SAXParser ", nE);
         }
     }

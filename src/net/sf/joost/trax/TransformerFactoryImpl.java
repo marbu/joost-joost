@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.10 2003/07/27 10:38:02 zubow Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.11 2003/08/28 16:12:44 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -261,8 +261,9 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
                           source.getSystemId());
             try {
                 SAXSource saxSource = getSAXSource(source, true);
-                InputSource isource = saxSource.getInputSource();
-                Templates template = new TemplatesImpl(isource, this);
+                Templates template = 
+                    new TemplatesImpl(saxSource.getXMLReader(),
+                                      saxSource.getInputSource(), this);
                 return template;
             } catch (TransformerConfigurationException tE) {
                 defaultErrorListener.fatalError(tE);
