@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.18 2004/08/26 14:21:25 obecker Exp $
+ * $Id: Value.java,v 1.19 2004/09/29 06:09:36 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -19,7 +19,7 @@
  * are Copyright (C) ______ _______________________. 
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): Thomas Behrends.
  */
 
 package net.sf.joost.stx;
@@ -32,11 +32,20 @@ import java.util.ArrayList;
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.18 $ $Date: 2004/08/26 14:21:25 $
+ * @version $Revision: 1.19 $ $Date: 2004/09/29 06:09:36 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
 {
+   // value constants
+   public final static Value VAL_TRUE = new Value(true);
+   public final static Value VAL_FALSE = new Value(false);
+   public final static Value VAL_EMPTY = new Value();
+   public final static Value VAL_EMPTY_STRING = new Value("");
+   public final static Value VAL_ZERO = new Value(0);
+   public final static Value VAL_NAN = new Value(Double.NaN);
+
+
    /** type constant */
    public static final int 
       EMPTY   = 0,
@@ -50,19 +59,19 @@ public class Value implements Cloneable
    public int type;
 
    /** for <code>{@link #type} == {@link #NODE}</code> */
-   public SAXEvent event;
+   private SAXEvent event;
 
    /** for <code>{@link #type} == {@link #BOOLEAN}</code> */
-   public boolean bool;
+   private boolean bool;
 
    /** for <code>{@link #type} == {@link #NUMBER}</code> */
-   public double number;
+   private double number;
 
    /** for <code>{@link #type} == {@link #STRING}</code> */
-   public String string;
+   private String string;
 
    /** for <code>{@link #type} == {@link #OBJECT}</code> */
-   public Object object;
+   private Object object;
 
 
    /** 
@@ -79,7 +88,7 @@ public class Value implements Cloneable
    //
 
    /** Constructs an empty sequence */
-   public Value()
+   private Value()
    {
       type = EMPTY;
    }
@@ -91,8 +100,14 @@ public class Value implements Cloneable
       number = d;
    }
 
+   /** Returns a Value object representing the given boolean value */
+   public static Value getBoolean(boolean b)
+   {
+      return b ? VAL_TRUE : VAL_FALSE;
+   }
+   
    /** Constructs a <code>Value</code> containing a boolean */
-   public Value(boolean b)
+   private Value(boolean b)
    {
       type = BOOLEAN;
       bool = b;
@@ -115,7 +130,6 @@ public class Value implements Cloneable
       type = NODE;
       event = e;
    }
-
 
    /** Constructs a <code>Value</code> containing a custom Java object,
        possibly converting the object to a known STX type */
@@ -181,148 +195,177 @@ public class Value implements Cloneable
    // Methods
    //
 
-   public Value convertToNumber()
+   // Getter
+
+   public double getNumber()
+   {
+      return number;
+   }
+
+   public String getString()
+   {
+      return string;
+   }
+
+   public SAXEvent getNode()
+   {
+      return event;
+   }
+
+   public Object getObject()
+   {
+      return object;
+   }
+
+
+   // Converter
+
+   /** returns the value of this object converted to a number */
+   public double getNumberValue()
    {
       switch (type) {
-      case EMPTY:
-         number = Double.NaN;
-         break;
-      case BOOLEAN:
-         number = (bool ? 1.0 : 0.0);
-         break;
       case NUMBER:
-         break;
-      case NODE: case OBJECT:
-         convertToString();
+         return number;
+      case EMPTY:
+         return Double.NaN;
+      case BOOLEAN:
+         return (bool ? 1.0 : 0.0);
+      case NODE: 
+      case OBJECT:
+         try {
+            return Double.parseDouble(getStringValue());
+         }
+         catch(NumberFormatException e) {
+            return Double.NaN;
+         }
          // falls through
       case STRING:
          try {
-            number = Double.parseDouble(string);
+            return Double.parseDouble(string);
          }
          catch(NumberFormatException e) {
-            number = Double.NaN;
+            return Double.NaN;
          }
-         break;
       default:
          // Mustn't happen
          throw new RuntimeException("Don't know how to convert " + type + 
                                     " to number");
       }
-      type = NUMBER;
-      next = null;
-      return this;
    }
 
-   public Value convertToString()
+   /** returns the value of this object converted to a string */
+   public String getStringValue()
    {
       switch (type) {
-      case EMPTY:
-         string = "";
-         break;
-      case NODE:
-         string = event.value;
-         break;
-      case BOOLEAN:
-         string = bool ? "true" : "false";
-         break;
-      case NUMBER:
-         string = Double.toString(number);
-         if (string.endsWith(".0"))
-            string = string.substring(0,string.length()-2);
-         break;
       case STRING:
-         break;
+         return string;
+      case NODE:
+         return event.value;
+      case EMPTY:
+         return "";
+      case BOOLEAN:
+         return bool ? "true" : "false";
+      case NUMBER:
+         String v = Double.toString(number);
+         if (v.endsWith(".0"))
+            v = v.substring(0,v.length()-2);
+         return v;
       case OBJECT:
-         string = object != null ? object.toString() : "";
-         break;
+         return object != null ? object.toString() : "";
       default:
          // Mustn't happen
          throw new RuntimeException("Don't know how to convert " + type + 
                                     " to string");
       }
-      type = STRING;
-      next = null;
-      return this;
    }
 
-   public Value convertToBoolean()
+   /** returns the value of this object converted to a boolean */
+   public boolean getBooleanValue()
    {
       switch (type) {
-      case EMPTY:
-         bool = false;
-         break;
-      case NODE:
-         bool = true;
-         break;
       case BOOLEAN:
-         break;
+         return bool;
+      case NODE:
+         return true;
+      case EMPTY:
+         return false;
       case NUMBER:
-         bool = number != 0.0;
-         break;
+         return number != 0.0;
       case STRING:
-         bool = !string.equals("");
-         break;
+         return !string.equals("");
       case OBJECT:
-         bool = object == null ? false : !object.toString().equals("");
-         break;
+         return object == null ? false : !object.toString().equals("");
       default:
          // Mustn't happen
          throw new RuntimeException("Don't know how to convert " + type + 
                                     " to boolean");
       }
-      type = BOOLEAN;
-      next = null;
-      return this;
    }
 
-   public Value setBoolean(boolean value)
-   {
-      type = BOOLEAN;
-      bool = value;
-      next = null;
-      return this;
-   }
 
-   public Value setNumber(double value)
-   {
-      type = NUMBER;
-      number = value;
-      next = null;
-      return this;
-   }
-
-   public Value setString(String value)
-   {
-      type = STRING;
-      string = value;
-      next = null;
-      return this;
-   }
-
-   public Value setEmpty()
-   {
-      type = EMPTY;
-      next = null;
-      return this;
-   }
-
+   // Misc
 
    /** 
-    * Creates a copy by calling the <code>clone()</code> function 
+    * Creates a full copy of the sequence represented by this value.
     */
    public Value copy()
    {
-      try {
-         Value ret = (Value)clone();
-         if (next != null)
-            ret.next = next.copy();
-         return ret;
-      }
-      catch(CloneNotSupportedException e) {
-         throw new RuntimeException("copy() failed for Value " + e);
-      }
+   	Value ret = new Value();
+   	ret.bool = bool;
+   	ret.event = event;
+   	ret.number = number;
+   	ret.object = object;
+   	ret.string = string;
+   	ret.type = type;
+   	if (next != null) 
+           ret.next = next.copy();
+   	return ret;
    }
 
+   /** 
+    * Returns a single value that is a copy of this value 
+    */
+   public Value singleCopy()
+   {
+      switch (type) {
+      case BOOLEAN: return getBoolean(bool);
+      case NODE:    return new Value(event);
+      case NUMBER:  return new Value(number);
+      case STRING:  return new Value(string);
+      case OBJECT:  return new Value(object);
+      }
+      return VAL_EMPTY;
+   }
+
+   /** 
+    * Creates a sequence by concatenating two values (which are possibly
+    * already sequences
+    * @param v1 first value (first part of the resulting sequence)
+    * @param v2 second value (second part of the resulting sequence)
+    * @return a sequence that consists of v1 and v2
+    */
+   public static Value concat(Value v1, Value v2)
+   {
+      try {
+         if (v1.next == null) {
+            Value ret = (Value)v1.clone();
+            ret.next = v2;
+            return ret;
+         }
+         else {
+            Value tmp = v1;
+            while (tmp.next.next != null)
+               tmp = tmp.next;
+            tmp.next = (Value)tmp.next.clone();
+            tmp.next.next = v2;
+            return v1;
+         }
+      }
+      catch (CloneNotSupportedException e) {
+         // mustn't happen
+         return null;
+      }
+   }
 
    /**
     * Determines the conversion distance of the contained value to the
@@ -411,7 +454,6 @@ public class Value implements Cloneable
       return Double.POSITIVE_INFINITY;
    }
 
-
    /**
     * Converts this value to a Java object.
     * @return a Java object representing the current value
@@ -450,41 +492,33 @@ public class Value implements Cloneable
          return null;
       }
       else if (target == String.class) {
-         convertToString();
-         return string;
+         return getStringValue();
       }
       else if (target == boolean.class || target == Boolean.class) {
-         convertToBoolean();
-         return new Boolean(bool);
+         return new Boolean(getBooleanValue());
       }
       else if (target == double.class || target == Double.class) {
-         convertToNumber();
-         return new Double(number);
+         return new Double(getNumberValue());
       }
       else if (target == float.class || target == Float.class) {
-         convertToNumber();
-         return new Float(number);
+         return new Float(getNumberValue());
       }
       else if (target == int.class || target == Integer.class) {
-         convertToNumber();
-         return new Integer((int)number);
+         return new Integer((int)getNumberValue());
       }
       else if (target == long.class || target == Long.class) {
-         convertToNumber();
-         return new Long((long)number);
+         return new Long((long)getNumberValue());
       }
       else if (target == short.class || target == Short.class) {
-         convertToNumber();
-         return new Short((short)number);
+         return new Short((short)getNumberValue());
       }
       else if (target == byte.class || target == Byte.class) {
-         convertToNumber();
-         return new Byte((byte)number);
+         return new Byte((byte)getNumberValue());
       }
       else if (target == char.class || target == Character.class) {
-         convertToString();
+         String s = getStringValue();
          if (string.length() == 1)
-            return new Character(string.charAt(0));
+            return new Character(s.charAt(0));
          else
             throw new EvalException("Cannot convert string `" + string + 
                                     "' to character (length is not 1)");

@@ -1,5 +1,5 @@
 /*
- * $Id: AnalyzeTextFactory.java,v 1.1 2004/01/26 20:21:25 obecker Exp $
+ * $Id: AnalyzeTextFactory.java,v 1.2 2004/09/29 06:07:48 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Factory for <code>analyze-text</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.1 $ $Date: 2004/01/26 20:21:25 $
+ * @version $Revision: 1.2 $ $Date: 2004/09/29 06:07:48 $
  * @author Oliver Becker
  */
 
@@ -225,7 +225,7 @@ final public class AnalyzeTextFactory extends FactoryBase
             continued = false; // in case there will be an stx:process-xxx
          }
          else { // this is a new invocation
-            text = select.evaluate(context, this).convertToString().string;
+            text = select.evaluate(context, this).getStringValue();
             // create a pseudo variable for regex-group()
             if (context.localVars.get(REGEX_GROUP) == null)
                context.localVars.put(REGEX_GROUP, new Stack());
@@ -241,7 +241,7 @@ final public class AnalyzeTextFactory extends FactoryBase
             for (int i=0; i<matchChildren.length; i++) {
                String re = 
                   matchChildren[i].regex.evaluate(context, 
-                                                  matchChildren[i]).string;
+                                                  matchChildren[i]).getString();
 
                // TODO: replace this part by regular expression matching
                int start = text.indexOf(re);

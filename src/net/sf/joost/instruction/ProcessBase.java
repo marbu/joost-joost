@@ -1,5 +1,5 @@
 /*
- * $Id: ProcessBase.java,v 2.9 2004/01/07 15:07:27 obecker Exp $
+ * $Id: ProcessBase.java,v 2.10 2004/09/29 06:07:48 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,20 +31,19 @@ import java.util.Vector;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
-import net.sf.joost.Constants;
 import net.sf.joost.emitter.EmitterAdapter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.BufferReader;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+
 /**
  * Common base class for all <code>stx:process-<em>xxx</em></code>
  * instructions
- * @version $Revision: 2.9 $ $Date: 2004/01/07 15:07:27 $
+ * @version $Revision: 2.10 $ $Date: 2004/09/29 06:07:48 $
  * @author Oliver Becker
  */
 public class ProcessBase extends NodeBase
@@ -82,8 +81,8 @@ public class ProcessBase extends NodeBase
          public NodeBase getNode() {
             return me;
          }
-         public short process(Context context) {
-            context.passedParameters = (Hashtable)paramStack.pop();
+         public short process(Context ctx) {
+            ctx.passedParameters = (Hashtable)paramStack.pop();
             return PR_CONTINUE;
          }
       };
@@ -226,7 +225,7 @@ public class ProcessBase extends NodeBase
    protected TransformerHandler getProcessHandler(Context context)
       throws SAXException
    {
-      String filterMethod = filter.evaluate(context, this).string;
+      String filterMethod = filter.evaluate(context, this).getString();
 
       TransformerHandler handler;
       try {

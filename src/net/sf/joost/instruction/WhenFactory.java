@@ -1,5 +1,5 @@
 /*
- * $Id: WhenFactory.java,v 2.3 2004/01/23 08:12:16 obecker Exp $
+ * $Id: WhenFactory.java,v 2.4 2004/09/29 06:07:48 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>when</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.3 $ $Date: 2004/01/23 08:12:16 $
+ * @version $Revision: 2.4 $ $Date: 2004/09/29 06:07:48 $
  * @author Oliver Becker
  */
 
@@ -115,7 +115,7 @@ final public class WhenFactory extends FactoryBase
       public short process(Context context)
          throws SAXException
       {
-         if (test.evaluate(context, this).convertToBoolean().bool) {
+         if (test.evaluate(context, this).getBooleanValue()) {
             super.process(context);
             next = trueNext;
          }

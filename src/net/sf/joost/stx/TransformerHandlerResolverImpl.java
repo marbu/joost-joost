@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerResolverImpl.java,v 2.6 2004/08/19 19:02:33 obecker Exp $
+ * $Id: TransformerHandlerResolverImpl.java,v 2.7 2004/09/29 06:09:36 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -52,7 +52,7 @@ import net.sf.joost.trax.TrAXConstants;
 /**
  * The default implementation of an {@link TransformerHandlerResolver}.
  * It supports currently only XSLT transformers.
- * @version $Revision: 2.6 $ $Date: 2004/08/19 19:02:33 $
+ * @version $Revision: 2.7 $ $Date: 2004/09/29 06:09:36 $
  * @author Oliver Becker
  */
 
@@ -95,7 +95,7 @@ public final class TransformerHandlerResolverImpl
          // remove preceding "{}" if present
          String name = key.startsWith("{}") ? key.substring(2) : key;
          result.put(name, 
-                    ((Value)(params.get(key))).convertToString().string);
+                    ((Value)(params.get(key))).getStringValue());
       }
       return result;
    }
@@ -151,7 +151,7 @@ public final class TransformerHandlerResolverImpl
          String propVal = System.getProperty(TFPROP);
          boolean propChanged = false;
 
-         if(mIndex == M_STX) {
+         if (mIndex == M_STX) {
             // ensure that Joost's implementation will be used
             if (!STXIMP.equals(propVal)) {
                System.setProperty(TFPROP, STXIMP);
@@ -218,7 +218,7 @@ public final class TransformerHandlerResolverImpl
                      String name = key.startsWith("{}") ? key.substring(2) 
                                                         : key;
                      t.setParameter(name, ((Value)(params.get(key)))
-                                          .convertToString().string);
+                                          .getStringValue());
                   }
                }
                return handler;
@@ -244,9 +244,8 @@ public final class TransformerHandlerResolverImpl
          if (v == null)
             throw new SAXException("Missing parameter `target' for filter " + 
                                    "method `" + method + "'");
-         String targetURI = v.convertToString().string;
          
-         return new HttpPostHandler(targetURI);
+         return new HttpPostHandler(v.getStringValue());
       }
 
       return null;

@@ -1,5 +1,5 @@
 /*
- * $Id: ValueOfFactory.java,v 2.5 2003/06/03 14:30:27 obecker Exp $
+ * $Id: ValueOfFactory.java,v 2.6 2004/09/29 06:07:48 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>value-of</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.5 $ $Date: 2003/06/03 14:30:27 $
+ * @version $Revision: 2.6 $ $Date: 2004/09/29 06:07:48 $
  * @author Oliver Becker
  */
 
@@ -103,24 +103,24 @@ final public class ValueOfFactory extends FactoryBase
          Value v = select.evaluate(context, this);
          String s;
          if (v.next == null)
-            s = v.convertToString().string;
+            s = v.getStringValue();
          else {
             // create a string from a sequence
             // evaluate separator
             String sep = (separator != null) 
-               ? separator.evaluate(context, this).string 
+               ? separator.evaluate(context, this).getString() 
                : " "; // default value
             // use a string buffer for creating the result
             StringBuffer sb = new StringBuffer();
-            Value next = v.next;
+            Value nextVal = v.next;
             v.next = null;
-            sb.append(v.convertToString().string);
-            while (next != null) {
+            sb.append(v.getStringValue());
+            while (nextVal != null) {
                sb.append(sep);
-               v = next;
-               next = v.next;
+               v = nextVal;
+               nextVal = v.next;
                v.next = null;
-               sb.append(v.convertToString().string);
+               sb.append(v.getStringValue());
             }
             s = sb.toString();
          }

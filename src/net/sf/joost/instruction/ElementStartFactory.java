@@ -1,5 +1,5 @@
 /*
- * $Id: ElementStartFactory.java,v 2.2 2003/06/03 14:30:21 obecker Exp $
+ * $Id: ElementStartFactory.java,v 2.3 2004/09/29 06:07:48 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,24 +24,23 @@
 
 package net.sf.joost.instruction;
 
+import java.util.HashSet;
+import java.util.Hashtable;
+
+import net.sf.joost.grammar.Tree;
+import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import java.util.Hashtable;
-import java.util.HashSet;
-
-import net.sf.joost.stx.Context;
-import net.sf.joost.stx.ParseContext;
-import net.sf.joost.stx.Value;
-import net.sf.joost.grammar.Tree;
-
 
 /** 
  * Factory for <code>start-element</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2003/06/03 14:30:21 $
+ * @version $Revision: 2.3 $ $Date: 2004/09/29 06:07:48 $
  * @author Oliver Becker
  */
 
@@ -106,13 +105,13 @@ final public class ElementStartFactory extends FactoryBase
          throws SAXException
       {
          String elName, elUri, elLocal;
-         elName = name.evaluate(context, this).string;
+         elName = name.evaluate(context, this).getString();
          int colon = elName.indexOf(':');
          if (colon != -1) { // prefixed name
             String prefix = elName.substring(0, colon);
             elLocal = elName.substring(colon+1);
             if (namespace != null) { // namespace attribute present
-               elUri = namespace.evaluate(context, this).string;
+               elUri = namespace.evaluate(context, this).getString();
                if (elUri.equals("")) {
                   context.errorHandler.fatalError(
                      "Can't create element `" + elName + 
@@ -137,7 +136,7 @@ final public class ElementStartFactory extends FactoryBase
          else { // unprefixed name
             elLocal = elName;
             if (namespace != null) // namespace attribute present
-               elUri = namespace.evaluate(context, this).string;
+               elUri = namespace.evaluate(context, this).getString();
             else {
                // no namespace attribute, see above
                elUri = (String)nsSet.get("");

@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 2.8 2004/01/21 11:18:16 obecker Exp $
+ * $Id: LitElementFactory.java,v 2.9 2004/09/29 06:07:48 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,26 +24,25 @@
 
 package net.sf.joost.instruction;
 
+import java.util.Enumeration;
+import java.util.Hashtable;
+
+import net.sf.joost.Constants;
+import net.sf.joost.grammar.Tree;
+import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
+
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.NamespaceSupport;
 
-import java.util.Enumeration;
-import java.util.Hashtable;
-
-import net.sf.joost.Constants;
-import net.sf.joost.stx.Context;
-import net.sf.joost.stx.ParseContext;
-import net.sf.joost.grammar.Tree;
-
 
 /** 
  * Factory for literal result elements, which are represented by the
  * inner Instance class. 
- * @version $Revision: 2.8 $ $Date: 2004/01/21 11:18:16 $
+ * @version $Revision: 2.9 $ $Date: 2004/09/29 06:07:48 $
  * @author Oliver Becker
 */
 
@@ -211,7 +210,8 @@ final public class LitElementFactory
       {
          super.process(context);
          for (int i=0; i<avtList.length; i++)
-            attrs.setValue(i, avtList[i].evaluate(context, this).string);
+            attrs.setValue(i, avtList[i].evaluate(context, this)
+                                        .getString());
          context.emitter.startElement(uri, lName, qName, attrs, namespaces,
                                       publicId, systemId, lineNo, colNo);
          return PR_CONTINUE;

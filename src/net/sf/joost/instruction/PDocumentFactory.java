@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 2.10 2004/08/22 12:28:54 obecker Exp $
+ * $Id: PDocumentFactory.java,v 2.11 2004/09/29 06:07:48 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -51,7 +51,7 @@ import net.sf.joost.trax.TrAXHelper;
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.10 $ $Date: 2004/08/22 12:28:54 $
+ * @version $Revision: 2.11 $ $Date: 2004/09/29 06:07:48 $
  * @author Oliver Becker
  */
 
@@ -173,7 +173,7 @@ public class PDocumentFactory extends FactoryBase
                base = systemId;
          }
          else { // use specified base URI
-            base = baseUri.evaluate(context, this).string;
+            base = baseUri.evaluate(context, this).getString();
             if ("#input".equals(base) && context.locator != null)
                base = context.locator.getSystemId();
             else if ("#stylesheet".equals(base))
@@ -185,15 +185,15 @@ public class PDocumentFactory extends FactoryBase
          proc.startInnerProcessing();
 
          try {
-            Value next;
+            Value nextVal;
             XMLReader defaultReader = null;
             do {
                XMLReader reader;
                InputSource iSource;
                Source source;
-               next = v.next;
+               nextVal = v.next;
                v.next = null;
-               String hrefURI = v.convertToString().string;
+               String hrefURI = v.getStringValue();
                // ask URI resolver if present
                if (context.uriResolver != null && 
                    (source = 
@@ -250,7 +250,7 @@ public class PDocumentFactory extends FactoryBase
                }
 
                reader.parse(iSource);
-               v = next;
+               v = nextVal;
             } while (v != null);
          }
          catch (java.io.IOException ex) {
