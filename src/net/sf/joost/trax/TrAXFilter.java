@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXFilter.java,v 1.7 2004/10/25 20:36:50 obecker Exp $
+ * $Id: TrAXFilter.java,v 1.8 2004/10/30 12:34:37 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -67,10 +67,8 @@ public class TrAXFilter extends XMLFilterImpl implements Constants {
     /**
      * Constructor
      * @param templates A <code>Templates</code>
-     * @throws TransformerConfigurationException
      */
-    protected TrAXFilter(Templates templates)
-        throws TransformerConfigurationException {
+    protected TrAXFilter(Templates templates) {
 
         if (DEBUG)
             log.debug("calling constructor");

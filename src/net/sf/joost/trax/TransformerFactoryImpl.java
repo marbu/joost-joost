@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.20 2004/10/25 20:36:50 obecker Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.21 2004/10/30 12:34:37 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -495,22 +495,16 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
      * Implementation of the {@link SAXTransformerFactory}
      * @param templates - The compiled transformation instructions.
      * @return An {@link XMLFilter} object, or null if this feature is not
-     *  supported.
-     * @throws TransformerConfigurationException
+     * supported.
      */
-    public XMLFilter newXMLFilter(Templates templates)
-        throws TransformerConfigurationException {
+    public XMLFilter newXMLFilter(Templates templates) {
 
         if (DEBUG)
             log.debug("getting SAXTransformerFactory.FEATURE_XMLFILTER " +
                       "from Templates");
-        try {
-            //Implementation
-            return new TrAXFilter(templates);
-        } catch(TransformerConfigurationException tE) {
-            defaultErrorListener.fatalError(tE);
-            return null;
-    	}
+
+        //Implementation
+        return new TrAXFilter(templates);
     }
 
     /** returns the value of {@link #parserListenerMgr} */
