@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.28 2004/12/17 18:25:42 obecker Exp $
+ * $Id: FunctionTable.java,v 2.29 2005/01/23 19:47:28 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -51,7 +51,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.28 $ $Date: 2004/12/17 18:25:42 $
+ * @version $Revision: 2.29 $ $Date: 2005/01/23 19:47:28 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -2140,7 +2140,6 @@ final public class FunctionTable implements Constants
                                        err2.getMessage());
             } 
             catch (InvocationTargetException err3) {
-               Throwable ex = err3.getTargetException();
                throw new EvalException(
                   "Exception in extension constructor " + 
                   theConstructor.getName() +
@@ -2239,7 +2238,6 @@ final public class FunctionTable implements Constants
                                        err2.getMessage());
             } 
             catch (InvocationTargetException err3) {
-               Throwable ex = err3.getTargetException();
                throw new EvalException(
                   "Exception in extension method `" + 
                   theMethod.getName() + "': " + 

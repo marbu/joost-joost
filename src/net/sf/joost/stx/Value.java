@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.19 2004/09/29 06:09:36 obecker Exp $
+ * $Id: Value.java,v 1.20 2005/01/23 19:47:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,7 +32,7 @@ import java.util.ArrayList;
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.19 $ $Date: 2004/09/29 06:09:36 $
+ * @version $Revision: 1.20 $ $Date: 2005/01/23 19:47:29 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -160,27 +160,27 @@ public class Value implements Cloneable
       }
       else if (obj instanceof Float) {
          type = NUMBER;
-         number = (double)((Float)obj).floatValue();
+         number = ((Float)obj).floatValue();
          return;
       }
       else if (obj instanceof Byte) {
          type = NUMBER;
-         number = (double)((Byte)obj).byteValue();
+         number = ((Byte)obj).byteValue();
          return;
       }
       else if (obj instanceof Short) {
          type = NUMBER;
-         number = (double)((Short)obj).shortValue();
+         number = ((Short)obj).shortValue();
          return;
       }
       else if (obj instanceof Integer) {
          type = NUMBER;
-         number = (double)((Integer)obj).intValue();
+         number = ((Integer)obj).intValue();
          return;
       }
       else if (obj instanceof Long) {
          type = NUMBER;
-         number = (double)((Long)obj).longValue();
+         number = ((Long)obj).longValue();
          return;
       }
       else {

@@ -1,5 +1,5 @@
 /*
- * $Id: EqTree.java,v 1.1 2004/09/29 05:59:51 obecker Exp $
+ * $Id: EqTree.java,v 1.2 2005/01/23 19:47:27 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,7 +33,7 @@ import org.xml.sax.SAXException;
 /**
  * Objects of EqTree represent comparison nodes (equal, "=") in the syntax 
  * tree of a pattern or an STXPath expression.
- * @version $Revision: 1.1 $ $Date: 2004/09/29 05:59:51 $
+ * @version $Revision: 1.2 $ $Date: 2005/01/23 19:47:27 $
  * @author Oliver Becker
  */
 final public class EqTree extends Tree
@@ -51,7 +51,6 @@ final public class EqTree extends Tree
       if (v1.type == Value.EMPTY || v2.type == Value.EMPTY)
          return Value.VAL_FALSE;
       
-      Value inext, jnext;
       // sequences: find a pair such that the comparison is true
       for (Value vi = v1; vi != null; vi = vi.next) {
          for (Value vj = v2; vj != null; vj = vj.next) {

@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerImpl.java,v 1.11 2004/10/25 20:36:50 obecker Exp $
+ * $Id: TransformerHandlerImpl.java,v 1.12 2005/01/23 19:47:30 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -130,11 +130,9 @@ public class TransformerHandlerImpl implements TransformerHandler, Constants {
             log.debug("setting Result - here SAXResult");
 
         try {
-            if (result instanceof Result) {
-                this.result = result;
-                //init saxresult
-                init(result);
-            }
+            this.result = result;
+            // init saxresult
+            init(result);
         } catch (TransformerException e) {
             if (transformer instanceof TransformerImpl) {
                 TransformerConfigurationException tE =

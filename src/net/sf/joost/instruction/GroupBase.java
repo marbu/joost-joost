@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 2.13 2004/09/29 06:22:17 obecker Exp $
+ * $Id: GroupBase.java,v 2.14 2005/01/23 19:47:27 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,7 +33,6 @@ import java.util.Vector;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Processor;
-import net.sf.joost.stx.Value;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -45,7 +44,7 @@ import org.xml.sax.SAXParseException;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 2.13 $ $Date: 2004/09/29 06:22:17 $
+ * @version $Revision: 2.14 $ $Date: 2005/01/23 19:47:27 $
  * @author Oliver Becker
  */
 
@@ -347,7 +346,7 @@ abstract public class GroupBase extends NodeBase
       for (int i=0; i<groupVariables.length; i++)
          if (groupVariables[i].keepValue && shadowed !=null)
             varTable.put(groupVariables[i].expName, 
-                         ((Value)shadowed.get(groupVariables[i].expName)));
+                         shadowed.get(groupVariables[i].expName));
          else {
             for (AbstractInstruction inst = groupVariables[i];
                  inst != null; inst = inst.next)

@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateFactory.java,v 2.7 2004/09/29 06:05:50 obecker Exp $
+ * $Id: TemplateFactory.java,v 2.8 2005/01/23 19:47:27 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Factory for <code>template</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.7 $ $Date: 2004/09/29 06:05:50 $
+ * @version $Revision: 2.8 $ $Date: 2005/01/23 19:47:27 $
  * @author Oliver Becker
  */
 
@@ -73,8 +73,6 @@ public final class TemplateFactory extends FactoryBase
          throw new SAXParseException("`" + qName + "' must be a top level " +
                                      "element or a child of stx:group",
                                      context.locator);
-
-      GroupBase parentGroup = (GroupBase)parent;
 
       String matchAtt = getAttribute(qName, attrs, "match", context);
       Tree matchPattern = parsePattern(matchAtt, context);
@@ -144,7 +142,6 @@ public final class TemplateFactory extends FactoryBase
       protected Instance(String qName, NodeBase parent, ParseContext context,
                          Tree match, double priority, int visibility, 
                          boolean isPublic, boolean newScope)
-         throws SAXParseException
       {
          super(qName, parent, context, visibility, isPublic, newScope);
          this.match = match;

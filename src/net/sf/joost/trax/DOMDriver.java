@@ -200,7 +200,7 @@ public class DOMDriver implements Locator, XMLReader
                         // tree, there will be no namespace declaration attributes.) So we
                         // declare all namespaces encountered, to be on the safe side.
 
-                        String elname = element.getTagName();
+                        //String elname = element.getTagName();
                         //if (elname.indexOf(':')>=0) {
                                   // also need to do this for default namespace
                             try {

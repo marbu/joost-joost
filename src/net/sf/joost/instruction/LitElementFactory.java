@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 2.10 2004/10/30 11:23:52 obecker Exp $
+ * $Id: LitElementFactory.java,v 2.11 2005/01/23 19:47:27 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.xml.sax.helpers.NamespaceSupport;
 /** 
  * Factory for literal result elements, which are represented by the
  * inner Instance class. 
- * @version $Revision: 2.10 $ $Date: 2004/10/30 11:23:52 $
+ * @version $Revision: 2.11 $ $Date: 2005/01/23 19:47:27 $
  * @author Oliver Becker
 */
 
@@ -104,7 +104,7 @@ final public class LitElementFactory
 
          // store namespaces
          if (newNamespaces.size() > 0) {
-            namespaces = (Hashtable)newNamespaces; // no copy required
+            namespaces = newNamespaces; // no copy required
             for (Enumeration keys = namespaces.keys();
                  keys.hasMoreElements(); ) {
                String key = (String)keys.nextElement();
