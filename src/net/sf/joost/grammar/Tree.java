@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 1.5 2002/10/30 09:32:06 obecker Exp $
+ * $Id: Tree.java,v 1.6 2002/11/27 09:50:31 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 1.5 $ $Date: 2002/10/30 09:32:06 $
+ * @version $Revision: 1.6 $ $Date: 2002/11/27 09:50:31 $
  * @author Oliver Becker
  */
 public class Tree
@@ -579,7 +579,7 @@ public class Tree
                GroupBase group = context.currentGroup;
                while (v1 == null && group != null) {
                   v1 = (Value)((Hashtable)group.groupVars.peek()).get(expName);
-                  group = group.parent;
+                  group = group.parentGroup;
                }
             }
             if (v1 == null) 
