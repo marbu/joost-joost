@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.41 2004/09/29 06:20:36 obecker Exp $
+ * $Id: Processor.java,v 2.42 2004/10/03 19:07:39 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -67,7 +67,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.41 $ $Date: 2004/09/29 06:20:36 $
+ * @version $Revision: 2.42 $ $Date: 2004/10/03 19:07:39 $
  * @author Oliver Becker
  */
 
@@ -166,7 +166,7 @@ public class Processor extends XMLFilterImpl
    /**
     * Inner class for data which is processing/template specific.
     * Objects of this class will be put on the instance stack
-    * {@link #dataStack}.
+    * {@link Processor#dataStack}.
     */
    public final class Data
    {
