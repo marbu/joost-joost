@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesHandlerImpl.java,v 1.6 2003/05/19 14:46:13 obecker Exp $
+ * $Id: TemplatesHandlerImpl.java,v 1.7 2003/07/27 10:38:02 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -92,7 +92,8 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
      * parsing of transformation instructions, it creates a Templates object,
      * which the caller can get once the SAX events have been completed.
      * @return {@link Templates} The Templates object that was created during
-     * the SAX event process, or null if no Templates object has been created.
+     * the SAX event process, or <code>null</code> if no Templates object
+     * has been created.
      */
     public Templates getTemplates() {
 
@@ -102,19 +103,9 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
             // construct TrAX-representation of an compiled STX stylesheet
             templates = new TemplatesImpl(stxparser, tfactory);
         } catch (TransformerConfigurationException tE) {
-            ErrorListener eListener = tfactory.getErrorListener();
-
-            // use ErrorListener when available
-            if (eListener != null) {
-                try {
-                    eListener.fatalError(new TransformerConfigurationException(tE));
-                    return null;
-                } catch (TransformerException trE) {
-                    log.fatal(tE);
-                    return null;
-                }
-            } else {
-                log.fatal(tE);
+            try {
+                tfactory.defaultErrorListener.fatalError(tE);
+            } catch (TransformerConfigurationException e) {
                 return null;
             }
         }

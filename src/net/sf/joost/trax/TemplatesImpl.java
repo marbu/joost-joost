@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.9 2003/07/04 08:07:39 obecker Exp $
+ * $Id: TemplatesImpl.java,v 1.10 2003/07/27 10:38:02 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -53,8 +53,9 @@ public class TemplatesImpl implements Templates, TrAXConstants {
 
     /**
      * Holding a reference on a <code>TransformerFactoryImpl</code>
+     * should be visible for {@link TrAXFilter TrAXFilter}
      */
-    private TransformerFactoryImpl factory  = null;
+    protected TransformerFactoryImpl factory  = null;
 
     /**
      * Holding a reference on the Joost-STX-Processor <code>Processor</code>
@@ -76,8 +77,7 @@ public class TemplatesImpl implements Templates, TrAXConstants {
     protected TemplatesImpl(Parser stxParser, TransformerFactoryImpl factory)
         throws TransformerConfigurationException {
 
-        if (DEBUG)
-            log.debug("calling constructor with existing Parser");
+        log.debug("calling constructor with existing Parser");
         this.factory = factory;
         try {
             //configure the template
@@ -98,31 +98,13 @@ public class TemplatesImpl implements Templates, TrAXConstants {
     protected TemplatesImpl(InputSource isource, TransformerFactoryImpl factory)
         throws TransformerConfigurationException {
 
-        if (DEBUG)
-           log.debug("calling constructor with SystemId " + 
-                     isource.getSystemId());
+        log.debug("calling constructor with SystemId " + isource.getSystemId());
         this.factory = factory;
         try {
             //configure template
             init(isource);
         } catch (TransformerConfigurationException tE) {
-
-            ErrorListener eListener = factory.getErrorListener();
-            // user ErrorListener if available
-            if(eListener != null) {
-                try {
-                    eListener.fatalError(new TransformerConfigurationException(tE));
-                    return;
-                } catch( TransformerException e2) {
-                    if (DEBUG)
-                        log.debug(tE);
-                    throw tE;
-                }
-            } else {
-                if (DEBUG)
-                    log.debug(tE);
-                throw tE;
-            }
+            factory.defaultErrorListener.fatalError(tE);
         }
     }
 
@@ -136,8 +118,7 @@ public class TemplatesImpl implements Templates, TrAXConstants {
      */
     private void init(Parser stxParser) throws TransformerConfigurationException {
 
-        if (DEBUG)
-            log.debug("init without InputSource ");
+        log.debug("init without InputSource ");
         try {
             // check if transformerfactory is in debug mode
             boolean debugmode =
@@ -170,8 +151,7 @@ public class TemplatesImpl implements Templates, TrAXConstants {
      */
     private void init(InputSource isource) throws TransformerConfigurationException {
 
-        if (DEBUG)
-            log.debug("init with InputSource " + isource.getSystemId());
+        log.debug("init with InputSource " + isource.getSystemId());
         try {
             /**
              * Register ErrorListener from
@@ -191,19 +171,16 @@ public class TemplatesImpl implements Templates, TrAXConstants {
             if (factory.thResolver != null)
                 processor.setTransformerHandlerResolver(factory.thResolver);
         } catch (java.io.IOException iE) {
-            if (DEBUG)
-                log.debug(iE);
+            log.debug(iE);
             throw new TransformerConfigurationException(iE.getMessage(), iE);
         } catch (org.xml.sax.SAXException sE) {
             Exception emb = sE.getException();
             if (emb instanceof TransformerConfigurationException)
                 throw (TransformerConfigurationException)emb;
-            if (DEBUG)
-                log.debug(sE);
+            log.debug(sE);
             throw new TransformerConfigurationException(sE.getMessage(), sE);
         } catch (java.lang.NullPointerException nE) {
-            if (DEBUG)
-                log.debug(nE);
+            log.debug(nE);
             throw new TransformerConfigurationException("could not found value for property javax.xml.parsers.SAXParser ", nE);
         }
     }
@@ -217,9 +194,7 @@ public class TemplatesImpl implements Templates, TrAXConstants {
     public Transformer newTransformer() throws TransformerConfigurationException {
 
         synchronized (reentryGuard) {
-            if (DEBUG)
-                log.debug("calling newTransformer to get a Transformer " + 
-                          "object for Transformation");
+            log.debug("calling newTransformer to get a Transformer object for Transformation");
             //register the processor
             Transformer transformer = new TransformerImpl(processor);
             return transformer;
@@ -238,20 +213,10 @@ public class TemplatesImpl implements Templates, TrAXConstants {
 	        Transformer transformer = newTransformer();
 	        return transformer.getOutputProperties();
 	    } catch (TransformerConfigurationException tE) {
-                ErrorListener eListener = factory.getErrorListener();
-                // use ErrorListener if available
-                if(eListener != null) {
-                    try {
-                        eListener.fatalError(tE);
-                        return null;
-                    } catch( TransformerException trE) {
-                        log.fatal(tE);
-                        return null;
-                    }
-                } else {
-                    log.fatal(tE);
-                    return null;
-                }
-	    }
+            try {
+                factory.defaultErrorListener.fatalError(tE);
+            } catch (TransformerConfigurationException e) {}
+            return null;
+        }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXFilter.java,v 1.5 2003/04/29 15:09:10 obecker Exp $
+ * $Id: TrAXFilter.java,v 1.6 2003/07/27 10:37:41 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -57,6 +57,9 @@ public class TrAXFilter extends XMLFilterImpl {
     private Templates templates = null;
     private Processor processor = null;
 
+    // default ErrorListener
+    private ConfigurationErrListener configErrListener;
+
     /**
      * Constructor
      * @param templates A <code>Templates</code>
@@ -67,6 +70,10 @@ public class TrAXFilter extends XMLFilterImpl {
 
         log.debug("calling constructor");
         this.templates = templates;
+        if (templates instanceof TemplatesImpl) {
+            configErrListener =
+                    ((TemplatesImpl)templates).factory.defaultErrorListener;
+        }
     }
 
     /**
@@ -78,72 +85,76 @@ public class TrAXFilter extends XMLFilterImpl {
     public void parse (InputSource input)
     	throws SAXException, IOException {
 
+        Transformer transformer = null;
         if (log.isDebugEnabled())
             log.debug("parsing InputSource " + input.getSystemId());
-        Transformer transformer = null;
+
         try {
             // get a new Transformer
             transformer = this.templates.newTransformer();
-        } catch (TransformerConfigurationException tE) {
-
-            ErrorListener eListener = transformer.getErrorListener();
-            // use ErrorListener if available
-            if(eListener != null) {
-                try {
-                    eListener.fatalError(new TransformerConfigurationException(tE));
-                    return;
-                } catch( TransformerException trE) {
-                    log.fatal(tE);
-                    throw new SAXException(tE);
-                }
+            if ( transformer instanceof TransformerImpl ) {
+                this.processor = ((TransformerImpl)transformer).getStxProcessor();
             } else {
-                log.fatal(tE);
-                throw new SAXException(tE);
+                log.fatal("An error is occured, because the given transfomer is not an " +
+                    "instance of TransformerImpl");
+            }
+            XMLReader parent = this.getParent();
+
+            if (parent == null) {
+                parent= XMLReaderFactory.createXMLReader();
+                setParent(parent);
+            }
+            ContentHandler handler = this.getContentHandler();
+
+            if(handler == null) {
+                handler = parent.getContentHandler();
+            }
+            if(handler == null) {
+                throw new SAXException("no ContentHandler registered");
+            }
+            //init StxEmitter
+            StxEmitter out = null;
+
+            if (handler != null) {
+                //SAX specific Implementation
+                out = new SAXEmitter(handler);
+            }
+            if (this.processor != null) {
+                this.processor.setContentHandler(out);
+                this.processor.setLexicalHandler(out);
+            } else {
+                throw new SAXException("Joost-Processor is not correct configured.");
+            }
+            if (parent == null) {
+               throw new SAXException("No parent for filter");
+            }
+            parent.setContentHandler(this.processor);
+            parent.setProperty("http://xml.org/sax/properties/lexical-handler",
+                             this.processor);
+            //parent.setEntityResolver(this);
+            //parent.setDTDHandler(this);
+            //parent.setErrorHandler(this);
+            parent.parse(input);
+
+        } catch (TransformerConfigurationException tE) {
+            try {
+                configErrListener.fatalError(tE);
+            } catch (TransformerConfigurationException innerE) {
+                throw new SAXException(innerE.getMessage(), innerE);
+            }
+        } catch (SAXException sE) {
+            try {
+                configErrListener.fatalError(new TransformerConfigurationException(sE.getMessage(), sE));
+            } catch (TransformerConfigurationException innerE) {
+                throw new SAXException(innerE.getMessage(), innerE);
+            }
+        } catch (IOException iE) {
+            try {
+                configErrListener.fatalError(new TransformerConfigurationException(iE.getMessage(), iE));
+            } catch (TransformerConfigurationException innerE) {
+                throw new IOException(innerE.getMessage());
             }
         }
-        if ( transformer instanceof TransformerImpl ) {
-            this.processor = ((TransformerImpl)transformer).getStxProcessor();
-        } else {
-            log.error("An error is occured, because the given transfomer is not an " +
-                "instance of TransformerImpl");
-        }
-        XMLReader parent = this.getParent();
-
-        if (parent == null) {
-            parent= XMLReaderFactory.createXMLReader();
-            setParent(parent);
-        }
-        ContentHandler handler = this.getContentHandler();
-
-        if(handler == null) {
-            handler = parent.getContentHandler();
-        }
-        if(handler == null) {
-            throw new SAXException("no ContentHandler registered");
-        }
-        //init StxEmitter
-        StxEmitter out = null;
-
-        if (handler != null) {
-            //SAX specific Implementation
-            out = new SAXEmitter(handler);
-        }
-        if (this.processor != null) {
-            this.processor.setContentHandler(out);
-            this.processor.setLexicalHandler(out);
-        } else {
-            throw new SAXException("Joost-Processor is not correct configured.");
-        }
-        if (parent == null) {
-           throw new NullPointerException("No parent for filter");
-        }
-        parent.setContentHandler(this.processor);
-        parent.setProperty("http://xml.org/sax/properties/lexical-handler",
-                         this.processor);
-        //parent.setEntityResolver(this);
-        //parent.setDTDHandler(this);
-        //parent.setErrorHandler(this);
-        parent.parse(input);
     }
 }
 

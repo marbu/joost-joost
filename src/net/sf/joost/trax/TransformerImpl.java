@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.16 2003/06/15 11:48:47 obecker Exp $
+ * $Id: TransformerImpl.java,v 1.17 2003/07/27 10:38:02 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -73,6 +73,10 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
     private URIResolver uriRes          = null;
     private ErrorListener errorListener = null;
 
+    // init default errorlistener
+    protected TransformationErrListener defaultErrorListener =
+        new TransformationErrListener();
+
     private HashSet supportedProperties = new HashSet();
 
     /**
@@ -93,7 +97,6 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
     * The trace manager.
     */
     private TraceManager traceManager = new TraceManager(this);
-
 
     /**
      * Constructor
@@ -140,7 +143,6 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
     public void transform(Source xmlSource, Result result)
         throws TransformerException {
 
-
         StxEmitter out      = null;
         SAXSource saxSource = null;
 
@@ -149,7 +151,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
             if (DEBUG)
                 log.debug("perform transformation from " +
                           "xml-source(SAXSource, DOMSource, StreamSource) " +
-                          "to  SAXResult, DOMResult or StreamResult");
+                          "to SAXResult, DOMResult or StreamResult");
             try {
 
                 //init StxEmitter
@@ -207,7 +209,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
                                 xmlReader.setFeature(FEAT_NSPREFIX, false);
                                 // maybe there would be other features
                                 } catch (SAXException sE) {
-                                    log.warn(sE);
+                                    defaultErrorListener.warning(new TransformerException(sE.getMessage(), sE));
                                 }
                             }
                             // set the the SAXSource as the parent of the STX-Processor
@@ -218,21 +220,24 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
                     //perform transformation
                     this.processor.parse(isource);
                 } else {
-                        throw new TransformerException("InputSource is null - could not perform transformation");
+                    TransformerException tE =
+                            new TransformerException("InputSource is null - could not perform transformation");
+                    defaultErrorListener.fatalError(tE);
                 }
                 //perform result
                 performResults(result, out);
             } catch (SAXException ex) {
+                TransformerException tE;
                 Exception emb = ex.getException();
-                if (emb instanceof TransformerException)
-                    throw (TransformerException)emb;
-                TransformerException tE =
-                    new TransformerException(ex.getMessage(), ex);
-                log.fatal(tE);
-                throw tE;
+                if (emb instanceof TransformerException) {
+                    tE = (TransformerException)emb;
+                } else {
+                    tE = new TransformerException(ex.getMessage(), ex);
+                }
+                defaultErrorListener.fatalError(tE);
             } catch (IOException ex) {
                 // will this ever happen?
-                throw new TransformerException(ex.getMessage(), ex);
+                defaultErrorListener.fatalError(new TransformerException(ex.getMessage(), ex));
             }
         }
     }
@@ -330,7 +335,10 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
 
         if (supportedProperties.contains(name))
             return processor.outputProperties.getProperty(name);
-        throw new IllegalArgumentException("Unsupported property " + name);
+        IllegalArgumentException iE =
+                new IllegalArgumentException("Unsupported property " + name);
+        log.error(iE.getMessage(), iE);
+        throw iE;
     }
 
     /**
@@ -342,15 +350,21 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
     public void setOutputProperty(String name, String value)
             throws IllegalArgumentException {
 
+        IllegalArgumentException iE;
         if (supportedProperties.contains(name)) {
-            if (OutputKeys.METHOD.equals(name) && !"xml".equals(value))
-                throw new IllegalArgumentException(
+            if (OutputKeys.METHOD.equals(name) && !"xml".equals(value)) {
+                iE = new IllegalArgumentException(
                               "Unsupported output method " + value);
+                log.error(iE.getMessage(), iE);
+                throw iE;
+            }
             processor.outputProperties.setProperty(name, value);
-        }
-        else
-            throw new IllegalArgumentException("Unsupported property " +
+        } else {
+            iE = new IllegalArgumentException("Unsupported property " +
                                                name);
+            log.error(iE.getMessage(), iE);
+            throw iE;
+        }
     }
 
     /**
@@ -369,20 +383,27 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
      */
     public void setOutputProperties(Properties oformat)
             throws IllegalArgumentException {
-        if (oformat == null)
+        if (oformat == null) {
             processor.initOutputProperties(); // re-initialize
-        else {
+        } else {
+            IllegalArgumentException iE;
             // check properties in oformat
             for (Enumeration e = oformat.keys(); e.hasMoreElements(); ) {
                 Object prop = e.nextElement();
-                if (!supportedProperties.contains(prop))
-                    throw new IllegalArgumentException(
+                if (!supportedProperties.contains(prop)) {
+                    iE = new IllegalArgumentException(
                                   "Unsupported property " + prop);
+                    log.error(iE);
+                    throw iE;
+                }
                 if (OutputKeys.METHOD.equals(prop) &&
-                    !"xml".equals(oformat.getProperty((String)prop)))
-                    throw new IllegalArgumentException(
+                    !"xml".equals(oformat.getProperty((String)prop))) {
+                    iE = new IllegalArgumentException(
                                   "Unsupported output method " +
                                   oformat.getProperty((String)prop));
+                    log.error(iE);
+                    throw iE;
+                }
             }
             processor.outputProperties = (Properties)oformat.clone();
         }
@@ -419,7 +440,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
      * @param value The value of the parameter.
      */
     public void setParameter(String name, Object value) {
-        processor.setParameter(name, value);
+        processor.setParameter(name, value.toString());
     }
 
     /**

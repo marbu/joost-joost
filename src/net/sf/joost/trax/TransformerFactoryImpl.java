@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.9 2003/07/04 08:07:39 obecker Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.10 2003/07/27 10:38:02 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -60,7 +60,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
 
     // Define a static logger variable so that it references the
     // Logger instance named "TransformerFactoryImpl".
-    private static org.apache.commons.logging.Log log = 
+    private static org.apache.commons.logging.Log log =
         org.apache.commons.logging.
         LogFactory.getLog(TransformerFactoryImpl.class);
 
@@ -68,6 +68,12 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     private   URIResolver uriResolver               = null;
     private   ErrorListener errorListener           = null;
     protected TransformerHandlerResolver thResolver = null;
+
+    // init default errorlistener
+    // visible for TemplatesImpl
+    protected ConfigurationErrListener defaultErrorListener =
+            new ConfigurationErrListener();
+
     // indicates if the transformer is working in debug mode
     private boolean debugmode                       = false;
 
@@ -76,7 +82,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     private Boolean reentryGuard = new Boolean(true);
 
     /**
-     * default constructor
+     * The default constructor.
      */
     public TransformerFactoryImpl() {}
 
@@ -102,18 +108,9 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
 
         TransformerConfigurationException tE =
                 new TransformerConfigurationException("Feature not supported");
-        // user ErrorListener if available
-        if(errorListener != null) {
-            try {
-                errorListener.fatalError(tE);
-                return null;
-            } catch( TransformerException e2) {
-                throw tE;
-            }
-        } else {
-            // Feature is not supported by Joost.
-            throw tE;
-        }
+
+        defaultErrorListener.fatalError(tE);
+        return null;
     }
 
 
@@ -129,12 +126,12 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
 
         if (name.equals(KEY_TH_RESOLVER)) {
             return thResolver;
-        } else if (name.equals(KEY_XSLT_FACTORY)) {
-            return System.getProperty(name);
         } else if (name.equals(DEBUG_FEATURE)) {
             return new Boolean(debugmode);
-        } else
+        } else {
+            log.warn("Feature not supported: " + name);
             throw new IllegalArgumentException("Feature not supported: " + name);
+        }
     }
 
     /**
@@ -150,11 +147,10 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
 
         if (name.equals(KEY_TH_RESOLVER)) {
             thResolver = (TransformerHandlerResolver)value;
-        } else if (name.equals(KEY_XSLT_FACTORY)) {
-            System.setProperty(name, (String)value);
         } else if (name.equals(DEBUG_FEATURE)) {
             this.debugmode = ((Boolean)value).booleanValue();
         } else {
+            log.warn("Feature not supported: " + name);
             throw new IllegalArgumentException("Feature not supported: " + name);
         }
     }
@@ -176,12 +172,12 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         throws IllegalArgumentException {
 
         synchronized (reentryGuard) {
-            if (DEBUG)
-                log.debug("setting ErrorListener");
+            log.debug("setting ErrorListener");
             if (errorListener == null) {
                 throw new IllegalArgumentException("ErrorListener is null");
             }
             this.errorListener = errorListener;
+            defaultErrorListener.setUserErrorListener(errorListener);
         }
     }
 
@@ -237,15 +233,13 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         }
 
         String errMsg = "Unknown feature " + name;
-        // user ErrorListener if available
-        if(errorListener != null) {
-            try {
-                errorListener.error(new TransformerConfigurationException(errMsg));
-                return false;
-            } catch( TransformerException e2) {
-                throw new IllegalArgumentException(errMsg);
-            }
-        } else {
+        TransformerConfigurationException tE =
+                new TransformerConfigurationException(errMsg);
+
+        try {
+            defaultErrorListener.error(tE);
+            return false;
+        } catch (TransformerException e) {
             throw new IllegalArgumentException(errMsg);
         }
     }
@@ -254,36 +248,25 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     /**
      * Creates a new Templates for Transformations.
      * @param source The <code>Source</code> of the stylesheet.
-     * @return A <code>Templates</code> object or <code>null</code>
+     * @return A <code>Templates</code> object or <code>null</code> when an error
+     *  occured (no user defined ErrorListener)
      * @throws TransformerConfigurationException
      */
     public Templates newTemplates(Source source)
         throws TransformerConfigurationException {
 
         synchronized (reentryGuard) {
-            if (DEBUG) 
-                if (log.isDebugEnabled())
-                    log.debug("get a Templates-instance from Source " +
-                              source.getSystemId());
+            if (log.isDebugEnabled())
+                log.debug("get a Templates-instance from Source " +
+                          source.getSystemId());
             try {
                 SAXSource saxSource = getSAXSource(source, true);
                 InputSource isource = saxSource.getInputSource();
                 Templates template = new TemplatesImpl(isource, this);
                 return template;
             } catch (TransformerConfigurationException tE) {
-                // user ErrorListener if available
-                if(errorListener != null) {
-                    try {
-                        errorListener.fatalError(new TransformerConfigurationException(tE));
-                        return null;
-                    } catch( TransformerException e2) {
-                        log.fatal(tE);
-                        throw tE;
-                    }
-                } else {
-                    log.fatal(tE);
-                    throw tE;
-                }
+                defaultErrorListener.fatalError(tE);
+                return null;
             }
         }
     }
@@ -318,8 +301,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         throws TransformerConfigurationException {
 
         synchronized (reentryGuard) {
-            if (DEBUG)
-                log.debug("get a Transformer-instance");
+            log.debug("get a Transformer-instance");
             Templates templates     = newTemplates(source);
             Transformer transformer = templates.newTransformer();
             //set the URI-Resolver
@@ -339,23 +321,20 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     * Converts a supplied Source to a SAXSource, DOMSource or StreamSource.
     * @param source The supplied input source
     * @param isStyleSheet true if the source is a stylesheet
-    * @return A <code>SAXSource</code> object.
+    * @return A <code>SAXSource</code> object, or <code>null</code>
     */
     private SAXSource getSAXSource(Source source, boolean isStyleSheet)
         throws TransformerConfigurationException{
 
-        if (DEBUG)
-            log.debug("Convert a supplied Source to a SAXSource, DOMSource " +
-                      "or StreamSource");
+        log.debug("Convert a supplied Source to a SAXSource, DOMSource " +
+            "or StreamSource");
         if (source instanceof SAXSource) {
-            if (DEBUG)
-                log.debug("Source is a SAXSource");
+            log.debug("Source is a SAXSource");
             return (SAXSource)source;
         }
         if (source instanceof DOMSource) {
-            if (DEBUG)
-                log.debug("Source is a DOMSource, so using DOMDriver to " +
-                          "emulate a SAXSource");
+            log.debug("Source is a DOMSource, so using DOMDriver to " +
+                "emulate a SAXSource");
             InputSource is = new InputSource("dummy");
             Node startNode = ((DOMSource)source).getNode();
             Document doc;
@@ -373,8 +352,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         }
         if (source instanceof StreamSource) {
 
-            if (DEBUG)
-                log.debug("Source is a StreamSource");
+            log.debug("Source is a StreamSource");
             InputSource isource =
                 TrAXHelper.getInputSourceForStreamSources(source, errorListener);
             return new SAXSource(isource);
@@ -384,24 +362,11 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
 
             IllegalArgumentException iE =
                     new IllegalArgumentException(errMsg);
-            // user ErrorListener if available
-            if(errorListener != null) {
-                try {
-                    errorListener.fatalError(new TransformerConfigurationException(iE.getMessage(), iE));
-                    return null;
-                } catch( TransformerException e2) {
+            TransformerConfigurationException tE =
+                    new TransformerConfigurationException(iE.getMessage(), iE);
 
-                    TransformerConfigurationException tE =
-                            new TransformerConfigurationException(iE.getMessage(), iE);
-                    log.fatal(tE);
-                    throw tE;
-                }
-            } else {
-                TransformerConfigurationException tE =
-                        new TransformerConfigurationException(iE.getMessage(), iE);
-                log.fatal(tE);
-                throw tE;
-            }
+            defaultErrorListener.fatalError(tE);
+            return null;
         }
     }
 
@@ -422,8 +387,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         throws TransformerConfigurationException {
 
         synchronized (reentryGuard) {
-            if (DEBUG)
-                log.debug("create a TemplatesHandler-instance");
+            log.debug("create a TemplatesHandler-instance");
             TemplatesHandlerImpl thandler = new TemplatesHandlerImpl(this);
             return thandler;
         }
@@ -443,9 +407,8 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         throws TransformerConfigurationException {
 
         synchronized (reentryGuard) {
-            if (DEBUG)
-                log.debug("get a TransformerHandler (identity " + 
-                          "transformation or copy)");
+            log.debug("get a TransformerHandler (identity transformation " +
+                "or copy)");
             StreamSource streamSrc =
                 new StreamSource(new StringReader(IDENTITY_TRANSFORM));
             return newTransformerHandler(streamSrc);
@@ -466,10 +429,9 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         throws TransformerConfigurationException {
 
         synchronized (reentryGuard) {
-            if (DEBUG)
-                if (log.isDebugEnabled())
-                    log.debug("get a TransformerHandler-instance from " + 
-                              "Source " + src.getSystemId());
+            if (log.isDebugEnabled())
+                log.debug("get a TransformerHandler-instance from Source " +
+                          src.getSystemId());
             Templates templates = newTemplates(src);
             return newTransformerHandler(templates);
         }
@@ -488,8 +450,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         throws TransformerConfigurationException {
 
         synchronized (reentryGuard) {
-            if (DEBUG)
-                log.debug("get a TransformerHandler-instance from Templates");
+            log.debug("get a TransformerHandler-instance from Templates ");
             Transformer internal = templates.newTransformer();
             TransformerHandlerImpl thandler = new TransformerHandlerImpl(internal);
             return thandler;
@@ -502,17 +463,16 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
      * as the transformation instructions.
      * Implementation of the {@link SAXTransformerFactory}
      * @param src - The Source of the transformation instructions.
-     * @return An {@link XMLFilter} object, or null if this feature is not
+     * @return An {@link XMLFilter} object, or <code>null</code> if this feature is not
      *  supported.
      * @throws TransformerConfigurationException
      */
     public XMLFilter newXMLFilter(Source src)
         throws TransformerConfigurationException {
 
-        if (DEBUG)
-            if (log.isDebugEnabled())
-                log.debug("getting SAXTransformerFactory.FEATURE_XMLFILTER " +
-                          "from Source " + src.getSystemId());
+        if (log.isDebugEnabled())
+            log.debug("getting SAXTransformerFactory.FEATURE_XMLFILTER " +
+                      "from Source " + src.getSystemId());
         XMLFilter xFilter = null;
         try {
             Templates templates = newTemplates(src);
@@ -522,24 +482,10 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
             xFilter.setParent(parser);
             return xFilter;
         } catch (SAXException ex) {
-
-            // use ErrorListener if available
-            if(errorListener != null) {
-                try {
-                    errorListener.fatalError(new TransformerConfigurationException(ex.getMessage(), ex));
-                    return null;
-                } catch( TransformerException e2) {
-                    TransformerConfigurationException tE =
-                            new TransformerConfigurationException(ex.getMessage(), ex);
-                    log.fatal(tE);
-                    throw tE;
-                }
-            } else {
-                    TransformerConfigurationException tE =
-                            new TransformerConfigurationException(ex.getMessage(), ex);
-                    log.fatal(tE);
-                    throw tE;
-            }
+            TransformerConfigurationException tE =
+                    new TransformerConfigurationException(ex.getMessage(), ex);
+            defaultErrorListener.fatalError(tE);
+            return null;
         }
     }
 
@@ -555,25 +501,14 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     public XMLFilter newXMLFilter(Templates templates)
         throws TransformerConfigurationException {
 
-        if (DEBUG)
-            log.debug("getting SAXTransformerFactory.FEATURE_XMLFILTER " +
-                      "from Templates");
+        log.debug("getting SAXTransformerFactory.FEATURE_XMLFILTER " +
+            "from Templates");
         try {
             //Implementation
             return new TrAXFilter(templates);
         } catch(TransformerConfigurationException tE) {
-            if(errorListener != null) {
-                try {
-                    errorListener.fatalError(tE);
-                    return null;
-                } catch( TransformerException e2) {
-                    log.fatal(tE);
-                    throw tE;
-                }
-            } else {
-                log.fatal(tE);
-                throw tE;
-            }
+            defaultErrorListener.fatalError(tE);
+            return null;
     	}
     }
 }

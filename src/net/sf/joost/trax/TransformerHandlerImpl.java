@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerImpl.java,v 1.5 2003/04/29 15:09:12 obecker Exp $
+ * $Id: TransformerHandlerImpl.java,v 1.6 2003/07/27 10:38:02 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -65,22 +65,22 @@ public class TransformerHandlerImpl implements TransformerHandler {
     /**
      * Processor is the joost-stx-engine
      */
-    private Processor processor     = null;
-    private Transformer transformer = null;
+    private Processor processor         = null;
+    private Transformer transformer     = null;
     /**
      * Handler for constructing the Resulttype.
      */
-    private StxEmitter stxEmitter   = null;
+    private StxEmitter stxEmitter       = null;
 
     /**
      * Necessary for the document root.
      */
-    private String systemId         = null;
+    private String systemId             = null;
 
     /**
      * The according Result.
      */
-    private Result result           = null;
+    private Result result               = null;
 
     /**
      * Constructor.
@@ -126,7 +126,6 @@ public class TransformerHandlerImpl implements TransformerHandler {
     public void setResult(Result result) throws IllegalArgumentException {
 
         log.debug("setting Result - here SAXResult");
-
         try {
             if (result instanceof Result) {
                 this.result = result;
@@ -134,22 +133,17 @@ public class TransformerHandlerImpl implements TransformerHandler {
                 init(result);
             }
         } catch (TransformerException e) {
-            ErrorListener errorListener = transformer.getErrorListener();
-            // user ErrorListener if available
-            if(errorListener != null) {
+            if (transformer instanceof TransformerImpl) {
+                TransformerConfigurationException tE =
+                    new TransformerConfigurationException(e.getMessage(), e);
                 try {
-                    errorListener.fatalError(new TransformerConfigurationException(e.getMessage(), e));
-                    return;
-                } catch( TransformerException e2) {
-                    TransformerConfigurationException tE =
-                            new TransformerConfigurationException(e.getMessage(), e);
-                    log.fatal(tE);
-                    return;
+                    ((TransformerImpl)transformer).defaultErrorListener.fatalError(tE);
+                } catch (TransformerException innerE) {
+                    throw new IllegalArgumentException(innerE.getMessage());
                 }
             } else {
-                TransformerConfigurationException tE =
-                        new TransformerConfigurationException(e.getMessage(), e);
-                log.fatal(tE);
+                log.fatal(e);
+                throw new IllegalArgumentException("result is invalid.");
             }
         }
     }
