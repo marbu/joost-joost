@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.5 2003/04/30 15:53:37 obecker Exp $
+ * $Id: FunctionTable.java,v 2.6 2003/05/14 11:56:48 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.5 $ $Date: 2003/04/30 15:53:37 $
+ * @version $Revision: 2.6 $ $Date: 2003/05/14 11:56:48 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -306,8 +306,9 @@ final public class FunctionTable implements Constants
 
       public Value evaluate(Context context, int top, Tree args)
       {
-         return new Value(context.lookAhead != null || 
-                          context.ancestorStack.size() == 1);
+         return new Value(context.ancestorStack.size() == 1 ||
+                          ((SAXEvent)context.ancestorStack.peek())
+                                            .hasChildNodes);
          // size() == 1 means: the context node is the document node
       }
    }
@@ -382,9 +383,9 @@ final public class FunctionTable implements Constants
          case SAXEvent.ELEMENT:
          case SAXEvent.ATTRIBUTE:
          case SAXEvent.PI:
-            return new Value(v.event.qName);
+            return v.setString(v.event.qName);
          default:
-            return new Value("");
+            return v.setString("");
          }
       }
    }
@@ -420,11 +421,11 @@ final public class FunctionTable implements Constants
          switch (v.event.type) {
          case SAXEvent.ELEMENT:
          case SAXEvent.ATTRIBUTE:
-            return new Value(v.event.lName);
+            return v.setString(v.event.lName);
          case SAXEvent.PI:
-            return new Value(v.event.qName);
+            return v.setString(v.event.qName);
          default:
-            return new Value("");
+            return v.setString("");
          }
       }
    }
@@ -459,9 +460,9 @@ final public class FunctionTable implements Constants
 
          if (v.event.type == SAXEvent.ELEMENT || 
              v.event.type == SAXEvent.ATTRIBUTE)
-            return new Value(v.event.uri);
+            return v.setString(v.event.uri);
          else
-            return new Value("");
+            return v.setString("");
       }
    }
 
@@ -494,11 +495,12 @@ final public class FunctionTable implements Constants
          case SAXEvent.ELEMENT:
          case SAXEvent.ATTRIBUTE: {
             int colon = v.event.qName.indexOf(':');
-            return new Value(colon == -1 ? "" 
-                                         : v.event.qName.substring(0, colon));
+            return v.setString(colon == -1 
+                               ? "" 
+                               : v.event.qName.substring(0, colon));
          }
          default:
-            return new Value("");
+            return v.setString("");
          }
       }
    }
@@ -535,13 +537,13 @@ final public class FunctionTable implements Constants
                                    .convertToString().string;
 
          if (e.namespaces == null)
-            return new Value();
+            return v.setEmpty();
 
          String uri = (String)e.namespaces.get(prefix);
          if (uri == null)
-            return new Value();
+            return v.setEmpty();
          else
-            return new Value(uri);
+            return v.setString(uri);
       }
    }
 
@@ -573,7 +575,7 @@ final public class FunctionTable implements Constants
          SAXEvent e = v.event;
 
          if (e.namespaces == null)
-            return new Value();
+            return v.setEmpty();
 
          Value ret = null, last = null;
          for (Enumeration en=e.namespaces.keys(); en.hasMoreElements(); ) {
@@ -584,11 +586,12 @@ final public class FunctionTable implements Constants
                ret = v;
             last = v;
          }
+         e.removeRef();
          if (ret != null)
             return ret;
          else
             // shouldn't happen: at least "xml" is always defined
-            return new Value();
+            return v.setEmpty();
       }
    }
 
@@ -1335,6 +1338,7 @@ final public class FunctionTable implements Constants
          double sum = 0;
          while (v != null) {
             Value next = v.next;
+            v.next = null;
             sum += v.convertToNumber().number;
             v = next;
          }
