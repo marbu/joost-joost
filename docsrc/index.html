@@ -91,11 +91,17 @@
       There's no possibility to change FOP's verbosity on the command
       line at the moment (<em>Joost</em> sets it to <code>warn</code>).
       </p>
+
+      <p><em>Joost</em> implements the TrAX interfaces from JAXP 1.1.
+      For creating a <em>Joost</em> transformer you have to set the Java
+      property <code>javax.xml.transform.TransformerFactory</code>
+      to the value <code>net.sf.joost.trax.TransformerFactoryImpl</code>.
+      </p>
       
       <h4>Features</h4>
       <p>
       Supported stx elements (and their attributes) in the namespace
-       <code>http://temporary.uri/2002/stx</code>
+       <code>http://stx.sourceforge.net/2002/ns</code>
       <ul>
       <li>stx:transform (version, strict-mode?)</li>
       <li>stx:options (default-stxpath-namespace?, output-encoding?,
@@ -107,6 +113,7 @@
       <li>stx:text</li>
       <li>stx:process-children</li>
       <li>stx:process-self</li>
+      <li>stx:process-attributes</li>
       <li>stx:value-of (select)</li>
       <li>stx:if (test)</li>
       <li>stx:element-start (name, namespace?)</li>
