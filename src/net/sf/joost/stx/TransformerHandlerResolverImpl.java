@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerResolverImpl.java,v 2.5 2003/08/29 13:31:23 obecker Exp $
+ * $Id: TransformerHandlerResolverImpl.java,v 2.6 2004/08/19 19:02:33 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -52,7 +52,7 @@ import net.sf.joost.trax.TrAXConstants;
 /**
  * The default implementation of an {@link TransformerHandlerResolver}.
  * It supports currently only XSLT transformers.
- * @version $Revision: 2.5 $ $Date: 2003/08/29 13:31:23 $
+ * @version $Revision: 2.6 $ $Date: 2004/08/19 19:02:33 $
  * @author Oliver Becker
  */
 
@@ -67,13 +67,17 @@ public final class TransformerHandlerResolverImpl
    public static final String SAX_METHOD =
       "http://xml.org/sax";
 
+   /** The URI identifying the HTTP POST method */
+   public static final String HTTP_POST_METHOD =
+      "http://www.ietf.org/rfc/rfc2616.txt#POST";
+
 
    private static String[] knownMethods = {
-      Constants.STX_NS, XSLT_METHOD, SAX_METHOD
+      Constants.STX_NS, XSLT_METHOD, SAX_METHOD, HTTP_POST_METHOD
    };
 
    // indexes in @knownMethods
-   private static int M_STX = 0, M_XSLT = 1, M_SAX = 2;
+   private static int M_STX = 0, M_XSLT = 1, M_SAX = 2, M_POST = 3;
 
 
    /** A custom resolver object registered via
@@ -230,6 +234,19 @@ public final class TransformerHandlerResolverImpl
             throw new SAXException("Attribute `filter-src' not allowed " +
                                    "for method `" + method + "'");
          return new SAXWrapperHandler();
+      }
+
+      if (mIndex == M_POST) {
+         if (href != null || reader != null)
+            throw new SAXException("Attribute `filter-src' not allowed " +
+                                   "for method `" + method + "'");
+         Value v = (Value)params.get("{}target");
+         if (v == null)
+            throw new SAXException("Missing parameter `target' for filter " + 
+                                   "method `" + method + "'");
+         String targetURI = v.convertToString().string;
+         
+         return new HttpPostHandler(targetURI);
       }
 
       return null;
