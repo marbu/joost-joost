@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.21 2003/12/23 17:05:29 zubow Exp $
+ * $Id: TransformerImpl.java,v 1.22 2004/01/08 21:52:40 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -91,9 +91,16 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
      * This is a compile-time flag to enable or disable calling
      * of trace listeners. For optimization purposes this flag
      * must be set to false.
-     * todo : Implementation.
      */
     public static boolean DEBUG_MODE = false;
+
+
+    /**
+     * This is a run-time flag (only used when {@link #DEBUG_MODE} is true).
+     * If the value is <code>true</code>, the transformation will be chanceled
+     * at the next possible execution step.
+     */
+    public boolean CHANCEL_TRANSFORMATION = false;
 
     /**
     * The trace manager.
@@ -109,7 +116,10 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
 
         // set tracing manager on processor object
         if (processor instanceof DebugProcessor) {
-            ((DebugProcessor)processor).setTraceManager(traceManager);
+            DebugProcessor dbp = (DebugProcessor)processor;
+            dbp.setTraceManager(traceManager);
+            dbp.setTransformer(this);
+
             Emitter emitter = processor.getEmitter();
             if (emitter instanceof DebugEmitter) {
                 ((DebugEmitter)emitter).setTraceManager(traceManager);

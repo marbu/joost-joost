@@ -1,5 +1,5 @@
 /*
- * $Id: DebugProcessor.java,v 1.6 2003/12/28 12:32:40 zubow Exp $
+ * $Id: DebugProcessor.java,v 1.7 2004/01/08 21:52:38 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -29,6 +29,8 @@ import net.sf.joost.stx.*;
 import net.sf.joost.instruction.TemplateFactory;
 import net.sf.joost.instruction.AbstractInstruction;
 import net.sf.joost.instruction.NodeBase;
+import net.sf.joost.trax.TransformerImpl;
+import net.sf.joost.Constants;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.Attributes;
@@ -42,13 +44,14 @@ import java.util.Arrays;
 
 /**
  * Extends the {@link net.sf.joost.stx.Processor} with debug features.
- * @version $Revision: 1.6 $ $Date: 2003/12/28 12:32:40 $
+ * @version $Revision: 1.7 $ $Date: 2004/01/08 21:52:38 $
  * @author Zubow
  */
 public class DebugProcessor extends Processor {
 
     // for tracing
     private TraceManager tmgr;
+    private TransformerImpl transformer;
 
     public Parser stxparser;
 
@@ -119,6 +122,10 @@ public class DebugProcessor extends Processor {
         int ret = -1;
         boolean atomicnode = false;
 
+        // check, if transformation should be chanceled
+        if (transformer.CHANCEL_TRANSFORMATION)
+            return Constants.PR_ERROR;
+
         // propagate current executed instruction to debugger
         tmgr = this.getTraceManager();
 
@@ -171,6 +178,14 @@ public class DebugProcessor extends Processor {
      */
     public TraceManager getTraceManager() {
         return this.tmgr;
+    }
+
+    public TransformerImpl getTransformer() {
+        return transformer;
+    }
+
+    public void setTransformer(TransformerImpl transformer) {
+        this.transformer = transformer;
     }
 
     //--------------------------------------------------------------
