@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.11 2003/04/29 15:09:13 obecker Exp $
+ * $Id: TransformerImpl.java,v 1.12 2003/05/19 15:43:42 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -218,7 +218,8 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
                         throw tE;
                     }
                 } else {
-                    ex.printStackTrace();
+                    if (DEBUG)
+                        ex.printStackTrace();
                     TransformerException tE =
                             new TransformerException(ex.getMessage(), ex);
                     log.fatal(tE);
