@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 1.18 2003/03/20 13:09:49 obecker Exp $
+ * $Id: FunctionTable.java,v 2.0 2003/04/25 16:54:15 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 1.18 $ $Date: 2003/03/20 13:09:49 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:54:15 $
  * @author Oliver Becker
  */
 final public class FunctionTable
@@ -146,16 +146,17 @@ final public class FunctionTable
     *         argument was present, or the current item will be used.
     * @exception SAXException from evaluating <code>args</code> 
     */
-   private static Value getOptionalValue(Context context, Stack events,
+   private static Value getOptionalValue(Context context,
                                          int top, Tree args)
       throws SAXException
    {
       if (args != null)                     // argument present
-         return args.evaluate(context, events, top);
+         return args.evaluate(context, top);
       else if (context.currentItem != null) // current item present
          return context.currentItem.copy();
       else if (top > 0)                     // use current node
-         return new Value((SAXEvent)events.elementAt(top-1), top);
+         return 
+            new Value((SAXEvent)context.ancestorStack.elementAt(top-1), top);
       else // no event available (e.g. init of global variables)
          return new Value();
    }
@@ -185,8 +186,7 @@ final public class FunctionTable
        * @return a {@link Value} instance containing the result
        * @exception StxException if an error occurs while processing
        */
-      public Value evaluate(Context context, Stack events, int top, 
-                            Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException;
    }
 
@@ -212,11 +212,11 @@ final public class FunctionTable
       /** @return "string" */
       public String getName() { return "{}string"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
          return 
-            getOptionalValue(context, events, top, args).convertToString();
+            getOptionalValue(context, top, args).convertToString();
       }
    }
 
@@ -237,11 +237,11 @@ final public class FunctionTable
       /** @return "number" */
       public String getName() { return "{}number"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
          return 
-            getOptionalValue(context, events, top, args).convertToNumber();
+            getOptionalValue(context, top, args).convertToNumber();
       }
    }
 
@@ -262,10 +262,10 @@ final public class FunctionTable
       /** @return "boolean" */
       public String getName() { return "{}boolean"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         return args.evaluate(context, events, top).convertToBoolean();
+         return args.evaluate(context, top).convertToBoolean();
       }
    }
 
@@ -289,7 +289,7 @@ final public class FunctionTable
       /** @return "position" */
       public String getName() { return "{}position"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
       {
          return new Value(context.position);
       }
@@ -310,11 +310,12 @@ final public class FunctionTable
       /** @return "current-item" */
       public String getName() { return "{}current-item"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
       {
          return context.currentItem != null 
             ? context.currentItem.copy() // Values may change
-            : new Value((SAXEvent)events.elementAt(top-1), top);
+            : new Value((SAXEvent)context.ancestorStack.elementAt(top-1), 
+                        top);
       }
    }
 
@@ -332,7 +333,7 @@ final public class FunctionTable
       /** @return "level" */
       public String getName() { return "{}level"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
       {
          log4j.warn("The level function is deprecated. Use count(//node()) instead");
          return new Value(top-1);
@@ -353,16 +354,17 @@ final public class FunctionTable
       /** @return "get-node" */
       public String getName() { return "{}get-node"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
          log4j.warn("The get-node function is deprecated. Use item-at(//node(), position) instead.");
-         int arg = (int)args.evaluate(context, events, top)
+         int arg = (int)args.evaluate(context, top)
                             .convertToNumber().number;
          if (arg < 0 || arg > top-1)
             return new Value();
          else
-            return new Value((SAXEvent)events.elementAt(arg), arg+1);
+            return new Value((SAXEvent)context.ancestorStack.elementAt(arg),
+                             arg+1);
       }
    }
 
@@ -380,10 +382,11 @@ final public class FunctionTable
       /** @return "has-child-nodes" */
       public String getName() { return "{}has-child-nodes"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
       {
-         return new Value(context.lookAhead != null || events.size() == 1);
-         // events.size() == 1 means: the context node is the document node
+         return new Value(context.lookAhead != null || 
+                          context.ancestorStack.size() == 1);
+         // size() == 1 means: the context node is the document node
       }
    }
 
@@ -401,10 +404,10 @@ final public class FunctionTable
       /** @return "node-kind" */
       public String getName() { return "{}node-kind"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         Value v = args.evaluate(context, events, top);
+         Value v = args.evaluate(context, top);
          if (v.type == Value.EMPTY)
             return v;
          if (v.type != Value.NODE) 
@@ -443,10 +446,10 @@ final public class FunctionTable
       /** @return "name" */
       public String getName() { return "{}name"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         Value v = getOptionalValue(context, events, top, args);
+         Value v = getOptionalValue(context, top, args);
          if (v.type == Value.EMPTY)
             return v;
          if (v.type != Value.NODE) 
@@ -482,10 +485,10 @@ final public class FunctionTable
       /** @return "local-name" */
       public String getName() { return "{}local-name"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         Value v = getOptionalValue(context, events, top, args);
+         Value v = getOptionalValue(context, top, args);
          if (v.type == Value.EMPTY)
             return v;
          if (v.type != Value.NODE) 
@@ -522,10 +525,10 @@ final public class FunctionTable
       /** @return "namespace-uri" */
       public String getName() { return "{}namespace-uri"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         Value v = getOptionalValue(context, events, top, args);
+         Value v = getOptionalValue(context, top, args);
          if (v.type == Value.EMPTY)
             return v;
          if (v.type != Value.NODE) 
@@ -555,10 +558,10 @@ final public class FunctionTable
       /** @return "prefix" */
       public String getName() { return "{}prefix"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         Value v = getOptionalValue(context, events, top, args);
+         Value v = getOptionalValue(context, top, args);
          if (v.type == Value.EMPTY)
             return v;
          if (v.type != Value.NODE) 
@@ -596,10 +599,10 @@ final public class FunctionTable
       /** @return "get-namespace-uri-for-prefix" */
       public String getName() { return "{}get-namespace-uri-for-prefix"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         Value v = args.left.evaluate(context, events, top);
+         Value v = args.left.evaluate(context, top);
          if (v.type != Value.NODE) 
             throw new EvalException("The parameter passed to the " +
                                     "get-namespace-uri-for-prefix " +
@@ -607,7 +610,7 @@ final public class FunctionTable
                                     v + ")");
          SAXEvent e = v.event;
 
-         String prefix = args.right.evaluate(context, events, top)
+         String prefix = args.right.evaluate(context, top)
                                    .convertToString().string;
 
          if (e.namespaces == null)
@@ -638,10 +641,10 @@ final public class FunctionTable
       /** @return "get-in-scope-namespaces" */
       public String getName() { return "{}get-in-scope-namespaces"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         Value v = args.evaluate(context, events, top);
+         Value v = args.evaluate(context, top);
          if (v.type != Value.NODE) 
             throw new EvalException("The parameter passed to the " +
                                     "get-in-scope-namespaces function " +
@@ -690,10 +693,10 @@ final public class FunctionTable
       /** @return "not" */
       public String getName() { return "{}not"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         Value v = args.evaluate(context, events, top).convertToBoolean();
+         Value v = args.evaluate(context, top).convertToBoolean();
          v.bool = !v.bool;
          return v;
       }
@@ -716,7 +719,7 @@ final public class FunctionTable
       /** @return "true" */
       public String getName() { return "{}true"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
          return new Value(true);
@@ -740,7 +743,7 @@ final public class FunctionTable
       /** @return "false" */
       public String getName() { return "{}false"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
          return new Value(false);
@@ -769,10 +772,10 @@ final public class FunctionTable
       /** @return "floor" */
       public String getName() { return "{}floor"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         Value v = args.evaluate(context, events, top);
+         Value v = args.evaluate(context, top);
          if (v.type == Value.EMPTY)
             return v;
          v.convertToNumber();
@@ -798,10 +801,10 @@ final public class FunctionTable
       /** @return "ceiling" */
       public String getName() { return "{}ceiling"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         Value v = args.evaluate(context, events, top);
+         Value v = args.evaluate(context, top);
          if (v.type == Value.EMPTY)
             return v;
          v.convertToNumber();
@@ -827,10 +830,10 @@ final public class FunctionTable
       /** @return "round" */
       public String getName() { return "{}round"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         Value v = args.evaluate(context, events, top);
+         Value v = args.evaluate(context, top);
          if (v.type == Value.EMPTY)
             return v;
          v.convertToNumber();
@@ -864,19 +867,17 @@ final public class FunctionTable
       /** @return "concat" */
       public String getName() { return "{}concat"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
          if (args.type == Tree.LIST) {
-            Value v1 = evaluate(context, events, top, args.left);
-            Value v2 = args.right.evaluate(context, events, top)
-                                 .convertToString();
+            Value v1 = evaluate(context, top, args.left);
+            Value v2 = args.right.evaluate(context, top).convertToString();
             v1.string += v2.string;
             return v1;
          }
          else {
-            Value v = args.evaluate(context, events, top)
-                          .convertToString();
+            Value v = args.evaluate(context, top).convertToString();
             return v;
          }
       }
@@ -899,10 +900,10 @@ final public class FunctionTable
       /** @return "string-length" */
       public String getName() { return "{}string-length"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         Value v = getOptionalValue(context, events, top, args);
+         Value v = getOptionalValue(context, top, args);
          v.setNumber(v.convertToString().string.length());
          return v;
       }
@@ -925,10 +926,10 @@ final public class FunctionTable
       /** @return "normalize-space" */
       public String getName() { return "{}normalize-space"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         Value v = getOptionalValue(context, events, top, args);
+         Value v = getOptionalValue(context, top, args);
          String str = v.convertToString().string;
          int len = str.length();
          StringBuffer res = new StringBuffer();
@@ -971,12 +972,12 @@ final public class FunctionTable
       /** @return "{}contains" */
       public String getName() { return "{}contains"; }
       
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         String s1 = args.left.evaluate(context, events, top)
+         String s1 = args.left.evaluate(context, top)
                               .convertToString().string;
-         String s2 = args.right.evaluate(context, events, top)
+         String s2 = args.right.evaluate(context, top)
                                .convertToString().string;
          return new Value(s1.indexOf(s2) != -1);
       }
@@ -1000,12 +1001,12 @@ final public class FunctionTable
       /** @return "{}starts-with" */
       public String getName() { return "{}starts-with"; }
       
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         String s1 = args.left.evaluate(context, events, top)
+         String s1 = args.left.evaluate(context, top)
                               .convertToString().string;
-         String s2 = args.right.evaluate(context, events, top)
+         String s2 = args.right.evaluate(context, top)
                                .convertToString().string;
          return new Value(s1.startsWith(s2));
       }
@@ -1030,7 +1031,7 @@ final public class FunctionTable
       /** @return "{}substring" */
       public String getName() { return "{}substring"; }
       
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
          // XPath 1.0 semantics
@@ -1038,11 +1039,11 @@ final public class FunctionTable
          // the correct handling of NaN and +/- infinity.
          try {
             if (args.left.type == Tree.LIST) { // three parameters
-               String str = args.left.left.evaluate(context, events, top)
+               String str = args.left.left.evaluate(context, top)
                                           .convertToString().string;
-               double arg2 = args.left.right.evaluate(context, events, top)
+               double arg2 = args.left.right.evaluate(context, top)
                                             .convertToNumber().number;
-               double arg3 = args.right.evaluate(context, events, top)
+               double arg3 = args.right.evaluate(context, top)
                                        .convertToNumber().number;
 
                // extra test, because round(NaN) gives 0
@@ -1063,9 +1064,9 @@ final public class FunctionTable
                return new Value(str.substring(begin, end));
             }
             else { // two parameters
-               String str = args.left.evaluate(context, events, top)
+               String str = args.left.evaluate(context, top)
                                      .convertToString().string;
-               double arg2 = args.right.evaluate(context, events, top)
+               double arg2 = args.right.evaluate(context, top)
                                        .convertToNumber().number;
 
                if (Double.isNaN(arg2))
@@ -1108,12 +1109,12 @@ final public class FunctionTable
       /** @return "{}substring-before" */
       public String getName() { return "{}substring-before"; }
       
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         String s1 = args.left.evaluate(context, events, top)
+         String s1 = args.left.evaluate(context, top)
                               .convertToString().string;
-         String s2 = args.right.evaluate(context, events, top)
+         String s2 = args.right.evaluate(context, top)
                                .convertToString().string;
          int index = s1.indexOf(s2);
          if (index != -1)
@@ -1141,12 +1142,12 @@ final public class FunctionTable
       /** @return "{}substring-after" */
       public String getName() { return "{}substring-after"; }
       
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         String s1 = args.left.evaluate(context, events, top)
+         String s1 = args.left.evaluate(context, top)
                               .convertToString().string;
-         String s2 = args.right.evaluate(context, events, top)
+         String s2 = args.right.evaluate(context, top)
                                .convertToString().string;
          int index = s1.indexOf(s2);
          if (index != -1)
@@ -1175,14 +1176,14 @@ final public class FunctionTable
       /** @return "{}translate" */
       public String getName() { return "{}translate"; }
       
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         String s1 = args.left.left.evaluate(context, events, top)
+         String s1 = args.left.left.evaluate(context, top)
                                    .convertToString().string;
-         String s2 = args.left.right.evaluate(context, events, top)
+         String s2 = args.left.right.evaluate(context, top)
                                     .convertToString().string;
-         String s3 = args.right.evaluate(context, events, top)
+         String s3 = args.right.evaluate(context, top)
                                .convertToString().string;
          StringBuffer result = new StringBuffer();
          int s1len = s1.length();
@@ -1219,10 +1220,10 @@ final public class FunctionTable
       /** @return "empty" */
       public String getName() { return "{}empty"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         Value v = args.evaluate(context, events, top);
+         Value v = args.evaluate(context, top);
          return v.setBoolean(v.type == Value.EMPTY);
       }
    }
@@ -1245,11 +1246,11 @@ final public class FunctionTable
       /** @return "item-at" */
       public String getName() { return "{}item-at"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         Value seq = args.left.evaluate(context, events, top);
-         double pos = args.right.evaluate(context, events, top)
+         Value seq = args.left.evaluate(context, top);
+         double pos = args.right.evaluate(context, top)
                                 .convertToNumber().number;
 
          if (seq.type == Value.EMPTY || Double.isNaN(pos))
@@ -1289,7 +1290,7 @@ final public class FunctionTable
       /** @return "{}subsequence" */
       public String getName() { return "{}subsequence"; }
       
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
          Value seq;
@@ -1298,10 +1299,10 @@ final public class FunctionTable
          // TODO: this is currently not consistent with 
          // the XQ/XP 2.0 F&O WD 15 Nov 2002, need to check
          if (args.left.type == Tree.LIST) { // three parameters
-            seq = args.left.left.evaluate(context, events, top);
-            double arg2 = args.left.right.evaluate(context, events, top)
+            seq = args.left.left.evaluate(context, top);
+            double arg2 = args.left.right.evaluate(context, top)
                                          .convertToNumber().number;
-            double arg3 = args.right.evaluate(context, events, top)
+            double arg3 = args.right.evaluate(context, top)
                                     .convertToNumber().number;
 
             // extra test, because round(NaN) gives 0
@@ -1318,8 +1319,8 @@ final public class FunctionTable
                return seq.setEmpty();
          }
          else { // two parameters
-            seq = args.left.evaluate(context, events, top);
-            double arg2 = args.right.evaluate(context, events, top)
+            seq = args.left.evaluate(context, top);
+            double arg2 = args.right.evaluate(context, top)
                                     .convertToNumber().number;
 
             if (seq.type == Value.EMPTY || Double.isNaN(arg2))
@@ -1373,10 +1374,10 @@ final public class FunctionTable
       /** @return "count" */
       public String getName() { return "{}count"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         Value v = args.evaluate(context, events, top);
+         Value v = args.evaluate(context, top);
          if (v.type == Value.EMPTY) // empty sequence
             return v.setNumber(0);
          int count = 1;
@@ -1405,10 +1406,10 @@ final public class FunctionTable
       /** @return "sum" */
       public String getName() { return "{}sum"; }
 
-      public Value evaluate(Context context, Stack events, int top, Tree args)
+      public Value evaluate(Context context, int top, Tree args)
          throws SAXException, EvalException
       {
-         Value v = args.evaluate(context, events, top);
+         Value v = args.evaluate(context, top);
          if (v.type == Value.EMPTY) // empty sequence
             return v.setNumber(0);
          double sum = 0;

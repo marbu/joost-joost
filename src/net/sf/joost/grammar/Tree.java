@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 1.21 2003/03/20 13:17:17 obecker Exp $
+ * $Id: Tree.java,v 2.0 2003/04/25 16:54:14 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 1.21 $ $Date: 2003/03/20 13:17:17 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:54:14 $
  * @author Oliver Becker
  */
 final public class Tree
@@ -238,7 +238,6 @@ final public class Tree
     * by this Tree object.
     *    
     * @param context the Context object
-    * @param events the full stack
     * @param top the part of the stack to be considered while matching
     *        (the upper most element is at position top-1)
     * @param setPosition <code>true</code> if the context position 
@@ -247,8 +246,7 @@ final public class Tree
     * @return <code>true</code> if the stack matches the pattern represented 
     *         by this Tree.
     */
-   public boolean matches(Context context, Stack events, int top, 
-                          boolean setPosition)
+   public boolean matches(Context context, int top, boolean setPosition)
       throws SAXException
    {
       switch (type) {
@@ -257,9 +255,9 @@ final public class Tree
          // This branch should be encountered only for patterns at other 
          // places (for example in <stx:copy attributes="pattern" /> or
          // <stx:process-siblings while="pattern" />
-         if (left.matches(context, events, top, false))
+         if (left.matches(context, top, false))
             return true;
-         return right.matches(context, events, top, false);
+         return right.matches(context, top, false);
 
       case ROOT:
          if (top != 1)
@@ -271,18 +269,18 @@ final public class Tree
       case CHILD:
          if (top < 2)
             return false;
-         return left.matches(context, events, top-1, false) &&
-                right.matches(context, events, top, setPosition);
+         return left.matches(context, top-1, false) &&
+                right.matches(context, top, setPosition);
 
       case DESC:
-         // need at least 3 events (document, node1, node2), because
+         // need at least 3 nodes (document, node1, node2), because
          // DESC may appear only between two nodes but not at the root
          if (top < 3)
             return false;
-         if (right.matches(context, events, top, setPosition)) {
+         if (right.matches(context, top, setPosition)) {
             // look for a matching sub path on the left
             while (top > 1) {
-               if (left.matches(context, events, top-1, false))
+               if (left.matches(context, top-1, false))
                   return true;
                else
                   top--;
@@ -296,10 +294,10 @@ final public class Tree
       case URI_WILDCARD: {
          if (top < 2)
             return false;
-         SAXEvent e = (SAXEvent)events.elementAt(top-1);
+         SAXEvent e = (SAXEvent)context.ancestorStack.elementAt(top-1);
          if (e.type != SAXEvent.ELEMENT)
             return false;
-         SAXEvent parent = (SAXEvent)events.elementAt(top-2);
+         SAXEvent parent = (SAXEvent)context.ancestorStack.elementAt(top-2);
          switch (type) {
          case NAME_TEST:
             // reset namespace during the first access
@@ -337,8 +335,8 @@ final public class Tree
          boolean retValue = false;
          if (top > 1 && 
              // allow set position for evaluating the predicate
-             left.matches(context, events, top, true)) {
-            Value v = right.evaluate(context, events, top);
+             left.matches(context, top, true)) {
+            Value v = right.evaluate(context, top);
             if (v.type == Value.NUMBER)
                retValue = (context.position == Math.round(v.number));
             else
@@ -351,23 +349,27 @@ final public class Tree
 
       case NODE_TEST:
          // the node must be a child of another node,
-         // i.e. we need at least two events and it is no attribute node
+         // i.e. we need at least two nodes and it is no attribute node
          if (top < 2 ||
-             ((SAXEvent)events.elementAt(top-1)).type == SAXEvent.ATTRIBUTE)
+             ((SAXEvent)context.ancestorStack.elementAt(top-1)).type == 
+                        SAXEvent.ATTRIBUTE)
             return false;
          if (setPosition)
-            context.position = ((SAXEvent)events.elementAt(top-2))
-                                                .getPositionOfNode();
+            context.position = 
+               ((SAXEvent)context.ancestorStack.elementAt(top-2))
+                                               .getPositionOfNode();
          return true; 
 
       case TEXT_TEST:
          if (top < 2)
             return false;
-         int nodeType = ((SAXEvent)events.elementAt(top-1)).type;
+         int nodeType = 
+            ((SAXEvent)context.ancestorStack.elementAt(top-1)).type;
          if (nodeType == SAXEvent.TEXT || nodeType == SAXEvent.CDATA) {
             if (setPosition)
-               context.position = ((SAXEvent)events.elementAt(top-2))
-                                                   .getPositionOfText();
+               context.position = 
+                  ((SAXEvent)context.ancestorStack.elementAt(top-2))
+                                                  .getPositionOfText();
             return true;
          }
          return false;
@@ -375,10 +377,12 @@ final public class Tree
       case CDATA_TEST:
          if (top < 2)
             return false;
-         if (((SAXEvent)events.elementAt(top-1)).type == SAXEvent.CDATA) {
+         if (((SAXEvent)context.ancestorStack.elementAt(top-1)).type == 
+                        SAXEvent.CDATA) {
             if (setPosition)
-               context.position = ((SAXEvent)events.elementAt(top-2))
-                                                   .getPositionOfCDATA();
+               context.position = 
+                  ((SAXEvent)context.ancestorStack.elementAt(top-2))
+                                                  .getPositionOfCDATA();
             return true;
          }
          return false;
@@ -386,10 +390,12 @@ final public class Tree
       case COMMENT_TEST:
          if (top < 2)
             return false;
-         if (((SAXEvent)events.elementAt(top-1)).type == SAXEvent.COMMENT) {
+         if (((SAXEvent)context.ancestorStack.elementAt(top-1)).type == 
+                        SAXEvent.COMMENT) {
             if (setPosition)
-               context.position = ((SAXEvent)events.elementAt(top-2))
-                                                   .getPositionOfComment();
+               context.position = 
+                  ((SAXEvent)context.ancestorStack.elementAt(top-2))
+                                                  .getPositionOfComment();
             return true;
          }
          return false;
@@ -397,14 +403,14 @@ final public class Tree
       case PI_TEST: {
          if (top < 2)
             return false;
-         SAXEvent e = (SAXEvent)events.elementAt(top-1);
+         SAXEvent e = (SAXEvent)context.ancestorStack.elementAt(top-1);
          if (e.type == SAXEvent.PI) {
             if (value != "" && !value.equals(e.qName)) 
                return false;
             if (setPosition)
                context.position = 
-                  ((SAXEvent)events.elementAt(top-2))
-                                   .getPositionOfPI((String)value);
+                  ((SAXEvent)context.ancestorStack.elementAt(top-2))
+                                    .getPositionOfPI((String)value);
             return true;
          }
          return false;
@@ -417,7 +423,7 @@ final public class Tree
          // an attribute requires at least two ancestors
          if (top < 3)
             return false;
-         SAXEvent e = (SAXEvent)events.elementAt(top-1);
+         SAXEvent e = (SAXEvent)context.ancestorStack.elementAt(top-1);
          if (e.type != SAXEvent.ATTRIBUTE) 
             return false;
          if (setPosition)
@@ -451,16 +457,15 @@ final public class Tree
    /** 
     * Evaluates the current Tree if it represents an expression. 
     * @param context the current Context
-    * @param events the full event ancestor stack
     * @param instruction the current instruction, needed for providing
     *        locator information in the event of an error
     * @return a new computed Value object containing the result
     */
-   public Value evaluate(Context context, Stack events, NodeBase instruction)
+   public Value evaluate(Context context, NodeBase instruction)
       throws SAXException
    {
       context.currentInstruction = instruction;
-      return evaluate(context, events, events.size());
+      return evaluate(context, context.ancestorStack.size());
    }
 
 
@@ -468,12 +473,11 @@ final public class Tree
    /** 
     * Evaluates the current Tree if it represents an expression. 
     * @param context the current Context
-    * @param events the full event ancestor stack
     * @param top the part of the stack to be considered for the evaluation
     *            (the upper most element is at position top-1)
     * @return a new computed Value object containing the result
     */
-   public Value evaluate(Context context, Stack events, int top)
+   public Value evaluate(Context context, int top)
       throws SAXException
    {
       try {
@@ -494,14 +498,14 @@ final public class Tree
          case MOD:
             // check if one of the operands evaluates to the empty sequence
             if (left != null) {
-               v1 = left.evaluate(context, events, top);
+               v1 = left.evaluate(context, top);
                if (v1.type == Value.EMPTY)
                   return v1;
                v1.convertToNumber();
             }
             else 
                v1 = null; // unary operator (to make the compiler happy)
-            v2 = right.evaluate(context, events, top);
+            v2 = right.evaluate(context, top);
             if (v2.type == Value.EMPTY)
                return v2;
             v2.convertToNumber();
@@ -539,8 +543,8 @@ final public class Tree
          case LE:
          case GT:
          case GE: {
-            v1 = left.evaluate(context, events, top);
-            v2 = right.evaluate(context, events, top);
+            v1 = left.evaluate(context, top);
+            v2 = right.evaluate(context, top);
             if (v1.type == Value.EMPTY || v2.type == Value.EMPTY)
                return v1.setBoolean(false);
 
@@ -620,26 +624,26 @@ final public class Tree
 
          // Logical expressions
          case AND:
-            v1 = left.evaluate(context, events, top).convertToBoolean();
+            v1 = left.evaluate(context, top).convertToBoolean();
             if (v1.bool == false)
                return v1;
-            return right.evaluate(context, events, top).convertToBoolean();
+            return right.evaluate(context, top).convertToBoolean();
 
          case OR:
-            v1 = left.evaluate(context, events, top).convertToBoolean();
+            v1 = left.evaluate(context, top).convertToBoolean();
             if (v1.bool == true)
                return v1;
-            return right.evaluate(context, events, top).convertToBoolean();
+            return right.evaluate(context, top).convertToBoolean();
 
 
 
          case FUNCTION: 
-            return func.evaluate(context, events, top, left);
+            return func.evaluate(context, top, left);
 
          case AVT:
-            v1 = right.evaluate(context, events, top).convertToString();
+            v1 = right.evaluate(context, top).convertToString();
             if (left != null) {
-               v2 = left.evaluate(context, events, top);
+               v2 = left.evaluate(context, top);
                v2.string += v1.string;
                return v2;
             }
@@ -671,12 +675,14 @@ final public class Tree
          case ATTR_URI_WILDCARD: {
             // determine effective parent node sequence (-> v1)
             if (left != null) { // preceding path
-               v1 = left.evaluate(context, events, top);
+               v1 = left.evaluate(context, top);
                if (v1.type == Value.EMPTY)
                   return v1;
             }
             else if(top > 0) // use current node
-               v1 = new Value((SAXEvent)events.elementAt(top-1), top-1);
+               v1 = 
+                  new Value((SAXEvent)context.ancestorStack.elementAt(top-1),
+                            top-1);
             else
                v1 = null;
 
@@ -739,9 +745,11 @@ final public class Tree
                return new Value();
          }
 
-         case DOT: 
+         case DOT:
             if (top > 0)
-               return new Value((SAXEvent)events.elementAt(top-1), top);
+               return 
+                  new Value((SAXEvent)context.ancestorStack.elementAt(top-1),
+                            top);
             else
                return new Value();
 
@@ -749,10 +757,12 @@ final public class Tree
             if (top > 1) {
                if (right != null)
                   // path continues, evaluate recursively with top-1
-                  return right.evaluate(context, events, top-1);
+                  return right.evaluate(context, top-1);
                else
                   // return the node at position top-1
-                  return new Value((SAXEvent)events.elementAt(top-2), top-1);
+                  return 
+                     new Value((SAXEvent)context.ancestorStack
+                                                .elementAt(top-2), top-1);
             }
             else
                // path selects nothing
@@ -760,25 +770,27 @@ final public class Tree
 
          case ROOT:
             // set top to 1
-            return left.evaluate(context, events, 1);
+            return left.evaluate(context, 1);
 
          case CHILD:
-            if (top < events.size() && 
-                left.matches(context, events, top+1, false)) {
+            if (top < context.ancestorStack.size() && 
+                left.matches(context, top+1, false)) {
                if (right != null)
                   // path continues, evaluate recursively with top+1
-                  return right.evaluate(context, events, top+1);
+                  return right.evaluate(context, top+1);
                else 
                   // last step, return node at position top+1
-                  return new Value((SAXEvent)events.elementAt(top), top+1);
+                  return 
+                     new Value((SAXEvent)context.ancestorStack.elementAt(top),
+                               top+1);
             }
             else // path selects nothing
                return new Value();
 
          case DESC: {
             Value ret = null, last = null; // for constructing the result seq
-            while (top < events.size()) {
-               v1 = right.evaluate(context, events, top++);
+            while (top < context.ancestorStack.size()) {
+               v1 = right.evaluate(context, top++);
                if (v1.type == Value.NODE) {
                   if (ret != null) {
                      // skip duplicates
@@ -815,11 +827,11 @@ final public class Tree
 
          case SEQ: {
             if (left != null)
-               v1 = left.evaluate(context, events, top);
+               v1 = left.evaluate(context, top);
             else
                v1 = new Value();
             if (right != null)
-               v2 = right.evaluate(context, events, top);
+               v2 = right.evaluate(context, top);
             else
                v2 = new Value();
             // if we get an empty sequence, return the other value

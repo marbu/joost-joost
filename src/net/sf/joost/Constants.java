@@ -1,5 +1,5 @@
 /*
- * $Id: Constants.java,v 1.2 2002/12/15 16:55:16 obecker Exp $
+ * $Id: Constants.java,v 2.0 2003/04/25 16:54:10 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -27,7 +27,7 @@ package net.sf.joost;
 
 /**
  * This interface contains constants shared between different classes. 
- * @version $Revision: 1.2 $ $Date: 2002/12/15 16:55:16 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:54:10 $
  * @author Oliver Becker
  */
 public interface Constants
@@ -62,12 +62,20 @@ public interface Constants
    public static String DEFAULT_ENCODING   = "UTF-8";
 
 
-   /** Process state values */
+   /** 
+    * Return value for 
+    * {@link net.sf.joost.instruction.AbstractInstruction#process} 
+    */
    public static final short
-      ST_PROCESSING = 0x1,  // if set: perform processing
-      ST_CHILDREN   = 0x2,  // look for / found process-children
-      ST_SELF       = 0x4,  // look for / found process-self
-      ST_SIBLINGS   = 0x8,  // look for / found process-siblings
-      ST_ATTRIBUTES = 0x10, // found process-attributes
-      ST_BUFFER     = 0x20; // found process-buffer
+      PR_CONTINUE   = 0,   // continue processing
+      PR_CHILDREN   = 1,   // stx:process-children encountered
+      PR_SELF       = 2,   // stx:process-self encountered
+      PR_SIBLINGS   = 3,   // stx:process-siblings encountered
+      PR_ATTRIBUTES = 4,   // stx:process-attributes encountered
+      PR_BUFFER     = 5,   // stx:process-buffer
+      PR_ERROR      = -1;  // non-recoverable error
+
+
+   /** Debugging flag, should be <code>false</code> in release versions */
+   public static final boolean DEBUG = false;
 }
