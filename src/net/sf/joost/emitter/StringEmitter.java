@@ -1,5 +1,5 @@
 /*
- * $Id: StringEmitter.java,v 1.2 2002/11/21 16:43:09 obecker Exp $
+ * $Id: StringEmitter.java,v 1.3 2002/11/22 16:31:14 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -35,7 +35,7 @@ import net.sf.joost.stx.SAXEvent;
 
 /**
  * This class implements an emitter that collects characters events
- * @version $Revision: 1.2 $ $Date: 2002/11/21 16:43:09 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/22 16:31:14 $
  * @author Oliver Becker
  */
 
@@ -126,6 +126,9 @@ final public class StringEmitter implements StxEmitter
    public void processingInstruction(String target, String data)
       throws SAXException
    {
+      if (errorInfo != null)
+         throw new SAXException("Can't create processing instruction `" + 
+                                target + "' here " + errorInfo);
    }
 
    /** not used */
