@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.26 2002/12/19 14:26:20 obecker Exp $
+ * $Id: Processor.java,v 1.27 2002/12/23 08:18:49 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -61,7 +61,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.26 $ $Date: 2002/12/19 14:26:20 $
+ * @version $Revision: 1.27 $ $Date: 2002/12/23 08:18:49 $
  * @author Oliver Becker
  */
 
@@ -937,9 +937,9 @@ public class Processor extends XMLFilterImpl
             data.lastTemplate.process(emitter, eventStack, context,
                                       prStatus);
          }
-         else if (prStatus == 0) ;
+         else if (prStatus == 0 || prStatus == ST_BUFFER ) ;
          else {
-            log4j.error("encountered 'else'");
+            log4j.error("encountered 'else' " + prStatus);
          }
 
          // look at the next process status on the stack
