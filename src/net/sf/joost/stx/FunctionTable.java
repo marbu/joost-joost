@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 1.2 2002/09/20 12:52:02 obecker Exp $
+ * $Id: FunctionTable.java,v 1.3 2002/10/21 11:37:09 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 1.2 $ $Date: 2002/09/20 12:52:02 $
+ * @version $Revision: 1.3 $ $Date: 2002/10/21 11:37:09 $
  * @author Oliver Becker
  */
 public final class FunctionTable
@@ -61,7 +61,8 @@ public final class FunctionTable
          new False(),
          new Concat(),
          new StringLength(),
-         new NormalizeSpace()
+         new NormalizeSpace(),
+         new StartsWith()
       };
       functionHash = new Hashtable(functions.length);
       for (int i=0; i<functions.length; i++)
@@ -533,6 +534,32 @@ public final class FunctionTable
          }
          v.string = res.toString().trim();
          return v;
+      }
+   }
+
+
+   /**
+    * The <code>starts-with</code> function.
+    * Returns <code>true</code> if the string in the first parameter
+    * starts with the substring provided as second parameter.
+    */
+   public class StartsWith implements Instance 
+   {
+      /** @return 2 **/
+      public int getMinParCount() { return 2; }
+      /** @return 2 **/
+      public int getMaxParCount() { return 2; }
+      /** @return "{}starts-with" */
+      public String getName() { return "{}starts-with"; }
+      
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         String s1 = args.left.evaluate(context, events, top)
+                              .convertToString().string;
+         String s2 = args.right.evaluate(context, events, top)
+                               .convertToString().string;
+         return new Value(s1.startsWith(s2));
       }
    }
 }
