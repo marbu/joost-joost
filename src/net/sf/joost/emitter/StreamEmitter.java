@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.17 2004/04/16 10:32:11 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.18 2004/08/19 19:01:00 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -39,7 +39,7 @@ import javax.xml.transform.OutputKeys;
  *  Is is designed for using <code>StreamResult</code>.
  *  So this class outputs a StreamResult to the output target -
  *  {@link #outwriter} (e.g. a registered <code>FileWriter</code>).
- *  @version $Revision: 1.17 $ $Date: 2004/04/16 10:32:11 $
+ *  @version $Revision: 1.18 $ $Date: 2004/08/19 19:01:00 $
  *  @author Oliver Becker, Anatolij Zubow
  */
 public class StreamEmitter implements StxEmitter {
@@ -77,12 +77,9 @@ public class StreamEmitter implements StxEmitter {
     * Constructor - Sets a <code>Writer</code> and output encoding.
     * @param writer A <code>Writer</code> receives the output.
     * @param outputProperties The set of output properties to be used.
-    * @throws IOException When an error occurs while accessing
-    * <code>Writer</code>.
     */
     public StreamEmitter(Writer writer, Properties outputProperties)
-        throws IOException {
-
+    {
         if (DEBUG) 
             log.debug("init StreamEmitter");
 
@@ -90,7 +87,7 @@ public class StreamEmitter implements StxEmitter {
 
         if (outputProperties != null)
             readOutputProperties(outputProperties);
-   }
+    }
 
 
    /**
@@ -142,13 +139,10 @@ public class StreamEmitter implements StxEmitter {
     /**
     * Constructor - Simple, initially for use in servlets with default encoding
     * @param writer A <code>Writer</code> receives the output.
-    * @throws IOException When an error occurs while accessing
-    * <code>Writer</code>.
     */
-    public StreamEmitter(Writer writer) throws IOException {
-
+    public StreamEmitter(Writer writer) 
+    {
         this(writer, null);
-
     }
 
 

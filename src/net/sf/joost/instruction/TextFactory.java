@@ -1,5 +1,5 @@
 /*
- * $Id: TextFactory.java,v 2.1 2003/06/03 14:30:26 obecker Exp $
+ * $Id: TextFactory.java,v 2.2 2004/08/19 19:01:04 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Factory for <code>text</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.1 $ $Date: 2003/06/03 14:30:26 $
+ * @version $Revision: 2.2 $ $Date: 2004/08/19 19:01:04 $
  * @author Oliver Becker
  */
 
@@ -104,12 +104,7 @@ public class TextFactory extends FactoryBase
             // use our StreamEmitter with a StringWriter
             StringWriter w = new StringWriter();
             buffer = w.getBuffer();
-            try {
-               stxEmitter = new StreamEmitter(w);
-            }
-            catch (java.io.IOException ex) {
-               throw new SAXParseException(null, context.locator, ex);
-            }
+            stxEmitter = new StreamEmitter(w);
          }
          else {
             // use our StringEmitter
