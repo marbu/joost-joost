@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.36 2003/03/07 18:04:19 obecker Exp $
+ * $Id: Processor.java,v 1.37 2003/03/13 10:52:52 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -63,7 +63,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.36 $ $Date: 2003/03/07 18:04:19 $
+ * @version $Revision: 1.37 $ $Date: 2003/03/13 10:52:52 $
  * @author Oliver Becker
  */
 
@@ -138,7 +138,7 @@ public class Processor extends XMLFilterImpl
    private SAXEvent lastElement = null;
 
    /** The output encoding specified in the stylesheet */
-   private String outputEncoding = null;
+   private String outputEncoding = "UTF-8";
 
 
    /** The namespace support object provided by SAX2 */

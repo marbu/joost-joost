@@ -1,5 +1,5 @@
 /*
- * $Id: OptionsFactory.java,v 1.6 2003/01/15 14:28:58 obecker Exp $
+ * $Id: OptionsFactory.java,v 1.7 2003/03/13 10:52:54 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Processor;
 /**
  * Factory for <code>options</code> elements, which are represented by 
  * the inner Instance class.
- * @version $Revision: 1.6 $ $Date: 2003/01/15 14:28:58 $
+ * @version $Revision: 1.7 $ $Date: 2003/03/13 10:52:54 $
  * @author Oliver Becker
  */
 
@@ -118,7 +118,7 @@ final public class OptionsFactory extends FactoryBase
    /** Represents an instance of the <code>options</code> element. */
    public class Instance extends NodeBase
    {
-      public String outputEncoding;
+      public String outputEncoding = "UTF-8";
       public String defaultSTXPathNamespace;
       public byte passThrough;
       public boolean stripSpace;
@@ -131,7 +131,8 @@ final public class OptionsFactory extends FactoryBase
                       boolean recognizeCdata)
       {
          super(qName, parent, locator, true);
-         this.outputEncoding = outputEncoding;
+         if (outputEncoding != null)
+            this.outputEncoding = outputEncoding;
          this.defaultSTXPathNamespace = defaultSTXPathNamespace;
          this.passThrough = passThrough;
          this.stripSpace = stripSpace;
