@@ -1,5 +1,5 @@
 /*
- * $Id: ProcessBase.java,v 2.6 2003/06/03 14:30:25 obecker Exp $
+ * $Id: ProcessBase.java,v 2.7 2003/06/12 08:53:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -36,6 +36,7 @@ import org.xml.sax.SAXParseException;
 
 import net.sf.joost.Constants;
 import net.sf.joost.emitter.EmitterAdapter;
+import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.BufferReader;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
@@ -43,7 +44,7 @@ import net.sf.joost.stx.ParseContext;
 /**
  * Common base class for all <code>stx:process-<em>xxx</em></code>
  * instructions
- * @version $Revision: 2.6 $ $Date: 2003/06/03 14:30:25 $
+ * @version $Revision: 2.7 $ $Date: 2003/06/12 08:53:33 $
  * @author Oliver Becker
  */
 public class ProcessBase extends NodeBase
@@ -60,7 +61,8 @@ public class ProcessBase extends NodeBase
    protected GroupBase targetGroup = null;
 
    // filter and src values
-   protected String filter, href, useBufQName, useBufExpName;
+   protected String href, useBufQName, useBufExpName;
+   protected Tree filter;
 
    private NodeBase me;
 
@@ -68,7 +70,7 @@ public class ProcessBase extends NodeBase
    public ProcessBase(String qName, NodeBase parent, 
                       ParseContext context,
                       String groupQName, 
-                      String filter, String src)
+                      String filterAtt, String src)
       throws SAXParseException
    {
       super(qName, parent, context, true);
@@ -90,8 +92,9 @@ public class ProcessBase extends NodeBase
       if (groupQName != null)
          this.groupExpName = FactoryBase.getExpandedName(groupQName, context);
 
-      // Evaluate src attribute
-      this.filter = filter;
+      // Evaluate filter and src attributes
+      if (filterAtt != null)
+         filter = FactoryBase.parseAVT(filterAtt, context);
       if (src != null) {
          src = src.trim();
          if (!src.endsWith(")"))
@@ -223,6 +226,8 @@ public class ProcessBase extends NodeBase
    protected TransformerHandler getProcessHandler(Context context)
       throws SAXException
    {
+      String filterMethod = filter.evaluate(context, this).string;
+
       TransformerHandler handler;
       try {
          if (useBufExpName != null) {
@@ -231,17 +236,17 @@ public class ProcessBase extends NodeBase
                                 publicId, systemId, lineNo, colNo);
             handler = 
                context.defaultTransformerHandlerResolver
-                      .resolve(filter, ubr, context.passedParameters);
+                      .resolve(filterMethod, ubr, context.passedParameters);
          }
          else {
             handler = 
                context.defaultTransformerHandlerResolver
-                      .resolve(filter, href, systemId, 
+                      .resolve(filterMethod, href, systemId, 
                                context.passedParameters);
          }
          if (handler == null) {
             context.errorHandler.fatalError(
-               "Filter `" + filter + "' not available", 
+               "Filter `" + filterMethod + "' not available", 
                publicId, systemId, lineNo, colNo);
             return null;
          }
