@@ -1,5 +1,5 @@
 /*
- * $Id: StringEmitter.java,v 1.3 2002/11/22 16:31:14 obecker Exp $
+ * $Id: StringEmitter.java,v 1.4 2002/11/25 13:39:24 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -35,7 +35,7 @@ import net.sf.joost.stx.SAXEvent;
 
 /**
  * This class implements an emitter that collects characters events
- * @version $Revision: 1.3 $ $Date: 2002/11/22 16:31:14 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/25 13:39:24 $
  * @author Oliver Becker
  */
 
@@ -104,7 +104,7 @@ final public class StringEmitter implements StxEmitter
                           String qName)
       throws SAXException
    {
-      // no test necessary here, because there must have been be a
+      // no exception thrown here, because there must have been be a
       // startElement event before
    }
 
@@ -161,15 +161,22 @@ final public class StringEmitter implements StxEmitter
       throws SAXException
    { }
 
-   /** ignored */
+   /** not allowed */
    public void startCDATA()
       throws SAXException
-   { }
+   { 
+      if (errorInfo != null)
+         throw new SAXException("Can't create CDATA section here " + 
+                                errorInfo);
+   }
 
-   /** ignored */
+   /** not allowed */
    public void endCDATA()
       throws SAXException
-   { }
+   { 
+      // no exception thrown here, because there must have been be a
+      // startElement event before
+   }
 
    /** not allowed */
    public void comment(char[] ch, int start, int length)
