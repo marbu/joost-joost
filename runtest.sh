@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: runtest.sh,v 1.5 2003/04/25 16:55:32 obecker Exp $
+# $Id: runtest.sh,v 1.6 2003/08/29 10:50:17 obecker Exp $
 # Performs a chosen set of transformations and compares the output with
 # an expected result
 
@@ -10,10 +10,13 @@ testdir=../test
 tmp=res$$.tmp
 rm -f res[0-9]*.tmp
 
-# Is there a command line argument which denotes the test case?
+# Are there command line arguments which denote the test cases?
 if [ -n "$1" ]; then
-    # yes, run test just for this specific file
-    files=${testdir}/$1.res
+    # yes, run test just for these specific files
+    while [ -n "$1" ]; do
+        files="$files ${testdir}/$1.res"
+        shift
+    done
 else
     # no, run test for all files in the test directory
     files=${testdir}/*.res
