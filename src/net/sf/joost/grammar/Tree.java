@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 2.4 2003/04/30 15:53:33 obecker Exp $
+ * $Id: Tree.java,v 2.5 2003/05/14 11:53:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 2.4 $ $Date: 2003/04/30 15:53:33 $
+ * @version $Revision: 2.5 $ $Date: 2003/05/14 11:53:03 $
  * @author Oliver Becker
  */
 final public class Tree
@@ -706,6 +706,7 @@ final public class Tree
                   if (e != null && e.attrs != null &&
                                 (index = e.attrs.getIndex(uri, lName)) != -1) {
                      v2 = new Value(SAXEvent.newAttribute(e.attrs, index));
+                     v2.event.removeRef(); // the only reference is in v2
                      if (last != null)
                         last.next = v2;
                      else
@@ -730,6 +731,7 @@ final public class Tree
                            v2 = new Value(SAXEvent.newAttribute(e.attrs, i));
                      }
                      if (v2 != null) {
+                        v2.event.removeRef(); // the only reference is in v2
                         if (last != null)
                            last.next = v2;
                         else
@@ -738,6 +740,7 @@ final public class Tree
                      }
                   } // for
                } // else
+               e.removeRef();
                v1 = v1.next; // next node
             } // while (v1 != null)
 

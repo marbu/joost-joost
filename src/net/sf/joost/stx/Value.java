@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.11 2003/04/30 05:51:20 obecker Exp $
+ * $Id: Value.java,v 1.12 2003/05/14 11:53:09 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -27,7 +27,7 @@ package net.sf.joost.stx;
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.11 $ $Date: 2003/04/30 05:51:20 $
+ * @version $Revision: 1.12 $ $Date: 2003/05/14 11:53:09 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -104,7 +104,7 @@ public class Value implements Cloneable
    public Value(SAXEvent e)
    {
       type = NODE;
-      event = e;
+      event = e.addRef();
    }
 
 
@@ -152,6 +152,7 @@ public class Value implements Cloneable
          break;
       case NODE:
          string = event.value;
+         removeRefs();
          break;
       case BOOLEAN:
          string = bool ? "true" : "false";
@@ -181,6 +182,7 @@ public class Value implements Cloneable
          break;
       case NODE:
          bool = true;
+         removeRefs();
          break;
       case BOOLEAN:
          break;
@@ -202,6 +204,8 @@ public class Value implements Cloneable
 
    public Value setBoolean(boolean value)
    {
+      if (type == NODE || next != null)
+         removeRefs();
       type = BOOLEAN;
       bool = value;
       next = null;
@@ -210,19 +214,43 @@ public class Value implements Cloneable
 
    public Value setNumber(double value)
    {
+      if (type == NODE || next != null)
+         removeRefs();
       type = NUMBER;
       number = value;
       next = null;
       return this;
    }
 
+   public Value setString(String value)
+   {
+      if (type == NODE || next != null)
+         removeRefs();
+      type = STRING;
+      string = value;
+      next = null;
+      return this;
+   }
+
    public Value setEmpty()
    {
+      if (type == NODE || next != null)
+         removeRefs();
       type = EMPTY;
       next = null;
       return this;
    }
 
+
+   private void removeRefs()
+   {
+      Value seq = this;
+      do {
+         if (seq.type == NODE)
+            seq.event.removeRef();
+         seq = seq.next;
+      } while (seq != null);
+   }
 
    /** 
     * Creates a copy by calling the <code>clone()</code> function 
@@ -231,6 +259,8 @@ public class Value implements Cloneable
    {
       try {
          Value ret = (Value)clone();
+         if (type == NODE)
+            event.addRef();
          if (next != null)
             ret.next = next.copy();
          return ret;

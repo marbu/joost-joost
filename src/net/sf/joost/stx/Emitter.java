@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.16 2003/04/29 15:06:41 obecker Exp $
+ * $Id: Emitter.java,v 1.17 2003/05/14 11:53:08 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.emitter.StxEmitter;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.16 $ $Date: 2003/04/29 15:06:41 $
+ * @version $Revision: 1.17 $ $Date: 2003/05/14 11:53:08 $
  * @author Oliver Becker
  */
 
@@ -284,6 +284,7 @@ public final class Emitter
          }
 
          contH.endElement(uri, lName, qName);
+         ev.removeRef();
 
          // Recall the namespaces in scope
          inScopeNamespaces = (Hashtable)namespaceStack.pop();
@@ -450,6 +451,7 @@ public final class Emitter
             lastQName = e.qName;
             lastLName = e.lName;
             lastAttrs = (AttributesImpl)e.attrs;
+            e.removeRef();
          }
          // restore previous handlers
          lexH = (LexicalHandler)emitterStack.pop();

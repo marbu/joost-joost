@@ -1,5 +1,5 @@
 /*
- * $Id: AssignFactory.java,v 2.1 2003/04/30 15:08:14 obecker Exp $
+ * $Id: AssignFactory.java,v 2.2 2003/05/14 11:53:08 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>assign</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.1 $ $Date: 2003/04/30 15:08:14 $
+ * @version $Revision: 2.2 $ $Date: 2003/05/14 11:53:08 $
  * @author Oliver Becker
  */
 
@@ -155,17 +155,17 @@ final public class AssignFactory extends FactoryBase
          throws SAXException
       {
          // find variable
+         // TODO: this should be a static lookup
          Hashtable vars = null;
-         if (context.localVars.get(expName) != null)
+         Object obj = context.localVars.get(expName);
+         if (obj != null)
             vars = context.localVars;
          else {
             GroupBase group = context.currentGroup;
-            while (vars == null && group != null) {
+            while (obj == null && group != null) {
                vars = (Hashtable)group.groupVars.peek();
-               if (vars.get(expName) == null) {
-                  vars = null;
-                  group = group.parentGroup;
-               }
+               obj = vars.get(expName);
+               group = group.parentGroup;
             }
          }
          if (vars == null) {
@@ -175,6 +175,15 @@ final public class AssignFactory extends FactoryBase
             return; // if the errorHandler returns
          }
 
+         // release stored SAXEvent objects
+         Value val = (Value)obj;
+         do {
+            if (val.type == Value.NODE)
+               val.event.removeRef();
+            val = val.next;
+         } while (val != null);
+
+         // assign new value
          vars.put(expName, v);
       }
    }

@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEvent.java,v 1.10 2003/04/30 10:07:51 obecker Exp $
+ * $Id: SAXEvent.java,v 1.11 2003/05/14 11:53:08 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,8 +33,9 @@ import java.util.Hashtable;
 
 
 /** 
- * SAXEvent stores all information attached to an incoming SAX event 
- * @version $Revision: 1.10 $ $Date: 2003/04/30 10:07:51 $
+ * SAXEvent stores all information attached to an incoming SAX event,
+ * it is the representation of a node in STX.
+ * @version $Revision: 1.11 $ $Date: 2003/05/14 11:53:08 $
  * @author Oliver Becker
  */
 final public class SAXEvent
@@ -60,120 +61,233 @@ final public class SAXEvent
    public String value = ""; 
       // PI->data, MAPPING->uri, TEXT, ATTRIBUTES as usual
       // ELEMENT->text look-ahead
+   public boolean hasChildNodes = false;
 
+   /** contains the position counters */
    private Hashtable posHash;
 
 
+
+
    //
-   // private constructors
+   // private constructor
    //
-   private SAXEvent(int type)
+
+   private SAXEvent()
+   { }
+
+
+   // object pool
+   private static SAXEvent objectPool[] = new SAXEvent[32];
+
+   // number of objects in the pool
+   private static int objectCount = 0;
+
+   // reference counter
+   private int instances = 1;
+
+
+   /** 
+    * Increases the internal reference counter 
+    * @return the object itself
+    **/
+   public SAXEvent addRef()
    {
-      this.type = type;
-      posHash = new Hashtable();
+      instances++;
+      return this;
    }
 
-   private SAXEvent(int type, String uri, String lName, String qName,
-                    Attributes attrs, NamespaceSupport nsSupport)
-   {
-      this(type); // ELEMENT, ELEMENT_END
-      this.uri = uri;
-      this.lName = lName;
-      this.qName = qName;
-      if (attrs != null) {
-         // Note: addAttribute() will block if this.attrs was created
-         // via the constructor with an empty attrs parameter (Bug?)
-         if (attrs.getLength() != 0)
-            this.attrs = new AttributesImpl(attrs);
-         else
-            this.attrs = new AttributesImpl();
-      }
 
-      if (nsSupport != null) {
-         // copy into a hashtable
-         this.namespaces = new Hashtable();
-         for (Enumeration e = nsSupport.getPrefixes(); e.hasMoreElements(); ) {
-            String prefix = (String)e.nextElement();
-            this.namespaces.put(prefix, nsSupport.getURI(prefix));
+   /** 
+    * Decreases the internal reference counter. When the counter drops to 0
+    * then the object will be returned to the object pool.
+    */
+   public void removeRef()
+   {
+      if (--instances > 0) // still instances in use
+         return;
+
+      if (instances < 0) 
+         // mustn't happen
+         throw new RuntimeException("Already destroyed: " + this);
+
+      // put back the object
+      synchronized (objectPool) {
+         if (objectCount == objectPool.length) { // pool size exhausted
+            SAXEvent[] tmp = new SAXEvent[2*objectCount];
+            System.arraycopy(objectPool, 0, tmp, 0, objectCount);
+            tmp[objectCount++] = this;
+            objectPool = tmp;
          }
-         String defaultURI = nsSupport.getURI("");
-         if (defaultURI != null)
-            this.namespaces.put("", defaultURI);
+         else
+            objectPool[objectCount++] = this;
       }
    }
 
-   private SAXEvent(int type, String value)
-   {
-      this(type); // TEXT, CDATA, COMMENT
-      this.value = value;
-   }
-
-   private SAXEvent(int type, String target, String data)
-   {
-      this(type); // PI, MAPPING, MAPPING_END
-      this.qName = target;
-      this.value = data;
-   }
-
-   private SAXEvent(int type, String uri, String lName, String qName,
-                    String value)
-   {
-      this(type); // ATTRIBUTE
-      this.uri = uri;
-      this.lName = lName;
-      this.qName = qName;
-      this.value = value;
-   }
 
 
    //
    // Factory methods
    //
+
+   /**
+    * Returns a new object, either from the object pool or a new
+    * created one.
+    */
+   private static SAXEvent newEvent()
+   {
+      synchronized (objectPool) {
+         if (objectCount == 0)
+            return new SAXEvent();
+         else
+            return objectPool[--objectCount].addRef();
+      }
+   }
+
+
+   /** Create a new element node */
    public static SAXEvent newElement(String uri, String lName, String qName,
                                      Attributes attrs, 
                                      NamespaceSupport nsSupport)
    {
-      return new SAXEvent(attrs != null ? ELEMENT : ELEMENT_END, 
-                          uri, lName, qName, attrs, nsSupport);
+      SAXEvent event = newEvent();
+      event.type = attrs != null ? ELEMENT : ELEMENT_END;
+      event.uri = uri;
+      event.lName = lName;
+      event.qName = qName;
+      event.uri = uri;
+      if (attrs != null) {
+         // Note: addAttribute() will block if this.attrs was created
+         // via the constructor with an empty attrs parameter (Bug?)
+         if (attrs.getLength() != 0)
+            event.attrs = new AttributesImpl(attrs);
+         else
+            event.attrs = new AttributesImpl();
+      }
+      if (nsSupport != null) {
+         // copy into a hashtable
+         if (event.namespaces == null)
+            event.namespaces = new Hashtable();
+         else
+            event.namespaces.clear();
+         for (Enumeration e = nsSupport.getPrefixes(); 
+              e.hasMoreElements(); ) {
+            String prefix = (String)e.nextElement();
+            event.namespaces.put(prefix, nsSupport.getURI(prefix));
+         }
+         String defaultURI = nsSupport.getURI("");
+         if (defaultURI != null)
+            event.namespaces.put("", defaultURI);
+      }
+      event.hasChildNodes = false;
+      event.value = "";
+      return event;
    }
 
+
+   /** Create a new text node */
    public static SAXEvent newText(String value)
    {
-      return new SAXEvent(TEXT, value);
+      SAXEvent event = newEvent();
+      event.type = TEXT;
+      event.value = value;
+      return event;
    }
 
+
+   /** Create a new CDATA node */
    public static SAXEvent newCDATA(String value)
    {
-      return new SAXEvent(CDATA, value);
+      SAXEvent event = newEvent();
+      event.type = CDATA;
+      event.value = value;
+      return event;
    }
 
+
+   /** Create a root node */
    public static SAXEvent newRoot()
    {
-      return new SAXEvent(ROOT);
+      SAXEvent event = newEvent();
+      event.type = ROOT;
+      event.enableChildNodes(true);
+      return event;
    }
 
+
+   /** Create a new comment node */
    public static SAXEvent newComment(String value)
    {
-      return new SAXEvent(COMMENT, value);
+      SAXEvent event = newEvent();
+      event.type = COMMENT;
+      event.value = value;
+      return event;
    }
 
+
+   /** Create a new processing instruction node */
    public static SAXEvent newPI(String target, String data)
    {
-      return new SAXEvent(PI, target, data);
+      SAXEvent event = newEvent();
+      event.type = PI;
+      event.qName = target;
+      event.value = data;
+      return event;
    }
 
+
+   /** Create a new attribute node */
    public static SAXEvent newAttribute(Attributes attrs, int index)
    {
-      return new SAXEvent(ATTRIBUTE, 
-                          attrs.getURI(index), attrs.getLocalName(index),
-                          attrs.getQName(index), attrs.getValue(index));
+      SAXEvent event = newEvent();
+      event.type = ATTRIBUTE;
+      event.uri = attrs.getURI(index);
+      event.lName = attrs.getLocalName(index);
+      event.qName = attrs.getQName(index);
+      event.value = attrs.getValue(index);
+      return event;
    }
 
+
+   /** Create a new representation for a namespace mapping */
    public static SAXEvent newMapping(String prefix, String uri)
    {
-      return new SAXEvent(uri != null ? MAPPING : MAPPING_END,
-                          prefix, uri);
+      SAXEvent event = newEvent();
+      event.type = uri != null ? MAPPING : MAPPING_END;
+      event.qName = prefix;
+      event.value = uri;
+      return event;
    }
+
+
+
+//     public void finalize()
+//     {
+//        System.err.println("Forgot " + this + " / " + instances);
+//     }
+
+
+   /**
+    * Enables the counting of child nodes.
+    * @param hasChildNodes <code>true</code>, if there are really child nodes;
+    *                      <code>false</code>, if only the counting has to be
+    *                      supported (e.g. in <code>stx:process-buffer</code>)
+    */
+   public void enableChildNodes(boolean hasChildNodes)
+   {
+      if (hasChildNodes) {
+         this.hasChildNodes = true;
+         if (posHash == null)
+            posHash = new Hashtable();
+         else
+            posHash.clear();
+      }
+      else
+         // this.hasChildNodes remains unchanged
+         if (posHash == null)
+            posHash = new Hashtable();
+   }
+
 
 
    /** 
