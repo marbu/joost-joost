@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerResolverImpl.java,v 2.3 2003/05/23 11:02:03 obecker Exp $
+ * $Id: TransformerHandlerResolverImpl.java,v 2.4 2003/06/12 11:36:59 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -45,12 +45,13 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import net.sf.joost.TransformerHandlerResolver;
+import net.sf.joost.trax.TrAXConstants;
 
 
 /**
  * The default implementation of an {@link TransformerHandlerResolver}.
  * It supports currently only XSLT transformers.
- * @version $Revision: 2.3 $ $Date: 2003/05/23 11:02:03 $
+ * @version $Revision: 2.4 $ $Date: 2003/06/12 11:36:59 $
  * @author Oliver Becker
  */
 
@@ -122,12 +123,17 @@ public final class TransformerHandlerResolverImpl
       if (XSLT_FILTER.equals(filter)) {
          final String TFPROP = "javax.xml.transform.TransformerFactory";
          String propVal = System.getProperty(TFPROP);
+         String xsltFac = System.getProperty(TrAXConstants.KEY_XSLT_FACTORY);
          boolean propChanged = false;
-         if ("net.sf.joost.trax.TransformerFactoryImpl".equals(propVal)) {
-            // remove this property, 
+         if (xsltFac != null ||
+             "net.sf.joost.trax.TransformerFactoryImpl".equals(propVal)) {
+            // change this property, 
             // otherwise we wouldn't get an XSLT transformer
             Properties props = System.getProperties();
-            props.remove(TFPROP);
+            if (xsltFac != null)
+               props.setProperty(TFPROP, xsltFac);
+            else
+               props.remove(TFPROP);
             System.setProperties(props);
             propChanged = true;
          }
