@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 2.4 2003/08/31 19:38:52 obecker Exp $
+ * $Id: LitElementFactory.java,v 2.5 2003/09/02 14:15:10 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,6 +29,7 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
+import org.xml.sax.helpers.NamespaceSupport;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -42,7 +43,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for literal result elements, which are represented by the
  * inner Instance class. 
- * @version $Revision: 2.4 $ $Date: 2003/08/31 19:38:52 $
+ * @version $Revision: 2.5 $ $Date: 2003/09/02 14:15:10 $
  * @author Oliver Becker
 */
 
@@ -124,18 +125,49 @@ final public class LitElementFactory
             // have to wait until the whole STX sheet has been parsed
             return true;
 
+         if (namespaceAliases.size() == 0)
+            // no aliases declared
+            return false;
+
          // Change namespace URI of this element
          String toNS = (String)namespaceAliases.get(uri);
-         if (toNS != null)
+         if (toNS != null) {
             uri = toNS;
+            int colon;
+            if (toNS == "" && (colon = qName.indexOf(':')) != -1) {
+               // target null namespace must be used unprefixed
+               qName = qName.substring(colon+1);
+            }
+            else if (NamespaceSupport.XMLNS.equals(toNS)) {
+               // target XML namespace must use the xml prefix
+               qName = "xml:" + qName.substring(qName.indexOf(':') + 1);
+            }
+         }
 
          // Change namespace URI of the attributes
          int aLen = attrs.getLength();
          for (int i=0; i<aLen; i++) {
             String aURI = attrs.getURI(i);
-            toNS = (String)namespaceAliases.get(aURI);
-            if (toNS != null)
-               attrs.setURI(i, toNS);
+            // process only prefixed attributes
+            if (aURI != "") {
+               toNS = (String)namespaceAliases.get(aURI);
+               if (toNS != null) {
+                  attrs.setURI(i, toNS);
+                  if (toNS == "") {
+                     // target null namespace must be used unprefixed
+                     String aQName = attrs.getQName(i);
+                     attrs.setQName(
+                        i, aQName.substring(aQName.indexOf(':')+1));
+                     // indexOf mustn't return -1 since aURI != ""
+                  }
+                  else if (NamespaceSupport.XMLNS.equals(toNS)) {
+                     // target XML namespace must use the xml prefix
+                     String aQName = attrs.getQName(i);
+                     attrs.setQName(
+                        i, "xml" + aQName.substring(aQName.indexOf(':')));
+                  }
+               }
+            }
          }
 
          // Change namespace URIs of in-scope namespaces
@@ -144,7 +176,9 @@ final public class LitElementFactory
             Object key = keys.nextElement();
             Object value = namespaces.get(key);
             Object alias = namespaceAliases.get(value);
-            if(alias != null)
+            if (alias == "" || NamespaceSupport.XMLNS.equals(alias))
+               namespaces.remove(key);
+            else if (alias != null)
                namespaces.put(key,alias);
          }
 
