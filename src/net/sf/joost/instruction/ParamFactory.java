@@ -1,5 +1,5 @@
 /*
- * $Id: ParamFactory.java,v 1.7 2002/12/30 11:55:22 obecker Exp $
+ * $Id: ParamFactory.java,v 1.8 2003/01/16 15:56:27 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>params</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.7 $ $Date: 2002/12/30 11:55:22 $
+ * @version $Revision: 1.8 $ $Date: 2003/01/16 15:56:27 $
  * @author Oliver Becker
  */
 
@@ -205,7 +205,7 @@ final public class ParamFactory extends FactoryBase
                   return processStatus; // if the errorHandler returns
                }
                else
-                  v = new Value("");
+                  v = new Value();
             }
 
             // determine scope
