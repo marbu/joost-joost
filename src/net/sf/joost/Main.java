@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.6 2002/11/19 10:28:32 obecker Exp $
+ * $Id: Main.java,v 1.7 2002/12/30 17:10:31 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.6 $ $Date: 2002/11/19 10:28:32 $
+ * @version $Revision: 1.7 $ $Date: 2002/12/30 17:10:31 $
  * @author Oliver Becker
  */
 public class Main
