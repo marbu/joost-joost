@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 1.5 2002/10/31 16:48:46 obecker Exp $
+ * $Id: FunctionTable.java,v 1.6 2002/11/04 13:19:40 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 1.5 $ $Date: 2002/10/31 16:48:46 $
+ * @version $Revision: 1.6 $ $Date: 2002/11/04 13:19:40 $
  * @author Oliver Becker
  */
 public final class FunctionTable
@@ -61,6 +61,7 @@ public final class FunctionTable
          new Name(),
          new LocalName(),
          new NamespaceURI(),
+         new Prefix(),
          new Not(),
          new True(),
          new False(),
@@ -367,6 +368,49 @@ public final class FunctionTable
    }
 
 
+   /**
+    * The <code>prefix</code> function.
+    * Returns the prefix of the qualified name of this node.
+    */
+   public class Prefix implements Instance
+   {
+      /** @return 0 */
+      public int getMinParCount() { return 0; }
+      /** @return 1 */
+      public int getMaxParCount() { return 1; }
+      /** @return "prefix" */
+      public String getName() { return "{}prefix"; }
+
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         SAXEvent e;
+         if (args != null) { // one parameter
+            Value v = args.evaluate(context, events, top);
+            if (v.type != Value.NODE) 
+               throw new EvalException("The parameter passed to the " +
+                                       "prefix function must be a " +
+                                       "node (found " + v +")");
+            e = v.event;
+            if (e == null)
+               return new Value("");
+         }
+         else // use current node (last event)
+            e = (SAXEvent)events.elementAt(top-1);
+
+         switch (e.type) {
+         case SAXEvent.ELEMENT:
+         case SAXEvent.ATTRIBUTE: {
+            int colon = e.qName.indexOf(':');
+            return new Value(colon == -1 ? "" : e.qName.substring(0, colon));
+         }
+         default:
+            return new Value("");
+         }
+      }
+   }
+
+
 
    //
    // Boolean functions
@@ -617,38 +661,56 @@ public final class FunctionTable
       public Value evaluate(Context context, Stack events, int top, Tree args)
          throws SAXException, EvalException
       {
-         String str;
-
-         // Note: This implementation isn't final. Currently it is
-         // neither XPath 1.0 conformant nor the same as xf:substring 
-         // from XPath/XQuery 2.0
+         // XPath 1.0 semantics
+         // The following somewhat complicated algorithm is needed for 
+         // the correct handling of NaN and +/- infinity.
          try {
             if (args.left.type == Tree.LIST) { // three parameters
-               str = args.left.left.evaluate(context, events, top)
-                                   .convertToString().string;
+               String str = args.left.left.evaluate(context, events, top)
+                                          .convertToString().string;
+               double arg2 = args.left.right.evaluate(context, events, top)
+                                            .convertToNumber().number;
+               double arg3 = args.right.evaluate(context, events, top)
+                                       .convertToNumber().number;
+               int len = str.length();
+               int start = len, end = 0;
+               for (int i=1; i<len; i++)
+                  if (((double)i) >= arg2) {
+                     start = i;
+                     break;
+                  }
+               for (int i=len; i>=start; i--)
+                  if (((double)i) < arg2+arg3) {
+                     end = i;
+                     break;
+                  }
+               if (start > end)
+                  return new Value("");
+ 
                // in Java the first character of a string is at position 0
-               int offset = 
-                  Math.round((float)(args.left.right
-                                         .evaluate(context, events, top)
-                                         .convertToNumber().number)) - 1;
-               int length =
-                  Math.round((float)(args.right.evaluate(context, events, top)
-                                         .convertToNumber().number));
-//                 log4j.debug(str + " : " + offset + " : " + length);
-               return new Value(str.substring(offset, offset+length));
+               return new Value(str.substring(start-1, end));
             }
             else { // two parameters
-               str = args.left.evaluate(context, events, top)
-                              .convertToString().string;
+               String str = args.left.evaluate(context, events, top)
+                                     .convertToString().string;
                // in Java the first character of a string is at position 0
-               int offset = 
-                  Math.round((float)(args.right.evaluate(context, events, top)
-                                         .convertToNumber().number)) - 1;
-//                 log4j.debug(str + " : " + offset);
-               return new Value(str.substring(offset));
+               double arg2 = args.right.evaluate(context, events, top)
+                                       .convertToNumber().number;
+               if (Double.isNaN(arg2))
+                  return new Value("");
+               if (arg2 < 1)
+                  return new Value(str);
+               if (Double.isInfinite(arg2))
+                  return new Value("");
+               int offset = Math.round((float)(arg2)) - 1;
+               if (offset > str.length())
+                  return new Value("");
+               else
+                  return new Value(str.substring(offset));
             }
          }
          catch (IndexOutOfBoundsException ex) {
+            log4j.error(ex);
             return new Value("");
          }
       }
