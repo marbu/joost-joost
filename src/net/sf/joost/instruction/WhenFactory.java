@@ -1,5 +1,5 @@
 /*
- * $Id: WhenFactory.java,v 1.2 2002/11/14 17:57:33 obecker Exp $
+ * $Id: WhenFactory.java,v 1.3 2002/11/15 18:24:53 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,20 +42,29 @@ import net.sf.joost.grammar.EvalException;
 /** 
  * Factory for <code>when</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2002/11/14 17:57:33 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/15 18:24:53 $
  * @author Oliver Becker
  */
 
 final public class WhenFactory extends FactoryBase
 {
+   /** 
+    * The single instance of this factory, created in the Constructor
+    */
+   public static WhenFactory singleton;
+
    /** allowed attributes for this element */
    private HashSet attrNames;
 
+
+   //
    // Constructor
+   //
    public WhenFactory()
    {
       attrNames = new HashSet();
       attrNames.add("test");
+      singleton = this;
    }
 
    /** @return <code>when</code> */
@@ -69,6 +78,11 @@ final public class WhenFactory extends FactoryBase
                               Hashtable nsSet, Locator locator)
       throws SAXParseException
    {
+      if (!(parent instanceof ChooseFactory.Instance))
+         throw new SAXParseException(
+            "`" + qName + "' must be child of stx:choose",
+            locator);
+
       String testAtt = getAttribute(qName, attrs, "test", locator);
       Tree testExpr = parseExpr(testAtt, nsSet, locator);
       checkAttributes(qName, attrs, attrNames, locator);

@@ -1,5 +1,5 @@
 /*
- * $Id: ChooseFactory.java,v 1.3 2002/11/14 17:57:33 obecker Exp $
+ * $Id: ChooseFactory.java,v 1.4 2002/11/15 18:24:53 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.stx.Context;
 /** 
  * Factory for <code>choose</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.3 $ $Date: 2002/11/14 17:57:33 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/15 18:24:53 $
  * @author Oliver Becker
  */
 
@@ -48,6 +48,20 @@ final public class ChooseFactory extends FactoryBase
    // Log4J initialization
    private static org.apache.log4j.Logger log4j = 
       org.apache.log4j.Logger.getLogger(PAttributesFactory.class);
+
+   /** 
+    * The single instance of this factory, created in the Constructor
+    */
+   public static ChooseFactory singleton;
+
+
+   //
+   // Constructor
+   //
+   public ChooseFactory()
+   {
+      singleton = this;
+   }
 
 
    /** @return <code>choose</code> */
@@ -66,12 +80,6 @@ final public class ChooseFactory extends FactoryBase
    }
 
 
-   /** needed in {@link #cloneIfElse} */
-   private WhenFactory whenFac = new WhenFactory();
-
-   /** needed in {@link #cloneIfElse} */
-   private OtherwiseFactory otherwFac = new OtherwiseFactory();
-
    /**
     * Creates an <code>stx:choose</code> from an <code>stx:if</code> /
     * <code>stx:else</code> pair.
@@ -81,8 +89,9 @@ final public class ChooseFactory extends FactoryBase
    {
       IfFactory.Instance ifNode = (IfFactory.Instance)ifObj;
       Instance choose = new Instance (ifNode);
-      choose.append(whenFac.cloneFromIf(ifNode));
-      choose.append(otherwFac.cloneFromElse((ElseFactory.Instance)elseObj));
+      choose.append(WhenFactory.singleton.cloneFromIf(ifNode));
+      choose.append(OtherwiseFactory.singleton
+                                    .cloneFromElse((NodeBase)elseObj));
       return choose;
    }
 
@@ -112,21 +121,21 @@ final public class ChooseFactory extends FactoryBase
                node instanceof OtherwiseFactory.Instance))
             throw new SAXParseException(
                "`" + qName + 
-               "' may only contain `when' and `otherwise' children",
+               "' may only contain stx:when and stx:otherwise children",
                node.publicId, node.systemId, node.lineNo, node.colNo);
 
          if (otherwisePresent)
             throw new SAXParseException(
                "`" + qName + 
-               "' must not have more children after `otherwise'",
+               "' must not have more children after stx:otherwise",
                node.publicId, node.systemId, node.lineNo, node.colNo);
 
          if (node instanceof OtherwiseFactory.Instance) {
             if (children == null) {
                throw new SAXParseException(
-                  "`" + qName + 
-                  "' must have at least one `when' child before `otherwise'",
-               node.publicId, node.systemId, node.lineNo, node.colNo);
+                  "`" + qName + "' must have at least one stx.when child " +
+                  "before stx:otherwise",
+                  node.publicId, node.systemId, node.lineNo, node.colNo);
             }
             otherwisePresent = true;
          }
