@@ -1,4 +1,5 @@
+@@@ $Id: version.txt,v 1.2 2005/02/28 08:28:14 obecker Exp $
 Joost alpha build @@@DATE@@@ by Oliver Becker
 (Joost is Oli's original streaming transformer)
-@@@START DEBUG ONLY@@@
-Built with debug info included.
+@@@ START DEBUG ONLY
+Built by @@@USER@@@ with debug info included.

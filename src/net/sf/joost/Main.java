@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.27 2005/02/27 21:08:32 obecker Exp $
+ * $Id: Main.java,v 1.28 2005/02/28 08:28:10 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -47,7 +47,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.27 $ $Date: 2005/02/27 21:08:32 $
+ * @version $Revision: 1.28 $ $Date: 2005/02/28 08:28:10 $
  * @author Oliver Becker
  */
 public class Main implements Constants
@@ -511,12 +511,12 @@ public class Main implements Constants
          boolean doOutput = true;
          String line;
          while ((line = br.readLine()) != null) {
-            if (line.startsWith("@@@START DEBUG")) {
-               doOutput = DEBUG;
-               continue;
-            }
-            if (line.startsWith("@@@END DEBUG")) {
-               doOutput = true;
+            if (line.startsWith("@@@ ")) { // special control line
+               if (line.equals("@@@ START DEBUG ONLY"))
+                  doOutput = DEBUG;
+               else if (line.equals("@@@ END DEBUG ONLY"))
+                  doOutput = true;
+               // else: ignore
                continue;
             }
             if (doOutput)
