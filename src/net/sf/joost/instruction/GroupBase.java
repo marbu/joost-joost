@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 1.7 2002/12/15 17:10:08 obecker Exp $
+ * $Id: GroupBase.java,v 1.8 2003/01/30 17:18:16 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,15 +44,12 @@ import net.sf.joost.stx.Value;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 1.7 $ $Date: 2002/12/15 17:10:08 $
+ * @version $Revision: 1.8 $ $Date: 2003/01/30 17:18:16 $
  * @author Oliver Becker
  */
 
 abstract public class GroupBase extends NodeBase
 {
-   /** Vector of all contained templates in this group */
-   public Vector containedTemplates;
-   
    /** Vector of all contained public and global templates in this group */
    public Vector containedPublicTemplates;
 
@@ -64,12 +61,17 @@ abstract public class GroupBase extends NodeBase
     * templates from this group and public templates from subgroups
     */
    public TemplateFactory.Instance[] visibleTemplates;
+
+   public Hashtable visibleProcedures;
+   public Hashtable containedPublicProcedures;
+   public Hashtable globalProcedures;
+
    
    /** Contained groups in this group */
    protected GroupFactory.Instance[] containedGroups;
 
    /** 
-    * Table of named groups: key = group name, value = visible templates.
+    * Table of named groups: key = group name, value = group object.
     * All groups will have a reference to the same object.
     */
    public Hashtable namedGroups;
@@ -96,11 +98,14 @@ abstract public class GroupBase extends NodeBase
    {
       super(qName, parent, locator, false);
       this.parentGroup = (GroupBase)parent;
-      containedTemplates = new Vector();
       containedPublicTemplates = new Vector();
       containedGlobalTemplates = new Vector();
-      if (parentGroup != null)
+      visibleProcedures = new Hashtable();
+      containedPublicProcedures = new Hashtable();
+      if (parentGroup != null) {
          namedGroups = parentGroup.namedGroups;
+         globalProcedures = parentGroup.globalProcedures;
+      }
 
       // all groups have at least an empty vector of children to simplify
       // parsing
@@ -120,29 +125,57 @@ abstract public class GroupBase extends NodeBase
       Vector gvec = new Vector();
       // variable vector
       Vector vvec = new Vector();
-      
+      // template vector
+      Vector tvec = new Vector();
+
       for (int i=0; i<length; i++) {
          if (objs[i] instanceof TemplateFactory.Instance) {
             TemplateFactory.Instance t = (TemplateFactory.Instance)objs[i];
-            containedTemplates.addElement(t);
+            tvec.addElement(t);
             boolean isPublic = false, 
                     isGlobal = false;
-            if (t.visibility >= TemplateFactory.PUBLIC_VISIBLE) {
-               // >= means also GLOBAL_VISIBLE, see TemplateFactory
+            if (t.visibility >= TemplateBase.PUBLIC_VISIBLE) {
+               // >= means also GLOBAL_VISIBLE, see TemplateBase
                containedPublicTemplates.addElement(t);
                isPublic = true;
-               if (t.visibility == TemplateFactory.GLOBAL_VISIBLE) {
+               if (t.visibility == TemplateBase.GLOBAL_VISIBLE) {
                   containedGlobalTemplates.addElement(t);
                   isGlobal = true;
                }
             }
             TemplateFactory.Instance s;
             while((s = t.split()) != null) {
-               containedTemplates.addElement(s);
+               tvec.addElement(s);
                if (isPublic) {
                   containedPublicTemplates.addElement(s);
                   if (isGlobal)
                      containedGlobalTemplates.addElement(s);
+               }
+            }
+         }
+         else if (objs[i] instanceof ProcedureFactory.Instance) {
+            ProcedureFactory.Instance p = (ProcedureFactory.Instance)objs[i];
+            NodeBase node = (NodeBase)visibleProcedures.get(p.expName);
+            if (node != null) {
+               throw new SAXParseException(
+                  "Procedure `" + p.procName + "' already defined in line " +
+                  node.lineNo,
+                  p.publicId, p.systemId, p.lineNo, p.colNo);
+            }
+            else
+               visibleProcedures.put(p.expName, p);
+            if (p.visibility >= TemplateBase.PUBLIC_VISIBLE) {
+               containedPublicProcedures.put(p.expName, p);
+               if (p.visibility == TemplateBase.GLOBAL_VISIBLE) {
+                  node = (NodeBase)globalProcedures.get(p.expName);
+                  if (node != null) {
+                     throw new SAXParseException(
+                        "Global procedure `" + p.procName + 
+                        "' already defined in line " + node.lineNo,
+                        p.publicId, p.systemId, p.lineNo, p.colNo);
+                  }
+                  else
+                     globalProcedures.put(p.expName, p);
                }
             }
          }
@@ -156,22 +189,22 @@ abstract public class GroupBase extends NodeBase
       containedGroups = new GroupFactory.Instance[gvec.size()];
       gvec.toArray(containedGroups);
 
-      // visible templates:
-      // templates from the same group
-      Vector visibleVec = new Vector(containedTemplates);
-
-      // plus public templates from children groups
-      for (int i=0; i<containedGroups.length; i++)
-         visibleVec.addAll(containedGroups[i].containedPublicTemplates);
+      // visible templates/procedures: from this group
+      // plus public templates/procedures from child groups
+      for (int i=0; i<containedGroups.length; i++) {
+         tvec.addAll(containedGroups[i].containedPublicTemplates);
+         visibleProcedures.putAll(
+            containedGroups[i].containedPublicProcedures);
+      }
       
-      visibleTemplates =
-         new TemplateFactory.Instance[visibleVec.size()];
-      visibleVec.toArray(visibleTemplates);
+      // create sorted array of visible templates
+      visibleTemplates = new TemplateFactory.Instance[tvec.size()];
+      tvec.toArray(visibleTemplates);
       Arrays.sort(visibleTemplates); // in descending priority order
 
       if (groupName != null) {
          // register group
-         namedGroups.put(groupName, visibleTemplates);
+         namedGroups.put(groupName, this);
       }
 
       for (int i=0; i<containedGroups.length; i++) {
