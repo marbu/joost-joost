@@ -7,6 +7,7 @@ example1.*
 flat.*
 group-fsm.*
 html2docbook.*
+java*
 join.*
 order*
 play*
