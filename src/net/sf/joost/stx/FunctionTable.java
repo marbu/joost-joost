@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.16 2003/10/20 16:56:29 obecker Exp $
+ * $Id: FunctionTable.java,v 2.17 2003/12/01 16:58:24 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -50,7 +50,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.16 $ $Date: 2003/10/20 16:56:29 $
+ * @version $Revision: 2.17 $ $Date: 2003/12/01 16:58:24 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -1266,19 +1266,10 @@ final public class FunctionTable implements Constants
                    (ch[i] >= 'a' && ch[i] <= 'z') ||
                    (ch[i] >= '0' && ch[i] <= '9') ||
                    (ch[i] >= '\'' && ch[i] <= '*') || // ' ( ) *
-                   "-_.!~".indexOf(ch[i]) != -1)
-                  sb.append(ch[i]);
-               // special rule for '%': check for two following hex digits
-               else if (ch[i] == '%' && i+2 < ch.length && 
-                        ((ch[i+1] >= 'A' && ch[i+1] <= 'F') ||
-                         (ch[i+1] >= 'a' && ch[i+1] <= 'f') ||
-                         (ch[i+1] >= '0' && ch[i+1] <= '9')) &&
-                        ((ch[i+2] >= 'A' && ch[i+2] <= 'F') ||
-                         (ch[i+2] >= 'a' && ch[i+2] <= 'f') ||
-                         (ch[i+2] >= '0' && ch[i+2] <= '9')))
+                   "%#-_.!~".indexOf(ch[i]) != -1)
                   sb.append(ch[i]);
                // don't escape reserved characters (if requested)
-               else if (!eReserved && ";/?:@&=+$,#[]".indexOf(ch[i]) != -1)
+               else if (!eReserved && ";/?:@&=+$,[]".indexOf(ch[i]) != -1)
                   sb.append(ch[i]);
                // escape anything else
                else {
