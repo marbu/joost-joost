@@ -1,5 +1,5 @@
 /*
- * $Id: ProcessBase.java,v 2.3 2003/05/23 11:11:24 obecker Exp $
+ * $Id: ProcessBase.java,v 2.4 2003/05/23 12:04:48 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -95,8 +95,8 @@ public class ProcessBase extends NodeBase
          src = src.trim();
          if (!src.endsWith(")"))
             throw new SAXParseException(
-               "Unrecognized src value `" + src + 
-               "'. Expect url(...) or buffer(...)",
+               "Invalid src value `" + src + 
+               "'. Expect url(...) or buffer(...) specification.",
                locator);
          if (src.startsWith("url(")) {
             href = src.substring(4, src.length()-1).trim();
@@ -112,8 +112,8 @@ public class ProcessBase extends NodeBase
          }
          else
             throw new SAXParseException(
-               "Unrecognized src value `" + src + 
-               "'. Expect url(...) or buffer(...)",
+               "Invalid src value `" + src + 
+               "'. Expect url(...) or buffer(...) specification.",
                locator);
       }
 
@@ -241,8 +241,8 @@ public class ProcessBase extends NodeBase
          }
          if (handler == null) {
             context.errorHandler.fatalError(
-               "Don't know how to process with filter `" +
-               filter + "'", publicId, systemId, lineNo, colNo);
+               "Filter `" + filter + "' not available", 
+               publicId, systemId, lineNo, colNo);
             return null;
          }
       }
