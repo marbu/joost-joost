@@ -1,6 +1,7 @@
 bubble*
 challenge.*
 dmoz.*
+dmoz-lookup.*
 el2att*
 example1.*
 flat.*
