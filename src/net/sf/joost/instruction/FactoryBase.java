@@ -1,5 +1,5 @@
 /*
- * $Id: FactoryBase.java,v 2.6 2003/10/06 10:21:42 obecker Exp $
+ * $Id: FactoryBase.java,v 2.7 2003/11/01 14:40:15 zubow Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.ParseContext;
  * Abstract base class for all factory classes which produce nodes
  * ({@link NodeBase}) for the tree representation of an STX transformation
  * sheet.
- * @version $Revision: 2.6 $ $Date: 2003/10/06 10:21:42 $
+ * @version $Revision: 2.7 $ $Date: 2003/11/01 14:40:15 $
  * @author Oliver Becker
  */
 
@@ -259,7 +259,7 @@ public abstract class FactoryBase implements Constants
     * @return a {@link Tree} representation of the expression
     * @exception SAXParseException if a parse error occured
     */
-   protected static Tree parseExpr(String string, ParseContext context)
+   public static Tree parseExpr(String string, ParseContext context)
       throws SAXParseException
    {
       StringReader sr = new StringReader(string);
