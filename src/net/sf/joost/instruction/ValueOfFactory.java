@@ -1,5 +1,5 @@
 /*
- * $Id: ValueOfFactory.java,v 2.2 2003/05/14 14:43:10 obecker Exp $
+ * $Id: ValueOfFactory.java,v 2.3 2003/05/26 11:47:09 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>value-of</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2003/05/14 14:43:10 $
+ * @version $Revision: 2.3 $ $Date: 2003/05/26 11:47:09 $
  * @author Oliver Becker
  */
 
@@ -72,6 +72,8 @@ final public class ValueOfFactory extends FactoryBase
       Tree selectExpr = parseExpr(selectAtt, nsSet, parent, locator);
 
       String separatorAtt = attrs.getValue("separator");
+      if (separatorAtt == null)
+         separatorAtt = " "; // default value
 
       checkAttributes(qName, attrs, attrNames, locator);
       return new Instance(qName, parent, locator, selectExpr, separatorAtt);
@@ -102,11 +104,10 @@ final public class ValueOfFactory extends FactoryBase
       {
          Value v = select.evaluate(context, this);
          String s;
-         if (separator == null)
-            // output first item
+         if (v.next == null)
             s = v.convertToString().string;
          else {
-            // separator present, output all sequence items
+            // use a string buffer for evaluating the sequence
             StringBuffer sb = new StringBuffer();
             Value next = v.next;
             v.next = null;
