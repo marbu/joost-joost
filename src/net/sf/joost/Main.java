@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.16 2004/01/15 17:03:07 obecker Exp $
+ * $Id: Main.java,v 1.17 2004/01/16 13:23:46 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.16 $ $Date: 2004/01/15 17:03:07 $
+ * @version $Revision: 1.17 $ $Date: 2004/01/16 13:23:46 $
  * @author Oliver Becker
  */
 public class Main implements Constants
@@ -87,6 +87,10 @@ public class Main implements Constants
       // debugging
       boolean dontexit = false;
 
+      // timings
+      boolean measureTime = false;
+      long timeStart = 0, timeEnd = 0;
+
       // needed for evaluating parameter assignments
       int index;
 
@@ -113,6 +117,10 @@ public class Main implements Constants
                }
                else if ("-wait".equals(args[i])) {
                   dontexit = true; // undocumented
+                  continue;
+               }
+               else if ("-time".equals(args[i])) {
+                  measureTime = true;
                   continue;
                }
                else if ("-o".equals(args[i])) {
@@ -207,7 +215,14 @@ public class Main implements Constants
             }
             else {
                // xmlFile != null, i.e. this is an STX sheet
+               if (measureTime)
+                  timeStart = System.currentTimeMillis();
                Processor proc = new Processor(new InputSource(args[i]));
+               if (measureTime) {
+                  timeEnd = System.currentTimeMillis();
+                  System.err.println("Parsing " + args[i] + ": " +
+                                     (timeEnd - timeStart) + " ms");
+               }
                if (processor != null)
                   proc.setParent(processor); // XMLFilter chain
                processor = proc;
@@ -240,6 +255,7 @@ public class Main implements Constants
 + "  -version   print the version information and exit\n"
 + "  -o <filename>\n"
 + "             write result to the file <filename>\n"
++ "  -time      print timing information on standard error output\n"
 + "  -pdf       pass the result to FOP for PDF generation (requires -o)\n"
 + (DEBUG ?
   "  -log-properties <properties-file>\n"
@@ -303,15 +319,24 @@ public class Main implements Constants
             //    "http://xml.org/sax/properties/lexical-handler", emitter);
          }
 
-         // Ready for take-off
+         InputSource is;
          if (xmlFile.equals("-")) {
-            InputSource is = new InputSource(System.in);
+            is = new InputSource(System.in);
             is.setSystemId("<stdin>");
             is.setPublicId("");
-            processor.parse(is);
          }
          else
-            processor.parse(xmlFile);
+            is = new InputSource(xmlFile);
+
+         // Ready for take-off
+         if (measureTime)
+            timeStart = System.currentTimeMillis();
+         processor.parse(is);
+         if (measureTime) {
+            timeEnd = System.currentTimeMillis();
+            System.err.println("Processing " + xmlFile + ": " + 
+                               (timeEnd - timeStart) + " ms");
+         }
 
 //           // check if the Processor copy constructor works
 //           Processor pr = new Processor(processor);
