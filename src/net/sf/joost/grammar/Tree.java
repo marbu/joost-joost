@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 1.4 2002/10/29 19:09:08 obecker Exp $
+ * $Id: Tree.java,v 1.5 2002/10/30 09:32:06 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 1.4 $ $Date: 2002/10/29 19:09:08 $
+ * @version $Revision: 1.5 $ $Date: 2002/10/30 09:32:06 $
  * @author Oliver Becker
  */
 public class Tree
@@ -632,7 +632,8 @@ public class Tree
             // node and the empty string otherwise
             // (Note: this is currently independent from the event stack!)
             if (context.lookAhead != null &&
-                context.lookAhead.type == SAXEvent.TEXT)
+                  (context.lookAhead.type == SAXEvent.TEXT ||
+                   context.lookAhead.type == SAXEvent.CDATA))
                return new Value(context.lookAhead.value);
             else
                return new Value("");
