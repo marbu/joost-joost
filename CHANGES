@@ -1,8 +1,14 @@
 Changes since 20030320
 - increased performance by switching to a new processing model
-- changed stx:for-each to stx:for-each-item; removed current-item()
+- changed stx:for-each to stx:for-each-item; removed current-item();
+  position() doesn't change inside for-each-item
 - removed level() and get-node()
-- Bugfixes: 723018, 723024, 728919
+- removed stx:options, moved its attributes to stx:transform and stx:group
+- all functions are now in the default namespace for STX functions
+  http://stx.sourceforge.net/2003/functions 
+  (but there's no need to change any STX transformation sheet, because
+  this namespace will be used automatically)
+- Bugfixes: 723018, 723024, 728919, 730112
 - switched from Log4J to Commons-Logging;
   removed logging configuration from Main completely (in release versions)
 
