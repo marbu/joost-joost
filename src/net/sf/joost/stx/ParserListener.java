@@ -1,5 +1,5 @@
 /*
- * $Id: ParserListener.java,v 2.1 2004/01/21 12:36:13 obecker Exp $
+ * $Id: ParserListener.java,v 2.2 2004/01/23 09:58:36 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,13 +24,13 @@
 
 package net.sf.joost.stx;
 
-import net.sf.joost.instruction.AbstractInstruction;
+import net.sf.joost.instruction.NodeBase;
 
 
 /**
  * Callback interface that can be used to receive information about the
  * STX instructions created by a {@link Parser} object.
- * @version $Revision: 2.1 $ $Date: 2004/01/21 12:36:13 $
+ * @version $Revision: 2.2 $ $Date: 2004/01/23 09:58:36 $
  * @author Oliver Becker
  */
 public interface ParserListener
@@ -40,5 +40,11 @@ public interface ParserListener
     * representation of an STX instruction
     * @param inst the instruction
     */ 
-   public void nodeParsed(AbstractInstruction inst);
+   public void nodeCreated(NodeBase node);
+
+   /**
+    * Send a notification that the parser has finished its parsing.
+    * All nodes reported by {@link #nodeCreated} have been fully initialized.
+    */
+   public void parseFinished();
 }
