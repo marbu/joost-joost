@@ -1,5 +1,5 @@
 /*
- * $Id: ResultBufferFactory.java,v 1.3 2002/11/03 11:37:24 obecker Exp $
+ * $Id: ResultBufferFactory.java,v 1.4 2002/11/20 16:56:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Emitter;
 /** 
  * Factory for <code>result-buffer</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.3 $ $Date: 2002/11/03 11:37:24 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/20 16:56:29 $
  * @author Oliver Becker
  */
 
@@ -145,14 +145,14 @@ final public class ResultBufferFactory extends FactoryBase
 
             if (clear)
                ((BufferEmitter)buffer).clear();
-            emitter.pushBuffer((BufferEmitter)buffer);
+            emitter.pushEmitter((BufferEmitter)buffer);
          }
 
          processStatus = super.process(emitter, eventStack, context,
                                        processStatus);
 
          if ((processStatus & ST_PROCESSING) != 0)
-            emitter.popBuffer();
+            emitter.popEmitter();
 
          return processStatus;
       }

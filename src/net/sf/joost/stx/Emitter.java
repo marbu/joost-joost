@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.6 2002/11/03 11:37:24 obecker Exp $
+ * $Id: Emitter.java,v 1.7 2002/11/20 16:56:25 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,14 +37,14 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Stack;
 
-import net.sf.joost.emitter.BufferEmitter;
+import net.sf.joost.emitter.StxEmitter;
 
 
 /** 
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.6 $ $Date: 2002/11/03 11:37:24 $
+ * @version $Revision: 1.7 $ $Date: 2002/11/20 16:56:25 $
  * @author Oliver Becker
  */
 
@@ -59,8 +59,8 @@ public final class Emitter
    /** Stack for emitted events, allows well-formedness check */
    private Stack outputEvents;
 
-   /** Stack of handler objects (needed for STX buffers) */
-   private Stack bufferStack;
+   /** Stack of handler objects */
+   private Stack emitterStack;
 
    private String lastUri, lastLName, lastQName;
    private AttributesImpl lastAttrs;
@@ -80,7 +80,7 @@ public final class Emitter
       namespaceStack = new Stack();
       namespaceStack.push(inScopeNamespaces.clone());
       outputEvents = new Stack();
-      bufferStack = new Stack();
+      emitterStack = new Stack();
    }
 
 
@@ -371,42 +371,43 @@ public final class Emitter
 
 
    /**
-    * Instructs the Emitter to output all following SAX events to a buffer.
-    * @param buffer the buffer to be used
+    * Instructs the Emitter to output all following SAX events to a new
+    * real emitter.
+    * @param emitter the new emitter to be used
     */
-   public void pushBuffer(BufferEmitter buffer)
+   public void pushEmitter(StxEmitter emitter)
       throws SAXException
    {
       if (contH != null && lastAttrs != null)
          processStartElement();
       // save old handlers
-      bufferStack.push(contH);
-      bufferStack.push(lexH);
-      contH = buffer;
-      lexH = buffer;
+      emitterStack.push(contH);
+      emitterStack.push(lexH);
+      contH = emitter;
+      lexH = emitter;
    }
 
 
    /**
-    * Discards the current buffer and uses the previous handlers
+    * Discards the current emitter and uses the previous handlers
     */
-   public void popBuffer()
+   public void popEmitter()
       throws SAXException
    {
       if (lastAttrs != null)
          processStartElement();
       // restore previous handlers
-      lexH = (LexicalHandler)bufferStack.pop();
-      contH = (ContentHandler)bufferStack.pop();
+      lexH = (LexicalHandler)emitterStack.pop();
+      contH = (ContentHandler)emitterStack.pop();
    }
 
 
    /**
-    * @return true if this buffer is in use or on the stack
+    * @return true if this emitter is in use or on the stack
     */
-   public boolean isBufferActive(BufferEmitter buffer)
+   public boolean isEmitterActive(StxEmitter emitter)
    {
-      return (contH == buffer) || (bufferStack.search(buffer) != -1);
+      return (contH == emitter) || (emitterStack.search(emitter) != -1);
    }
 
 
