@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 2.5 2003/06/01 19:39:04 obecker Exp $
+ * $Id: GroupBase.java,v 2.6 2003/06/02 10:38:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.Value;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 2.5 $ $Date: 2003/06/01 19:39:04 $
+ * @version $Revision: 2.6 $ $Date: 2003/06/02 10:38:18 $
  * @author Oliver Becker
  */
 
@@ -151,7 +151,6 @@ abstract public class GroupBase extends NodeBase
    
 
    public void insert(NodeBase node)
-      throws SAXParseException
    {
       // no call of super.insert(node)
       children.addElement(node);
@@ -159,7 +158,9 @@ abstract public class GroupBase extends NodeBase
    
 
    /**
-    * Determines the visible templates for this group.
+    * Determines the visible templates for this group in pass 0 and the
+    * array of group templates in pass 1.
+    * @exception SAXException if conflicts were encountered
     */
    public boolean compile(int pass)
       throws SAXException
@@ -264,9 +265,12 @@ abstract public class GroupBase extends NodeBase
                NodeBase p2 = (NodeBase)visibleProcedures.get(o);
                throw new SAXParseException(
                   "Public procedure `" + p1.procName + 
-                  "' conflicts with the procedure definition in the " +
-                  "parent group in line " + 
-                  p2.lineNo,
+                  "' conflicts with the procedure definition in line " +
+                  p2.lineNo +
+                  (p1.systemId.equals(p2.systemId) 
+                     ? (p1.lineNo == p2.lineNo 
+                        ? " (possibly several times included)" : "")
+                     : (" of " + p2.systemId)),
                   p1.publicId, p1.systemId, p1.lineNo, p1.colNo);
             }
          }
@@ -381,7 +385,7 @@ abstract public class GroupBase extends NodeBase
     * Add the procedures from <code>pTable</code> to the group procedures
     * of this group and all sub-groups.
     * @param pTable a Hashtable containing the procedures
-    * @exception if one of the procedures is already defined
+    * @exception SAXParseException if one of the procedures is already defined
     */
    protected void addGroupProcedures(Hashtable pTable)
       throws SAXParseException
@@ -396,7 +400,11 @@ abstract public class GroupBase extends NodeBase
             throw new SAXParseException(
                "Group procedure `" + p1.procName + 
                   "' conflicts with the procedure definition in line " +
-                  p2.lineNo,
+                  p2.lineNo +
+                  (p1.systemId.equals(p2.systemId) 
+                     ? (p1.lineNo == p2.lineNo 
+                        ? " (possibly several times included)" : "")
+                     : (" of " + p2.systemId)),
                   p1.publicId, p1.systemId, p1.lineNo, p1.colNo);
          }
       }
@@ -408,10 +416,11 @@ abstract public class GroupBase extends NodeBase
 
    /**
     * Returns the globally visible templates in this group (and all
-    * sub-groups). This method is called from parsed() in the parent group,
-    * which adds in turn the returned vector to its vector of global templates.
-    * The field <code>containedGlobalTemplates</code> will be set afterwards
-    * to <code>null</code> to allow garbage collection.
+    * sub-groups). This method is called from {@link #compile} in the parent
+    * group, which adds in turn the returned vector to its vector of the 
+    * global templates.
+    * The field {@link #containedGlobalTemplates} will be set to 
+    * <code>null</code> afterwards to allow garbage collection.
     */
    public Vector getGlobalTemplates()
    {
