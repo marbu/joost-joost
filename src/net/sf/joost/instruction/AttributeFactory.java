@@ -1,5 +1,5 @@
 /*
- * $Id: AttributeFactory.java,v 2.2 2003/06/03 14:30:18 obecker Exp $
+ * $Id: AttributeFactory.java,v 2.3 2004/09/29 06:17:16 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,25 +24,23 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
-import java.util.Hashtable;
 import java.util.HashSet;
+import java.util.Hashtable;
 
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
-import net.sf.joost.stx.SAXEvent;
-import net.sf.joost.stx.Value;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 
 /** 
  * Factory for <code>attribute</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2003/06/03 14:30:18 $
+ * @version $Revision: 2.3 $ $Date: 2004/09/29 06:17:16 $
  * @author Oliver Becker
  */
 
@@ -112,9 +110,8 @@ final public class AttributeFactory extends FactoryBase
          this.name = name;
          this.namespace = namespace;
          this.select = select;
-         strEmitter = new StringEmitter(new StringBuffer(), 
-                                        "(`" + qName + "' started in line " +
-                                        lineNo + ")");
+         strEmitter = new StringEmitter(new StringBuffer(),
+                         "(`" + qName + "' started in line " + lineNo + ")");
       }
       
 
@@ -137,19 +134,18 @@ final public class AttributeFactory extends FactoryBase
             // contents and end instruction present
             super.process(context);
             strEmitter.getBuffer().setLength(0);
-            context.emitter.pushEmitter(strEmitter);
+            context.pushEmitter(strEmitter);
          }
 
          String attName, attUri, attLocal;
          // determine attribute name
-         attName = name.evaluate(context, this).string;
+         attName = name.evaluate(context, this).getString();
          int colon = attName.indexOf(':');
          if (colon != -1) { // prefixed name
             String prefix = attName.substring(0, colon);
             attLocal = attName.substring(colon+1);
             if (namespace != null) { // namespace attribute present
-               attUri = namespace.evaluate(context, this)
-                                 .string;
+               attUri = namespace.evaluate(context, this).getString();
                if (attUri.equals("")) {
                   context.errorHandler.error(
                      "Can't put attribute `" + attName +
@@ -175,7 +171,7 @@ final public class AttributeFactory extends FactoryBase
             attLocal = attName;
             attUri = "";
             if (namespace != null) { // namespace attribute present
-               attUri = namespace.evaluate(context, this).string;
+               attUri = namespace.evaluate(context, this).getString();
                if (!attUri.equals("")) {
                   context.errorHandler.error(
                      "Can't put attribute `" + attName + 
@@ -189,7 +185,7 @@ final public class AttributeFactory extends FactoryBase
          if (select != null) {
             context.emitter.addAttribute(
                attUri, attName, attLocal, 
-               select.evaluate(context, this).convertToString().string, 
+               select.evaluate(context, this).getStringValue(), 
                publicId, systemId, lineNo, colNo);
          }
          else {
@@ -212,7 +208,7 @@ final public class AttributeFactory extends FactoryBase
          String attName = (String)localFieldStack.pop();
          String attLocal = (String)localFieldStack.pop();
          String attUri = (String)localFieldStack.pop();
-         context.emitter.popEmitter();
+         context.popEmitter();
          context.emitter.addAttribute(attUri, attName, attLocal, 
                                       strEmitter.getBuffer().toString(), 
                                       publicId, systemId, lineNo, colNo);

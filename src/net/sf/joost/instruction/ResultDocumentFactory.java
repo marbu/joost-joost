@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 2.11 2004/02/13 12:22:19 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 2.12 2004/09/29 06:17:16 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,42 +24,31 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
 import java.io.Writer;
-
 import java.util.HashSet;
 import java.util.Properties;
+
 import javax.xml.transform.OutputKeys;
 
-import net.sf.joost.Constants;
 import net.sf.joost.emitter.StreamEmitter;
-import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.11 $ $Date: 2004/02/13 12:22:19 $
+ * @version $Revision: 2.12 $ $Date: 2004/09/29 06:17:16 $
  * @author Oliver Becker
  */
 
 final public class ResultDocumentFactory extends FactoryBase
 {
-   private static org.apache.commons.logging.Log log;
-   static {
-      if (DEBUG)
-         // Log initialization
-         log = org.apache.commons.logging.
-               LogFactory.getLog(ResultDocumentFactory.class);
-   }
-
-
    /** allowed attributes for this element */
    private HashSet attrNames;
 
@@ -130,7 +119,7 @@ final public class ResultDocumentFactory extends FactoryBase
             // use global encoding att
             encoding = context.currentProcessor.getOutputEncoding();
 
-         String filename = href.evaluate(context, this).string;
+         String filename = href.evaluate(context, this).getString();
             
          StreamEmitter se = null;
          try {
@@ -154,7 +143,7 @@ final public class ResultDocumentFactory extends FactoryBase
             return PR_CONTINUE; // if the errorHandler returns
          }
 
-         context.emitter.pushEmitter(se);
+         context.pushEmitter(se);
          context.emitter.startDocument();
          return PR_CONTINUE;
       }
@@ -166,7 +155,7 @@ final public class ResultDocumentFactory extends FactoryBase
       {
          context.emitter.endDocument(publicId, systemId, 
                                      nodeEnd.lineNo, nodeEnd.colNo);
-         context.emitter.popEmitter();
+         context.popEmitter();
          try {
             ((Writer)localFieldStack.pop()).close();
          }

@@ -1,5 +1,5 @@
 /*
- * $Id: MessageFactory.java,v 2.5 2004/08/23 19:41:03 obecker Exp $
+ * $Id: MessageFactory.java,v 2.6 2004/09/29 06:17:16 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,22 +24,21 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
+import java.util.HashSet;
 
 import net.sf.joost.emitter.StreamEmitter;
-import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 
-import java.util.HashSet;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /** 
  * Factory for <code>message</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.5 $ $Date: 2004/08/23 19:41:03 $
+ * @version $Revision: 2.6 $ $Date: 2004/09/29 06:17:16 $
  * @author Oliver Becker
  */
 
@@ -117,12 +116,11 @@ final public class MessageFactory extends FactoryBase
          if (select == null) {
             super.process(context);
             context.messageEmitter.startDocument();
-            context.emitter.pushEmitter(context.messageEmitter);
+            context.pushEmitter(context.messageEmitter);
          }
          else {
             context.messageEmitter.startDocument();
-            String msg = select.evaluate(context, this)
-                               .convertToString().string;
+            String msg = select.evaluate(context, this).getStringValue();
             context.messageEmitter.characters(msg.toCharArray(), 
                                               0, msg.length());
             context.messageEmitter.endDocument();
@@ -138,8 +136,7 @@ final public class MessageFactory extends FactoryBase
       public short processEnd(Context context)
          throws SAXException
       {
-         context.emitter.popEmitter()
-                        .endDocument(); // flushes stderr
+         context.popEmitter().endDocument(); // flushes stderr
          return super.processEnd(context);
       }
    }
