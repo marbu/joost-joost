@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.2 2002/08/27 14:24:23 obecker Exp $
+ | $Id: build.xml,v 1.3 2002/08/28 09:50:27 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -27,6 +27,9 @@
   <target name="all" depends="compile" />
   
   <target name="init">
+    <tstamp>
+      <format property="date.today" pattern="yyyy-MM-dd" />
+    </tstamp>
     <available file="${classes}" property="classes.available" />
     <available file="${doc}/api" property="apidoc.available" />
     <uptodate property="yylex.uptodate"
@@ -106,12 +109,9 @@
           description="creates joost.jar (without test classes and debug information)">
     <delete dir="${classes}" />
     <mkdir dir="${classes}" />
-    <tstamp>
-      <format property="date.today" pattern="yyyy-MM-dd" />
-    </tstamp>
     <!-- save ${main.src} -->
     <copy file="${main.src}" tofile="main${DSTAMP}.tmp" />
-    <replace file="${main.src}" token="@@@@" value="${date.today}" />
+    <replace file="${main.src}" token="@@@DATE@@@" value="${date.today}" />
     <javac srcdir="${src}" destdir="${classes}" classpathref="cp" />
     <!-- restore ${main.src} -->
     <move file="main${DSTAMP}.tmp" tofile="${main.src}" />
@@ -137,6 +137,8 @@
              windowtitle="Joost API documentation" private="true">
       <classpath refid="cp" />
     </javadoc>
+    <copy file="docsrc/index.html" tofile="doc/index.html" />
+    <replace file="doc/index.html" token="@@@DATE@@@" value="${date.today}" />
   </target>
   
 
@@ -146,11 +148,12 @@
 
   
   <target name="realclean" depends="clean"
-    description="removes the classes and api-doc subdirectory as well as the jar file and the packed source distribution">
+    description="removes the classes and api-doc subdirectory as well as the jar file and the packed source distributions">
     <delete dir="${doc}/api" />
     <delete file="${ant.project.name}.jar" />
     <delete>
       <fileset dir="." includes="${ant.project.name}-*.tar.gz" />
+      <fileset dir="." includes="${ant.project.name}-*.zip" />
       <fileset dir="${grammar.dir}">
         <include name="*Parser.*" />
         <include name="Sym.java" />
@@ -188,7 +191,7 @@
     <copy todir="${dist}/${dist.name}/${doc}">
       <fileset dir="${doc}" />
     </copy>
-    <!-- 1. source distribution -->
+    <!-- first: source distribution -->
     <!-- create .tar.gz -->
     <tar tarfile="${ant.project.name}-src.tar">
       <tarfileset dir="${dist}">
@@ -213,7 +216,7 @@
     <!-- create .zip -->
     <zip basedir="${dist}"
          destfile="${dist.name}-src.zip" />
-    <!-- 2. binary distribution -->
+    <!-- second: binary distribution -->
     <!-- remove sources and apidoc -->
     <delete includeEmptyDirs="true">
       <fileset dir="${dist}/${dist.name}">
