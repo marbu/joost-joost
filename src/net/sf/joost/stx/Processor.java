@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: Processor.java,v 1.2 2002/09/05 14:52:55 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -59,8 +59,8 @@ import net.sf.joost.instruction.VariableFactory;
 
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
- * within a list of templates, received from a stylesheet node.
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * within an array of templates, received from a transform node.
+ * @version $Revision: 1.2 $ $Date: 2002/09/05 14:52:55 $
  * @author Oliver Becker
  */
 
@@ -351,6 +351,9 @@ public class Processor extends XMLFilterImpl
       throws SAXException
    {
       context = new Context();
+
+      setErrorHandler(context.errorHandler); // register error handler
+
       context.currentGroup = transformNode = stxParser.getTransformNode();
       if (transformNode.options != null) {
          OptionsFactory.Instance optionsNode = transformNode.options;
@@ -390,18 +393,16 @@ public class Processor extends XMLFilterImpl
    public void setParent(XMLReader parent)
    {
       super.setParent(parent);
+      parent.setContentHandler(this); // necessary??
 
       try {
          parent.setProperty("http://xml.org/sax/properties/lexical-handler",
                             this);
-         parent.setContentHandler(this);
-         setErrorHandler(context.errorHandler); // Processor is an XMLFilter
       }
       catch (SAXException ex) {
-         log4j.warn(ex);
+         log4j.warn("Accessing " + parent + ": " + ex);
       }
    }
-
 
 
    /**
@@ -412,6 +413,7 @@ public class Processor extends XMLFilterImpl
       emitter.setContentHandler(handler);
    }
 
+
    /**
     * Registers a lexical handler.
     */
@@ -419,6 +421,7 @@ public class Processor extends XMLFilterImpl
    {
       emitter.setLexicalHandler(handler);
    }
+
 
    /**
     * Registers a declaration handler. Does nothing at the moment.
@@ -977,7 +980,6 @@ public class Processor extends XMLFilterImpl
       throws SAXException
    {
    }
-
 
    public void endEntity(java.lang.String name)
       throws SAXException
