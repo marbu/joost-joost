@@ -1,5 +1,5 @@
 /*
- * $Id: MessageFactory.java,v 2.7 2004/10/17 20:37:25 obecker Exp $
+ * $Id: MessageFactory.java,v 2.8 2004/11/06 13:05:56 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,13 +24,20 @@
 
 package net.sf.joost.instruction;
 
+import java.io.StringWriter;
 import java.util.HashSet;
 
+import javax.xml.transform.TransformerException;
+
+import net.sf.joost.OptionalLog;
 import net.sf.joost.emitter.StreamEmitter;
+import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
+import net.sf.joost.trax.SourceLocatorImpl;
 
+import org.apache.commons.logging.Log;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -38,7 +45,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>message</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.7 $ $Date: 2004/10/17 20:37:25 $
+ * @version $Revision: 2.8 $ $Date: 2004/11/06 13:05:56 $
  * @author Oliver Becker
  */
 
@@ -47,10 +54,25 @@ final public class MessageFactory extends FactoryBase
    /** allowed attributes for this element */
    private HashSet attrNames;
 
+   /** enumerated values for the level attribute */
+   private static final String[] LEVEL_VALUES = 
+   { "trace", "debug", "info", "warn", "error", "fatal" };
+
+   /** index in {@link #LEVEL_VALUES} */
+   private static final int TRACE_LEVEL = 0, 
+                            DEBUG_LEVEL = 1, 
+                            INFO_LEVEL  = 2,
+                            WARN_LEVEL  = 3,
+                            ERROR_LEVEL = 4,
+                            FATAL_LEVEL = 5;
+
    public MessageFactory()
    {
       attrNames = new HashSet();
       attrNames.add("select");
+      attrNames.add("terminate");
+      attrNames.add("level");
+      attrNames.add("logger");
    }
 
    /** @return <code>"message"</code> */
@@ -63,28 +85,50 @@ final public class MessageFactory extends FactoryBase
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String selectAtt = attrs.getValue("select");
-      Tree selectExpr = 
-         (selectAtt != null) ? parseExpr(selectAtt, context) : null;
+      Tree selectExpr = parseExpr(attrs.getValue("select"), context);
+      Tree terminateAVT = parseAVT(attrs.getValue("terminate"), context);
+      int level = getEnumAttValue("level", attrs, LEVEL_VALUES, context);
+
+      String loggerAtt = attrs.getValue("logger");
+
+      // if one of 'level' or 'logger' is present, we need both
+      if ((level != -1) ^ (loggerAtt != null))
+         throw new SAXParseException(
+            level != -1
+               ? "Missing `logger' attribute when `level' is present"
+               : "Missing `level' attribute when `logger' is present", 
+            context.locator);
 
       checkAttributes(qName, attrs, attrNames, context);
-      return new Instance(qName, parent, context, selectExpr);
+      return new Instance(qName, parent, context, 
+                          selectExpr, terminateAVT, level, loggerAtt);
    }
 
 
    /** Represents an instance of the <code>message</code> element. */
    final public class Instance extends NodeBase
    {
-      private Tree select;
+      private Tree select, terminate;
+      private Log log;
+      private int level;
+
+      private StringBuffer buffer; // used only when log != null
+
+      private StxEmitter emitter; // initialized on first processing
+
 
       protected Instance(String qName, NodeBase parent, ParseContext context,
-                         Tree select)
+                         Tree select, Tree terminate, int level, String logger)
       {
          super(qName, parent, context,
                // this element must be empty if there is a select attribute
                select == null);
 
          this.select = select;
+         this.terminate = terminate;
+         this.level = level;
+         if (logger != null)
+            log = OptionalLog.getLog(logger);
       }
       
 
@@ -98,33 +142,55 @@ final public class MessageFactory extends FactoryBase
       public short process(Context context)
          throws SAXException
       {
-         if (context.messageEmitter == null) {
-            // create StreamEmitter for stderr (only once)
+         if (emitter == null) {
+            // create proper StreamEmitter only once
             try {
-               StreamEmitter se = StreamEmitter.newEmitter(
-                  System.err, context.currentProcessor.outputProperties);
-               se.setOmitXmlDeclaration(true);
-               context.messageEmitter = se;
+               if (log != null) {
+                  // Create emitter with a StringWriter
+                  StringWriter writer = new StringWriter();
+                  buffer = writer.getBuffer();
+                  StreamEmitter se = StreamEmitter.newEmitter(
+                     writer, 
+                     // Note: encoding parameter is irrelevant here
+                     DEFAULT_ENCODING, 
+                     context.currentProcessor.outputProperties);
+                  se.setOmitXmlDeclaration(true);
+                  emitter = se;
+               }
+               else if (context.messageEmitter == null) {
+                  // create global message emitter using stderr
+                  StreamEmitter se = StreamEmitter.newEmitter(
+                     System.err, context.currentProcessor.outputProperties);
+                  se.setOmitXmlDeclaration(true);
+                  context.messageEmitter = emitter = se;
+               }
+               else
+                  // use global message emitter
+                  emitter = context.messageEmitter;
             }
             catch (java.io.IOException ex) {
-               context.errorHandler.error(ex.toString(), 
-                                          publicId, systemId, lineNo, colNo);
+               context.errorHandler.fatalError(ex.toString(), 
+                                               publicId, systemId, 
+                                               lineNo, colNo);
                return PR_CONTINUE; // if the errorHandler returns
             }
          }
 
          if (select == null) {
             super.process(context);
-            context.messageEmitter.startDocument();
-            context.pushEmitter(context.messageEmitter);
+            emitter.startDocument();
+            context.pushEmitter(emitter);
          }
          else {
-            context.messageEmitter.startDocument();
+            emitter.startDocument();
             String msg = select.evaluate(context, this).getStringValue();
-            context.messageEmitter.characters(msg.toCharArray(), 
+            emitter.characters(msg.toCharArray(), 
                                               0, msg.length());
-            context.messageEmitter.endDocument();
+            emitter.endDocument();
+            processMessage(context);
          }
+
+
          return PR_CONTINUE;
       }
 
@@ -137,7 +203,51 @@ final public class MessageFactory extends FactoryBase
          throws SAXException
       {
          context.popEmitter().endDocument(); // flushes stderr
+         processMessage(context);
          return super.processEnd(context);
+      }
+
+
+      /**
+       * Process the message: use the logger if it is available and
+       * evaluate the optional 'terminate' attribute
+       * @throws SAXException when the transformation shall terminate
+       */
+      private void processMessage(Context context)
+         throws SAXException
+      {
+         if (log != null) {
+            // include locator info for logging
+            StringBuffer sb = 
+               new StringBuffer(systemId).append(':').append(lineNo)
+                                         .append(':').append(colNo)
+                                         .append(": ").append(buffer);
+            switch (level) {
+            case TRACE_LEVEL: log.trace(sb.toString()); break;
+            case DEBUG_LEVEL: log.debug(sb.toString()); break;
+            case INFO_LEVEL:  log.info(sb.toString());  break;
+            case WARN_LEVEL:  log.warn(sb.toString());  break;
+            case ERROR_LEVEL: log.error(sb.toString()); break;
+            case FATAL_LEVEL: log.fatal(sb.toString()); break;
+            }
+            buffer.setLength(0);
+         }
+
+         if (terminate == null)
+            return;
+
+         String terminateValue = terminate.evaluate(context, this).getString();
+         if (terminateValue.equals("yes"))
+            throw new SAXException(
+               new TransformerException("Transformation terminated",
+                  new SourceLocatorImpl(publicId, systemId,
+                                        lineNo, colNo)));
+
+         if (!terminateValue.equals("no"))
+            context.errorHandler.fatalError(
+               "Attribute 'terminate' of `" + qName 
+               + "' must be `yes' or `no', found `" + terminateValue + "'",
+               publicId, systemId, lineNo, colNo);
       }
    }
 }
