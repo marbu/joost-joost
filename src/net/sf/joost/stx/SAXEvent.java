@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEvent.java,v 1.15 2003/07/04 08:31:28 obecker Exp $
+ * $Id: SAXEvent.java,v 1.16 2003/11/01 14:47:14 zubow Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -35,7 +35,7 @@ import java.util.Hashtable;
 /** 
  * SAXEvent stores all information attached to an incoming SAX event,
  * it is the representation of a node in STX.
- * @version $Revision: 1.15 $ $Date: 2003/07/04 08:31:28 $
+ * @version $Revision: 1.16 $ $Date: 2003/11/01 14:47:14 $
  * @author Oliver Becker
  */
 final public class SAXEvent
@@ -396,6 +396,12 @@ final public class SAXEvent
       return c.value;
    }
 
+   public Object clone() {
+       SAXEvent event = new SAXEvent();
+       event.type = type;
+       event.qName = qName;
+       return event;
+   }
 
    //
    // for debugging
