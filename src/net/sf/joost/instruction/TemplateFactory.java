@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateFactory.java,v 2.5 2003/06/03 14:30:26 obecker Exp $
+ * $Id: TemplateFactory.java,v 2.6 2004/01/08 09:01:24 zubow Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.ParseContext;
 /**
  * Factory for <code>template</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.5 $ $Date: 2003/06/03 14:30:26 $
+ * @version $Revision: 2.6 $ $Date: 2004/01/08 09:01:24 $
  * @author Oliver Becker
  */
 
@@ -245,6 +245,13 @@ public final class TemplateFactory extends FactoryBase
          return priority;
       }
 
+      /**
+       * @return the match pattern
+       */
+      public Tree getMatchPattern()
+      {
+         return match;
+      }
 
       /**
        * Compares two templates according to their inverse priorities.

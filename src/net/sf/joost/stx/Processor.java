@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.30 2004/01/07 15:11:26 obecker Exp $
+ * $Id: Processor.java,v 2.31 2004/01/08 09:01:06 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -56,7 +56,7 @@ import net.sf.joost.trace.DebugProcessor;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.30 $ $Date: 2004/01/07 15:11:26 $
+ * @version $Revision: 2.31 $ $Date: 2004/01/08 09:01:06 $
  * @author Oliver Becker
  */
 
@@ -159,44 +159,43 @@ public class Processor extends XMLFilterImpl
        * The values used are defined in {@link Constants} as "process state
        * values".
        */
-      short lastProcStatus;
+      public short lastProcStatus;
 
       /** The last instantiated template */
-      TemplateFactory.Instance template;
+      public TemplateFactory.Instance template;
 
       /** The next instruction to be executed */
-      AbstractInstruction instruction;
+      public AbstractInstruction instruction;
 
       /** The current group */
-      GroupBase currentGroup;
+      public GroupBase currentGroup;
 
       /** The context position of the current node (from {@link Context}) */
-      long contextPosition;
+      public long contextPosition;
 
       /** Next group in the processing, contains the visible templates */
-      GroupBase targetGroup;
+      public GroupBase targetGroup;
 
       /** current table of local variables in {@link #template} */
-      Hashtable localVars;
+      public Hashtable localVars;
 
       /** passed parameters to {@link #template} (only for the debugging) */
-      Hashtable passedParams;
+      public Hashtable passedParams;
 
       /**
        * <code>stx:process-siblings</code> instruction
        * (for stx:process-siblings)
        */
-      PSiblingsFactory.Instance psiblings;
+      public PSiblingsFactory.Instance psiblings;
 
       /** current event (for stx:process-siblings) */
-      SAXEvent sibEvent;
-
+      public SAXEvent sibEvent;
 
       /**
        * Constructor for the initialization of all fields, needed for
        * <code>stx:process-siblings</code>
        */
-      Data(short lps, TemplateFactory.Instance t, AbstractInstruction i, 
+      Data(short lps, TemplateFactory.Instance t, AbstractInstruction i,
            Hashtable pp, Context c, SAXEvent se)
       {
          lastProcStatus = lps;
@@ -212,7 +211,7 @@ public class Processor extends XMLFilterImpl
       }
 
       /** Constructor for "descendant or self" processing */
-      Data(short lps, TemplateFactory.Instance t, AbstractInstruction i, 
+      Data(short lps, TemplateFactory.Instance t, AbstractInstruction i,
            Hashtable pp, Context c)
       {
          lastProcStatus = lps;
@@ -1623,7 +1622,7 @@ public class Processor extends XMLFilterImpl
             }
             case PR_SIBLINGS:
                dataStack.push(
-                  new Data(PR_SIBLINGS, data.template, inst, 
+                  new Data(PR_SIBLINGS, data.template, inst,
                            data.passedParams, context,
                            (SAXEvent)eventStack.peek()));
                break;
