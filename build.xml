@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.13 2004/01/07 08:03:36 obecker Exp $
+ | $Id: build.xml,v 1.14 2004/03/30 08:24:23 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -151,7 +151,8 @@
                            net.sf.joost.instruction, net.sf.joost.emitter,
                            net.sf.joost.grammar, net.sf.joost.grammar.cup,
                            net.sf.joost.trace, net.sf.joost.trax"
-             windowtitle="Joost API documentation" private="true">
+             windowtitle="Joost API documentation" private="true"
+             breakiterator="true">
       <classpath refid="cp" />
     </javadoc>
   </target>
