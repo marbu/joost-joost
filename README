@@ -1,9 +1,10 @@
-$Id: README,v 1.5 2004/01/07 08:02:41 obecker Exp $
+$Id: README,v 1.6 2004/03/30 08:23:36 obecker Exp $
 
 This module contains Java source files for Joost.
 
 The file build.xml is the Ant buildfile. Apache Ant is a Java-based build tool
-and can be downloaded from http://jakarta.apache.org/ant/
+and can be downloaded from http://ant.apache.org/
+Required version: 1.6 or above
 
 For compiling you need several jars in the lib subdirectory or in your
 classpath respectively. The CVS contains only joostGen.jar, compiled from 
