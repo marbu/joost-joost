@@ -20,7 +20,7 @@ import net.sf.joost.grammar.cup.Symbol;
 
 %{
 public Symbol last = null;
-private int commentDepth = 0;
+public int withinComment = 0;
 %}
 
 name = [a-zA-Z_][a-zA-Z_.0-9-]*
@@ -28,9 +28,9 @@ name = [a-zA-Z_][a-zA-Z_.0-9-]*
 
 %%
 
-"(:"              { yybegin(CMT); commentDepth++; }
+"(:"              { yybegin(CMT); withinComment++; }
 
-<CMT>":)"         { if(--commentDepth == 0) yybegin(YYINITIAL); }
+<CMT>":)"         { if(--withinComment == 0) yybegin(YYINITIAL); }
 <CMT>.            { }
 <YYINITIAL>":)"   { last = new Symbol(error,yychar,yychar+1,yytext()); 
                     return last; }
