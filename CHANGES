@@ -1,3 +1,11 @@
+Changes since 20030320
+- increased performance by switching to a new processing model
+- changed stx:for-each to stx:for-each-item; removed current-item()
+- removed level() and get-node()
+- Bugfixes: 723018, 723024, 728919
+- switched from Log4J to Commons-Logging;
+  removed logging configuration from Main completely (in release versions)
+
 Changes since 20030224
 - added 'encoding' attribute to stx:result-document;
   missing directories will now be created automatically
