@@ -1,5 +1,5 @@
 /*
- * $Id: PChildrenFactory.java,v 1.5 2002/11/27 09:54:43 obecker Exp $
+ * $Id: PChildrenFactory.java,v 1.6 2002/12/15 17:15:23 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,6 +29,7 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Stack;
 
@@ -40,12 +41,23 @@ import net.sf.joost.stx.SAXEvent;
 /** 
  * Factory for <code>process-children</code> elements, which are represented 
  * by the inner Instance class. 
- * @version $Revision: 1.5 $ $Date: 2002/11/27 09:54:43 $
+ * @version $Revision: 1.6 $ $Date: 2002/12/15 17:15:23 $
  * @author Oliver Becker
  */
 
 public class PChildrenFactory extends FactoryBase
 {
+   /** allowed attributes for this element */
+   private HashSet attrNames;
+
+   // Constructor
+   public PChildrenFactory()
+   {
+      attrNames = new HashSet();
+      attrNames.add("group");
+   }
+
+
    /** @return <code>"process-children"</code> */
    public String getName()
    {
@@ -67,17 +79,28 @@ public class PChildrenFactory extends FactoryBase
             "`" + qName + "' must be a descendant of stx:template",
             locator);
 
-      checkAttributes(qName, attrs, null, locator);
-      return new Instance(qName, parent, locator);
+      String groupAtt = attrs.getValue("group");
+      String groupName = null;
+      if (groupAtt != null)
+         groupName = getExpandedName(groupAtt, nsSet, locator);
+
+      checkAttributes(qName, attrs, attrNames, locator);
+
+      return new Instance(qName, parent, locator, groupAtt, groupName);
    }
 
 
    /** The inner Instance class */
    public class Instance extends NodeBase
    {
-      public Instance(String qName, NodeBase parent, Locator locator)
+      String groupQName, groupExpName;
+
+      public Instance(String qName, NodeBase parent, Locator locator,
+                      String groupQName, String groupExpName)
       {
          super(qName, parent, locator, true);
+         this.groupQName = groupQName;
+         this.groupExpName = groupExpName;
       }
 
 
@@ -91,7 +114,7 @@ public class PChildrenFactory extends FactoryBase
             For a startElement event the matching template starts the
             processing with ST_PROCESSING set and all other bits unset.
             This method toggles the bits (clear ST_PROCESSING, set
-            ST_CHILDREN) to signal the Processor object to break the
+            ST_CHILDREN) to signal the Processor object to suspend the
             execution.
             On the matching endElement event the processing continues
             by switching the bits back.
@@ -109,7 +132,20 @@ public class PChildrenFactory extends FactoryBase
             SAXEvent event = (SAXEvent)eventStack.peek();
             if (event.type == SAXEvent.ELEMENT || 
                 event.type == SAXEvent.ROOT) {
-               // break the processing, ST_PROCESSING off, ST_CHILDREN on
+               // suspend the processing
+               // is there a target group?
+               if (groupExpName != null) {
+                  if (context.currentGroup.namedGroups.get(groupExpName) 
+                         == null) {
+                     context.errorHandler.error(
+                        "Unknown group `" + groupQName + "'", 
+                        publicId, systemId, lineNo, colNo);
+                     return processStatus; // if the errorHandler returns
+                  }
+                  // change to a new base group for matching
+                  context.nextProcessGroup = groupExpName;
+               }
+               // suspending: ST_PROCESSING off, ST_CHILDREN on
                return ST_CHILDREN;
             }
             else {

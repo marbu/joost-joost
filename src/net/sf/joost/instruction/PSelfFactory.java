@@ -1,5 +1,5 @@
 /*
- * $Id: PSelfFactory.java,v 1.4 2002/11/27 09:54:44 obecker Exp $
+ * $Id: PSelfFactory.java,v 1.5 2002/12/15 17:15:23 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,6 +29,7 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Stack;
 
@@ -39,12 +40,23 @@ import net.sf.joost.stx.Context;
 /**
  * Factory for <code>process-self</code> elements, which are represented by 
  * the inner Instance class.
- * @version $Revision: 1.4 $ $Date: 2002/11/27 09:54:44 $
+ * @version $Revision: 1.5 $ $Date: 2002/12/15 17:15:23 $
  * @author Oliver Becker
  */
 
 public class PSelfFactory extends FactoryBase
 {
+   /** allowed attributes for this element */
+   private HashSet attrNames;
+
+   // Constructor
+   public PSelfFactory()
+   {
+      attrNames = new HashSet();
+      attrNames.add("group");
+   }
+
+
    /** @return <code>"process-self"</code> */
    public String getName()
    {
@@ -66,17 +78,28 @@ public class PSelfFactory extends FactoryBase
             "`" + qName + "' must be a descendant of stx:template",
             locator);
 
-      checkAttributes(qName, attrs, null, locator);
-      return new Instance(qName, parent, locator);
+      String groupAtt = attrs.getValue("group");
+      String groupName = null;
+      if (groupAtt != null)
+         groupName = getExpandedName(groupAtt, nsSet, locator);
+
+      checkAttributes(qName, attrs, attrNames, locator);
+
+      return new Instance(qName, parent, locator, groupAtt, groupName);
    }
 
 
    /** The inner Instance class */
    public class Instance extends NodeBase
    {
-      public Instance(String qName, NodeBase parent, Locator locator)
+      String groupQName, groupExpName;
+
+      public Instance(String qName, NodeBase parent, Locator locator,
+                      String groupQName, String groupExpName)
       {
          super(qName, parent, locator, true);
+         this.groupQName = groupQName;
+         this.groupExpName = groupExpName;
       }
 
 
@@ -91,6 +114,18 @@ public class PSelfFactory extends FactoryBase
          }
          // ST_PROCESSING on, other bits off
          else if (processStatus == ST_PROCESSING) {
+            // is there a target group?
+            if (groupExpName != null) {
+               if (context.currentGroup.namedGroups.get(groupExpName) 
+                      == null) {
+                  context.errorHandler.error(
+                     "Unknown group `" + groupQName + "'", 
+                     publicId, systemId, lineNo, colNo);
+                  return processStatus; // if the errorHandler returns
+               }
+               // change to a new base group for matching
+               context.nextProcessGroup = groupExpName;
+            }
             // ST_PROCESSING off, ST_SELF on
             return ST_SELF;
          }
