@@ -1,3 +1,6 @@
+Changes since 20030914
+- allow nested XPath comments (: ... :)
+
 Changes since 20030908
 - added string-join(), ends-with(), string-pad(), exists(), index-of(), 
   insert-before(), remove()

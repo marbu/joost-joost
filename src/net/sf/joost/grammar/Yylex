@@ -8,6 +8,8 @@ import net.sf.joost.grammar.cup.Symbol;
 %char
 %unicode
 
+%state CMT
+
 %function next_token
 %type Symbol
 %implements Sym, net.sf.joost.grammar.cup.Scanner
@@ -18,6 +20,7 @@ import net.sf.joost.grammar.cup.Symbol;
 
 %{
 public Symbol last = null;
+private int commentDepth = 0;
 %}
 
 name = [a-zA-Z_][a-zA-Z_.0-9-]*
@@ -25,79 +28,117 @@ name = [a-zA-Z_][a-zA-Z_.0-9-]*
 
 %%
 
-\|       { last = new Symbol(BAR,yychar,yychar+1,yytext()); return last; }
-/        { last = new Symbol(SLASH,yychar,yychar+1,yytext()); return last; }
-//       { last = new Symbol(DSLASH,yychar,yychar+2,yytext()); return last; }
-\[       { last = new Symbol(LBRACK,yychar,yychar+1,yytext()); return last; }
-\]       { last = new Symbol(RBRACK,yychar,yychar+1,yytext()); return last; }
-:        { last = new Symbol(COLON,yychar,yychar+1,yytext()); return last; }
-@        { last = new Symbol(AT,yychar,yychar+1,yytext()); return last; }
-"$"      { last = new Symbol(DOLLAR,yychar,yychar+1,yytext()); return last; }
+"(:"              { yybegin(CMT); commentDepth++; }
 
-"."      { last = new Symbol(DOT,yychar,yychar+1,yytext()); return last; }
-".."     { last = new Symbol(DDOT,yychar,yychar+1,yytext()); return last; }
-"*"      { last = new Symbol(STAR,yychar,yychar+1,yytext()); return last; }
+<CMT>":)"         { if(--commentDepth == 0) yybegin(YYINITIAL); }
+<CMT>.            { }
+<YYINITIAL>":)"   { last = new Symbol(error,yychar,yychar+1,yytext()); 
+                    return last; }
 
-"+"      { last = new Symbol(PLUS,yychar,yychar+1,yytext()); return last; }
-"-"      { last = new Symbol(MINUS,yychar,yychar+1,yytext()); return last; }
-"("      { last = new Symbol(LPAR,yychar,yychar+1,yytext()); return last; }
-")"      { last = new Symbol(RPAR,yychar,yychar+1,yytext()); return last; }
-","      { last = new Symbol(COMMA,yychar,yychar+1,yytext()); return last; }
+<YYINITIAL>\|     { last = new Symbol(BAR,yychar,yychar+1,yytext()); 
+                    return last; }
+<YYINITIAL>/      { last = new Symbol(SLASH,yychar,yychar+1,yytext()); 
+                    return last; }
+<YYINITIAL>//     { last = new
+                    Symbol(DSLASH,yychar,yychar+2,yytext()); 
+                    return last; }
+<YYINITIAL>\[     { last = new
+                    Symbol(LBRACK,yychar,yychar+1,yytext()); 
+                    return last; }
+<YYINITIAL>\]     { last = new
+                    Symbol(RBRACK,yychar,yychar+1,yytext()); 
+                    return last; }
+<YYINITIAL>:      { last = new Symbol(COLON,yychar,yychar+1,yytext()); 
+                    return last; }
+<YYINITIAL>@      { last = new Symbol(AT,yychar,yychar+1,yytext()); 
+                    return last; }
+<YYINITIAL>"$"    { last = new Symbol(DOLLAR,yychar,yychar+1,yytext()); 
+                    return last; }
 
-"="      { last = new Symbol(EQ,yychar,yychar+1,yytext()); return last; }
-"<"      { last = new Symbol(LT,yychar,yychar+1,yytext()); return last; }
-">"      { last = new Symbol(GT,yychar,yychar+1,yytext()); return last; }
-"<="     { last = new Symbol(LE,yychar,yychar+2,yytext()); return last; }
-">="     { last = new Symbol(GE,yychar,yychar+2,yytext()); return last; }
-"!="     { last = new Symbol(NE,yychar,yychar+2,yytext()); return last; }
+<YYINITIAL>"."    { last = new Symbol(DOT,yychar,yychar+1,yytext()); 
+                    return last; }
+<YYINITIAL>".."   { last = new Symbol(DDOT,yychar,yychar+1,yytext()); 
+                    return last; }
+<YYINITIAL>"*"    { last = new Symbol(STAR,yychar,yychar+1,yytext()); 
+                    return last; }
 
-"div"    { last = new Symbol(DIV,yychar,yychar+3,yytext()); return last; }
-"mod"    { last = new Symbol(MOD,yychar,yychar+3,yytext()); return last; }
-"and"    { last = new Symbol(AND,yychar,yychar+3,yytext()); return last; }
-"or"     { last = new Symbol(OR,yychar,yychar+2,yytext()); return last; }
+<YYINITIAL>"+"    { last = new Symbol(PLUS,yychar,yychar+1,yytext()); 
+                    return last; }
+<YYINITIAL>"-"    { last = new Symbol(MINUS,yychar,yychar+1,yytext()); 
+                    return last; }
+<YYINITIAL>"("    { last = new Symbol(LPAR,yychar,yychar+1,yytext()); 
+                    return last; }
+<YYINITIAL>")"    { last = new Symbol(RPAR,yychar,yychar+1,yytext()); 
+                    return last; }
+<YYINITIAL>","    { last = new Symbol(COMMA,yychar,yychar+1,yytext()); 
+                    return last; }
 
-" "+     { }
+<YYINITIAL>"="    { last = new Symbol(EQ,yychar,yychar+1,yytext()); 
+                    return last; }
+<YYINITIAL>"<"    { last = new Symbol(LT,yychar,yychar+1,yytext()); 
+                    return last; }
+<YYINITIAL>">"    { last = new Symbol(GT,yychar,yychar+1,yytext()); 
+                    return last; }
+<YYINITIAL>"<="   { last = new Symbol(LE,yychar,yychar+2,yytext()); 
+                    return last; }
+<YYINITIAL>">="   { last = new Symbol(GE,yychar,yychar+2,yytext()); 
+                    return last; }
+<YYINITIAL>"!="   { last = new Symbol(NE,yychar,yychar+2,yytext()); 
+                    return last; }
 
-"text()" { 
+<YYINITIAL>"div"  { last = new Symbol(DIV,yychar,yychar+3,yytext()); 
+                    return last; }
+<YYINITIAL>"mod"  { last = new Symbol(MOD,yychar,yychar+3,yytext()); 
+                    return last; }
+<YYINITIAL>"and"  { last = new Symbol(AND,yychar,yychar+3,yytext()); 
+                    return last; }
+<YYINITIAL>"or"   { last = new Symbol(OR,yychar,yychar+2,yytext()); 
+                    return last; }
+
+<YYINITIAL>" "+   { }
+
+<YYINITIAL>"text()"  { 
    last = new Symbol(TEXT,yychar,yychar+yytext().length(),yytext()); 
    return last; }
 
-"cdata()" { 
+<YYINITIAL>"cdata()"  { 
    last = new Symbol(CDATA,yychar,yychar+yytext().length(),yytext()); 
    return last; }
 
-"processing-instruction(" { 
+<YYINITIAL>"processing-instruction("  { 
    last = new Symbol(PI_START,yychar,yychar+yytext().length(),yytext()); 
    return last; }
 
-"comment()" {
+<YYINITIAL>"comment()"  {
    last = new Symbol(COMMENT,yychar,yychar+yytext().length(),yytext()); 
    return last; }
 
-"node()" {
+<YYINITIAL>"node()"  {
    last = new Symbol(NODE,yychar,yychar+yytext().length(),yytext()); 
    return last; }
 
-{name}   { 
+<YYINITIAL>{name}  { 
    last = new Symbol(NCNAME,yychar,yychar+yytext().length(),yytext()); 
    return last; }
 
-{name}:{name} { 
+<YYINITIAL>{name}:{name}  { 
    last = new Symbol(QNAME,yychar,yychar+yytext().length(),yytext()); 
    return last; }
 
-([0-9]+)|("."[0-9]+)|([0-9]+"."[0-9]*)|(("."[0-9]+)|([0-9]+("."[0-9]*)?))([e]|[E])([+]|[-])?[0-9]+   { 
+<YYINITIAL>([0-9]+)|("."[0-9]+)|([0-9]+"."[0-9]*)|(("."[0-9]+)|([0-9]+("."[0-9]*)?))([e]|[E])([+]|[-])?[0-9]+  { 
    last = new Symbol(NUMBER,yychar,yychar+yytext().length(),
                      new Double(yytext())); 
    return last; }
 
-\"[^\"]*\"  {
+<YYINITIAL>\"[^\"]*\"  {
    last = new Symbol(STRING,yychar,yychar+yytext().length(),
                      new String(yytext().substring(1,yytext().length()-1))); 
    return last; }
-['][^']*[']  {
+<YYINITIAL>['][^']*[']  {
    last = new Symbol(STRING,yychar,yychar+yytext().length(),
                      new String(yytext().substring(1,yytext().length()-1))); 
    return last; }
 
-.        { last = new Symbol(error,yychar,yychar+1,yytext()); return last; }
+<YYINITIAL>.  { 
+   last = new Symbol(error,yychar,yychar+1,yytext()); 
+   return last; }
