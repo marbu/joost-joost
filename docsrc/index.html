@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.50 2003/07/08 09:40:46 obecker Exp $ -->
+<!-- $Id: index.html,v 1.51 2003/07/24 08:07:06 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -144,15 +144,16 @@
       <li>stx:procedure (name, public?, visibility?, new-scope?)</li>
       <li>stx:call-procedure (name, group?)</li>
       <li>stx:copy (attributes?)</li>
-      <li>stx:process-children (group?, filter?, src?)</li>
-      <li>stx:process-self (group?, filter?, src?)</li>
+      <li>stx:process-children (group?, filter-method?, filter-src?)</li>
+      <li>stx:process-self (group?, filter-method?, filter-src?)</li>
       <li>stx:process-siblings (group?, while?, until?)</li>
       <li>stx:process-attributes (group?)</li>
-      <li>stx:process-document (href, base?, group?, filter?, src?)</li>
+      <li>stx:process-document (href, base?, group?,
+                                filter-method?, filter-src?)</li>
       <li>stx:result-document (href, encoding?)</li>
       <li>stx:buffer (name)</li>
       <li>stx:result-buffer (name, clear?)</li>
-      <li>stx:process-buffer (name, group?, filter?, src?)</li>
+      <li>stx:process-buffer (name, group?, filter-method?, filter-src?)</li>
       <li>stx:value-of (select, separator?)</li>
       <li>stx:if (test)</li>
       <li>stx:else</li>
