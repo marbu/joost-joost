@@ -15,6 +15,7 @@ Changes since 20030502
 - added 'exclude-result-prefixes" to stx:transform
 - changed type of the 'href' attribute in stx:result-document from 
   expression to {uri-reference} (spec change 2003-06-09)
+- small change in sum(): discard NaN values
 - added (partial) support for TrAX output properties
 - added support for Java extension functions
 - added Joost extension function sequence(), which converts a Java array or
