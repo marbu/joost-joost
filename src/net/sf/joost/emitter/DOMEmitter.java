@@ -1,5 +1,5 @@
 /*
- * $Id: DOMEmitter.java,v 1.5 2004/10/25 20:39:33 obecker Exp $
+ * $Id: DOMEmitter.java,v 1.6 2005/01/22 21:50:14 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -126,7 +126,7 @@ public class DOMEmitter implements StxEmitter {
         throws SAXException {
 
         // create new element : iterate over all attribute-values
-        Element elem = (Element)document.createElementNS(uri, raw);
+        Element elem = document.createElementNS(uri, raw);
 
         int nattrs = attrs.getLength();
 
@@ -178,7 +178,7 @@ public class DOMEmitter implements StxEmitter {
     public void endElement(String uri, String local, String raw)
         throws SAXException {
 
-        Node lastActive = (Node)stack.pop();
+        stack.pop();
 
     }
 
