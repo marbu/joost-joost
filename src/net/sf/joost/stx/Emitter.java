@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.18 2003/05/19 08:50:21 obecker Exp $
+ * $Id: Emitter.java,v 1.19 2003/06/02 11:24:29 zubow Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,11 +44,11 @@ import net.sf.joost.emitter.StxEmitter;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.18 $ $Date: 2003/05/19 08:50:21 $
+ * @version $Revision: 1.19 $ $Date: 2003/06/02 11:24:29 $
  * @author Oliver Becker
  */
 
-public final class Emitter
+public class Emitter
 {
    private ContentHandler contH;
    private LexicalHandler lexH;
@@ -73,7 +73,7 @@ public final class Emitter
    private boolean insideCDATA = false;
 
 
-   Emitter(ErrorHandlerImpl errorHandler) // package private
+   protected Emitter(ErrorHandlerImpl errorHandler)
    {
       inScopeNamespaces = new Hashtable();
       inScopeNamespaces.put("", "");
