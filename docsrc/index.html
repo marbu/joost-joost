@@ -79,6 +79,10 @@
       or simply
       <strong><code>java -jar joost.jar xml-source stx-stylesheet</code></strong>
       </p>
+      <p>Global parameters for the STX stylesheet may be specified by adding
+      command line arguments of the form
+      <strong><code>parameter=value</code></strong>. <code>value</code>
+      is interpreted as a string, not as an expression.</p>
       <p>
       To get a list of possible options use the command line parameter
       <strong><code>-help</code></strong>
@@ -126,6 +130,7 @@
       <li>stx:attribute (name, namespace?, select)</li>
       <li>stx:variable (name, select?, keep-value?) for local and group
           variables</li>
+      <li>stx:param (name, select?) for global parameters only</li>
       <li>stx:assign (name, select)</li>
       </ul>
       <p>
