@@ -5,7 +5,7 @@ Changes since 20031219
 - added regex-group() 
   (which gives at the moment useful results only for the argument 0 of course)
 - added command line switches: -time, -m
-- Bugfix: 869207, 890961
+- Bugfix: 869207, 890961, 925215
 
 Changes since 20030914
 - allow nested XPath comments (: ... :)
