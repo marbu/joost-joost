@@ -2,7 +2,10 @@ Changes since 20030224
 - added 'encoding' attribute to stx:result-document,
   missing directories will be created automatically now
 - added stx:while
-- Bugfixes: 697408, 699541, 702885, 703059
+- change for buffers: allow stx:process-buffer inside of stx:result-buffer
+  for the same buffer; its new contents is available not before the buffer
+  has been completely filled (stx:result-buffer has finished)
+- Bugfixes: 697408, 699541, 702885, 703059, 705697
 
 Changes since 20030203
 - added support for xml:space within stylesheets
