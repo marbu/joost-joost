@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 2.7 2003/05/16 14:55:52 obecker Exp $
+ * $Id: Context.java,v 2.8 2003/05/23 11:11:56 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,12 +33,13 @@ import org.xml.sax.Locator;
 
 import java.util.Hashtable;
 import java.util.Stack;
+import javax.xml.transform.sax.TransformerHandler;
 
 
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 2.7 $ $Date: 2003/05/16 14:55:52 $
+ * @version $Revision: 2.8 $ $Date: 2003/05/23 11:11:56 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
@@ -83,6 +84,10 @@ public final class Context implements Cloneable
    /** The default TransformerHandlerResolver */
    public TransformerHandlerResolverImpl defaultTransformerHandlerResolver = 
       new TransformerHandlerResolverImpl();
+
+   /** The target handler, set by <code>process-<em>xxx</em></code>
+       instructions */
+   public TransformerHandler targetHandler;
 
    /**
     * @return a copy of this object.
