@@ -1,5 +1,5 @@
 /*
- * $Id: ResultBufferFactory.java,v 1.5 2002/11/27 09:59:11 obecker Exp $
+ * $Id: ResultBufferFactory.java,v 1.6 2002/12/15 17:00:13 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Emitter;
 /** 
  * Factory for <code>result-buffer</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.5 $ $Date: 2002/11/27 09:59:11 $
+ * @version $Revision: 1.6 $ $Date: 2002/12/15 17:00:13 $
  * @author Oliver Becker
  */
 
@@ -71,31 +71,15 @@ final public class ResultBufferFactory extends FactoryBase
       throws SAXParseException
    {
       String nameAtt = getAttribute(qName, attrs, "name", locator);
-
-      String nameUri, nameLocal;
-      int colon = nameAtt.indexOf(':');
-      if (colon != -1) { // prefixed name
-         String prefix = nameAtt.substring(0, colon);
-         nameLocal = nameAtt.substring(colon+1);
-         nameUri = (String)nsSet.get(prefix);
-         if (nameUri == null)
-            throw new SAXParseException("Undeclared prefix `" + prefix + "'",
-                                        locator);
-      }
-      else {
-         nameLocal = nameAtt;
-         nameUri = ""; // no default namespace usage
-      }
+      // buffers are special variables with an "@" prefix
+      String bufName = "@" + getExpandedName(nameAtt, nsSet, locator);
 
       // default is "no" (false)
       boolean clear =
          getEnumAttValue("clear", attrs, YESNO_VALUES, locator) == 0;
 
-
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, nameAtt,
-                          "@{" + nameUri + "}" + nameLocal, clear);
-      // buffers are special variables with an "@" prefix
+      return new Instance(qName, parent, locator, nameAtt, bufName, clear);
    }
 
 

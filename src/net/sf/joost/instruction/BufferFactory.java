@@ -1,5 +1,5 @@
 /*
- * $Id: BufferFactory.java,v 1.4 2002/11/27 10:03:10 obecker Exp $
+ * $Id: BufferFactory.java,v 1.5 2002/12/15 17:00:11 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Context;
 /** 
  * Factory for <code>buffer</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.4 $ $Date: 2002/11/27 10:03:10 $
+ * @version $Revision: 1.5 $ $Date: 2002/12/15 17:00:11 $
  * @author Oliver Becker
  */
 
@@ -74,28 +74,14 @@ final public class BufferFactory extends FactoryBase
    {
       String nameAtt = getAttribute(qName, attrs, "name", locator);
 
-      String nameUri, nameLocal;
-      int colon = nameAtt.indexOf(':');
-      if (colon != -1) { // prefixed name
-         String prefix = nameAtt.substring(0, colon);
-         nameLocal = nameAtt.substring(colon+1);
-         nameUri = (String)nsSet.get(prefix);
-         if (nameUri == null)
-            throw new SAXParseException("Undeclared prefix `" + prefix + "'",
-                                        locator);
-      }
-      else {
-         nameLocal = nameAtt;
-         nameUri = ""; // no default namespace usage
-      }
-
-      checkAttributes(qName, attrs, attrNames, locator);
-
       // Buffers will be treated as special variables -- the same scoping 
       // rules apply. To avoid name conflicts with variables the expanded 
       // name of a buffer carries a "@" prefix
-      return new Instance(qName, parent, locator, nameAtt,
-                          "@{" + nameUri + "}" + nameLocal);
+      String bufName = "@" + getExpandedName(nameAtt, nsSet, locator);
+
+      checkAttributes(qName, attrs, attrNames, locator);
+
+      return new Instance(qName, parent, locator, nameAtt, bufName);
    }
 
 

@@ -1,5 +1,5 @@
 /*
- * $Id: AssignFactory.java,v 1.2 2002/11/27 09:53:24 obecker Exp $
+ * $Id: AssignFactory.java,v 1.3 2002/12/15 17:00:10 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>assign</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2002/11/27 09:53:24 $
+ * @version $Revision: 1.3 $ $Date: 2002/12/15 17:00:10 $
  * @author Oliver Becker
  */
 
@@ -73,21 +73,7 @@ final public class AssignFactory extends FactoryBase
       throws SAXParseException
    {
       String nameAtt = getAttribute(qName, attrs, "name", locator);
-
-      String nameUri, nameLocal;
-      int colon = nameAtt.indexOf(':');
-      if (colon != -1) { // prefixed name
-         String prefix = nameAtt.substring(0, colon);
-         nameLocal = nameAtt.substring(colon+1);
-         nameUri = (String)nsSet.get(prefix);
-         if (nameUri == null)
-            throw new SAXParseException("Undeclared prefix `" + prefix + "'",
-                                        locator);
-      }
-      else {
-         nameLocal = nameAtt;
-         nameUri = ""; // no default namespace usage
-      }
+      String varName = getExpandedName(nameAtt, nsSet, locator);
 
       String selectAtt = attrs.getValue("select");
       Tree selectExpr;
@@ -97,8 +83,8 @@ final public class AssignFactory extends FactoryBase
          selectExpr = null;
 
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, nameAtt,
-                          "{" + nameUri + "}" + nameLocal, selectExpr);
+      return new Instance(qName, parent, locator, nameAtt, varName,
+                          selectExpr);
    }
 
 
@@ -189,9 +175,6 @@ final public class AssignFactory extends FactoryBase
                return processStatus; // if the errorHandler returns
             }
 
-//              context.stylesheetNode = this;
-//              Value v = select.evaluate(context, 
-//                                        eventStack, eventStack.size());
             vars.put(expName, v);
          }
          return processStatus;
