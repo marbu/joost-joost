@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 1.6 2002/11/04 13:19:40 obecker Exp $
+ * $Id: FunctionTable.java,v 1.7 2002/11/06 12:16:16 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 1.6 $ $Date: 2002/11/04 13:19:40 $
+ * @version $Revision: 1.7 $ $Date: 2002/11/06 12:16:16 $
  * @author Oliver Becker
  */
 public final class FunctionTable
@@ -672,37 +672,38 @@ public final class FunctionTable
                                             .convertToNumber().number;
                double arg3 = args.right.evaluate(context, events, top)
                                        .convertToNumber().number;
-               int len = str.length();
-               int start = len, end = 0;
-               for (int i=1; i<len; i++)
-                  if (((double)i) >= arg2) {
-                     start = i;
-                     break;
-                  }
-               for (int i=len; i>=start; i--)
-                  if (((double)i) < arg2+arg3) {
-                     end = i;
-                     break;
-                  }
-               if (start > end)
+
+               // extra test, because round(NaN) gives 0
+               if (Double.isNaN(arg2) || Double.isNaN(arg2+arg3))
+                  return new Value("");
+
+               // the first character of a string in STXPath is at position 1,
+               // in Java it is at position 0
+               int begin = Math.round((float)(arg2 - 1.0));
+               int end = begin + Math.round((float)arg3);
+               if (begin < 0)
+                  begin = 0;
+               if (end > str.length())
+                  end = str.length();
+               if (begin > end)
                   return new Value("");
  
-               // in Java the first character of a string is at position 0
-               return new Value(str.substring(start-1, end));
+               return new Value(str.substring(begin, end));
             }
             else { // two parameters
                String str = args.left.evaluate(context, events, top)
                                      .convertToString().string;
-               // in Java the first character of a string is at position 0
                double arg2 = args.right.evaluate(context, events, top)
                                        .convertToNumber().number;
+
                if (Double.isNaN(arg2))
                   return new Value("");
                if (arg2 < 1)
                   return new Value(str);
-               if (Double.isInfinite(arg2))
-                  return new Value("");
-               int offset = Math.round((float)(arg2)) - 1;
+
+               // the first character of a string in STXPath is at position 1,
+               // in Java it is at position 0
+               int offset = Math.round((float)(arg2 - 1.0));
                if (offset > str.length())
                   return new Value("");
                else
@@ -710,6 +711,7 @@ public final class FunctionTable
             }
          }
          catch (IndexOutOfBoundsException ex) {
+            // shouldn't happen
             log4j.error(ex);
             return new Value("");
          }
