@@ -1,5 +1,5 @@
 /*
- * $Id: MutableAttributesImpl.java,v 1.1 2004/09/29 06:04:58 obecker Exp $
+ * $Id: MutableAttributesImpl.java,v 1.2 2004/10/06 07:15:08 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -155,7 +155,7 @@ public final class MutableAttributesImpl implements MutableAttributes
                             String type, String value)
    {
       if (_length == _max) {
-         _max <<= 2; // * 2
+         _max <<= 1; // * 2
 
          String[] uris = new String[_max + 1];
          String[] lNames = new String[_max + 1];
