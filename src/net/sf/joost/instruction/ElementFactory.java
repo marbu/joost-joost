@@ -1,5 +1,5 @@
 /*
- * $Id: ElementFactory.java,v 1.1 2002/11/04 13:48:48 obecker Exp $
+ * $Id: ElementFactory.java,v 1.2 2002/11/21 16:41:08 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>element</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.1 $ $Date: 2002/11/04 13:48:48 $
+ * @version $Revision: 1.2 $ $Date: 2002/11/21 16:41:08 $
  * @author Oliver Becker
  */
 
@@ -60,7 +60,7 @@ final public class ElementFactory extends FactoryBase
       attrNames.add("namespace");
    }
 
-   /** @return "element" */
+   /** @return <code>"element"</code> */
    public String getName()
    {
       return "element";
@@ -165,13 +165,14 @@ final public class ElementFactory extends FactoryBase
          // emit events
          if ((processStatus & ST_PROCESSING) != 0)
             emitter.startElement(elUri, elLocal, elName, 
-                                 new AttributesImpl(), null);
+                                 new AttributesImpl(), null,
+                                 publicId, systemId, lineNo, colNo);
 
          processStatus = super.process(emitter, eventStack, context,
                                        processStatus);
 
          if ((processStatus & ST_PROCESSING) != 0) 
-            emitter.endElement(elUri, elLocal, elName, context,
+            emitter.endElement(elUri, elLocal, elName,
                                publicId, systemId, lineNo, colNo);
 
          return processStatus;

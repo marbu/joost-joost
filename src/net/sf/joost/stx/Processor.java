@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.19 2002/11/17 16:47:09 obecker Exp $
+ * $Id: Processor.java,v 1.20 2002/11/21 16:41:05 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -61,7 +61,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.19 $ $Date: 2002/11/17 16:47:09 $
+ * @version $Revision: 1.20 $ $Date: 2002/11/21 16:41:05 $
  * @author Oliver Becker
  */
 
@@ -109,7 +109,7 @@ public class Processor extends XMLFilterImpl
    private Context context;
 
    /** The Emitter object */
-   private Emitter emitter = new Emitter();
+   private Emitter emitter;
 
    /**
     * Depth in the subtree to be skipped; increased by startElement
@@ -143,7 +143,7 @@ public class Processor extends XMLFilterImpl
    private NamespaceSupport nsSupport = new NamespaceSupport();
 
    /** Flag that controls namespace contexts */
-   private boolean contextActive = false;
+   private boolean nsContextActive = false;
 
    /**
     * Stack for input events (of type {@link SAXEvent}). Every
@@ -373,6 +373,7 @@ public class Processor extends XMLFilterImpl
       throws SAXException
    {
       context = new Context();
+      emitter = new Emitter(context.errorHandler);
 
       setErrorHandler(context.errorHandler); // register error handler
 
@@ -795,7 +796,10 @@ public class Processor extends XMLFilterImpl
          case SAXEvent.ELEMENT:
             if((context.noMatchEvents & COPY_ELEMENT_NO_MATCH) != 0)
                emitter.startElement(event.uri, event.lName, event.qName,
-                                    event.attrs, event.nsSupport);
+                                    event.attrs, event.nsSupport,
+                                    copyLocation.publicId,
+                                    copyLocation.systemId,
+                                    copyLocation.lineNo, copyLocation.colNo);
             dataStack.push(
                new Data(((Data)dataStack.peek()).precedenceCategories));
             if (log4j.isDebugEnabled())
@@ -817,7 +821,10 @@ public class Processor extends XMLFilterImpl
          case SAXEvent.COMMENT:
             if((context.noMatchEvents & COPY_COMMENT_NO_MATCH) != 0)
                emitter.comment(event.value.toCharArray(), 
-                               0, event.value.length());
+                               0, event.value.length(),
+                               copyLocation.publicId,
+                               copyLocation.systemId,
+                               copyLocation.lineNo, copyLocation.colNo);
             break;
          case SAXEvent.PI:
             if((context.noMatchEvents & COPY_PI_NO_MATCH) != 0)
@@ -826,7 +833,7 @@ public class Processor extends XMLFilterImpl
          case SAXEvent.ATTRIBUTE:
             if((context.noMatchEvents & COPY_ATTRIBUTE_NO_MATCH) != 0)
                emitter.addAttribute(event.uri, event.qName, event.lName,
-                                    event.value, context,
+                                    event.value,
                                     copyLocation.publicId,
                                     copyLocation.systemId,
                                     copyLocation.lineNo, copyLocation.colNo);
@@ -889,8 +896,7 @@ public class Processor extends XMLFilterImpl
             endDocument(); // recurse (process-self)
          else {
             if (bufferStack.empty())
-               emitter.endDocument(context,
-                                   transformNode.publicId, 
+               emitter.endDocument(transformNode.publicId, 
                                    transformNode.systemId,
                                    transformNode.lineNo, transformNode.colNo);
             if (log4j.isDebugEnabled())
@@ -903,8 +909,7 @@ public class Processor extends XMLFilterImpl
          if (skipDepth != 1)
             log4j.error("skipDepth != 1");
          if (bufferStack.empty())
-            emitter.endDocument(context,
-                                transformNode.publicId, 
+            emitter.endDocument(transformNode.publicId, 
                                 transformNode.systemId,
                                 transformNode.lineNo, transformNode.colNo);
          if (log4j.isDebugEnabled())
@@ -943,10 +948,10 @@ public class Processor extends XMLFilterImpl
 
       if (collectedCharacters.length() != 0)
          processCharacters();
-         if (!contextActive) {
+         if (!nsContextActive) {
             nsSupport.pushContext();
          }
-         contextActive = false;
+         nsContextActive = false;
    }
 
 
@@ -974,7 +979,6 @@ public class Processor extends XMLFilterImpl
             // perform default action?
             if ((context.noMatchEvents & COPY_ELEMENT_NO_MATCH) != 0)
                emitter.endElement(uri, lName, qName,
-                                  context,
                                   copyLocation.publicId,
                                   copyLocation.systemId,
                                   copyLocation.lineNo, copyLocation.colNo);
@@ -1092,9 +1096,9 @@ public class Processor extends XMLFilterImpl
       if (skipDepth > 0)
          return;
 
-      if (!contextActive) {
+      if (!nsContextActive) {
          nsSupport.pushContext();
-         contextActive = true;
+         nsContextActive = true;
       }
       nsSupport.declarePrefix(prefix, uri);
    }

@@ -1,5 +1,5 @@
 /*
- * $Id: ElementStartFactory.java,v 1.2 2002/10/24 12:57:35 obecker Exp $
+ * $Id: ElementStartFactory.java,v 1.3 2002/11/21 16:41:08 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,15 +43,12 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>element-start</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2002/10/24 12:57:35 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/21 16:41:08 $
  * @author Oliver Becker
  */
 
 final public class ElementStartFactory extends FactoryBase
 {
-   /** The local element name. */
-   private static final String name = "element-start";
-
    /** allowed attributes for this element */
    private HashSet attrNames;
 
@@ -63,9 +60,10 @@ final public class ElementStartFactory extends FactoryBase
       attrNames.add("namespace");
    }
 
+   /* @return <code>"element-start"</code> */
    public String getName()
    {
-      return name;
+      return "element-start";
    }
 
    public NodeBase createNode(NodeBase parent, String uri, String lName, 
@@ -117,55 +115,55 @@ final public class ElementStartFactory extends FactoryBase
                               Context context, short processStatus)
          throws SAXException
       {
-         if ((processStatus & ST_PROCESSING) != 0) {
-            context.stylesheetNode = this;
-            Value v = name.evaluate(context, eventStack, eventStack.size());
-            String elName, elUri, elLocal;
-            elName = v.string;
-            int colon = elName.indexOf(':');
-            if (colon != -1) { // prefixed name
-               String prefix = elName.substring(0, colon);
-               elLocal = elName.substring(colon+1);
-               if (namespace != null) { // namespace attribute present
-                  elUri = namespace.evaluate(context, eventStack,
-                                             eventStack.size()).string;
-                  if (elUri.equals("")) {
-                     context.errorHandler.fatalError(
-                        "Can't create element `" + elName + 
-                        "' in the null namespace",
-                        publicId, systemId, lineNo, colNo);
-                     return processStatus; // if the errorHandler returns
-                  }
-               }
-               else { 
-                  // look into the set of in-scope namespaces
-                  // (of the stylesheet)
-                  elUri = (String)nsSet.get(prefix);
-                  if (elUri == null) {
-                     context.errorHandler.fatalError(
-                        "Attempt to create element `" + elName + 
-                        "' with undeclared prefix `" + prefix + "'",
-                        publicId, systemId, lineNo, colNo);
-                     return processStatus; // if the errorHandler returns
-                  }
+         context.stylesheetNode = this;
+         Value v = name.evaluate(context, eventStack, eventStack.size());
+         String elName, elUri, elLocal;
+         elName = v.string;
+         int colon = elName.indexOf(':');
+         if (colon != -1) { // prefixed name
+            String prefix = elName.substring(0, colon);
+            elLocal = elName.substring(colon+1);
+            if (namespace != null) { // namespace attribute present
+               elUri = namespace.evaluate(context, eventStack,
+                                          eventStack.size()).string;
+               if (elUri.equals("")) {
+                  context.errorHandler.fatalError(
+                     "Can't create element `" + elName + 
+                     "' in the null namespace",
+                     publicId, systemId, lineNo, colNo);
+                  return processStatus; // if the errorHandler returns
                }
             }
-            else { // unprefixed name
-               elLocal = elName;
-               if (namespace != null) // namespace attribute present
-                  elUri = namespace.evaluate(context, eventStack,
-                                             eventStack.size()).string;
-               else {
-                  // no namespace attribute, see above
-                  elUri = (String)nsSet.get("");
-                  if (elUri == null)
-                     elUri = "";
+            else { 
+               // look into the set of in-scope namespaces
+               // (of the stylesheet)
+               elUri = (String)nsSet.get(prefix);
+               if (elUri == null) {
+                  context.errorHandler.fatalError(
+                     "Attempt to create element `" + elName + 
+                     "' with undeclared prefix `" + prefix + "'",
+                     publicId, systemId, lineNo, colNo);
+                  return processStatus; // if the errorHandler returns
                }
             }
-
-            emitter.startElement(elUri, elLocal, elName, 
-                                 new AttributesImpl(), null);
          }
+         else { // unprefixed name
+            elLocal = elName;
+            if (namespace != null) // namespace attribute present
+               elUri = namespace.evaluate(context, eventStack,
+                                          eventStack.size()).string;
+            else {
+               // no namespace attribute, see above
+               elUri = (String)nsSet.get("");
+               if (elUri == null)
+                  elUri = "";
+            }
+         }
+
+         emitter.startElement(elUri, elLocal, elName, 
+                              new AttributesImpl(), null,
+                              publicId, systemId, lineNo, colNo);
+
          return processStatus;
       }
    }

@@ -1,5 +1,5 @@
 /*
- * $Id: CommentFactory.java,v 1.1 2002/11/20 17:01:52 obecker Exp $
+ * $Id: CommentFactory.java,v 1.2 2002/11/21 16:41:08 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,13 +40,13 @@ import net.sf.joost.emitter.StringEmitter;
 /** 
  * Factory for <code>comment</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.1 $ $Date: 2002/11/20 17:01:52 $
+ * @version $Revision: 1.2 $ $Date: 2002/11/21 16:41:08 $
  * @author Oliver Becker
  */
 
 public class CommentFactory extends FactoryBase
 {
-   /** @return <code>comment</code> */
+   /** @return <code>"comment"</code> */
    public String getName()
    {
       return "comment";
@@ -98,8 +98,7 @@ public class CommentFactory extends FactoryBase
             // check for nesting of this stx:comment instructions
             if (emitter.isEmitterActive(strEmitter)) {
                context.errorHandler.error(
-                  "Can't create markup here (comment started in line " +
-                  lineNo + ")",
+                  "Can't create nested comment here",
                   publicId, systemId, lineNo, colNo);
                return processStatus; // if the errorHandler returns
             }
@@ -126,7 +125,8 @@ public class CommentFactory extends FactoryBase
             }
 
             emitter.comment(buffer.toString().toCharArray(), 
-                            0, buffer.length());
+                            0, buffer.length(),
+                            publicId, systemId, lineNo, colNo);
 
             // It would be sensible to clear the buffer here,
             // but setLength(0) doesn't really free any memory ...

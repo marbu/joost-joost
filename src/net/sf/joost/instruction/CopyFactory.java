@@ -1,5 +1,5 @@
 /*
- * $Id: CopyFactory.java,v 1.7 2002/10/29 19:09:10 obecker Exp $
+ * $Id: CopyFactory.java,v 1.8 2002/11/21 16:41:08 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,15 +46,12 @@ import net.sf.joost.grammar.PatternParser;
 /** 
  * Factory for <code>copy</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.7 $ $Date: 2002/10/29 19:09:10 $
+ * @version $Revision: 1.8 $ $Date: 2002/11/21 16:41:08 $
  * @author Oliver Becker
  */
 
 final public class CopyFactory extends FactoryBase
 {
-   /** The local element name. */
-   private static final String name = "copy";
-
    /** allowed attributes for this element. */
    private HashSet attrNames;
 
@@ -75,9 +72,10 @@ final public class CopyFactory extends FactoryBase
    }
 
 
+   /** @return <code>"copy"</code> */
    public String getName()
    {
-      return name;
+      return "copy";
    }
 
    public NodeBase createNode(NodeBase parent, String uri, String lName, 
@@ -149,7 +147,8 @@ final public class CopyFactory extends FactoryBase
                break;
             case SAXEvent.ELEMENT: {
                emitter.startElement(event.uri, event.lName, event.qName,
-                                    emptyAttList, event.nsSupport);
+                                    emptyAttList, event.nsSupport,
+                                    publicId, systemId, lineNo, colNo);
                // store element position, will change while matching
                long elPos = context.position;
 
@@ -163,7 +162,7 @@ final public class CopyFactory extends FactoryBase
                      SAXEvent attrEvent = (SAXEvent)eventStack.peek();
                      emitter.addAttribute(attrEvent.uri, attrEvent.qName,
                                           attrEvent.lName,
-                                          attrEvent.value, context,
+                                          attrEvent.value,
                                           publicId, systemId, lineNo, colNo);
                   }
                   // remove attribute
@@ -188,11 +187,12 @@ final public class CopyFactory extends FactoryBase
                break;
             case SAXEvent.COMMENT:
                emitter.comment(event.value.toCharArray(), 
-                               0, event.value.length());
+                               0, event.value.length(),
+                               publicId, systemId, lineNo, colNo);
                break;
             case SAXEvent.ATTRIBUTE:
                emitter.addAttribute(event.uri, event.qName, event.lName,
-                                    event.value, context,
+                                    event.value,
                                     publicId, systemId, lineNo, colNo);
                break;
             default:
@@ -208,7 +208,7 @@ final public class CopyFactory extends FactoryBase
             switch(event.type) {
             case SAXEvent.ELEMENT:
                emitter.endElement(event.uri, event.lName, event.qName,
-                                  context, publicId, systemId, lineNo, colNo);
+                                  publicId, systemId, lineNo, colNo);
                break;
             }
          }

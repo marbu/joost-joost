@@ -1,5 +1,5 @@
 /*
- * $Id: ElementEndFactory.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: ElementEndFactory.java,v 1.2 2002/11/21 16:41:08 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,17 +42,15 @@ import net.sf.joost.grammar.Tree;
 /**
  * Factory for <code>element-end</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2002/11/21 16:41:08 $
  * @author Oliver Becker
  */
 
 final public class ElementEndFactory extends FactoryBase
 {
-   /** The local element name. */
-   private static final String name = "element-end";
-
    /** Allowed attributes for this element. */
    private HashSet attrNames;
+
 
    // Constructor
    public ElementEndFactory()
@@ -63,9 +61,10 @@ final public class ElementEndFactory extends FactoryBase
    }
 
 
+   /** @return <code>"element-end"</code> */
    public String getName()
    {
-      return name;
+      return "element-end";
    }
 
    public NodeBase createNode(NodeBase parent, String uri, String lName, 
@@ -117,55 +116,54 @@ final public class ElementEndFactory extends FactoryBase
                               Context context, short processStatus)
          throws SAXException
       {
-         if ((processStatus & ST_PROCESSING) != 0) {
-            context.stylesheetNode = this;
-            Value v = name.evaluate(context, eventStack, eventStack.size());
-            String elName, elUri, elLocal;
-            elName = v.string;
-            int colon = elName.indexOf(':');
-            if (colon != -1) { // prefixed name
-               String prefix = elName.substring(0, colon);
-               elLocal = elName.substring(colon+1);
-               if (namespace != null) { // namespace attribute present
-                  elUri = namespace.evaluate(context, eventStack,
-                                             eventStack.size()).string;
-                  if (elUri.equals("")) {
-                     context.errorHandler.fatalError(
-                        "Can't close element `" + elName + 
-                        "' in the null namespace",
-                        publicId, systemId, lineNo, colNo);
-                     return processStatus; // if the errorHandler returns
-                  }
-               }
-               else { 
-                  // look into the set of in-scope namespaces
-                  // (of the stylesheet)
-                  elUri = (String)nsSet.get(prefix);
-                  if (elUri == null) {
-                     context.errorHandler.fatalError(
-                       "Attempt to close element `" + elName + 
-                       "' with undeclared prefix `" + prefix + "'",
-                       publicId, systemId, lineNo, colNo);
-                     return processStatus; // if the errorHandler returns
-                  }
+         context.stylesheetNode = this;
+         Value v = name.evaluate(context, eventStack, eventStack.size());
+         String elName, elUri, elLocal;
+         elName = v.string;
+         int colon = elName.indexOf(':');
+         if (colon != -1) { // prefixed name
+            String prefix = elName.substring(0, colon);
+            elLocal = elName.substring(colon+1);
+            if (namespace != null) { // namespace attribute present
+               elUri = namespace.evaluate(context, eventStack,
+                                          eventStack.size()).string;
+               if (elUri.equals("")) {
+                  context.errorHandler.fatalError(
+                     "Can't close element `" + elName + 
+                     "' in the null namespace",
+                     publicId, systemId, lineNo, colNo);
+                  return processStatus; // if the errorHandler returns
                }
             }
-            else { // unprefixed name
-               elLocal = elName;
-               if (namespace != null) // namespace attribute present
-                  elUri = namespace.evaluate(context, eventStack,
-                                             eventStack.size()).string;
-               else {
-                  // no namespace attribute, see above
-                  elUri = (String)nsSet.get("");
-                  if (elUri == null)
-                     elUri = "";
+            else { 
+               // look into the set of in-scope namespaces
+               // (of the stylesheet)
+               elUri = (String)nsSet.get(prefix);
+               if (elUri == null) {
+                  context.errorHandler.fatalError(
+                    "Attempt to close element `" + elName + 
+                    "' with undeclared prefix `" + prefix + "'",
+                    publicId, systemId, lineNo, colNo);
+                  return processStatus; // if the errorHandler returns
                }
             }
-
-            emitter.endElement(elUri, elLocal, elName, 
-                               context, publicId, systemId, lineNo, colNo);
          }
+         else { // unprefixed name
+            elLocal = elName;
+            if (namespace != null) // namespace attribute present
+               elUri = namespace.evaluate(context, eventStack,
+                                          eventStack.size()).string;
+            else {
+               // no namespace attribute, see above
+               elUri = (String)nsSet.get("");
+               if (elUri == null)
+                  elUri = "";
+            }
+         }
+
+         emitter.endElement(elUri, elLocal, elName, 
+                            publicId, systemId, lineNo, colNo);
+
          return processStatus;
       }
    }

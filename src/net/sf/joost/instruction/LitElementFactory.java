@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 1.2 2002/10/24 12:57:35 obecker Exp $
+ * $Id: LitElementFactory.java,v 1.3 2002/11/21 16:41:08 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for literal result elements, which are represented by the
  * inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2002/10/24 12:57:35 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/21 16:41:08 $
  * @author Oliver Becker
 */
 
@@ -130,12 +130,13 @@ final public class LitElementFactory extends FactoryBase
                attrs.setValue(i, 
                               avtList[i].evaluate(context, eventStack, 
                                                   eventStack.size()).string);
-            emitter.startElement(uri, lName, qName, attrs, nsSupport);
+            emitter.startElement(uri, lName, qName, attrs, nsSupport,
+                                 publicId, systemId, lineNo, colNo);
          }
          short newStatus = super.process(emitter, eventStack, context,
                                          processStatus);
          if ((newStatus & ST_PROCESSING) != 0)
-            emitter.endElement(uri, lName, qName, context,
+            emitter.endElement(uri, lName, qName,
                                publicId, systemId, lineNo, colNo);
          return newStatus;
       }
