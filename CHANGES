@@ -1,6 +1,9 @@
 Changes since 20030203
 - added support for xml:space within stylesheets
+- added stx:for-each and the current() function
 - Bugfix 681576: forbid static procedure calls
+- Bugfix 687489: deleted variables
+- Bugfix 687628: position() gives wrong results
 
 Changes since 20030121
 - added floor(), ceiling(), round()
