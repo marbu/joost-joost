@@ -3,6 +3,8 @@ Changes since 20030623
 - added 'filter-method' and 'filter-src' attributes to stx:process-document
 - added filter methods for STX (http://stx.sourceforge.net/2002/ns) and
   SAX parsing (http://xml.org/sax)
+- added stx:namespace-alias (in the result the original prefix, aka
+  stylesheet-prefix will be used, but mapped to the new namespace)
 - Internal: added XMLReader parameter to Processor constructor;
   Fixed SAXSource usage in TransformerFactory.newTransformer(...)
 - Bugfix: 765301
