@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXHelper.java,v 1.13 2004/12/16 19:17:36 obecker Exp $
+ * $Id: TrAXHelper.java,v 1.14 2005/03/13 16:10:54 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -200,7 +200,7 @@ public class TrAXHelper implements TrAXConstants {
                 return new DOMEmitter();
             } else if (result instanceof StreamResult) {
                 if (DEBUG)
-                   log.debug("return StreamRsult specific Implementation " + 
+                   log.debug("return StreamResult specific Implementation " + 
                              "for STXEmitter");
                 // Get StreamResult
                 final StreamResult target = (StreamResult)result;
