@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.46 2004/10/30 11:23:53 obecker Exp $
+ * $Id: Processor.java,v 2.47 2004/12/16 19:58:49 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -69,7 +69,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.46 $ $Date: 2004/10/30 11:23:53 $
+ * @version $Revision: 2.47 $ $Date: 2004/12/16 19:58:49 $
  * @author Oliver Becker
  */
 
@@ -488,19 +488,21 @@ public class Processor extends XMLFilterImpl
    /**
     * Constructs a copy of the given Processor.
     * @param proc the original Processor object
+    * @throws SAXException if the construction of a new XML parser fails
     */
-   public Processor(Processor proc)
+   public Processor(Processor proc) throws SAXException
    {
       stxParser = proc.stxParser;
       globalTemplates = proc.globalTemplates;
       init();
-      setParent(proc.getParent());
+      setParent(getXMLReader());
    }
 
    /**
     * Constructs a copy of this Processor.
+    * @throws SAXException if the construction of a new XML parser fails
     */
-   public Processor copy()
+   public Processor copy() throws SAXException
    {
       return new Processor(this);
    }

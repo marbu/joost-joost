@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.22 2004/10/25 20:39:34 obecker Exp $
+ * $Id: TemplatesImpl.java,v 1.23 2004/12/16 19:58:48 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -38,6 +38,7 @@ import net.sf.joost.trace.DebugProcessor;
 
 import org.apache.commons.logging.Log;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 /**
@@ -223,10 +224,15 @@ public class TemplatesImpl implements Templates, TrAXConstants {
             if (DEBUG)
                 log.debug("calling newTransformer to get a " + 
                           "Transformer object for Transformation");
-            //register the processor
-            Transformer transformer = 
-                new TransformerImpl(processor.copy());
-            return transformer;
+            try {
+                //register the processor
+                return new TransformerImpl(processor.copy());
+            }
+            catch (SAXException e) {
+                if (log != null)
+                    log.fatal(e);
+                throw new TransformerConfigurationException(e.getMessage());
+            }
         }
     }
 

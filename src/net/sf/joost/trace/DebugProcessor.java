@@ -1,5 +1,5 @@
 /*
- * $Id: DebugProcessor.java,v 1.17 2004/10/25 20:39:34 obecker Exp $
+ * $Id: DebugProcessor.java,v 1.18 2004/12/16 19:58:35 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -51,7 +51,7 @@ import org.xml.sax.XMLReader;
 
 /**
  * Extends the {@link net.sf.joost.stx.Processor} with debug features.
- * @version $Revision: 1.17 $ $Date: 2004/10/25 20:39:34 $
+ * @version $Revision: 1.18 $ $Date: 2004/12/16 19:58:35 $
  * @author Zubow
  */
 public class DebugProcessor extends Processor {
@@ -72,8 +72,9 @@ public class DebugProcessor extends Processor {
 
     /**
      * See {@link net.sf.joost.stx.Processor#Processor(net.sf.joost.stx.Processor)}
+    * @throws SAXException
      */
-    public DebugProcessor(Processor proc) {
+    public DebugProcessor(Processor proc) throws SAXException {
         super(proc);
     }
 
@@ -128,8 +129,9 @@ public class DebugProcessor extends Processor {
 
     /**
      * See {@link net.sf.joost.stx.Processor#copy()}
+    * @throws SAXException
      */
-    public Processor copy()
+    public Processor copy() throws SAXException
     {
         return new DebugProcessor(this);
     }
