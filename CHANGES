@@ -1,7 +1,8 @@
 Changes since 20040330
 - boosted Joost's performance about 25% 
   (major internal refactoring contributed by Thomas Behrends)
-- added 'select' attribute to stx:message
+- added 'select' attribute to stx:message, stx:comment, and 
+  stx:processing-instruction
 - added filter-method "http://www.ietf.org/rfc/rfc2616.txt#POST"
 - flush output on error
 - Bugfix: 936354, 1003790
