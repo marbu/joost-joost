@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.20 2004/04/03 18:11:08 obecker Exp $
+ * $Id: Main.java,v 1.21 2004/04/16 10:30:16 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.20 $ $Date: 2004/04/03 18:11:08 $
+ * @version $Revision: 1.21 $ $Date: 2004/04/16 10:30:16 $
  * @author Oliver Becker
  */
 public class Main implements Constants
@@ -424,11 +424,13 @@ public class Main implements Constants
 
 //           // check if the Processor copy constructor works
 //           Processor pr = new Processor(processor);
+//           java.util.Properties props = new java.util.Properties();
+//           props.put("encoding", "ISO-8859-2");
 //           StreamEmitter em = 
-//              new StreamEmitter(System.err, "ISO-8859-2");
+//              new StreamEmitter(System.err, props);
 //           pr.setContentHandler(em);
 //           pr.setLexicalHandler(em);
-//           pr.parse(xmlFile);
+//           pr.parse(is);
 //           // end check
 
          // this is for debugging with the Java Memory Profiler
