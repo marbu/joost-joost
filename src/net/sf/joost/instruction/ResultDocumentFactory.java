@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 2.5 2003/06/13 11:38:05 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 2.6 2003/10/22 15:43:53 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -47,7 +47,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.5 $ $Date: 2003/06/13 11:38:05 $
+ * @version $Revision: 2.6 $ $Date: 2003/10/22 15:43:53 $
  * @author Oliver Becker
  */
 
@@ -176,6 +176,7 @@ final public class ResultDocumentFactory extends FactoryBase
                                                   .outputProperties.clone();
             props.setProperty(OutputKeys.ENCODING, encoding);
             se = new StreamEmitter(osw, props);
+            localFieldStack.push(osw);
          }
          catch (java.io.IOException ex) {
             context.errorHandler.error(ex.toString(), 
@@ -193,11 +194,15 @@ final public class ResultDocumentFactory extends FactoryBase
          throws SAXException
       {
          context.emitter.popEmitter().endDocument();
-         // The StreamEmitter was constructed with a filename, that means
-         // it had created a FileOutputStream object in its constructor.
-         // According to the API docs, the finalize() method of 
-         // FileOutputStream will call close(), so we simply
-         // omit here the effort to manage this ourselves.
+         try {
+            ((OutputStreamWriter)localFieldStack.pop()).close();
+         }
+         catch (java.io.IOException ex) {
+            context.errorHandler.error(ex.toString(), 
+                                       publicId, systemId, lineNo, colNo);
+            return PR_CONTINUE; // if the errorHandler returns
+         }
+
          return super.processEnd(context);
       }
    }
