@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.7 2003/05/23 11:15:55 obecker Exp $
+ * $Id: TemplatesImpl.java,v 1.8 2003/06/02 11:32:19 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -35,6 +35,7 @@ import javax.xml.transform.*;
 import javax.xml.transform.TransformerConfigurationException;
 import java.util.Properties;
 
+import net.sf.joost.trace.DebugProcessor;
 
 /**
  * This class implements the Templates-Interface for TraX.
@@ -132,8 +133,16 @@ public class TemplatesImpl implements Templates, TrAXConstants {
 
         log.debug("init without InputSource ");
         try {
-            //new Processor
-            processor = new Processor(stxParser);
+            // check if transformerfactory is in debug mode
+            boolean debugmode =
+                    ((Boolean)this.factory.getAttribute(DEBUG_FEATURE)).booleanValue();
+
+            if (debugmode) {
+                log.info("init transformer in debug mode");
+                processor = new DebugProcessor(stxParser);
+            } else {
+                processor = new Processor(stxParser);
+            }
             if (factory.thResolver != null)
                 processor.setTransformerHandlerResolver(factory.thResolver);
         } catch (org.xml.sax.SAXException sE) {
@@ -162,7 +171,16 @@ public class TemplatesImpl implements Templates, TrAXConstants {
              * {@link TransformerFactoryImpl#getErrorListener()}
              * if available.
              */
-            processor = new Processor(isource, factory.getErrorListener());
+            // check if transformerfactory is in debug mode
+            boolean debugmode =
+                    ((Boolean)this.factory.getAttribute(DEBUG_FEATURE)).booleanValue();
+
+            if (debugmode) {
+                log.info("init transformer in debug mode");
+                processor = new DebugProcessor(isource, factory.getErrorListener());
+            } else {
+                processor = new Processor(isource, factory.getErrorListener());
+            }
             if (factory.thResolver != null)
                 processor.setTransformerHandlerResolver(factory.thResolver);
         } catch (java.io.IOException iE) {
@@ -190,8 +208,6 @@ public class TemplatesImpl implements Templates, TrAXConstants {
 
         synchronized (reentryGuard) {
             log.debug("calling newTransformer to get a Transformer object for Transformation");
-            //create a copy of the processor-instance
-            //Processor processorPerTransformer = new Processor(processor);
             //register the processor
             Transformer transformer = new TransformerImpl(processor);
             return transformer;

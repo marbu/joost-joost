@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.6 2003/05/19 14:48:49 obecker Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.7 2003/06/02 11:34:13 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -64,10 +64,12 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         org.apache.commons.logging.
         LogFactory.getLog(TransformerFactoryImpl.class);
 
-    //Member
+    // Member
     private   URIResolver uriResolver               = null;
     private   ErrorListener errorListener           = null;
     protected TransformerHandlerResolver thResolver = null;
+    // indicates if the transformer is working in debug mode
+    private boolean debugmode                       = false;
 
     // Synch object to guard against setting values from the TrAX interface
     // or reentry while the transform is going on.
@@ -125,9 +127,11 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     public Object getAttribute(String name)
         throws IllegalArgumentException {
 
-        if (name.equals(KEY_TH_RESOLVER))
+        if (name.equals(KEY_TH_RESOLVER)) {
             return thResolver;
-        else
+        } else if (name.equals(DEBUG_FEATURE)) {
+            return new Boolean(debugmode);
+        } else
             throw new IllegalArgumentException("Feature not supported: " + name);
     }
 
@@ -142,10 +146,13 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     public void setAttribute(String name, Object value)
         throws IllegalArgumentException {
 
-        if (name.equals(KEY_TH_RESOLVER))
+        if (name.equals(KEY_TH_RESOLVER)) {
             thResolver = (TransformerHandlerResolver)value;
-        else
+        } else if (name.equals(DEBUG_FEATURE)) {
+            this.debugmode = ((Boolean)value).booleanValue();
+        } else {
             throw new IllegalArgumentException("Feature not supported: " + name);
+        }
     }
 
     /**
