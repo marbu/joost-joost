@@ -1,5 +1,5 @@
 /*
- * $Id: IncludeFactory.java,v 2.3 2003/06/03 14:30:23 obecker Exp $
+ * $Id: IncludeFactory.java,v 2.4 2003/06/03 15:21:54 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,6 +32,7 @@ import org.xml.sax.XMLReader;
 
 import java.net.URL;
 import java.util.HashSet;
+import javax.xml.transform.TransformerConfigurationException;
 
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Parser;
@@ -41,7 +42,7 @@ import net.sf.joost.stx.Processor;
 /** 
  * Factory for <code>include</code> elements, which will be replaced by
  * groups for the included transformation sheet
- * @version $Revision: 2.3 $ $Date: 2003/06/03 14:30:23 $
+ * @version $Revision: 2.4 $ $Date: 2003/06/03 15:21:54 $
  * @author Oliver Becker
  */
 
@@ -66,7 +67,7 @@ final public class IncludeFactory extends FactoryBase
    /** Returns an instance of {@link TransformFactory.Instance} */
    public NodeBase createNode(NodeBase parent, String qName, 
                               Attributes attrs, ParseContext context)
-      throws SAXParseException
+      throws SAXException
    {
       // check parent
       if (parent != null && !(parent instanceof GroupBase))
@@ -98,8 +99,13 @@ final public class IncludeFactory extends FactoryBase
          throw ex;
       }
       catch (SAXException ex) {
-         // add locator information
-         throw new SAXParseException(ex.toString(), context.locator);
+         if (ex.getException() instanceof TransformerConfigurationException)
+            throw ex;
+         else {
+            // will this ever happen?
+            // add locator information
+            throw new SAXParseException(ex.getMessage(), context.locator);
+         }
       }
 
       TransformFactory.Instance tfi = stxParser.getTransformNode();
