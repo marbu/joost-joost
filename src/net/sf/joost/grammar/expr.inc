@@ -1,5 +1,5 @@
 /*
- * $Id: expr.inc,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: expr.inc,v 1.2 2003/01/05 21:21:12 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -22,9 +22,25 @@
  * Contributor(s): ______________________________________. 
  */
 
-/* Expression grammar which is needed for expressions (sic!) as well as
-   for patterns (different start symbols) */
+/* Common expression grammar which is needed for expressions (sic!) in
+ * Expr.cup as well as for patterns in Pattern.cup 
+ * (different start symbols) */
 
+
+/* Non-terminals */
+non terminal Expr, AndExpr, GeneralComp;
+non terminal AdditiveExpr, MultiplicativeExpr, UnaryExpr, BasicExpr;
+non terminal Accessor, NodeAccessor, RelativeAccessor;
+non terminal AccessorStep, AccessorAxis, NodeNameTest; 
+non terminal PropAccessor, AttributeNameTest, NamespaceNameTest;
+non terminal FunctionCall, ExprSeq, Name;
+
+
+/* Start symbol, replaced by Ant with the grammar name (Pattern or Expr)*/
+start with @@@START-NT@@@;
+
+
+/* Grammar */
 Expr ::= 
    Expr:e1 OR AndExpr:e2
       {: RESULT = new Tree(Tree.OR, (Tree)e1, (Tree)e2); :}
@@ -87,58 +103,157 @@ UnaryExpr ::=
  ;
 
 BasicExpr ::=
-   STRING:n
+   Accessor:t
+      {: RESULT = t; :}
+ | STRING:n  /* Literal */
       {: RESULT = new Tree(Tree.STRING, n); :}
- | NUMBER:n
+ | NUMBER:n  /* Literal */
       {: RESULT = new Tree(Tree.NUMBER, (Double)n); :}
- | LPAR Expr:t RPAR
+ | LPAR ExprSeq:t RPAR  /* ParenthesizedExpr */
       {: RESULT = t; :}
  | TEXT
       {: RESULT = new Tree(Tree.TEXT_TEST, null); :}
- | AT Name:n
-      {: RESULT = new Tree(Tree.ATTR, (String)n, 
-                           parser.j_nsSet, parser.j_locator); :}
- | NodeExpr:t
-      {: RESULT = t; :}
- | NodeExpr:e SLASH AT Name:n
-      {: RESULT = new Tree(Tree.ATTR, (String)n, 
-                           parser.j_nsSet, parser.j_locator); 
-         ((Tree)RESULT).left = (Tree)e; :}
- | ParentPath:t
-      {: RESULT = t; :}
- | ParentPath:p SLASH AT Name:n
-      {: RESULT = new Tree(Tree.ATTR, (String)n, 
-                           parser.j_nsSet, parser.j_locator); 
-         ((Tree)RESULT).left = (Tree)p; :}
  ;
 
-NodeExpr ::=
-   FunctionCall:t
-      {: RESULT = t; :}
- | DOLLAR Name:n
+Accessor ::= 
+   NodeAccessor:n SLASH PropAccessor:p
+      {: ((Tree)p).left = (Tree)n; 
+         RESULT = p; :} 
+ | NodeAccessor:n
+      {: RESULT = n; :}
+ | RelativeAccessor:n SLASH PropAccessor:p
+      {: ((Tree)p).left = (Tree)n; 
+         RESULT = p; :} 
+ | RelativeAccessor:n
+      {: RESULT = n; :}
+ | SLASH RelativeAccessor:n SLASH PropAccessor:p
+      {: ((Tree)p).left = (Tree)n; 
+         RESULT = p; :} 
+ | SLASH RelativeAccessor:n
+      {: RESULT = n; :}
+ | DSLASH RelativeAccessor:n SLASH PropAccessor:p
+      {: ((Tree)p).left = (Tree)n; 
+         RESULT = p; :} 
+ | DSLASH RelativeAccessor:n
+      {: RESULT = n; :}
+ | PropAccessor:p
+      {: RESULT = p; :}
+ ;
+
+/* 
+I'd rather specify something along the lines
+
+Accessor ::=
+   NodeAccessor SLASH PropAccessor
+ | NodeAccessor
+ | PropAccessor
+ ;
+
+NodeAccessor ::=
+   PathAccessor
+ | Variable
+ | FunctionCall
+ ;
+
+PathAccessor ::= 
+   SLASH RelativeAccessor
+ | DSLASH RelativeAccessor
+ | RelativeAccessor
+ ;
+
+Unfortunately this results in shift/reduce conflicts in CUP.
+*/
+
+
+NodeAccessor ::= 
+   DOLLAR Name:n  /* Variable */
       {: RESULT = new Tree(Tree.VAR, (String)n, 
                            parser.j_nsSet, parser.j_locator); :}
+ | FunctionCall:t
+      {: RESULT = t; :}
+ ;
+
+RelativeAccessor ::=
+   RelativeAccessor:r SLASH AccessorStep:a
+      {: Tree at = (Tree)a;
+         if (at.type == Tree.DOT || at.type == Tree.DDOT) {
+            at.left = (Tree)r;
+            RESULT = at;
+         }
+         else
+            RESULT = new Tree(Tree.CHILD, (Tree)r, at);
+      :}
+ | RelativeAccessor DSLASH AccessorStep
+ | AccessorStep:a
+      {: RESULT = a; :}
+ ;
+
+AccessorStep ::=
+   AccessorAxis NodeNameTest:n 
+      {: RESULT = n; :}
+ | NodeNameTest:n
+      {: RESULT = n; :}
+ | DDOT
+      {: RESULT = new Tree(Tree.DDOT, null); :}
  | DOT
       {: RESULT = new Tree(Tree.DOT, null); :}
  ;
 
-ParentPath ::=
-   DDOT
-      {: RESULT = new Tree(Tree.DDOT, null); :}
- | ParentPath:p SLASH DDOT
-      {: RESULT = new Tree(Tree.DDOT, (Tree)p, null); :}
+AccessorAxis ::=
+   PARENT
+ | ANCESTOR
  ;
 
-FunctionCall ::=
-   Name:n LPAR ExprList:p RPAR
-      {: RESULT = new Tree(Tree.FUNCTION, (String)n, (Tree)p, 
+NodeNameTest ::=
+   Name:n
+      {: RESULT = new Tree(Tree.NAME_TEST, (String)n, 
+                           parser.j_nsSet, parser.j_locator); :}
+ | STAR
+      {: RESULT = new Tree(Tree.WILDCARD, null); :}
+ | STAR COLON NCNAME:n
+      {: RESULT = new Tree(Tree.URI_WILDCARD, "*", (String)n, 
+                           parser.j_nsSet, parser.j_locator); :}
+ | NCNAME:n COLON STAR
+      {: RESULT = new Tree(Tree.LOCAL_WILDCARD, (String)n, "*", 
                            parser.j_nsSet, parser.j_locator); :}
  ;
 
-ExprList ::=
+/* Property Accessor */
+PropAccessor ::= 
+   AttributeNameTest:t
+      {: RESULT = t; :}
+ | NamespaceNameTest
+ ;
+
+AttributeNameTest ::=
+   AT Name:n
+      {: RESULT = new Tree(Tree.ATTR, (String)n,
+                           parser.j_nsSet, parser.j_locator); :}
+ | AT STAR
+      {: RESULT = new Tree(Tree.ATTR_WILDCARD, null); :}
+ | AT STAR COLON NCNAME:n
+      {: RESULT = new Tree(Tree.ATTR_URI_WILDCARD, "*", (String)n,
+                           parser.j_nsSet, parser.j_locator); :}
+ | AT NCNAME:n COLON STAR
+      {: RESULT = new Tree(Tree.ATTR_LOCAL_WILDCARD, (String)n, "*",
+                           parser.j_nsSet, parser.j_locator); :}
+ ;
+
+NamespaceNameTest ::=
+   NAMESPACE NCNAME
+ | NAMESPACE STAR
+ ;
+
+FunctionCall ::=
+   Name:n LPAR ExprSeq:e RPAR
+      {: RESULT = new Tree(Tree.FUNCTION, (String)n, (Tree)e,
+                           parser.j_nsSet, parser.j_locator); :}
+ ;
+
+ExprSeq ::=
  | Expr:t
       {: RESULT = t; :}
- | ExprList:t1 COMMA Expr:t2
+ | ExprSeq:t1 COMMA Expr:t2
       {: RESULT = new Tree(Tree.LIST, (Tree)t1, (Tree)t2); :}
  ;
 
@@ -157,4 +272,3 @@ Name ::=
  | OR:n
      {: RESULT = n; :}
 ;
-
