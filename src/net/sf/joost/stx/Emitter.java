@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.3 2002/10/29 19:09:10 obecker Exp $
+ * $Id: Emitter.java,v 1.4 2002/10/31 14:09:22 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import java.util.Stack;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.3 $ $Date: 2002/10/29 19:09:10 $
+ * @version $Revision: 1.4 $ $Date: 2002/10/31 14:09:22 $
  * @author Oliver Becker
  */
 
@@ -58,6 +58,8 @@ public final class Emitter
 
    private String lastUri, lastLName, lastQName;
    private AttributesImpl lastAttrs;
+
+   private boolean insideCDATA = false;
 
    // Log4J initialization
    private static org.apache.log4j.Logger log4j = 
@@ -297,7 +299,22 @@ public final class Emitter
       if (contH != null) {
          if (lastAttrs != null)
             processStartElement();
-         contH.characters(ch, start, length);
+         if (insideCDATA) { // prevent output of "]]>" in this CDATA section
+            String str = new String(ch, start, length);
+            int index = str.indexOf("]]>");
+            while (index != -1) {
+               // "]]>" found; split between "]]" and ">"
+               contH.characters(str.substring(0,index+2).toCharArray(),
+                                0, index+2);
+               lexH.endCDATA();   // lexH must be != null,
+               lexH.startCDATA(); // because insideCDATA was true
+               str = str.substring(index+2);
+               index = str.indexOf("]]>");
+            }
+            contH.characters(str.toCharArray(), 0, str.length());
+         }
+         else
+            contH.characters(ch, start, length);
       }
    }
 
@@ -328,16 +345,20 @@ public final class Emitter
    {
       if (contH != null && lastAttrs != null)
          processStartElement();
-      if (lexH != null)
+      if (lexH != null) {
          lexH.startCDATA();
+         insideCDATA = true;
+      }
    }
 
 
    public void endCDATA()
       throws SAXException
    {
-      if (lexH != null)
+      if (lexH != null) {
          lexH.endCDATA();
+         insideCDATA = false;
+      }
    }
 
 
