@@ -4,6 +4,9 @@ Changes since 20030320
   position() doesn't change inside for-each-item
 - removed level() and get-node()
 - removed stx:options, moved its attributes to stx:transform and stx:group
+- in stx:template and stx:procedure:
+  changed visibility=private|public|global to local|group|global,
+  added public=yes|no 
 - all functions are now in the default namespace for STX functions
   http://stx.sourceforge.net/2003/functions 
   (but there's no need to change any STX transformation sheet, because
