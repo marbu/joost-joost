@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 2.2 2003/04/29 11:37:20 obecker Exp $
+ * $Id: NodeBase.java,v 2.3 2003/04/29 15:03:00 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.stx.Context;
 /** 
  * Abstract base class for all instances of nodes in the STX transformation 
  * sheet
- * @version $Revision: 2.2 $ $Date: 2003/04/29 11:37:20 $
+ * @version $Revision: 2.3 $ $Date: 2003/04/29 15:03:00 $
  * @author Oliver Becker
  */
 public abstract class NodeBase 
@@ -147,13 +147,6 @@ public abstract class NodeBase
    /** Stack for storing local fields from this or derived classes */
    protected Stack localFieldStack = new Stack();
 
-
-   private static org.apache.log4j.Logger log;
-   static {
-      if (DEBUG) 
-         // Log4J initialization
-         log = org.apache.log4j.Logger.getLogger(NodeBase.class);
-   }
 
 
    // ---------------------------------------------------------------------

@@ -1,5 +1,5 @@
 /*
- * $Id: ForEachFactory.java,v 2.2 2003/04/29 11:36:07 obecker Exp $
+ * $Id: ForEachFactory.java,v 2.3 2003/04/29 15:02:58 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,21 +42,12 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>for-each-item</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2003/04/29 11:36:07 $
+ * @version $Revision: 2.3 $ $Date: 2003/04/29 15:02:58 $
  * @author Oliver Becker
  */
 
 final public class ForEachFactory extends FactoryBase
 {
-   private static org.apache.log4j.Logger log;
-   
-   static {
-      if (DEBUG)
-         // Log4J initialization
-         log = org.apache.log4j.Logger.getLogger(ForEachFactory.class);
-   }
-
-
    /** allowed attributes for this element */
    private HashSet attrNames;
 

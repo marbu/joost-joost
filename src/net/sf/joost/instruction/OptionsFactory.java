@@ -1,5 +1,5 @@
 /*
- * $Id: OptionsFactory.java,v 2.0 2003/04/25 16:46:33 obecker Exp $
+ * $Id: OptionsFactory.java,v 2.1 2003/04/29 15:03:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Processor;
 /**
  * Factory for <code>options</code> elements, which are represented by 
  * the inner Instance class.
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:33 $
+ * @version $Revision: 2.1 $ $Date: 2003/04/29 15:03:01 $
  * @author Oliver Becker
  */
 
@@ -52,10 +52,6 @@ final public class OptionsFactory extends FactoryBase
 
    private static final String[] PASS_THROUGH_VALUES =
    { "none", "text", "all" };
-
-   // Log4J initialization
-   private static org.apache.log4j.Logger log4j = 
-      org.apache.log4j.Logger.getLogger(OptionsFactory.class);
 
 
    // Constructor
@@ -97,7 +93,10 @@ final public class OptionsFactory extends FactoryBase
       case 0: passThrough = Processor.PASS_THROUGH_NONE;     break;
       case 1: passThrough = Processor.PASS_THROUGH_TEXT;     break;
       case 2: passThrough = Processor.PASS_THROUGH_ALL;      break;
-      default: log4j.fatal("Unexpected return value from getEnumAttValue");
+      default:
+         // mustn't happen 
+         throw new SAXParseException(
+            "Unexpected return value from getEnumAttValue", locator);
       }
 
       // default is "no" (false)

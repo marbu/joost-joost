@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateFactory.java,v 2.0 2003/04/25 16:46:34 obecker Exp $
+ * $Id: TemplateFactory.java,v 2.1 2003/04/29 15:03:16 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.Context;
 /**
  * Factory for <code>template</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:34 $
+ * @version $Revision: 2.1 $ $Date: 2003/04/29 15:03:16 $
  * @author Oliver Becker
  */
 
@@ -48,11 +48,6 @@ public final class TemplateFactory extends FactoryBase
 {
    /** allowed attributes for this element. */
    private HashSet attrNames;
-
-
-   // Log4J initialization
-   private static org.apache.log4j.Logger log4j = 
-      org.apache.log4j.Logger.getLogger(TemplateFactory.class);
 
 
    // Constructor
@@ -220,8 +215,7 @@ public final class TemplateFactory extends FactoryBase
             copy = (Instance)clone();
          }
          catch (CloneNotSupportedException e) {
-            log4j.fatal("Can't split " + this);
-            throw new SAXException(e);
+            throw new SAXException("Can't split " + this, e);
          }
          copy.match = match.right; // non-union
          if (Double.isNaN(copy.priority)) // no priority specified

@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 2.0 2003/04/25 16:46:32 obecker Exp $
+ * $Id: GroupBase.java,v 2.1 2003/04/29 15:02:58 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.Value;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:32 $
+ * @version $Revision: 2.1 $ $Date: 2003/04/29 15:02:58 $
  * @author Oliver Becker
  */
 
@@ -98,13 +98,6 @@ abstract public class GroupBase extends NodeBase
    /** Vector of the children */
    protected Vector children = new Vector();
 
-
-   private static org.apache.log4j.Logger log;
-   static {
-      if (DEBUG)
-         // Log4J initialization
-         log = org.apache.log4j.Logger.getLogger(GroupBase.class);
-   }
 
 
    // Constructor

@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateBase.java,v 2.0 2003/04/25 16:46:34 obecker Exp $
+ * $Id: TemplateBase.java,v 2.1 2003/04/29 15:03:16 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -50,14 +50,6 @@ public abstract class TemplateBase extends NodeBase
    /** Attribute value strings for the above visibility values */
    protected static final String[] VISIBILITY_VALUES = 
    { "private", "public", "global" }; // note: same order required!
-
-
-   private static org.apache.log4j.Logger log;
-   static {
-      if (DEBUG)
-         // Log4J initialization
-         log = org.apache.log4j.Logger.getLogger(TemplateBase.class);
-   }
 
 
    /** The visibility of this template */
