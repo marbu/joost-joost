@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 1.20 2003/02/24 13:31:35 obecker Exp $
+ * $Id: Tree.java,v 1.21 2003/03/20 13:17:17 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 1.20 $ $Date: 2003/02/24 13:31:35 $
+ * @version $Revision: 1.21 $ $Date: 2003/03/20 13:17:17 $
  * @author Oliver Becker
  */
 final public class Tree
@@ -88,10 +88,7 @@ final public class Tree
       AVT                 = 35,  // "{" ... "}"
       VAR                 = 36,  // "$qname"
       DOT                 = 37,  // "."
-      DDOT                = 38,  // ".."
-      PARENT              = 39,  // "parent::" axis
-      ANC                 = 40,  // "ancestor::" axis
-      NAMESPACE           = 41;  // "namespace::" axis
+      DDOT                = 38;  // ".."
 
    /** The type of the node in the Tree. */
    public int type;
@@ -163,7 +160,7 @@ final public class Tree
       // System.err.println("Tree-Constructor 4: " + this);
       if (type != NAME_TEST && type != ATTR && type != FUNCTION &&
           type != VAR) {
-         log4j.error("Wrong Tree type; " + this);
+         log4j.fatal("Wrong Tree type; " + this);
          return;
       }
 
@@ -444,7 +441,7 @@ final public class Tree
          return false;
 
       default:
-         log4j.warn("unprocessed type: " + this);
+         log4j.fatal("unprocessed type: " + this);
          return false;
       } // switch
    }
@@ -667,10 +664,8 @@ final public class Tree
             return v1.copy(); 
          }
 
-         // node properties
-         case TEXT_TEST:
+         // attributes
          case ATTR:
-         case NAMESPACE:
          case ATTR_WILDCARD:
          case ATTR_LOCAL_WILDCARD:
          case ATTR_URI_WILDCARD: {
@@ -679,16 +674,7 @@ final public class Tree
                v1 = left.evaluate(context, events, top);
                if (v1.type == Value.EMPTY)
                   return v1;
-               if (v1.type != Value.NODE)
-                  throw new EvalException("Sub expression before `/" + 
-                                          (type == TEXT_TEST ? "text()" : 
-                                          (type == NAMESPACE ? "namespace::" 
-                                           : "@") + value) +
-                                          "' must evaluate to a " +
-                                          "node (got " + v1 + ")");
             }
-            else if (context.currentItem != null)
-               v1 = context.currentItem;
             else if(top > 0) // use current node
                v1 = new Value((SAXEvent)events.elementAt(top-1), top-1);
             else
@@ -698,27 +684,11 @@ final public class Tree
             Value ret = null, last = null; // for constructing the result seq
             while (v1 != null) {
                if (v1.type != Value.NODE)
-                  throw new EvalException("Current item for evaluating `" +
-                                          (type == TEXT_TEST ? "text()" : 
-                                          (type == NAMESPACE ? "namespace::" 
-                                           : "@") + value) +
+                  throw new EvalException("Current item for evaluating `@" +
+                                          value +
                                           "' is not a node (got " + v1 + ")");
                SAXEvent e = v1.event;
-               if (type == TEXT_TEST) { // text()
-                  log4j.warn("`text()' is deprecated, " + 
-                             (left == null ? "use `.' instead" 
-                                           : "simply remove this last step"));
-                  if (e != null && e.type == SAXEvent.ELEMENT
-                                && e.value != null) {
-                     v2 = new Value(e.value);
-                     if (last != null)
-                        last.next = v2;
-                     else
-                        ret = v2;
-                     last = v2;
-                  }
-               }
-               else if (type == ATTR) { // @qname
+               if (type == ATTR) { // @qname
                   int index;
                   // retrieve attribute index
                   if (e != null && e.attrs != null &&
@@ -732,37 +702,6 @@ final public class Tree
                      last = v2;
                   }
                }
-               else if (type == NAMESPACE) {
-                  log4j.warn("The namespace axis is deprecated, use the " +
-                             "get-in-scope-namespaces and " +
-                             "get-namespace-uri-for-prefix functions " + 
-                             "instead.");
-                  if (e != null && e.namespaces != null) {
-                     if ("*".equals(value)) { // return all declared namespaces
-                        for (Enumeration en=e.namespaces.keys();
-                             en.hasMoreElements(); ) {
-                           v2 = new Value((String)e.namespaces
-                                                   .get(en.nextElement()));
-                           if (last != null)
-                              last.next = v2;
-                           else
-                              ret = v2;
-                           last = v2;
-                        }
-                     }
-                     else { // prefix specified in namespace axis
-                        String s = (String)e.namespaces.get(value);
-                        if (s != null) {
-                           v2 = new Value(s);
-                           if (last != null)
-                              last.next = v2;
-                           else
-                              ret = v2;
-                           last = v2;
-                        }
-                     }
-                  }
-               } // if (type == NAMESPACE)
                else { // wildcard in attribute used
                   int len = e.attrs.getLength();
                   // iterate through attribute list
@@ -801,21 +740,8 @@ final public class Tree
          }
 
          case DOT: 
-            if (context.currentItem != null)
-               // need a copy because values will be changed during 
-               // expression evaluation
-               return context.currentItem.copy();
-            // else: return current node
-            if (top > 0) {
-               if (right != null) {
-                  // path continues, evaluate recursively
-                  log4j.warn("`.' as part of location paths is deprecated. " +
-                             "Simply remove this step.");
-                  return right.evaluate(context, events, top);
-               }
-               else
-                  return new Value((SAXEvent)events.elementAt(top-1), top);
-            }
+            if (top > 0)
+               return new Value((SAXEvent)events.elementAt(top-1), top);
             else
                return new Value();
 
@@ -883,28 +809,8 @@ final public class Tree
                return new Value();
          }
 
-         case PARENT:
-            log4j.warn("The parent axis is deprecated. Simply use `..' " + 
-                       "instead.");
-            if (top > 1 && left.matches(context, events, top-1, false)) {
-               if (right != null)
-                  // path continues, evaluate recursively with top-1
-                  return right.evaluate(context, events, top-1);
-               else
-                  // return the node at position top-1
-                  return new Value((SAXEvent)events.elementAt(top-2), top-1);
-            }
-            else
-               // path selects nothing
-               return new Value();
-
-         case ANC:
-            // TODO
-            log4j.warn("The ancestor axis is deprecated and not implemented");
-            return new Value();
-
          case LIST:
-            log4j.error("LIST: this shouldn't happen");
+            log4j.fatal("LIST: this mustn't happen");
             return new Value();
 
          case SEQ: {
@@ -952,8 +858,7 @@ final public class Tree
     */
    protected Tree reverseAssociativity()
    {
-      if (type == CHILD || type == PARENT || type == ANC || type == DESC ||
-                           type == DOT || type == DDOT) {
+      if (type == CHILD || type == DESC || type == DOT || type == DDOT) {
          Tree newRoot;
          if (left != null) {
             newRoot = left.reverseAssociativity();
