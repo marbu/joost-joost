@@ -2,6 +2,7 @@ Changes since 20030203
 - added support for xml:space within stylesheets
 - added stx:for-each and the current() function
 - added get-namespace-uri-for-prefix() and get-in-scope-namespaces()
+- allow contents in stx:buffer
 - made all explicit axes (ancestor, parent, namespace) and '.' as
   location step within paths deprecated
 - Bugfixes: 681576, 687163, 687489, 687628, 691652, 692087

@@ -1,5 +1,5 @@
 /*
- * $Id: BufferFactory.java,v 1.5 2002/12/15 17:00:11 obecker Exp $
+ * $Id: BufferFactory.java,v 1.6 2003/02/24 14:25:50 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Context;
 /** 
  * Factory for <code>buffer</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.5 $ $Date: 2002/12/15 17:00:11 $
+ * @version $Revision: 1.6 $ $Date: 2003/02/24 14:25:50 $
  * @author Oliver Becker
  */
 
@@ -93,7 +93,7 @@ final public class BufferFactory extends FactoryBase
       protected Instance(String qName, NodeBase parent, Locator locator, 
                          String varName, String expName)
       {
-         super(qName, parent, locator, expName, false, true);
+         super(qName, parent, locator, expName, false, false);
          this.varName = varName;
       }
       
@@ -124,11 +124,24 @@ final public class BufferFactory extends FactoryBase
                return processStatus;// if the errorHandler returns
             }
 
-            varTable.put(expName, new BufferEmitter());
+            BufferEmitter buffer = new BufferEmitter();
+            varTable.put(expName, buffer);
 
             if (varTable == context.localVars)
                parent.declareVariable(expName);
+
+            if (children != null)
+               emitter.pushEmitter(buffer);
          }
+
+         if (children != null) {
+            processStatus = super.process(emitter, eventStack, context,
+                                          processStatus);
+
+            if ((processStatus & ST_PROCESSING) != 0)
+               emitter.popEmitter();
+         }
+
          return processStatus;
       }
    }
