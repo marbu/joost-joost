@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXConstants.java,v 1.4 2002/10/21 13:35:29 obecker Exp $
+ * $Id: TrAXConstants.java,v 1.5 2002/10/22 13:05:26 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,10 +25,10 @@
 
 package net.sf.joost.trax;
 
-import net.sf.joost.stx.Parser;
+import net.sf.joost.Constants;
 
 
-public interface TrAXConstants {
+public interface TrAXConstants extends Constants {
 
     /*
      * The default property name according to the JAXP spec
@@ -36,30 +36,11 @@ public interface TrAXConstants {
     public static String XMLREADER_PROP     = "javax.xml.parsers.SAXParser";
 
     /*
-     * The default encoding for xml
-     */
-    public static String DEFAULT_ENCODING   = "UTF-8";
-
-    /*
-     * URIs for Identifying Feature Flags and Properties :
-     * All XML readers are required to recognize the
-     * "http://xml.org/sax/features/namespaces" and the
-     * "http://xml.org/sax/features/namespace-prefixes" features
-     * (at least to get the feature values, if not set them) and to
-     * support a true value for the namespaces property and a false
-     * value for the namespace-prefixes property.
-     */
-    static String FEATURE_URI               = "http://xml.org/sax/features/";
-    public static String FEAT_NS            = FEATURE_URI + "namespaces";
-    public static String FEAT_NSPREFIX      = FEATURE_URI + "namespace-prefixes";
-
-
-    /*
-     * Used for unique transformation.
+     * Used for the identity transformation.
      */
     public static final String IDENTITY_TRANSFORM =
         "<?xml version='1.0'?>" +
-        "<stx:transform " + "xmlns:stx='" + Parser.STX_NS + "'" +
+        "<stx:transform " + "xmlns:stx='" + STX_NS + "'" +
         " version='1.0'>" +
         "<stx:options no-match-events='copy' />" +
         "</stx:transform>";

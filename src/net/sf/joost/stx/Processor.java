@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.5 2002/10/22 10:15:17 obecker Exp $
+ * $Id: Processor.java,v 1.6 2002/10/22 13:05:26 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -49,6 +49,7 @@ import java.util.Vector;
 
 import java.io.IOException;
 
+import net.sf.joost.Constants;
 import net.sf.joost.instruction.NodeBase;
 import net.sf.joost.instruction.TransformFactory;
 import net.sf.joost.instruction.OptionsFactory;
@@ -60,7 +61,7 @@ import net.sf.joost.instruction.VariableFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.5 $ $Date: 2002/10/22 10:15:17 $
+ * @version $Revision: 1.6 $ $Date: 2002/10/22 13:05:26 $
  * @author Oliver Becker
  */
 

@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: NodeBase.java,v 1.2 2002/10/22 13:05:26 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,14 +32,14 @@ import java.util.Vector;
 import java.util.Stack;
 import java.util.Hashtable;
 
-import net.sf.joost.stx.Constants;
+import net.sf.joost.Constants;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Emitter;
 
 
 /**
  * Abstract base class for all instances of nodes in a STX stylesheet.
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2002/10/22 13:05:26 $
  * @author Oliver Becker
  */
 public abstract class NodeBase implements Constants

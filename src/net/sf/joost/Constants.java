@@ -1,5 +1,5 @@
 /*
- * $Id: Constants.java,v 1.2 2002/09/20 12:52:02 obecker Exp $
+ * $Id: Constants.java,v 1.1 2002/10/22 13:05:25 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -22,16 +22,46 @@
  * Contributor(s): ______________________________________. 
  */
 
-package net.sf.joost.stx;
+package net.sf.joost;
 
 
 /**
  * This interface contains constants shared between different classes. 
- * @version $Revision: 1.2 $ $Date: 2002/09/20 12:52:02 $
+ * @version $Revision: 1.1 $ $Date: 2002/10/22 13:05:25 $
  * @author Oliver Becker
  */
 public interface Constants
 {
+   /** The STX namespace */
+   public static final String STX_NS = "http://stx.sourceforge.net/2002/ns";
+
+
+   /*
+    * URIs for Identifying Feature Flags and Properties:
+    * All XML readers are required to recognize the
+    * "http://xml.org/sax/features/namespaces" and the
+    * "http://xml.org/sax/features/namespace-prefixes" features
+    * (at least to get the feature values, if not set them) and to
+    * support a true value for the namespaces property and a false
+    * value for the namespace-prefixes property.
+    */
+
+   /** URI prefix for SAX features */
+   public static String FEATURE_URI_PREFIX = "http://xml.org/sax/features/";
+
+   /** URI for the SAX feature "namespaces" */
+   public static String 
+      FEAT_NS = FEATURE_URI_PREFIX + "namespaces";
+
+   /** URI for the SAX feature "namespace-prefixes" */
+   public static String 
+      FEAT_NSPREFIX = FEATURE_URI_PREFIX + "namespace-prefixes";
+
+
+   /* The default encoding for XML */
+   public static String DEFAULT_ENCODING   = "UTF-8";
+
+
    /** Process state values */
    public static final short
       ST_PROCESSING = 0x1,  // if set: perform processing

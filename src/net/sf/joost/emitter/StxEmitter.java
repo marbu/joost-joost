@@ -1,5 +1,5 @@
 /*
- * $Id: StxEmitter.java,v 1.2 2002/10/15 19:02:47 zubow Exp $
+ * $Id: StxEmitter.java,v 1.3 2002/10/22 13:05:26 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,7 +25,8 @@
 
 package net.sf.joost.emitter;
 
-import net.sf.joost.trax.TrAXConstants;
+import net.sf.joost.Constants;
+
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ext.LexicalHandler;
 
@@ -35,5 +36,5 @@ import org.xml.sax.ext.LexicalHandler;
  * @author Zubow
  */
 public interface StxEmitter
-    extends ContentHandler, LexicalHandler, TrAXConstants {
+    extends ContentHandler, LexicalHandler, Constants {
 }

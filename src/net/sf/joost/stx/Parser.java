@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 1.3 2002/10/18 12:40:13 obecker Exp $
+ * $Id: Parser.java,v 1.4 2002/10/22 13:05:26 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,21 +37,19 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Enumeration;
 
+import net.sf.joost.Constants;
 import net.sf.joost.instruction.*;
 
 
 /** 
  * Creates the tree representation of an STX stylesheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 1.3 $ $Date: 2002/10/18 12:40:13 $
+ * @version $Revision: 1.4 $ $Date: 2002/10/22 13:05:26 $
  * @author Oliver Becker
  */
 
-public class Parser implements ContentHandler // , ErrorHandler
+public class Parser implements Constants, ContentHandler // , ErrorHandler
 {
-   /** The namespace used for STX elements. */
-   public static final String STX_NS = "http://stx.sourceforge.net/2002/ns";
-
    /** SAX Locator, needed for error messages. */
    private Locator locator;
 
