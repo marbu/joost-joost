@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 1.17 2003/02/21 14:00:51 obecker Exp $
+ * $Id: FunctionTable.java,v 1.18 2003/03/20 13:09:49 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 1.17 $ $Date: 2003/02/21 14:00:51 $
+ * @version $Revision: 1.18 $ $Date: 2003/03/20 13:09:49 $
  * @author Oliver Becker
  */
 final public class FunctionTable
@@ -59,10 +59,11 @@ final public class FunctionTable
          new NumberConv(),
          new BooleanConv(),
          new Position(), 
-         new Current(),
+         new CurrentItem(),
          new Level(),
          new GetNode(),
          new HasChildNodes(),
+         new NodeKind(),
          new Name(),
          new LocalName(),
          new NamespaceURI(),
@@ -296,21 +297,24 @@ final public class FunctionTable
 
 
    /**
-    * The <code>current</code> function.
-    * Returns the current node from the ancestor stack
+    * The <code>current-item</code> function.
+    * Returns the current item for an <code>stx:for-each</code>, 
+    * or the current node otherwise
     */
-   final public class Current implements Instance
+   final public class CurrentItem implements Instance
    {
       /** @return 0 */
       public int getMinParCount() { return 0; }
       /** @return 0 */
       public int getMaxParCount() { return 0; }
-      /** @return "current" */
-      public String getName() { return "{}current"; }
+      /** @return "current-item" */
+      public String getName() { return "{}current-item"; }
 
       public Value evaluate(Context context, Stack events, int top, Tree args)
       {
-         return new Value((SAXEvent)events.elementAt(top-1), top);
+         return context.currentItem != null 
+            ? context.currentItem.copy() // Values may change
+            : new Value((SAXEvent)events.elementAt(top-1), top);
       }
    }
 
@@ -330,6 +334,7 @@ final public class FunctionTable
 
       public Value evaluate(Context context, Stack events, int top, Tree args)
       {
+         log4j.warn("The level function is deprecated. Use count(//node()) instead");
          return new Value(top-1);
       }
    }
@@ -351,6 +356,7 @@ final public class FunctionTable
       public Value evaluate(Context context, Stack events, int top, Tree args)
          throws SAXException, EvalException
       {
+         log4j.warn("The get-node function is deprecated. Use item-at(//node(), position) instead.");
          int arg = (int)args.evaluate(context, events, top)
                             .convertToNumber().number;
          if (arg < 0 || arg > top-1)
@@ -378,6 +384,45 @@ final public class FunctionTable
       {
          return new Value(context.lookAhead != null || events.size() == 1);
          // events.size() == 1 means: the context node is the document node
+      }
+   }
+
+
+   /**
+    * The <code>node-kind</code> function.
+    * Returns a string representing the node type of its argument
+    */
+   final public class NodeKind implements Instance
+   {
+      /** @return 1 */
+      public int getMinParCount() { return 1; }
+      /** @return 1 */
+      public int getMaxParCount() { return 1; }
+      /** @return "node-kind" */
+      public String getName() { return "{}node-kind"; }
+
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value v = args.evaluate(context, events, top);
+         if (v.type == Value.EMPTY)
+            return v;
+         if (v.type != Value.NODE) 
+            throw new EvalException("The parameter passed to the node-" + 
+                                    "kind function must be a node (got " + 
+                                    v + ")");
+
+         switch (v.event.type) {
+         case SAXEvent.ROOT: return new Value("document");
+         case SAXEvent.ELEMENT: return new Value("element");
+         case SAXEvent.ATTRIBUTE: return new Value("attribute");
+         case SAXEvent.TEXT: return new Value("text");
+         case SAXEvent.CDATA: return new Value("cdata");
+         case SAXEvent.PI: return new Value("processing-instruction");
+         case SAXEvent.COMMENT: return new Value("comment");
+         }
+         log4j.error("unexpected node type");
+         return new Value(v.event.toString());
       }
    }
 
