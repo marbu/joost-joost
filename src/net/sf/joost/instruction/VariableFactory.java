@@ -1,5 +1,5 @@
 /*
- * $Id: VariableFactory.java,v 1.4 2002/11/27 09:53:24 obecker Exp $
+ * $Id: VariableFactory.java,v 1.5 2002/11/28 10:51:54 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,25 +28,23 @@ import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.ext.LexicalHandler;
 
 import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.Stack;
-import java.util.Enumeration;
 
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
-import net.sf.joost.stx.SAXEvent;
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.Emitter;
+import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.stx.Value;
 
 
 /** 
  * Factory for <code>variable</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.4 $ $Date: 2002/11/27 09:53:24 $
+ * @version $Revision: 1.5 $ $Date: 2002/11/28 10:51:54 $
  * @author Oliver Becker
  */
 
