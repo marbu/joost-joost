@@ -1,5 +1,5 @@
 /*
- * $Id: TextFactory.java,v 1.3 2002/11/27 10:03:12 obecker Exp $
+ * $Id: TextFactory.java,v 1.4 2002/11/29 21:04:47 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,19 +30,42 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import java.io.StringWriter;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Stack;
+
+import net.sf.joost.emitter.StreamEmitter;
+import net.sf.joost.emitter.StringEmitter;
+import net.sf.joost.emitter.StxEmitter;
+import net.sf.joost.stx.Context;
+import net.sf.joost.stx.Emitter;
 
 
 /** 
  * Factory for <code>text</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.3 $ $Date: 2002/11/27 10:03:12 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/29 21:04:47 $
  * @author Oliver Becker
  */
 
 public class TextFactory extends FactoryBase
 {
+   /** allowed attributes for this element */
+   private HashSet attrNames;
+
+   private static final String[] MARKUP_VALUES =
+   { "none", "ignore", "serialize" };
+
+   private int NO_MARKUP = 0, IGNORE_MARKUP = 1, SERIALIZE_MARKUP = 2;
+
+   public TextFactory()
+   {
+      attrNames = new HashSet();
+      attrNames.add("markup");
+   }
+
+
    /** @return <code>"text"</code> */ 
    public String getName()
    {
@@ -54,28 +77,92 @@ public class TextFactory extends FactoryBase
                               Hashtable nsSet, Locator locator)
       throws SAXParseException
    {
-      checkAttributes(qName, attrs, null, locator);
-      return new Instance(qName, parent, locator);
+      int markup = getEnumAttValue("markup", attrs, MARKUP_VALUES, locator);
+      if (markup == -1)
+         markup = NO_MARKUP; // default value
+
+      checkAttributes(qName, attrs, attrNames, locator);
+      return new Instance(qName, parent, locator, markup);
    }
 
 
    /** The inner Instance class */
    public class Instance extends NodeBase
    {
-      public Instance(String qName, NodeBase parent, Locator locator)
+      /** a StreamEmitter or a StringEmitter */
+      private StxEmitter stxEmitter;
+
+      /** the buffer of the StringWriter or the StringEmitter resp. */
+      private StringBuffer buffer;
+
+      public Instance(String qName, NodeBase parent, Locator locator,
+                      int markup)
+         throws SAXParseException
       {
          super(qName, parent, locator, false);
+         if (markup == SERIALIZE_MARKUP) {
+            // use our StreamEmitter with a StringWriter
+            StringWriter w = new StringWriter();
+            buffer = w.getBuffer();
+            try {
+               stxEmitter = new StreamEmitter(w);
+            }
+            catch (java.io.IOException ex) {
+               throw new SAXParseException(null, locator, ex);
+            }
+         }
+         else {
+            // use our StringEmitter
+            buffer = new StringBuffer();
+            stxEmitter = new StringEmitter(
+               buffer, markup == NO_MARKUP 
+                       ? "(`" + qName + "' with the `markup' attribute set " +
+                         "to `none' started in line " + 
+                         locator.getLineNumber() + ")"
+                       : null );
+         }
       }
 
 
-      public void append(NodeBase node)
-         throws SAXParseException
+      /**
+       * Collect the contents of this element and emit a text
+       * event to the emitter.
+       *
+       * @param emitter the Emitter
+       * @param eventStack the ancestor event stack
+       * @param context the Context object
+       * @param processStatus the current processing status
+       * @return the new <code>processStatus</code>
+       */    
+      protected short process(Emitter emitter, Stack eventStack,
+                              Context context, short processStatus)
+         throws SAXException
       {
-         if (!(node instanceof TextNode))
-            throw new SAXParseException(
-               "`" + qName + "' may only contain text nodes",
-               node.publicId, node.systemId, node.lineNo, node.colNo);
-         super.append(node);
+         // pre stx:process-...
+         if ((processStatus & ST_PROCESSING) != 0) {
+
+            // check for nesting of this stx:text instructions
+            if (emitter.isEmitterActive(stxEmitter)) {
+               context.errorHandler.error(
+                  "Can't create nested text content here",
+                  publicId, systemId, lineNo, colNo);
+               return processStatus; // if the errorHandler returns
+            }
+            // empty buffer
+            buffer.setLength(0);
+            emitter.pushEmitter(stxEmitter);
+         }
+
+         processStatus = super.process(emitter, eventStack, context,
+                                       processStatus);
+
+         if ((processStatus & ST_PROCESSING) != 0) {
+            emitter.popEmitter();
+            emitter.characters(buffer.toString().toCharArray(), 
+                               0, buffer.length());
+         }
+
+         return processStatus;
       }
    }
 }
