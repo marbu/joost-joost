@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 1.9 2003/01/08 16:09:24 obecker Exp $
+ * $Id: Tree.java,v 1.10 2003/01/12 16:42:57 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,6 +28,7 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Stack;
 
@@ -40,7 +41,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 1.9 $ $Date: 2003/01/08 16:09:24 $
+ * @version $Revision: 1.10 $ $Date: 2003/01/12 16:42:57 $
  * @author Oliver Becker
  */
 public class Tree
@@ -81,7 +82,8 @@ public class Tree
       ATTR_WILDCARD       = 31,  // "@*"
       ATTR_URI_WILDCARD   = 32,  // "@*:ncname"
       ATTR_LOCAL_WILDCARD = 33,  // "@prefix:*"
-      LIST                = 34,  // "," 
+      LIST                = 34,  // "," in parameter list
+      SEQ                 = 340, // "," in sequences
       AVT                 = 35,  // "{" ... "}"
       VAR                 = 36,  // "$qname"
       DOT                 = 37,  // "."
@@ -160,7 +162,7 @@ public class Tree
       // System.err.println("Tree-Constructor 4: " + this);
       if (type != NAME_TEST && type != ATTR && type != FUNCTION &&
           type != VAR) {
-         log4j.warn("Wrong Tree type; " + this);
+         log4j.error("Wrong Tree type; " + this);
          return;
       }
 
@@ -591,33 +593,117 @@ public class Tree
             return v1.copy(); 
          }
 
-         case ATTR: {
-            SAXEvent e = null;
-            if (left != null) {
+         case ATTR:
+         case NAMESPACE:
+         case ATTR_WILDCARD:
+         case ATTR_LOCAL_WILDCARD:
+         case ATTR_URI_WILDCARD: {
+            // determine effective parent node sequence (-> v1)
+            if (left != null) { // preceding path
                v1 = left.evaluate(context, events, top);
                if (v1.type != Value.NODE)
                   throw new EvalException("sub expression before `/@" +
                                           value + "' must evaluate to a " +
                                           "node (got " + v1 + ")");
-               e = v1.event;
+               if (v1.event == null) // emtpy sequence
+                  return v1;
             }
-            else if (top > 0)
-               e = (SAXEvent)events.elementAt(top-1);
-            if (e == null || e.attrs == null)
-               return new Value("");
-            String s = e.attrs.getValue(uri, lName);
-            if (s == null)
-               return new Value("");
+            else if(top > 0) // use current node
+               v1 = new Value((SAXEvent)events.elementAt(top-1), top-1);
             else
-               return new Value(s);
-         }
+               v1 = null;
 
-         case ATTR_WILDCARD:
-         case ATTR_URI_WILDCARD:
-         case ATTR_LOCAL_WILDCARD:
-            // TODO
-            log4j.warn("attribute wildcards are not implemented yet");
-            return new Value("");
+            // iterate through this node sequence
+            Value ret = null, last = null; // for constructing the result seq
+            while (v1 != null) {
+               SAXEvent e = v1.event;
+               if (type == ATTR) { // @qname
+                  int index;
+                  // retrieve attribute index
+                  if (e != null && e.attrs != null &&
+                                (index = e.attrs.getIndex(uri, lName)) != -1) {
+                     v2 = new Value(SAXEvent.newAttribute(e.attrs, index), 
+                                    v1.level+1);
+                     if (last != null)
+                        last.next = v2;
+                     else
+                        ret = v2;
+                     last = v2;
+                  }
+               }
+               else if (type == NAMESPACE) {
+                  if (e == null || e.nsSupport == null)
+                     return Value.EMPTY_SEQ;
+                  if ("*".equals(value)) { // return all declared namespaces
+                     for (Enumeration en=e.nsSupport.getPrefixes();
+                          en.hasMoreElements(); ) {
+                        v2 = new Value(e.nsSupport.getURI(
+                                          (String)en.nextElement()));
+                        if (last != null)
+                           last.next = v2;
+                        else
+                           ret = v2;
+                        last = v2;
+                     }
+                     // have to check for the default namespace separately
+                     String s = e.nsSupport.getURI("");
+                     if (s != null) {
+                        v2 = new Value(s);
+                        if (last != null)
+                           last.next = v2;
+                        else
+                           ret = v2;
+                        last = v2;
+                     }
+                  }
+                  else { // prefix specified in namespace axis
+                     String s = e.nsSupport.getURI((String)value);
+                     if (s != null) {
+                        v2 = new Value(s);
+                        if (last != null)
+                           last.next = v2;
+                        else
+                           ret = v2;
+                        last = v2;
+                     }
+                  }
+               } // if (type == NAMESPACE)
+               else { // wildcard in attribute used
+                  int len = e.attrs.getLength();
+                  // iterate through attribute list
+                  for (int i=0; i<len; i++) {
+                     v2 = null;
+                     if (type == ATTR_WILDCARD) { // @*
+                        v2 = new Value(SAXEvent.newAttribute(e.attrs, i), 
+                                       v1.level+1);
+                     }
+                     else if (type == ATTR_LOCAL_WILDCARD) { // @prefix:*
+                        if (uri.equals(e.attrs.getURI(i)))
+                           v2 = new Value(SAXEvent.newAttribute(e.attrs, i), 
+                                          v1.level+1);
+                     }
+                     else if (type == ATTR_URI_WILDCARD) { // @*:lname
+                        if (lName.equals(e.attrs.getLocalName(i)))
+                           v2 = new Value(SAXEvent.newAttribute(e.attrs, i), 
+                                          v1.level+1);
+                     }
+                     if (v2 != null) {
+                        if (last != null)
+                           last.next = v2;
+                        else
+                           ret = v2;
+                        last = v2;
+                     }
+                  } // for
+               } // else
+               v1 = v1.next; // next node
+            } // while (v1 != null)
+
+            if (ret != null)
+               return ret;
+            else
+               return Value.EMPTY_SEQ;
+         }
 
          case DOT: 
             if (top > 0) {
@@ -628,7 +714,7 @@ public class Tree
                   return new Value((SAXEvent)events.elementAt(top-1), top);
             }
             else
-               return new Value(null, 0);
+               return Value.EMPTY_SEQ;
 
          case DDOT:
             if (top > 1) {
@@ -641,7 +727,7 @@ public class Tree
             }
             else
                // path selects nothing
-               return new Value(null, 0);
+               return Value.EMPTY_SEQ;
 
          case TEXT_TEST:
             // return the string value of the look-ahead node if it's a text
@@ -652,7 +738,7 @@ public class Tree
                    context.lookAhead.type == SAXEvent.CDATA))
                return new Value(context.lookAhead.value);
             else
-               return new Value("");
+               return Value.EMPTY_SEQ;
 
          case ROOT:
             // set top to 1
@@ -668,18 +754,25 @@ public class Tree
                   return new Value((SAXEvent)events.elementAt(top), top+1);
             }
             else // path selects nothing
-               return new Value(null, 0);
+               return Value.EMPTY_SEQ;
 
-         case DESC:
-            String msg = "descendent axis (//) is not implemented yet";
-            log4j.warn(msg);
+         case DESC: {
+            Value ret = null, last = null; // for constructing the result seq
             while (top < events.size()) {
-               Value v = right.evaluate(context, events, top++);
-               if (v.event != null)
-                  return v;
-               // TODO: return a sequence of nodes
+               v2 = right.evaluate(context, events, top++);
+               if (v2.event != null) { // right sub-path evaluates to a node
+                  if (last != null)
+                     last.next = v2;
+                  else 
+                     ret = v2;
+                  last = v2;
+               }
             }
-            return new Value(null, 0);
+            if (ret != null)
+               return ret;
+            else // empty sequence
+               return Value.EMPTY_SEQ;
+         }
 
          case PARENT:
             if (top > 1 && left.matches(context, events, top-1)) {
@@ -692,46 +785,38 @@ public class Tree
             }
             else
                // path selects nothing
-               return new Value(null, 0);
+               return Value.EMPTY_SEQ;
 
          case ANC:
             // TODO
             log4j.warn("ancestor axis is not implemented yet");
-            return new Value(null, 0);
-
-         case NAMESPACE: {
-            if ("*".equals(value)) {
-               // TODO
-               log4j.warn("namespace wildcard is not implemented yet");
-               return new Value("");
-            }
-            SAXEvent e = null;
-            if (left != null) {
-               v1 = left.evaluate(context, events, top);
-               if (v1.type != Value.NODE)
-                  throw new EvalException(
-                     "sub expression before `/namespace::" + value + 
-                     "' must evaluate to a node (got " + v1 + ")");
-               e = v1.event;
-            }
-            else if (top > 0)
-               e = (SAXEvent)events.elementAt(top-1);
-            if (e == null || e.nsSupport == null)
-               return new Value("");
-            String s = e.nsSupport.getURI((String)value);
-            if (s == null)
-               return new Value("");
-            else
-               return new Value(s);
-         }
+            return Value.EMPTY_SEQ;
 
          case LIST:
-            // TODO
-            log4j.warn("sequences are not implemented yet");
+            log4j.error("LIST: this shouldn't happen");
+            return Value.EMPTY_SEQ;
+
+         case SEQ: {
             if (left != null)
-               return left.evaluate(context, events, top);
+               v1 = left.evaluate(context, events, top);
             else
-               return new Value("");
+               v1 = Value.EMPTY_SEQ;
+            if (right != null)
+               v2 = right.evaluate(context, events, top);
+            else
+               v2 = Value.EMPTY_SEQ;
+            // if we get an empty sequence, return the other value
+            if (v1 == Value.EMPTY_SEQ)
+               return v2;
+            if (v2 == Value.EMPTY_SEQ)
+               return v1;
+            // append v1 and v2
+            Value tmp = v1;
+            while (tmp.next != null)
+               tmp = tmp.next;
+            tmp.next = v2;
+            return v1;
+         }
 
          default:
             log4j.fatal("type " + this + " is not implemented");
@@ -744,7 +829,7 @@ public class Tree
                                     context.currentInstruction.systemId,
                                     context.currentInstruction.lineNo,
                                     context.currentInstruction.colNo);
-         return new Value(""); // if the errorHandler decides to continue ...
+         return Value.EMPTY_SEQ; // if the errorHandler decides to continue ...
       }
    }
 
