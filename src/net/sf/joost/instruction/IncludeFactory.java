@@ -1,5 +1,5 @@
 /*
- * $Id: IncludeFactory.java,v 2.9 2004/12/27 18:51:07 obecker Exp $
+ * $Id: IncludeFactory.java,v 2.10 2004/12/29 19:11:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -47,7 +47,7 @@ import org.xml.sax.XMLReader;
 /** 
  * Factory for <code>include</code> elements, which will be replaced by
  * groups for the included transformation sheet
- * @version $Revision: 2.9 $ $Date: 2004/12/27 18:51:07 $
+ * @version $Revision: 2.10 $ $Date: 2004/12/29 19:11:01 $
  * @author Oliver Becker
  */
 
@@ -71,47 +71,47 @@ final public class IncludeFactory extends FactoryBase
 
    /** Returns an instance of {@link TransformFactory.Instance} */
    public NodeBase createNode(NodeBase parent, String qName, 
-                              Attributes attrs, ParseContext context)
+                              Attributes attrs, ParseContext pContext)
       throws SAXException
    {
       // check parent
       if (parent != null && !(parent instanceof GroupBase))
          throw new SAXParseException("`" + qName + 
                                      "' not allowed as child of `" +
-                                     parent.qName + "'", context.locator);
+                                     parent.qName + "'", pContext.locator);
 
-      String hrefAtt = getAttribute(qName, attrs, "href", context);
+      String hrefAtt = getAttribute(qName, attrs, "href", pContext);
 
-      checkAttributes(qName, attrs, attrNames, context);
+      checkAttributes(qName, attrs, attrNames, pContext);
 
-      Parser stxParser = new Parser(context);
+      Parser stxParser = new Parser(new ParseContext(pContext));
       stxParser.includingGroup = (GroupBase)parent;
 
       XMLReader reader = null;
       InputSource iSource;
       try {
          Source source;
-         if (context.uriResolver != null && 
-             (source = context.uriResolver.resolve(
-                hrefAtt, context.locator.getSystemId())) != null) {
+         if (pContext.uriResolver != null && 
+             (source = pContext.uriResolver.resolve(
+                hrefAtt, pContext.locator.getSystemId())) != null) {
             SAXSource saxSource = TrAXHelper.getSAXSource(source, null);
             reader = saxSource.getXMLReader();
             iSource = saxSource.getInputSource();
          }
          else {
             iSource = new InputSource(
-               new URL(new URL(context.locator.getSystemId()), hrefAtt)
+               new URL(new URL(pContext.locator.getSystemId()), hrefAtt)
                   .toExternalForm());
          }
          if (reader == null)
             reader = Processor.getXMLReader();
          reader.setContentHandler(stxParser);
-         reader.setErrorHandler(context.getErrorHandler());
+         reader.setErrorHandler(pContext.getErrorHandler());
          reader.parse(iSource);
       }
       catch (java.io.IOException ex) {
          // TODO: better error handling
-         throw new SAXParseException(ex.toString(), context.locator);
+         throw new SAXParseException(ex.toString(), pContext.locator);
       }
       catch (SAXParseException ex) {
          // propagate
@@ -123,7 +123,7 @@ final public class IncludeFactory extends FactoryBase
          else {
             // will this ever happen?
             // add locator information
-            throw new SAXParseException(ex.getMessage(), context.locator);
+            throw new SAXParseException(ex.getMessage(), pContext.locator);
          }
       }
       catch (TransformerException te) {

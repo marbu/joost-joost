@@ -1,5 +1,5 @@
 /*
- * $Id: ParseContext.java,v 2.6 2004/12/27 18:46:33 obecker Exp $
+ * $Id: ParseContext.java,v 2.7 2004/12/29 19:10:48 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import org.xml.sax.Locator;
 /**
  * Instances of this class provide context information while parsing
  * an STX document.
- * @version $Revision: 2.6 $ $Date: 2004/12/27 18:46:33 $
+ * @version $Revision: 2.7 $ $Date: 2004/12/29 19:10:48 $
  * @author Oliver Becker
  */
 public final class ParseContext
@@ -63,6 +63,28 @@ public final class ParseContext
    
    /** Are calls on Java extension functions allowed? */
    public boolean allowExternalFunctions = true;
+
+   
+   //
+   // Constructors
+   //
+   
+   /** Default constructor */
+   public ParseContext() {
+   }
+
+   /** Copy constructor */
+   public ParseContext(ParseContext pContext) {
+      errorHandler = pContext.errorHandler;
+      uriResolver = pContext.uriResolver;
+      parserListener = pContext.parserListener;
+      allowExternalFunctions = pContext.allowExternalFunctions;
+   }
+   
+   
+   //
+   // Methods
+   //
    
    /** Returns (and constructs if necessary) an error handler */
    public ErrorHandler getErrorHandler()
