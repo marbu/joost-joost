@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEvent.java,v 1.5 2002/11/02 15:13:38 obecker Exp $
+ * $Id: SAXEvent.java,v 1.6 2002/11/03 11:35:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,7 +33,7 @@ import java.util.Hashtable;
 
 /** 
  * SAXEvent stores all information attached to an incoming SAX event 
- * @version $Revision: 1.5 $ $Date: 2002/11/02 15:13:38 $
+ * @version $Revision: 1.6 $ $Date: 2002/11/03 11:35:18 $
  * @author Oliver Becker
  */
 final public class SAXEvent
@@ -329,6 +329,8 @@ final public class SAXEvent
          return ret + "/";
       case ELEMENT:
          return ret + "<" + qName + ">";
+      case ELEMENT_END:
+         return ret + "</" + qName + ">";
       case TEXT:
          return ret + "`" + value + "'";
       case CDATA:
@@ -339,6 +341,8 @@ final public class SAXEvent
          return ret + "<?" + qName + " " + value + "?>";
       case ATTRIBUTE:
          return ret + qName + "='" + value + "'";
+      case MAPPING:
+         return "xmlns:" + qName + "=" + value;
       default:
          return "SAXEvent ???";
       }
