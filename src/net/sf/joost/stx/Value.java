@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.10 2003/04/29 15:06:43 obecker Exp $
+ * $Id: Value.java,v 1.11 2003/04/30 05:51:20 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -27,7 +27,7 @@ package net.sf.joost.stx;
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.10 $ $Date: 2003/04/29 15:06:43 $
+ * @version $Revision: 1.11 $ $Date: 2003/04/30 05:51:20 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -236,7 +236,7 @@ public class Value implements Cloneable
          return ret;
       }
       catch(CloneNotSupportedException e) {
-         throw new RuntimeException("copy() failed for Value", e);
+         throw new RuntimeException("copy() failed for Value " + e);
       }
    }
 

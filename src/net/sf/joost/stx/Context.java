@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 2.2 2003/04/29 15:06:40 obecker Exp $
+ * $Id: Context.java,v 2.3 2003/04/30 05:51:20 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import java.util.Stack;
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 2.2 $ $Date: 2003/04/29 15:06:40 $
+ * @version $Revision: 2.3 $ $Date: 2003/04/30 05:51:20 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
@@ -111,7 +111,7 @@ public final class Context implements Cloneable
          context.errorHandler = new ErrorHandlerImpl();
       }
       catch (CloneNotSupportedException cnsex) {
-         throw new RuntimeException(cnsex);
+         throw new RuntimeException(cnsex.toString());
       }
 
       return context;
