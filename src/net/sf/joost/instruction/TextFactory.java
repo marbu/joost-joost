@@ -1,5 +1,5 @@
 /*
- * $Id: TextFactory.java,v 2.5 2004/10/30 11:23:52 obecker Exp $
+ * $Id: TextFactory.java,v 2.6 2004/11/06 13:17:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>text</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.5 $ $Date: 2004/10/30 11:23:52 $
+ * @version $Revision: 2.6 $ $Date: 2004/11/06 13:17:37 $
  * @author Oliver Becker
  */
 
@@ -53,7 +53,9 @@ public class TextFactory extends FactoryBase
    private static final String[] MARKUP_VALUES =
    { "error", "ignore", "serialize" };
 
-   private int NO_MARKUP = 0, IGNORE_MARKUP = 1, SERIALIZE_MARKUP = 2;
+   private static final int NO_MARKUP = 0, 
+                            IGNORE_MARKUP = 1, 
+                            SERIALIZE_MARKUP = 2;
 
    public TextFactory()
    {
