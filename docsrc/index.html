@@ -114,8 +114,6 @@
       <li>stx:template (match, priority?, visibility?,
           recursion-entry-point?)</li>
       <li>stx:copy (attributes?)</li>
-      <li>stx:text</li>
-      <li>stx:cdata</li>
       <li>stx:process-children</li>
       <li>stx:process-self</li>
       <li>stx:process-attributes</li>
@@ -128,10 +126,13 @@
       <li>stx:choose</li>
       <li>stx:when (test)</li>
       <li>stx:otherwise</li>
+      <li>stx:text</li>
+      <li>stx:cdata</li>
       <li>stx:element (name, namespace?)</li>
       <li>stx:element-start (name, namespace?)</li>
       <li>stx:element-end (name, namespace?)</li>
       <li>stx:attribute (name, namespace?, select)</li>
+      <li>stx:comment</li>
       <li>stx:variable (name, select?, keep-value?) for local and group
           variables</li>
       <li>stx:param (name, select?) for global parameters only</li>
@@ -168,7 +169,7 @@
 
       <h4>Limitations</h4>
       <ul>
-         <li>no datatype list</li>
+         <li>no sequence datatype</li>
          <li>only "backwards" parent paths in expressions for accessing nodes
              (i.e. <code>..</code> and <code>../..</code> etc.)</li>
          <li>all STX elements and functions not explicitely mentioned
