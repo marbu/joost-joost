@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.72 2004/11/06 14:31:24 obecker Exp $ -->
+<!-- $Id: index.html,v 1.73 2004/11/06 21:55:57 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -161,7 +161,7 @@
       
       <h4>Features</h4>
       <p>
-      <strong>Supported stx elements</strong> (and their attributes)
+      <strong><em>Supported stx elements</em></strong> (and their attributes)
       in the namespace <code>http://stx.sourceforge.net/2002/ns</code>
       <ul>
       <li>stx:transform (version, stxpath-default-namespace?,
@@ -229,7 +229,7 @@
           </li>
       </ul>
       <p>
-      <strong>Supported STXPath functions</strong>
+      <strong></em>Supported STXPath functions</strong></strong>
       <ul>
       <li>string(object?)</li>
       <li>number(object?)</li>
@@ -276,7 +276,7 @@
       <li>filter-available(string)</li>
       </ul>
       <p>
-      <strong>Built-in extension functions</strong><br>
+      <strong><em>Built-in extension functions</em></strong><br>
       A built-in extension function must be used with a fully-qualified
       name and the prefix bound to the namespace
       <code>http://joost.sf.net/extension</code>
@@ -289,14 +289,28 @@
       <h4>Limitations</h4>
       <ul>
          <li>no full Unicode support
-             (allow currently only ASCII characters in names,
-             pay no attention to surrogate pairs)</li>
+             (surrogate pairs not implemented, missing check for
+             well-formedness of created XML names)</li>
+         <li>the STXPath implemented in this release obeys still the
+             productions of the grammar in the former STX draft
+             (<a href="http://stx.sourceforge.net/documents/spec-stx-20030505.html#stxpath">5 May 2003</a>)</li>
          <li>all STX elements and functions not explicitely mentioned
              on this page wait for an implementation</li>
          <li>...</li>
       </ul>
 
       <h4>Extensions</h4>
+          
+      <h5>HTML output</h5>
+      <p>
+        <em>Joost</em> provides an experimental HTML 4.01 output method that
+        can be invoked by specifying <code>joost:html</code> in the
+        <code>output-method</code> attribute. The prefix <code>joost</code>
+        must be bound to <em>Joost</em>'s extension namespace                  
+        <code>http://joost.sf.net/extension</code>.
+      </p>
+                  
+      <h5>Invoking Java methods</h5>
       <p>
         <em>Joost</em> allows the use of extension functions written in Java.
         An extension function is invoked using the notation
@@ -376,7 +390,7 @@
         <code>match="a[ex:foo()]//b[ex:bar()]/c[ex:baz()]"</code>)
       </p>
       <p>
-        <strong>Conversion rules</strong><br>
+        <strong><em>Conversion rules</em></strong><br>
         Depending on the type of the argument values supplied to the function
         call, <em>Joost</em> tries to find a method that has parameters of
         the following types (Java types with a higher conversion preference
@@ -538,7 +552,8 @@
         parameter.
       </p>
 
-      <p><strong>Using external SAX2 filters</strong><br>
+      <h5>Using external SAX2 filters</strong></h5>
+      <p>
         <em>Joost</em> implements the usage of external SAX2 filters as
         described in the WD of the STX specification section 4.19
         (CVS version Jul 23 2003). 
@@ -597,7 +612,7 @@
       </p>
       <h4>Resources</h4>
       <ul>
-        <li>This release implements (partly) the <a href="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/*checkout*/stx/specs/spec-stx.html?rev=1.48">Editor's copy of the STX Working Draft, 9 December 2003</a></li>
+        <li>This release implements (partly) the <a href="http://stx.sourceforge.net/documents/spec-stx-20040701.html">STX Working Draft, 1 July 2004</a></li>
         <li>The functions taken from the W3C spec are defined in
          <a href="http://www.w3.org/TR/2003/WD-xpath-functions-20031112/">XQuery 1.0 and XPath 2.0 Functions and Operators, W3C Working Draft 12 November 2003</a></li>
       </ul>
