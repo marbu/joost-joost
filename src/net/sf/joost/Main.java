@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.23 2004/11/01 08:56:23 obecker Exp $
+ * $Id: Main.java,v 1.24 2004/11/06 13:10:28 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,18 +40,11 @@ import org.xml.sax.SAXException;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.23 $ $Date: 2004/11/01 08:56:23 $
+ * @version $Revision: 1.24 $ $Date: 2004/11/06 13:10:28 $
  * @author Oliver Becker
  */
 public class Main implements Constants
 {
-   // Joost must be able to run without Log4j
-   private static Logger log4j;
-   static {
-      if (DEBUG)
-         log4j = Logger.getLogger(Main.class);
-   }
-
    /** 
     * Entry point 
     * @param args array of strings containing the parameter for Joost and
