@@ -1,5 +1,5 @@
 /*
- * $Id: FactoryBase.java,v 2.3 2003/06/03 14:30:21 obecker Exp $
+ * $Id: FactoryBase.java,v 2.4 2003/06/03 15:21:02 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,6 +25,7 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import java.util.HashSet;
@@ -43,7 +44,7 @@ import net.sf.joost.stx.ParseContext;
  * Abstract base class for all factory classes which produce nodes
  * ({@link NodeBase}) for the tree representation of an STX transformation
  * sheet.
- * @version $Revision: 2.3 $ $Date: 2003/06/03 14:30:21 $
+ * @version $Revision: 2.4 $ $Date: 2003/06/03 15:21:02 $
  * @author Oliver Becker
  */
 
@@ -64,7 +65,7 @@ public abstract class FactoryBase implements Constants
    public abstract NodeBase createNode(NodeBase parent, String qName, 
                                        Attributes attrs, 
                                        ParseContext context)
-      throws SAXParseException;
+      throws SAXException;
 
 
    /**
