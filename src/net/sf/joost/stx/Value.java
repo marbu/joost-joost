@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.8 2003/02/24 13:30:28 obecker Exp $
+ * $Id: Value.java,v 1.9 2003/04/29 11:57:58 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -27,7 +27,7 @@ package net.sf.joost.stx;
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.8 $ $Date: 2003/02/24 13:30:28 $
+ * @version $Revision: 1.9 $ $Date: 2003/04/29 11:57:58 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -60,9 +60,6 @@ public class Value implements Cloneable
    /** for <code>{@link #type} == {@link #NODE}</code> */
    public SAXEvent event;
 
-   /** for <code>{@link #type} == {@link #NODE}</code>: 
-       position on the stack */
-   public int level;
 
    /** 
     * The next value of the sequence. A sequence is simply a chained list
@@ -108,13 +105,11 @@ public class Value implements Cloneable
     * Constructs a <code>Value</code> containing a node 
     * (<code>{@link SAXEvent}</code>).
     * @param e the event
-    * @param l the level (position on the event stack)
     */
-   public Value(SAXEvent e, int l)
+   public Value(SAXEvent e)
    {
       type = NODE;
       event = e;
-      level = l;
    }
 
 

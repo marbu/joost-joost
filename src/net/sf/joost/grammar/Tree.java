@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 2.0 2003/04/25 16:54:14 obecker Exp $
+ * $Id: Tree.java,v 2.1 2003/04/29 11:58:06 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:54:14 $
+ * @version $Revision: 2.1 $ $Date: 2003/04/29 11:58:06 $
  * @author Oliver Becker
  */
 final public class Tree
@@ -681,8 +681,7 @@ final public class Tree
             }
             else if(top > 0) // use current node
                v1 = 
-                  new Value((SAXEvent)context.ancestorStack.elementAt(top-1),
-                            top-1);
+                  new Value((SAXEvent)context.ancestorStack.elementAt(top-1));
             else
                v1 = null;
 
@@ -699,8 +698,7 @@ final public class Tree
                   // retrieve attribute index
                   if (e != null && e.attrs != null &&
                                 (index = e.attrs.getIndex(uri, lName)) != -1) {
-                     v2 = new Value(SAXEvent.newAttribute(e.attrs, index), 
-                                    v1.level+1);
+                     v2 = new Value(SAXEvent.newAttribute(e.attrs, index));
                      if (last != null)
                         last.next = v2;
                      else
@@ -714,18 +712,15 @@ final public class Tree
                   for (int i=0; i<len; i++) {
                      v2 = null;
                      if (type == ATTR_WILDCARD) { // @*
-                        v2 = new Value(SAXEvent.newAttribute(e.attrs, i), 
-                                       v1.level+1);
+                        v2 = new Value(SAXEvent.newAttribute(e.attrs, i));
                      }
                      else if (type == ATTR_LOCAL_WILDCARD) { // @prefix:*
                         if (uri.equals(e.attrs.getURI(i)))
-                           v2 = new Value(SAXEvent.newAttribute(e.attrs, i), 
-                                          v1.level+1);
+                           v2 = new Value(SAXEvent.newAttribute(e.attrs, i));
                      }
                      else if (type == ATTR_URI_WILDCARD) { // @*:lname
                         if (lName.equals(e.attrs.getLocalName(i)))
-                           v2 = new Value(SAXEvent.newAttribute(e.attrs, i), 
-                                          v1.level+1);
+                           v2 = new Value(SAXEvent.newAttribute(e.attrs, i));
                      }
                      if (v2 != null) {
                         if (last != null)
@@ -748,8 +743,7 @@ final public class Tree
          case DOT:
             if (top > 0)
                return 
-                  new Value((SAXEvent)context.ancestorStack.elementAt(top-1),
-                            top);
+                  new Value((SAXEvent)context.ancestorStack.elementAt(top-1));
             else
                return new Value();
 
@@ -762,7 +756,7 @@ final public class Tree
                   // return the node at position top-1
                   return 
                      new Value((SAXEvent)context.ancestorStack
-                                                .elementAt(top-2), top-1);
+                                                .elementAt(top-2));
             }
             else
                // path selects nothing
@@ -780,9 +774,8 @@ final public class Tree
                   return right.evaluate(context, top+1);
                else 
                   // last step, return node at position top+1
-                  return 
-                     new Value((SAXEvent)context.ancestorStack.elementAt(top),
-                               top+1);
+                  return new Value((SAXEvent)context.ancestorStack
+                                                    .elementAt(top));
             }
             else // path selects nothing
                return new Value();
