@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 1.4 2002/10/31 11:20:57 obecker Exp $
+ * $Id: FunctionTable.java,v 1.5 2002/10/31 16:48:46 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 1.4 $ $Date: 2002/10/31 11:20:57 $
+ * @version $Revision: 1.5 $ $Date: 2002/10/31 16:48:46 $
  * @author Oliver Becker
  */
 public final class FunctionTable
@@ -68,8 +68,10 @@ public final class FunctionTable
          new StringLength(),
          new NormalizeSpace(),
          new Contains(),
+         new StartsWith(),
          new Substring(),
-         new StartsWith()
+         new SubstringBefore(),
+         new SubstringAfter()
       };
       functionHash = new Hashtable(functions.length);
       for (int i=0; i<functions.length; i++)
@@ -572,6 +574,32 @@ public final class FunctionTable
 
 
    /**
+    * The <code>starts-with</code> function.
+    * Returns <code>true</code> if the string in the first parameter
+    * starts with the substring provided as second parameter.
+    */
+   public class StartsWith implements Instance 
+   {
+      /** @return 2 **/
+      public int getMinParCount() { return 2; }
+      /** @return 2 **/
+      public int getMaxParCount() { return 2; }
+      /** @return "{}starts-with" */
+      public String getName() { return "{}starts-with"; }
+      
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         String s1 = args.left.evaluate(context, events, top)
+                              .convertToString().string;
+         String s2 = args.right.evaluate(context, events, top)
+                               .convertToString().string;
+         return new Value(s1.startsWith(s2));
+      }
+   }
+
+
+   /**
     * The <code>substring</code> function.
     * Returns the substring from the first parameter, beginning at
     * an offset given by the second parameter with a length given
@@ -628,18 +656,18 @@ public final class FunctionTable
 
 
    /**
-    * The <code>starts-with</code> function.
-    * Returns <code>true</code> if the string in the first parameter
-    * starts with the substring provided as second parameter.
+    * The <code>substring-before</code> function.
+    * Returns the substring from the first parameter that occurs
+    * before the second parameter.
     */
-   public class StartsWith implements Instance 
+   public class SubstringBefore implements Instance 
    {
       /** @return 2 **/
       public int getMinParCount() { return 2; }
       /** @return 2 **/
       public int getMaxParCount() { return 2; }
-      /** @return "{}starts-with" */
-      public String getName() { return "{}starts-with"; }
+      /** @return "{}substring-before" */
+      public String getName() { return "{}substring-before"; }
       
       public Value evaluate(Context context, Stack events, int top, Tree args)
          throws SAXException, EvalException
@@ -648,7 +676,41 @@ public final class FunctionTable
                               .convertToString().string;
          String s2 = args.right.evaluate(context, events, top)
                                .convertToString().string;
-         return new Value(s1.startsWith(s2));
+         int index = s1.indexOf(s2);
+         if (index != -1)
+            return new Value(s1.substring(0,index));
+         else
+            return new Value("");
+      }
+   }
+
+
+   /**
+    * The <code>substring-after</code> function.
+    * Returns the substring from the first parameter that occurs
+    * after the first occurrence of the second parameter.
+    */
+   public class SubstringAfter implements Instance 
+   {
+      /** @return 2 **/
+      public int getMinParCount() { return 2; }
+      /** @return 2 **/
+      public int getMaxParCount() { return 2; }
+      /** @return "{}substring-after" */
+      public String getName() { return "{}substring-after"; }
+      
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         String s1 = args.left.evaluate(context, events, top)
+                              .convertToString().string;
+         String s2 = args.right.evaluate(context, events, top)
+                               .convertToString().string;
+         int index = s1.indexOf(s2);
+         if (index != -1)
+            return new Value(s1.substring(index+s2.length()));
+         else
+            return new Value("");
       }
    }
 }
