@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 1.18 2003/02/20 09:25:22 obecker Exp $
+ * $Id: Tree.java,v 1.19 2003/02/21 14:09:51 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,10 +42,10 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 1.18 $ $Date: 2003/02/20 09:25:22 $
+ * @version $Revision: 1.19 $ $Date: 2003/02/21 14:09:51 $
  * @author Oliver Becker
  */
-public class Tree
+final public class Tree
 {
    /** Node type constants for {@link #type} */
    public static final int 
@@ -690,7 +690,7 @@ public class Tree
                if (v1.type == Value.EMPTY)
                   return v1;
                if (v1.type != Value.NODE)
-                  throw new EvalException("sub expression before `/" + 
+                  throw new EvalException("Sub expression before `/" + 
                                           (type == TEXT_TEST ? "text()" : 
                                           (type == NAMESPACE ? "namespace::" 
                                            : "@") + value) +
@@ -707,6 +707,12 @@ public class Tree
             // iterate through this node sequence
             Value ret = null, last = null; // for constructing the result seq
             while (v1 != null) {
+               if (v1.type != Value.NODE)
+                  throw new EvalException("Current item for evaluating `" +
+                                          (type == TEXT_TEST ? "text()" : 
+                                          (type == NAMESPACE ? "namespace::" 
+                                           : "@") + value) +
+                                          "' is not a node (got " + v1 + ")");
                SAXEvent e = v1.event;
                if (type == TEXT_TEST) { // text()
                   log4j.warn("`text()' is deprecated, " + 
@@ -737,6 +743,10 @@ public class Tree
                   }
                }
                else if (type == NAMESPACE) {
+                  log4j.warn("The namespace axis is deprecated, use the " +
+                             "get-in-scope-namespaces and " +
+                             "get-namespace-uri-for-prefix functions " + 
+                             "instead.");
                   if (e != null && e.namespaces != null) {
                      if ("*".equals(value)) { // return all declared namespaces
                         for (Enumeration en=e.namespaces.keys();
@@ -802,7 +812,9 @@ public class Tree
 
          case DOT: 
             if (context.currentItem != null)
-               return context.currentItem;
+               // need a copy because values will be changed during 
+               // expression evaluation
+               return context.currentItem.copy();
             // else: return current node
             if (top > 0) {
                if (right != null)
@@ -879,6 +891,8 @@ public class Tree
          }
 
          case PARENT:
+            log4j.warn("The parent axis is deprecated. Simply use `..' " + 
+                       "instead.");
             if (top > 1 && left.matches(context, events, top-1, false)) {
                if (right != null)
                   // path continues, evaluate recursively with top-1
@@ -893,7 +907,7 @@ public class Tree
 
          case ANC:
             // TODO
-            log4j.warn("ancestor axis is not implemented yet");
+            log4j.warn("The ancestor axis is deprecated and not implemented");
             return new Value();
 
          case LIST:
