@@ -3,7 +3,7 @@
  *
  *	TestCases for TraX-Transformer
  *
- *	$Id: TestCases.java,v 1.3 2002/11/11 18:57:42 zubow Exp $
+ *	$Id: TestCases.java,v 1.4 2002/11/11 19:56:49 zubow Exp $
  *
  */
 
@@ -13,9 +13,11 @@ import org.apache.log4j.Logger;
 import org.apache.xml.serialize.XMLSerializer;
 import org.apache.xml.serialize.SerializerFactory;
 import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.DOMWriterImpl;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 import org.w3c.dom.Document;
+import org.w3c.dom.ls.DOMWriter;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLFilter;
@@ -328,7 +330,7 @@ public class TestCases {
 
             if(nodeResult != null) {
 
-                String result = serializeDOM2String((Document)nodeResult);
+                String result = serializeDOM2String(nodeResult);
 
                 log.info("*** print out DOM-document - DOMResult ***");
                 log.info(result);
@@ -1598,7 +1600,7 @@ public class TestCases {
     ParserConfigurationException
     {
         if(result != null) {
-            String str = serializeDOM2String((Document)result.getNode());
+            String str = serializeDOM2String(result.getNode());
             log.info("*** print out DOM-document - DOMResult ***");
             log.info(str);
         }
@@ -1688,7 +1690,7 @@ public class TestCases {
 
         if(nodeResult != null) {
 
-            String result = serializeDOM2String((Document)nodeResult);
+            String result = serializeDOM2String(nodeResult);
 
             log.info("*** print out DOM-document - DOMResultt ***");
             log.info(result);
@@ -1728,9 +1730,9 @@ public class TestCases {
         //check
         if(doc != null) {
 
-            String result = serializeDOM2String((Document)doc);
+            String result = serializeDOM2String(doc);
 
-            log.debug("*** STX-sheet ***");
+            log.debug("*** Result ***");
             log.debug(result);
         } else {
             return false;
@@ -1780,7 +1782,7 @@ public class TestCases {
         //check
         if(doc != null) {
 
-            String result = serializeDOM2String((Document)doc);
+            String result = serializeDOM2String(doc);
 
             log.debug("*** STX-sheet ***");
             log.debug(result);
@@ -1871,7 +1873,7 @@ public class TestCases {
 
         if(nodeResult != null) {
 
-            String result = serializeDOM2String((Document)nodeResult);
+            String result = serializeDOM2String(nodeResult);
 
             log.info("*** print out DOM-document - DOMResult ***");
             log.info(result);
@@ -2126,27 +2128,16 @@ public class TestCases {
     }
 
     /**
-     * Helpermethod to serialize a DOM-Document into a string.
-     * @param doc DOM-Document
+     * Helpermethod to serialize a DOM-Node into a string.
+     * @param node a DOM-node
      * @return Serialized DOM-Document to String
      * @throws IOException
      */
-    public static String serializeDOM2String(Document doc) throws IOException {
+    public static String serializeDOM2String(Node node) throws IOException {
 
-        StringWriter sWriter = new StringWriter();
-        // XERCES 1 or 2 additionnal classes.
-        OutputFormat of = new OutputFormat("XML","ISO-8859-1",true);
-        of.setIndent(1);
-        of.setIndenting(true);
-        //of.setDoctype(null,"users.dtd");
-        XMLSerializer serializer = new XMLSerializer(sWriter,of);
-        // As a DOM Serializer
-        serializer.asDOMSerializer();
-        serializer.serialize( doc );
-        sWriter.close();
+        DOMWriter domWriter = new DOMWriterImpl(true);
 
-        return sWriter.toString();
-
+        return domWriter.writeToString(node);
     }
 
 
