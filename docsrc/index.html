@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.27 2003/01/29 08:22:19 obecker Exp $ -->
+<!-- $Id: index.html,v 1.28 2003/02/02 15:21:27 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -22,16 +22,16 @@
       <strong><a target="_top"
       href="http://stx.sourceforge.net">Streaming Transformations
       for XML (STX)</a>.</strong>
-      It is intended as a kind of reference implementation.
-      (And by the way: Joost is also the first name of a good friend's
+      It is intended as a kind of reference implementation which
+      demonstrates the functionality of STX.<br>
+      (And by the way: Joost is also the given name of a good friend's
       little son ...)
       </p>
-      <p>
-      I won't assign version numbers until the STX specification is stable.
-      Instead I will use the current date as surrogat. The latest version
-      was created <strong>@@@DATE@@@</strong> and it should be regarded
-      still as an alpha version.
-      </p>
+      <p>The latest version was created <strong>@@@DATE@@@</strong>
+      and may be <strong><a target="_top"
+         href="https://sourceforge.net/project/showfiles.php?group_id=55258">
+      downloaded here</a></strong>. Note: it should still be regarded
+      as an alpha version.</p>
       <p>
       <em>Joost</em> is released under the Mozilla Public License 1.1.
       Have a look at the
@@ -44,11 +44,7 @@
       mailing list.
       </p>
       <p>
-      After downloading the
-      <a target="_top"
-         href="https://sourceforge.net/project/showfiles.php?group_id=55258">
-      latest release</a>
-      you need additionally
+      For running <em>Joost</em> you need additionally
       <ul>
          <li>
             a SAX2 Parser, for example Crimson (already included in
@@ -113,6 +109,8 @@
           pass-through?, strip-space?)</li>
       <li>stx:group (name?)</li>
       <li>stx:template (match, priority?, visibility?, new-scope?)</li>
+      <li>stx:procedure (name, visibility?, new-scope?)</li>
+      <li>stx:call-procedure (name, group?)</li>
       <li>stx:copy (attributes?)</li>
       <li>stx:process-children (group?)</li>
       <li>stx:process-self (group?)</li>
