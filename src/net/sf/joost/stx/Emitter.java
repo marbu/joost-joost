@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.13 2003/01/18 10:34:03 obecker Exp $
+ * $Id: Emitter.java,v 1.14 2003/02/21 11:43:36 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.emitter.StxEmitter;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.13 $ $Date: 2003/01/18 10:34:03 $
+ * @version $Revision: 1.14 $ $Date: 2003/02/21 11:43:36 $
  * @author Oliver Becker
  */
 
@@ -322,6 +322,8 @@ public final class Emitter
    public void characters(char[] ch, int start, int length)
       throws SAXException
    {
+      if (length == 0)
+         return;
       if (contH != null) {
          if (lastAttrs != null)
             processLastElement();
