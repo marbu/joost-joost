@@ -1,5 +1,5 @@
 /*
- * $Id: PChildrenFactory.java,v 1.4 2002/11/18 19:54:18 obecker Exp $
+ * $Id: PChildrenFactory.java,v 1.5 2002/11/27 09:54:43 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,13 +40,13 @@ import net.sf.joost.stx.SAXEvent;
 /** 
  * Factory for <code>process-children</code> elements, which are represented 
  * by the inner Instance class. 
- * @version $Revision: 1.4 $ $Date: 2002/11/18 19:54:18 $
+ * @version $Revision: 1.5 $ $Date: 2002/11/27 09:54:43 $
  * @author Oliver Becker
  */
 
 public class PChildrenFactory extends FactoryBase
 {
-   /** @return <code>process-children</code> */
+   /** @return <code>"process-children"</code> */
    public String getName()
    {
       return "process-children";
@@ -57,17 +57,27 @@ public class PChildrenFactory extends FactoryBase
                               Hashtable nsSet, Locator locator)
       throws SAXParseException
    {
+      // prohibit this instruction inside of group variables
+      NodeBase ancestor = parent;
+      while (ancestor != null &&
+             !(ancestor instanceof TemplateFactory.Instance))
+         ancestor = ancestor.parent;
+      if (ancestor == null)
+         throw new SAXParseException(
+            "`" + qName + "' must be a descendant of stx:template",
+            locator);
+
       checkAttributes(qName, attrs, null, locator);
-      return new Instance(qName, locator);
+      return new Instance(qName, parent, locator);
    }
 
 
    /** The inner Instance class */
    public class Instance extends NodeBase
    {
-      public Instance(String qName, Locator locator)
+      public Instance(String qName, NodeBase parent, Locator locator)
       {
-         super(qName, locator, true);
+         super(qName, parent, locator, true);
       }
 
 

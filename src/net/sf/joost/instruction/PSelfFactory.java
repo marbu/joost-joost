@@ -1,5 +1,5 @@
 /*
- * $Id: PSelfFactory.java,v 1.3 2002/11/18 19:54:18 obecker Exp $
+ * $Id: PSelfFactory.java,v 1.4 2002/11/27 09:54:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,13 +39,13 @@ import net.sf.joost.stx.Context;
 /**
  * Factory for <code>process-self</code> elements, which are represented by 
  * the inner Instance class.
- * @version $Revision: 1.3 $ $Date: 2002/11/18 19:54:18 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/27 09:54:44 $
  * @author Oliver Becker
  */
 
 public class PSelfFactory extends FactoryBase
 {
-   /** @return <code>process-self</code> */
+   /** @return <code>"process-self"</code> */
    public String getName()
    {
       return "process-self";
@@ -56,17 +56,27 @@ public class PSelfFactory extends FactoryBase
                               Hashtable nsSet, Locator locator)
       throws SAXParseException
    {
+      // prohibit this instruction inside of group variables
+      NodeBase ancestor = parent;
+      while (ancestor != null &&
+             !(ancestor instanceof TemplateFactory.Instance))
+         ancestor = ancestor.parent;
+      if (ancestor == null)
+         throw new SAXParseException(
+            "`" + qName + "' must be a descendant of stx:template",
+            locator);
+
       checkAttributes(qName, attrs, null, locator);
-      return new Instance(qName, locator);
+      return new Instance(qName, parent, locator);
    }
 
 
    /** The inner Instance class */
    public class Instance extends NodeBase
    {
-      public Instance(String qName, Locator locator)
+      public Instance(String qName, NodeBase parent, Locator locator)
       {
-         super(qName, locator, true);
+         super(qName, parent, locator, true);
       }
 
 

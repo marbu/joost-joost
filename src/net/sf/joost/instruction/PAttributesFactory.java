@@ -1,5 +1,5 @@
 /*
- * $Id: PAttributesFactory.java,v 1.1 2002/09/20 12:48:28 obecker Exp $
+ * $Id: PAttributesFactory.java,v 1.2 2002/11/27 09:54:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,22 +40,21 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-attributes</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.1 $ $Date: 2002/09/20 12:48:28 $
+ * @version $Revision: 1.2 $ $Date: 2002/11/27 09:54:44 $
  * @author Oliver Becker
  */
 
 public class PAttributesFactory extends FactoryBase
 {
-   private static final String name = "process-attributes";
-
    // Log4J initialization
    private static org.apache.log4j.Logger log4j = 
       org.apache.log4j.Logger.getLogger(PAttributesFactory.class);
 
 
+   /** @return <code>"process-attributes"</code> */
    public String getName()
    {
-      return name;
+      return "process-attributes";
    }
 
    public NodeBase createNode(NodeBase parent, String uri, String lName, 
@@ -63,17 +62,27 @@ public class PAttributesFactory extends FactoryBase
                               Hashtable nsSet, Locator locator)
       throws SAXParseException
    {
+      // prohibit this instruction inside of group variables
+      NodeBase ancestor = parent;
+      while (ancestor != null &&
+             !(ancestor instanceof TemplateFactory.Instance))
+         ancestor = ancestor.parent;
+      if (ancestor == null)
+         throw new SAXParseException(
+            "`" + qName + "' must be a descendant of stx:template",
+            locator);
+
       checkAttributes(qName, attrs, null, locator);
-      return new Instance(qName, locator);
+      return new Instance(qName, parent, locator);
    }
 
 
    /** The inner Instance class */
    public class Instance extends NodeBase
    {
-      public Instance(String qName, Locator locator)
+      public Instance(String qName, NodeBase parent, Locator locator)
       {
-         super(qName, locator, true);
+         super(qName, parent, locator, true);
       }
 
 
