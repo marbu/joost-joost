@@ -1,5 +1,5 @@
 /*
- * $Id: expr.inc,v 1.3 2003/01/08 15:59:40 obecker Exp $
+ * $Id: expr.inc,v 1.4 2003/01/12 16:44:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,12 +28,12 @@
 
 
 /* Non-terminals */
-non terminal Tree Expr, AndExpr, GeneralComp;
-non terminal Tree AdditiveExpr, MultiplicativeExpr, UnaryExpr, BasicExpr;
-non terminal Tree Accessor, NodeAccessor, RelativeAccessor;
-non terminal Tree AccessorStep, AccessorAxis, NodeNameTest; 
-non terminal Tree PropAccessor, AttributeNameTest, NamespaceNameTest;
-non terminal Tree FunctionCall, ExprSeq;
+non terminal Tree   Expr, AndExpr, GeneralComp,
+                    AdditiveExpr, MultiplicativeExpr, UnaryExpr, BasicExpr, 
+                    Accessor, NodeAccessor, RelativeAccessor, AccessorStep,
+                    AccessorAxis, NodeNameTest, PropAccessor, 
+                    AttributeNameTest, NamespaceNameTest, 
+                    FunctionCall, ExprSeq, ParaSeq;
 non terminal String Name;
 
 /* Start symbol, replaced by Ant with the grammar name (Pattern or Expr)*/
@@ -270,16 +270,24 @@ NamespaceNameTest ::=
  ;
 
 FunctionCall ::=
-   Name:n LPAR ExprSeq:e RPAR
+   Name:n LPAR ParaSeq:e RPAR
       {: RESULT = new Tree(Tree.FUNCTION, n, e,
                            parser.j_nsSet, parser.j_locator); :}
  ;
 
 ExprSeq ::=
+      {: RESULT = new Tree(Tree.SEQ, null, null); :}
+ | Expr:t
+      {: RESULT = t; :}
+ | Expr:t1 COMMA ExprSeq:t2
+      {: RESULT = new Tree(Tree.SEQ, t1, t2); :}
+ ;
+
+ParaSeq ::=
    /* empty: RESULT = null */
  | Expr:t
       {: RESULT = t; :}
- | ExprSeq:t1 COMMA Expr:t2
+ | ParaSeq:t1 COMMA Expr:t2
       {: RESULT = new Tree(Tree.LIST, t1, t2); :}
  ;
 
