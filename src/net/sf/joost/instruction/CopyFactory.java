@@ -1,5 +1,5 @@
 /*
- * $Id: CopyFactory.java,v 2.3 2003/05/14 11:53:08 obecker Exp $
+ * $Id: CopyFactory.java,v 2.4 2003/05/14 12:30:06 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>copy</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.3 $ $Date: 2003/05/14 11:53:08 $
+ * @version $Revision: 2.4 $ $Date: 2003/05/14 12:30:06 $
  * @author Oliver Becker
  */
 
@@ -98,6 +98,10 @@ final public class CopyFactory extends FactoryBase
           <code>null</code> if this attribute is missing */
       Tree attPattern;
 
+      /** <code>true</code> if {@link #attPattern} is a wildcard
+          (<code>@*</code>) */
+      boolean attrWildcard = false;
+
       //
       // Constructor
       //
@@ -107,6 +111,8 @@ final public class CopyFactory extends FactoryBase
       {
          super(qName, parent, locator, true);
          this.attPattern = attPattern;
+         if (attPattern != null && attPattern.type == Tree.ATTR_WILDCARD)
+            attrWildcard = true;
       }
 
 
@@ -122,28 +128,31 @@ final public class CopyFactory extends FactoryBase
          case SAXEvent.ROOT:
             break;
          case SAXEvent.ELEMENT: {
+            Attributes attList = attrWildcard ? event.attrs : emptyAttList;
             context.emitter.startElement(event.uri, event.lName, event.qName,
-                                         emptyAttList, event.namespaces,
+                                         attList, event.namespaces,
                                          publicId, systemId, lineNo, colNo);
-
-            int attrNum = (attPattern == null ? 0 
-                                              : event.attrs.getLength());
-            for (int i=0; i<attrNum; i++) {
-               // put attributes on the event stack for matching
-               SAXEvent attEv = SAXEvent.newAttribute(event.attrs, i);
-               context.ancestorStack.push(attEv);
-               if (attPattern.matches(context, context.ancestorStack.size(),
-                                      false)) {
-                  SAXEvent attrEvent = (SAXEvent)context.ancestorStack.peek();
-                  context.emitter.addAttribute(attrEvent.uri, attrEvent.qName,
-                                               attrEvent.lName,
-                                               attrEvent.value,
-                                               publicId, systemId, 
-                                               lineNo, colNo);
+            if (attPattern != null && !attrWildcard) {
+               // attribute pattern present, but no wildcard (@*)
+               int attrNum = event.attrs.getLength();
+               for (int i=0; i<attrNum; i++) {
+                  // put attributes on the event stack for matching
+                  SAXEvent attEv = SAXEvent.newAttribute(event.attrs, i);
+                  context.ancestorStack.push(attEv);
+                  if (attPattern.matches(context, 
+                                         context.ancestorStack.size(),
+                                         false)) {
+                     SAXEvent attrEvent = 
+                        (SAXEvent)context.ancestorStack.peek();
+                     context.emitter.addAttribute(
+                        attrEvent.uri, attrEvent.qName, attrEvent.lName,
+                        attrEvent.value,
+                        publicId, systemId, lineNo, colNo);
+                  }
+                  // remove attribute
+                  context.ancestorStack.pop();
+                  attEv.removeRef();
                }
-               // remove attribute
-               context.ancestorStack.pop();
-               attEv.removeRef();
             }
             break;
          }
