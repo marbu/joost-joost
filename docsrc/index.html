@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.30 2003/02/18 17:14:14 obecker Exp $ -->
+<!-- $Id: index.html,v 1.31 2003/02/21 14:38:36 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -146,14 +146,16 @@
       <p>
       Supported STXPath functions
       <ul>
-      <li>string(obj)</li>
-      <li>number(obj)</li>
+      <li>string(obj?)</li>
+      <li>number(obj?)</li>
       <li>boolean(obj)</li>
       <li>position()</li>
       <li>name(node?)</li>
       <li>local-name(node?)</li>
       <li>namespace-uri(node?)</li>
       <li>prefix(node?)</li>
+      <li>get-namespace-uri-for-prefix(node, string)</li>
+      <li>get-in-scope-namespaces(node)</li>
       <li>not(boolean)</li>
       <li>true()</li>
       <li>false()</li>
@@ -184,7 +186,6 @@
 
       <h4>Limitations</h4>
       <ul>
-         <li>no ancestor axis</li>
          <li>no full Unicode support
              (allow currently only ASCII characters in names,
              pay no attention to surrogate pairs)</li>
