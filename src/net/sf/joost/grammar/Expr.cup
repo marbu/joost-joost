@@ -1,5 +1,5 @@
 /*
- * $Id: Expr.cup,v 1.5 2003/06/03 14:28:45 obecker Exp $
+ * $Id: Expr.cup,v 1.6 2004/09/29 05:59:50 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -19,10 +19,12 @@
  * are Copyright (C) ______ _______________________. 
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): Thomas Behrends.
  */
 
 package net.sf.joost.grammar;
+
+import net.sf.joost.grammar.tree.*;
 
 parser code {: 
    protected net.sf.joost.stx.ParseContext j_context;

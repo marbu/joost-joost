@@ -1,5 +1,5 @@
 /*
- * $Id: Pattern.cup,v 1.9 2003/06/03 14:28:45 obecker Exp $
+ * $Id: Pattern.cup,v 1.10 2004/09/29 05:59:50 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -19,10 +19,12 @@
  * are Copyright (C) ______ _______________________. 
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): Thomas Behrends.
  */
 
 package net.sf.joost.grammar;
+
+import net.sf.joost.grammar.tree.*;
 
 parser code {: 
    protected net.sf.joost.stx.ParseContext j_context;
@@ -71,12 +73,12 @@ Pattern ::=
    MatchPath:t
       {: RESULT = t; :}
  | Pattern:t BAR MatchPath:p
-      {: RESULT = new Tree(Tree.UNION, t, p); :}
+      {: RESULT = new UnionTree(t, p); :}
  ;
 
 MatchPath ::= 
    SLASH 
-      {: RESULT = new Tree(Tree.ROOT, null); :}
+      {: RESULT = new RootTree(); :}
  | SLASH RelativePath:t
       {: // need to add an additional leaf for root
          Tree tmp = t, last = null;
@@ -86,7 +88,7 @@ MatchPath ::=
             tmp = tmp.left;
          }
          // create a new CHILD node
-         tmp = new Tree(Tree.CHILD, new Tree(Tree.ROOT, null), tmp);
+         tmp = new ChildTree(new RootTree(), tmp);
          if (last == null)
             RESULT = tmp;     // return new node
          else {
@@ -102,14 +104,14 @@ RelativePath ::=
    Step:t
       {: RESULT = t; :}
  | RelativePath:p SLASH Step:s
-      {: RESULT = new Tree(Tree.CHILD, p, s); :}
+      {: RESULT = new ChildTree(p, s); :}
  | RelativePath:p DSLASH Step:s
-      {: RESULT = new Tree(Tree.DESC, p, s); :}
+      {: RESULT = new DescTree(p, s); :}
  ;
 
 Step ::= 
    NodeTest:n Predicate:p
-      {: RESULT = (p != null) ? new Tree(Tree.PREDICATE, n, p)
+      {: RESULT = (p != null) ? new PredicateTree(n, p)
                               : n; :}
  ;
 

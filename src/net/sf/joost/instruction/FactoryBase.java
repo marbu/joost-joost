@@ -1,5 +1,5 @@
 /*
- * $Id: FactoryBase.java,v 2.7 2003/11/01 14:40:15 zubow Exp $
+ * $Id: FactoryBase.java,v 2.8 2004/09/29 06:00:53 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,6 +37,8 @@ import net.sf.joost.grammar.Tree;
 import net.sf.joost.grammar.Yylex;
 import net.sf.joost.grammar.ExprParser;
 import net.sf.joost.grammar.PatternParser;
+import net.sf.joost.grammar.tree.AvtTree;
+import net.sf.joost.grammar.tree.StringTree;
 import net.sf.joost.stx.ParseContext;
 
 
@@ -44,7 +46,7 @@ import net.sf.joost.stx.ParseContext;
  * Abstract base class for all factory classes which produce nodes
  * ({@link NodeBase}) for the tree representation of an STX transformation
  * sheet.
- * @version $Revision: 2.7 $ $Date: 2003/11/01 14:40:15 $
+ * @version $Revision: 2.8 $ $Date: 2004/09/29 06:00:53 $
  * @author Oliver Becker
  */
 
@@ -354,8 +356,7 @@ public abstract class FactoryBase implements Constants
             }
             else {
                if (buf.length() != 0) {
-                  tree = new Tree(Tree.AVT, tree, 
-                                  new Tree(Tree.STRING, buf.toString()));
+                  tree = new AvtTree(tree, new StringTree(buf.toString()));
                   buf.setLength(0);
                }
                state = EXPR_STATE;
@@ -376,8 +377,7 @@ public abstract class FactoryBase implements Constants
          case EXPR_STATE:
             switch (c) {
             case '}':
-               tree = new Tree(Tree.AVT, tree, 
-                               parseExpr(buf.toString(), context));
+               tree = new AvtTree(tree, parseExpr(buf.toString(), context));
                buf.setLength(0);
                state = ATT_STATE;
                continue;
@@ -411,13 +411,12 @@ public abstract class FactoryBase implements Constants
       }
 
       if (buf.length() != 0) {
-         tree = new Tree(Tree.AVT, tree, 
-                         new Tree(Tree.STRING, buf.toString()));
+         tree = new AvtTree(tree, new StringTree(buf.toString()));
       }
 
       // empty String?
       if (tree == null)
-         tree = new Tree(Tree.STRING, "");
+         tree = new StringTree("");
       return tree;
    }
 }

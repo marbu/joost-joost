@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateFactory.java,v 2.6 2004/01/08 09:01:24 zubow Exp $
+ * $Id: TemplateFactory.java,v 2.7 2004/09/29 06:05:50 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,23 +24,21 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
-import java.util.Hashtable;
 import java.util.HashSet;
-import java.util.Stack;
 
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+
 
 /**
  * Factory for <code>template</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.6 $ $Date: 2004/01/08 09:01:24 $
+ * @version $Revision: 2.7 $ $Date: 2004/09/29 06:05:50 $
  * @author Oliver Becker
  */
 
@@ -94,7 +92,7 @@ public final class TemplateFactory extends FactoryBase
          }
       }
       else {
-         priority = computePriority(matchPattern);
+         priority = matchPattern.getPriority();
       }
 
       int visibility = getEnumAttValue("visibility", attrs,
@@ -122,39 +120,6 @@ public final class TemplateFactory extends FactoryBase
       return new Instance(qName, parent, context,
                           matchPattern, priority, visibility, isPublic,
                           newScope);
-   }
-
-
-   /**
-    * Computes the default priority of a match pattern.
-    * @param match the pattern
-    * @return the priority as a double value
-    */
-   private static double computePriority(Tree match)
-   {
-      if (match.type == Tree.UNION)
-         // return NaN, priorities must be computed in the function split
-         return Double.NaN; 
-
-      if (match.type == Tree.NAME_TEST ||
-               match.type == Tree.ATTR || 
-               match.type == Tree.CDATA_TEST ||
-              (match.type == Tree.PI_TEST && match.value != ""))
-         return 0;
-      else if (match.type == Tree.URI_WILDCARD ||
-               match.type == Tree.LOCAL_WILDCARD ||
-               match.type == Tree.ATTR_LOCAL_WILDCARD ||
-               match.type == Tree.ATTR_URI_WILDCARD)
-         return -0.25;
-      else if (match.type == Tree.WILDCARD ||
-               match.type == Tree.ATTR_WILDCARD ||
-               match.type == Tree.PI_TEST ||
-               match.type == Tree.COMMENT_TEST ||
-               match.type == Tree.TEXT_TEST ||
-               match.type == Tree.NODE_TEST)
-         return -0.5;
-      else
-         return 0.5;
    }
 
 
@@ -229,10 +194,10 @@ public final class TemplateFactory extends FactoryBase
          }
          copy.match = match.right; // non-union
          if (Double.isNaN(copy.priority)) // no priority specified
-            copy.priority = computePriority(copy.match);
+            copy.priority = copy.match.getPriority();
          match = match.left;       // may contain another union
          if (Double.isNaN(priority)) // no priority specified
-            priority = computePriority(match);
+            priority = match.getPriority();
          return copy;
       }
 
