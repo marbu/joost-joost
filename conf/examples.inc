@@ -4,7 +4,7 @@ dmoz.*
 dmoz-lookup.*
 el2att*
 example1.*
-flat.*
+flat*
 group-fsm.*
 html2docbook.*
 indent*
