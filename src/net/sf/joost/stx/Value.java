@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: Value.java,v 1.2 2002/11/28 09:55:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,7 +29,7 @@ import net.sf.joost.grammar.EvalException;
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2002/11/28 09:55:37 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -44,19 +44,23 @@ public class Value implements Cloneable
    public static final int STRING = 2;
    public static final int NODE = 3;
 
+   /** type of this value */
    public int type;
 
-   /** for <code>type == NUMBER</code> */
+   /** for <code>{@link #type} == {@link #NUMBER}</code> */
    public double number;
 
-   /** for <code>type == BOOLEAN</code */
+   /** for <code>{@link #type} == {@link #BOOLEAN}</code> */
    public boolean bool;
 
-   /** for <code>type == STRING</code> */
+   /** for <code>{@link #type} == {@link #STRING}</code> */
    public String string;
 
-   /** for <code>type == NODE</code>: event and position on the stack */
+   /** for <code>{@link #type} == {@link #NODE}</code> */
    public SAXEvent event;
+
+   /** for <code>{@link #type} == {@link #NODE}</code>: 
+       position on the stack */
    public int level;
 
 
@@ -79,7 +83,7 @@ public class Value implements Cloneable
    }
 
    /**
-    * Stores a node (<code>SAXEvent</code>).
+    * Stores a node (<code>{@link SAXEvent}</code>).
     * @param e the event
     * @param l the level (position on the event stack)
     */
@@ -135,6 +139,10 @@ public class Value implements Cloneable
       case STRING:
          break;
       case NODE:
+         if (event == null) {
+            string = "";
+            break;
+         }
          if (event.type == SAXEvent.ELEMENT)
             throw new EvalException("Undefined node value for elements");
          if (event.type == SAXEvent.ROOT)
@@ -191,9 +199,7 @@ public class Value implements Cloneable
 
 
    /** 
-    * Creates a copy by calling the clone function 
-    * @exception StxException if a <code>CloneNotSupportedException</code>
-    *            occured (should not happen)
+    * Creates a copy by calling the <code>clone()</code> function 
     */
    public Value copy()
    {
