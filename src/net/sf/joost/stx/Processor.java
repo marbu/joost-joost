@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.24 2003/11/01 14:45:41 zubow Exp $
+ * $Id: Processor.java,v 2.25 2003/12/02 12:18:56 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -56,7 +56,7 @@ import net.sf.joost.trace.DebugProcessor;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.24 $ $Date: 2003/11/01 14:45:41 $
+ * @version $Revision: 2.25 $ $Date: 2003/12/02 12:18:56 $
  * @author Oliver Becker
  */
 
@@ -453,8 +453,8 @@ public class Processor extends XMLFilterImpl
          }
          // try another SAX implementation
          String PARSER_IMPLS[] = {
-            "org.apache.crimson.parser.XMLReaderImpl", // Crimson
             "org.apache.xerces.parsers.SAXParser",     // Xerces
+            "org.apache.crimson.parser.XMLReaderImpl", // Crimson
             "gnu.xml.aelfred2.SAXDriver"               // Aelfred nonvalidating
          };
          for (int i=0; i<PARSER_IMPLS.length; i++) {
