@@ -1,5 +1,5 @@
 /*
- * $Id: PChildrenFactory.java,v 1.6 2002/12/15 17:15:23 obecker Exp $
+ * $Id: PChildrenFactory.java,v 1.7 2002/12/17 16:38:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.SAXEvent;
 /** 
  * Factory for <code>process-children</code> elements, which are represented 
  * by the inner Instance class. 
- * @version $Revision: 1.6 $ $Date: 2002/12/15 17:15:23 $
+ * @version $Revision: 1.7 $ $Date: 2002/12/17 16:38:03 $
  * @author Oliver Becker
  */
 
@@ -129,22 +129,24 @@ public class PChildrenFactory extends FactoryBase
          }
          // ST_PROCESSING on, other bits off
          else if (processStatus == ST_PROCESSING) {
+            // is there a target group?
+            if (groupExpName != null) {
+               if (context.currentGroup.namedGroups.get(groupExpName) 
+                     == null) {
+                  context.errorHandler.error(
+                     "Unknown target group `" + groupQName + 
+                     "' specified for `" + qName + "'" ,
+                     publicId, systemId, lineNo, colNo);
+                  return processStatus; // if the errorHandler returns
+               }
+               // change to a new base group for matching
+               context.nextProcessGroup = groupExpName;
+            }
+
             SAXEvent event = (SAXEvent)eventStack.peek();
             if (event.type == SAXEvent.ELEMENT || 
                 event.type == SAXEvent.ROOT) {
                // suspend the processing
-               // is there a target group?
-               if (groupExpName != null) {
-                  if (context.currentGroup.namedGroups.get(groupExpName) 
-                         == null) {
-                     context.errorHandler.error(
-                        "Unknown group `" + groupQName + "'", 
-                        publicId, systemId, lineNo, colNo);
-                     return processStatus; // if the errorHandler returns
-                  }
-                  // change to a new base group for matching
-                  context.nextProcessGroup = groupExpName;
-               }
                // suspending: ST_PROCESSING off, ST_CHILDREN on
                return ST_CHILDREN;
             }

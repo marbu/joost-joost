@@ -1,5 +1,5 @@
 /*
- * $Id: PAttributesFactory.java,v 1.3 2002/12/15 17:15:23 obecker Exp $
+ * $Id: PAttributesFactory.java,v 1.4 2002/12/17 16:38:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-attributes</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.3 $ $Date: 2002/12/15 17:15:23 $
+ * @version $Revision: 1.4 $ $Date: 2002/12/17 16:38:03 $
  * @author Oliver Becker
  */
 
@@ -112,6 +112,19 @@ public class PAttributesFactory extends FactoryBase
                               Context context, short processStatus)
          throws SAXException
       {
+         // Check group attribute
+         if (groupExpName != null && (processStatus & ST_PROCESSING) != 0) {
+            if (context.currentGroup.namedGroups.get(groupExpName) == null) {
+               context.errorHandler.error(
+                  "Unknown target group `" + groupQName + 
+                  "' specified for `" + qName + "'", 
+                  publicId, systemId, lineNo, colNo);
+               return processStatus; // if the errorHandler returns
+            }
+            // change to a new base group for matching
+            context.nextProcessGroup = groupExpName;
+         }
+
          SAXEvent event = (SAXEvent)eventStack.peek();
 
          if (event.type != SAXEvent.ELEMENT)
@@ -126,21 +139,9 @@ public class PAttributesFactory extends FactoryBase
 
          // otherwise
          // ST_PROCESSING on: toggle processing bit, set attributes bit
-         if ((processStatus & ST_PROCESSING) != 0) {
-            // is there a target group?
-            if (groupExpName != null) {
-               if (context.currentGroup.namedGroups.get(groupExpName) 
-                      == null) {
-                  context.errorHandler.error(
-                     "Unknown group `" + groupQName + "'", 
-                     publicId, systemId, lineNo, colNo);
-                  return processStatus; // if the errorHandler returns
-               }
-               // change to a new base group for matching
-               context.nextProcessGroup = groupExpName;
-            }
+         if ((processStatus & ST_PROCESSING) != 0)
             return (short) ((processStatus ^ ST_PROCESSING) | ST_ATTRIBUTES);
-         }
+
          // ST_PROCESSING off, ST_ATTRIBUTES on: 
          // toggle processing and attributes bit
          else if ((processStatus & ST_ATTRIBUTES) != 0)
