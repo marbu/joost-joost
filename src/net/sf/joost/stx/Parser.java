@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 1.20 2003/02/04 16:16:21 obecker Exp $
+ * $Id: Parser.java,v 1.21 2003/02/18 17:06:50 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.instruction.*;
 /** 
  * Creates the tree representation of an STX stylesheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 1.20 $ $Date: 2003/02/04 16:16:21 $
+ * @version $Revision: 1.21 $ $Date: 2003/02/18 17:06:50 $
  * @author Oliver Becker
  */
 
@@ -117,6 +117,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
          new ElementEndFactory(),
          new CommentFactory(),
          new PIFactory(),
+         new ForEachFactory(),
          new IfFactory(),
          new ElseFactory(),
          new ChooseFactory(),
@@ -176,7 +177,8 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
          if (currentNode instanceof GroupBase) {
             if (s.trim().length() != 0)
                throw new SAXParseException(
-                  "Text may occur only within templates", locator);
+                  "Text must not occur on group level", locator);
+
          }
          else
             currentNode.append(new TextNode(s, currentNode, locator));
