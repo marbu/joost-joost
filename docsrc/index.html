@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.71 2004/11/02 19:24:25 obecker Exp $ -->
+<!-- $Id: index.html,v 1.72 2004/11/06 14:31:24 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -115,9 +115,12 @@
         </tr>
         <tr>
           <td valign="top"><strong><code>-m &lt;classname&gt;</code></strong></td>
-          <td>use a &lt;classname&gt; object for stx:message output<br>
+          <td>use a &lt;classname&gt; object for <code>stx:message</code>
+              output (unless the <code>stx:message</code> element has
+              a <code>logger</code> attribute and logging is available,
+              see below)<br>
               this class must implement the interface
-              net.sf.joost.emitter.StxEmitter</td>
+              <code>net.sf.joost.emitter.StxEmitter</code></td>
         </tr>
         <tr>
           <td valign="top"><strong><code>-nodecl</code></strong></td>
@@ -135,9 +138,11 @@
       </table>
 
       <p>If Commons Logging is available, <em>Joost</em> will log possible
-      runtime errors using its logger. You can check whether logging is
-      available or not using the <code>-help</code> or <code>-version</code>
-      command line option.</p>
+      runtime errors and messages produced with
+      <code>stx:message/@logger</code> using the appropriate logger objects.
+      You can check whether logging is available or not by running
+      <em>Joost</em> with the <code>-help</code> or <code>-version</code>
+      command line options.</p>
         
       <p><em>Joost</em> is able to pass its output to <a target="_top"
       href="http://xml.apache.org/fop/">FOP</a> for producing PDF output
@@ -202,8 +207,26 @@
       <li>stx:assign (name, select)</li>
       <li>stx:param (name, select?, required?)</li>
       <li>stx:with-param (name, select?)</li>
-      <li>stx:message (select?) &ndash;
-          (<em>prints its content to standard error output</em>)</li>
+      <li>stx:message (select?, {terminate}?, logger?, level?) &ndash;
+          (<em>prints its content to standard error output or uses the
+          specified logger with the given level</em>)
+          <br>
+          The <code>terminate</code> attribute behaves as in XSLT.
+          <br>
+          The <code>logger</code> and <code>level</code> attributes can be
+          used to produce log messages that will be send to a special Log
+          object. The name of this object must be specified in the
+          <code>logger</code> attribute. The <code>level</code> attribute
+          must be one of the values <code>trace</code>, <code>debug</code>,
+          <code>info</code>, <code>warn</code>, <code>error</code>, or
+          <code>fatal</code>. <em>Joost</em> will use the Commons Logging
+          framework if it can be found on the classpath. Otherwise the
+          attributes <code>logger</code> and <code>level</code> will simply
+          be ignored, i.e. the <code>stx:message</code> instruction behaves
+          as if these attributes weren't present. Since Commons Logging is
+          just a wrapper for other logging facilities, <em>Joost</em> doesn't
+          provide any mechanisms to configure the underlying logger.
+          </li>
       </ul>
       <p>
       <strong>Supported STXPath functions</strong>

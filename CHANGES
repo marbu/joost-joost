@@ -5,6 +5,7 @@ Changes since 20041002
 - changed Joost's extension namespace to "http://joost.sf.net/extension"
 - added experimental "joost:html" output method (in that extension namespace)
 - added command line switch -nodecl
+- added 'terminate', 'logger', and 'level' attributes to stx:message
 - made Commons Logging usage optional
 - Bugfix: 1056611
   
