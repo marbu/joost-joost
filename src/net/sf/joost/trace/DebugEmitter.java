@@ -1,5 +1,5 @@
 /*
- * $Id: DebugEmitter.java,v 1.10 2004/10/30 11:23:53 obecker Exp $
+ * $Id: DebugEmitter.java,v 1.11 2004/11/06 13:45:03 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -44,7 +44,7 @@ import org.xml.sax.helpers.LocatorImpl;
 
 /**
  * Extends the {@link net.sf.joost.stx.Emitter} with debug features.
- * @version $Revision: 1.10 $ $Date: 2004/10/30 11:23:53 $
+ * @version $Revision: 1.11 $ $Date: 2004/11/06 13:45:03 $
  * @author Zubow
  */
 public class DebugEmitter extends Emitter {
@@ -73,9 +73,11 @@ public class DebugEmitter extends Emitter {
      * @param prev the previous emitter
      * @param handler the new content handler
      */
-    private DebugEmitter(Emitter prev, StxEmitter handler)
+    private DebugEmitter(DebugEmitter prev, StxEmitter handler)
     {
         super(prev, handler);
+        this.tmgr = prev.tmgr;
+        this.writer = prev.writer;
     }
     
     /* (non-Javadoc)
