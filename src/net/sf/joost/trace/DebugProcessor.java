@@ -1,5 +1,5 @@
 /*
- * $Id: DebugProcessor.java,v 1.11 2004/02/12 09:10:43 zubow Exp $
+ * $Id: DebugProcessor.java,v 1.12 2004/02/12 12:39:50 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -45,7 +45,7 @@ import java.util.Hashtable;
 
 /**
  * Extends the {@link net.sf.joost.stx.Processor} with debug features.
- * @version $Revision: 1.11 $ $Date: 2004/02/12 09:10:43 $
+ * @version $Revision: 1.12 $ $Date: 2004/02/12 12:39:50 $
  * @author Zubow
  */
 public class DebugProcessor extends Processor {
@@ -98,7 +98,7 @@ public class DebugProcessor extends Processor {
     }
 
     /**
-     * See {@link net.sf.joost.stx.Processor#Processor(XMLReader, InputSource, ErrorListener, URIResolver, ParserListener, StxEmitter)}
+     * See {@link net.sf.joost.stx.Processor#Processor(XMLReader, InputSource, ErrorListener, URIResolver, ParserListener)}
      */
     public DebugProcessor(XMLReader reader, InputSource src,
                           ErrorListener errorListener,
