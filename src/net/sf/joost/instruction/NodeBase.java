@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 1.6 2002/11/27 10:03:11 obecker Exp $
+ * $Id: NodeBase.java,v 1.7 2002/12/15 17:00:48 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.stx.Emitter;
 
 /**
  * Abstract base class for all instances of nodes in a STX stylesheet.
- * @version $Revision: 1.6 $ $Date: 2002/11/27 10:03:11 $
+ * @version $Revision: 1.7 $ $Date: 2002/12/15 17:00:48 $
  * @author Oliver Becker
  */
 public abstract class NodeBase implements Constants
@@ -69,7 +69,7 @@ public abstract class NodeBase implements Constants
    /** The vector containing all children (type Node) of this node. */
    protected Vector children;
 
-   /** The node which contains (or is) a process-children node */
+   /** The node among the children where the processing has been suspended */
    private NodeBase processNode;
 
    /** Local declared variables of this Node */
