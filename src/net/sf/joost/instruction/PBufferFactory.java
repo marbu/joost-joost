@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 2.2 2003/05/14 11:58:01 obecker Exp $
+ * $Id: PBufferFactory.java,v 2.3 2003/05/16 15:00:21 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,11 +28,16 @@ import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.ext.LexicalHandler;
 
 import java.util.HashSet;
 import java.util.Hashtable;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.TransformerHandler;
 
 import net.sf.joost.emitter.BufferEmitter;
+import net.sf.joost.emitter.EmitterAdapter;
+import net.sf.joost.stx.BufferReader;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Processor;
 import net.sf.joost.stx.SAXEvent;
@@ -41,7 +46,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.2 $ $Date: 2003/05/14 11:58:01 $
+ * @version $Revision: 2.3 $ $Date: 2003/05/16 15:00:21 $
  * @author Oliver Becker
  */
 
@@ -67,6 +72,9 @@ public class PBufferFactory extends FactoryBase
       attrNames = new HashSet();
       attrNames.add("name");
       attrNames.add("group");
+      attrNames.add("method");
+      attrNames.add("href");
+      attrNames.add("use");
    }
 
    /** @return <code>"process-buffer"</code> */
@@ -89,26 +97,60 @@ public class PBufferFactory extends FactoryBase
       if (groupAtt != null)
          groupName = getExpandedName(groupAtt, nsSet, locator);
 
+      String methodAtt = attrs.getValue("method");
+      if (groupAtt != null && methodAtt != null)
+         throw new SAXParseException(
+            "It's not allowed to use both `group' and `method' attributes",
+            locator);
+
+      String hrefAtt = attrs.getValue("href");
+      String useAtt = attrs.getValue("use");
+      String useName = (useAtt != null)
+                          ? "@" + getExpandedName(useAtt, nsSet, locator)
+                          : null;
+
+      if (useAtt != null && hrefAtt != null)
+         throw new SAXParseException(
+            "It's not allowed to specify both `use' and `method' attributes",
+            locator);
+      if (hrefAtt != null && methodAtt == null)
+         throw new SAXParseException(
+            "Missing `method' attribute in `" + qName + 
+            "' (`href' is present)",
+            locator);
+      if (useAtt != null && methodAtt == null)
+         throw new SAXParseException(
+            "Missing `method' attribute in `" + qName + 
+            "' (`use' is present)",
+            locator);
+
       checkAttributes(qName, attrs, attrNames, locator);
       return new Instance(qName, parent, locator, nameAtt, bufName, 
-                          groupAtt, groupName);
+                          groupAtt, groupName, methodAtt, hrefAtt, 
+                          useAtt, useName);
    }
+
 
 
    /** The inner Instance class */
    public class Instance extends ProcessBase
    {
-      String bufName, expName;
+      String bufName, expName, method, href, useBufName, use;
 
       // Constructor
       public Instance(String qName, NodeBase parent, Locator locator, 
                       String bufName, String expName, String groupQName,
-                      String groupExpName)
+                      String groupExpName, String method, String href,
+                      String useBufName, String use)
          throws SAXParseException
       {
          super(qName, parent, locator, groupQName, groupExpName);
          this.bufName = bufName;
          this.expName = expName;
+         this.method = method;
+         this.href = href;
+         this.useBufName = useBufName;
+         this.use = use;
       }
 
 
@@ -118,78 +160,83 @@ public class PBufferFactory extends FactoryBase
       public short processEnd(Context context)
          throws SAXException
       {
-         // find buffer
-         Object buffer = null;
-         buffer = context.localVars.get(expName);
-         if (buffer == null) {
-            GroupBase group = context.currentGroup;
-            while (buffer == null && group != null) {
-               buffer = ((Hashtable)group.groupVars.peek()).get(expName);
-               group = group.parentGroup;
+         BufferReader br = new BufferReader(context, bufName, expName,
+                                            publicId, systemId, 
+                                            lineNo, colNo);
+         if (br == null)
+            return PR_ERROR;
+
+         if (method != null) {
+            // use external SAX processor (TransformerHandler)
+            try {
+               TransformerHandler handler;
+               if (use != null) {
+                  BufferReader ubr = 
+                     new BufferReader(context, useBufName, use,
+                                      publicId, systemId, lineNo, colNo);
+                  if (ubr == null)
+                     return PR_ERROR;
+                  handler = 
+                     context.defaultTransformerHandlerResolver
+                            .resolve(method, ubr, context.passedParameters);
+               }
+               else {
+                  handler = 
+                     context.defaultTransformerHandlerResolver
+                            .resolve(method, href, context.passedParameters);
+               }
+               if (handler == null) {
+                  context.errorHandler.fatalError(
+                     "Don't know how to process with method `" +
+                     method + "'", publicId, systemId, lineNo, colNo);
+                  return PR_ERROR;
+               }
+
+               EmitterAdapter adapter = 
+                  new EmitterAdapter(context.emitter, 
+                                     publicId, systemId, lineNo, colNo);
+               handler.setResult(new SAXResult(adapter));
+               LexicalHandler lexH = null;
+               if (handler instanceof LexicalHandler)
+                  lexH = (LexicalHandler)handler;
+               handler.startDocument();
+               br.parse(handler, lexH);
+               handler.endDocument();
             }
-         }
-         if (buffer == null) {
-            context.errorHandler.error(
-               "Can't process an undeclared buffer `" + bufName + "'",
-               publicId, systemId, lineNo, colNo);
-            return PR_CONTINUE; // if the errorHandler returns
-         }
-
-         // store current group
-         GroupBase prevGroup = context.currentGroup;
-
-         ((SAXEvent)context.ancestorStack.peek()).enableChildNodes(false);
-         // walk through the buffer and emit events to the Processor object
-         SAXEvent[] events = ((BufferEmitter)buffer).getEvents();
-         Processor proc = context.currentProcessor;
-         proc.startInnerProcessing();
-         for (int i=0; i<events.length; i++) {
-            if (DEBUG)
-               log.debug(events[i]);
-            switch (events[i].type) {
-            case SAXEvent.ELEMENT:
-               proc.startElement(events[i].uri, events[i].lName, 
-                                 events[i].qName, events[i].attrs);
-               break;
-            case SAXEvent.ELEMENT_END:
-               proc.endElement(events[i].uri, events[i].lName, 
-                               events[i].qName);
-               break;
-            case SAXEvent.TEXT:
-               proc.characters(events[i].value.toCharArray(), 
-                               0, events[i].value.length());
-               break;
-            case SAXEvent.CDATA:
-               proc.startCDATA();
-               proc.characters(events[i].value.toCharArray(), 
-                               0, events[i].value.length());
-               proc.endCDATA();
-               break;
-            case SAXEvent.PI:
-               proc.processingInstruction(events[i].qName, events[i].value);
-               break;
-            case SAXEvent.COMMENT:
-               proc.comment(events[i].value.toCharArray(), 
-                            0, events[i].value.length());
-               break;
-            case SAXEvent.MAPPING:
-               proc.startPrefixMapping(events[i].qName, events[i].value);
-               break;
-            case SAXEvent.MAPPING_END:
-               proc.endPrefixMapping(events[i].qName);
-               break;
-            default:
-               // Mustn't happen
-               throw new SAXParseException(
-                  "Unexpected type in `" + qName + "': " + 
-                  events[i].type + " (" + events[i] + ")",
+            catch(Exception e) {
+               java.io.StringWriter sw = null;
+               if (DEBUG) {
+                  sw = new java.io.StringWriter();
+                  e.printStackTrace(new java.io.PrintWriter(sw));
+               }
+               context.errorHandler.fatalError(
+                  "External processing failed: " + (DEBUG ? ("\n" + sw) 
+                                                          : e.toString()),
                   publicId, systemId, lineNo, colNo);
+               return PR_ERROR;
             }
          }
-         proc.endInnerProcessing();
+         else {
+            // process the events using STX instructions
 
-         // restore current group
-         context.currentGroup = prevGroup;
+            // store current group
+            GroupBase prevGroup = context.currentGroup;
+
+            // ensure, that position counters on the top most event are
+            // available
+            ((SAXEvent)context.ancestorStack.peek()).enableChildNodes(false);
+
+            Processor proc = context.currentProcessor;
+            proc.startInnerProcessing();
+
+            // call parse method with the two handler objects directly
+            // (no startDocument, endDocument events!)
+            br.parse(proc, proc);
+
+            proc.endInnerProcessing();
+            // restore current group
+            context.currentGroup = prevGroup;
+         }
 
          return super.processEnd(context);
       }
