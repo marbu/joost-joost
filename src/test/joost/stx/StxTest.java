@@ -1,5 +1,5 @@
 /*
- * $Id: StxTest.java,v 1.2 2005/01/07 10:29:51 obecker Exp $
+ * $Id: StxTest.java,v 1.3 2005/01/23 18:37:22 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -43,7 +43,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 /**
- * @version $Revision: 1.2 $ $Date: 2005/01/07 10:29:51 $
+ * @version $Revision: 1.3 $ $Date: 2005/01/23 18:37:22 $
  * @author Oliver Becker
  */
 public class StxTest extends TestCase
@@ -83,10 +83,10 @@ public class StxTest extends TestCase
       );
       for (int i = 0; i < resultFiles.length; i++) {
          String fName = resultFiles[i];
-         System.out.println(fName);
+         String baseName = fName.substring(0, fName.indexOf(".res"));
+         System.out.println(baseName);
 
          File resFile = new File(testDir, fName);
-         String baseName = fName.substring(0, fName.indexOf(".res"));
          File stxFile = new File(testDir, baseName + ".stx");
          File parFile = new File(testDir, baseName + ".par");
          File xmlFile = new File(testDir, baseName + ".xml");
