@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEvent.java,v 1.18 2004/01/15 10:36:08 obecker Exp $
+ * $Id: SAXEvent.java,v 1.19 2004/09/29 06:04:58 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -19,24 +19,24 @@
  * are Copyright (C) ______ _______________________. 
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): Thomas Behrends.
  */
 
 package net.sf.joost.stx;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.helpers.AttributesImpl;
-import org.xml.sax.helpers.NamespaceSupport;
-
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
+
+import net.sf.joost.stx.helpers.MutableAttributes;
+import net.sf.joost.stx.helpers.MutableAttributesImpl;
+
+import org.xml.sax.Attributes;
 
 
 /** 
  * SAXEvent stores all information attached to an incoming SAX event,
  * it is the representation of a node in STX.
- * @version $Revision: 1.18 $ $Date: 2004/01/15 10:36:08 $
+ * @version $Revision: 1.19 $ $Date: 2004/09/29 06:04:58 $
  * @author Oliver Becker
  */
 final public class SAXEvent
@@ -57,7 +57,7 @@ final public class SAXEvent
    public String uri;
    public String lName;
    public String qName; // PI->target, MAPPING->prefix
-   public Attributes attrs;
+   public MutableAttributes attrs;
    public Hashtable namespaces;
    public String value = ""; 
       // PI->data, MAPPING->uri, TEXT, ATTRIBUTES as usual
@@ -84,7 +84,7 @@ final public class SAXEvent
 
    /** Create a new element node */
    public static SAXEvent newElement(String uri, String lName, String qName,
-                                     Attributes attrs, 
+                                     Attributes attrs, boolean mutable,
                                      Hashtable inScopeNamespaces)
    {
       SAXEvent event = new SAXEvent();
@@ -92,20 +92,15 @@ final public class SAXEvent
       event.uri = uri;
       event.lName = lName;
       event.qName = qName;
-      if (attrs != null) {
-         // Note: addAttribute() will block if this.attrs was created
-         // via the constructor with an empty attrs parameter (Bug?)
-         if (attrs.getLength() != 0)
-            event.attrs = new AttributesImpl(attrs);
-         else
-            event.attrs = new AttributesImpl();
-      }
+      
+      if (attrs != null)
+         event.attrs = new MutableAttributesImpl(attrs);
+
       event.namespaces = inScopeNamespaces;
       event.hasChildNodes = false;
       event.value = "";
       return event;
    }
-
 
    /** Create a new text node */
    public static SAXEvent newText(String value)
@@ -157,6 +152,18 @@ final public class SAXEvent
       return event;
    }
 
+   /** Create a new attribute node */
+   public static SAXEvent newAttribute(String uri, String lname, String qName, 
+                                       String value)
+   {
+      SAXEvent event = new SAXEvent();
+      event.type = ATTRIBUTE;
+      event.uri = uri;
+      event.lName = lname;
+      event.qName = qName;
+      event.value = value;
+      return event;
+   }
 
    /** Create a new attribute node */
    public static SAXEvent newAttribute(Attributes attrs, int index)
@@ -169,7 +176,6 @@ final public class SAXEvent
       event.value = attrs.getValue(index);
       return event;
    }
-
 
    /** Create a new representation for a namespace mapping */
    public static SAXEvent newMapping(String prefix, String uri)

@@ -1,5 +1,5 @@
 /*
- * $Id: DebugProcessor.java,v 1.14 2004/08/21 22:05:06 obecker Exp $
+ * $Id: DebugProcessor.java,v 1.15 2004/09/29 06:02:16 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -13,39 +13,43 @@
  *
  * The Original Code is: this file
  *
- * The Initial Developer of the Original Code is Oliver Becker.
+ * The Initial Developer of the Original Code is Anatolij Zubow.
  *
  * Portions created by  ______________________
  * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________.
+ * Contributor(s): Oliver Becker.
  */
 
 package net.sf.joost.trace;
 
-import net.sf.joost.trace.TraceManager;
-import net.sf.joost.stx.*;
-import net.sf.joost.stx.Parser;
-import net.sf.joost.instruction.TemplateFactory;
-import net.sf.joost.instruction.AbstractInstruction;
-import net.sf.joost.instruction.NodeBase;
-import net.sf.joost.instruction.AssignFactory;
-import net.sf.joost.trax.TransformerImpl;
-import net.sf.joost.Constants;
-import net.sf.joost.emitter.StxEmitter;
-import org.xml.sax.*;
+import java.io.IOException;
 
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.URIResolver;
-import java.io.IOException;
-import java.util.Vector;
-import java.util.Arrays;
-import java.util.Hashtable;
+
+import net.sf.joost.Constants;
+import net.sf.joost.emitter.StxEmitter;
+import net.sf.joost.instruction.AbstractInstruction;
+import net.sf.joost.instruction.NodeBase;
+import net.sf.joost.stx.Context;
+import net.sf.joost.stx.Emitter;
+import net.sf.joost.stx.Parser;
+import net.sf.joost.stx.ParserListener;
+import net.sf.joost.stx.Processor;
+import net.sf.joost.stx.SAXEvent;
+import net.sf.joost.trax.TransformerImpl;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /**
  * Extends the {@link net.sf.joost.stx.Processor} with debug features.
- * @version $Revision: 1.14 $ $Date: 2004/08/21 22:05:06 $
+ * @version $Revision: 1.15 $ $Date: 2004/09/29 06:02:16 $
  * @author Zubow
  */
 public class DebugProcessor extends Processor {
@@ -264,7 +268,7 @@ public class DebugProcessor extends Processor {
         SAXEvent saxevent;
 
         // todo - namespace support - remove null value
-        saxevent = SAXEvent.newElement(uri, lName, qName, attrs, null);
+        saxevent = SAXEvent.newElement(uri, lName, qName, attrs, false, null);
 
         // process event
         super.startElement(uri, lName, qName, attrs);
@@ -280,7 +284,7 @@ public class DebugProcessor extends Processor {
         SAXEvent saxevent;
 
         // todo - namespace support - remove null value
-        saxevent = SAXEvent.newElement(uri, lName, qName, null, null);
+        saxevent = SAXEvent.newElement(uri, lName, qName, null, false, null);
 
         // process event
         super.endElement(uri, lName, qName);

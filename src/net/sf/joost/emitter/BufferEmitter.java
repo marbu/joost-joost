@@ -1,5 +1,5 @@
 /*
- * $Id: BufferEmitter.java,v 1.2 2003/03/18 14:50:59 obecker Exp $
+ * $Id: BufferEmitter.java,v 1.3 2004/09/29 06:02:15 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,20 +25,18 @@
 package net.sf.joost.emitter;
 
 //SAX2
+import java.util.Vector;
+
+import net.sf.joost.stx.SAXEvent;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
-import java.util.Hashtable;
-import java.util.Vector;
-
-//Joost
-import net.sf.joost.stx.SAXEvent;
-
 
 /**
  * This class implements a buffer for storing SAX events.
- * @version $Revision: 1.2 $ $Date: 2003/03/18 14:50:59 $
+ * @version $Revision: 1.3 $ $Date: 2004/09/29 06:02:15 $
  * @author Oliver Becker
  */
 
@@ -114,7 +112,7 @@ final public class BufferEmitter implements StxEmitter {
       throws SAXException
    {
       buffer.addElement(SAXEvent.newElement(namespaceURI, localName,
-                                            qName, atts, null));
+                                            qName, atts, true, null));
    }
 
    public void endElement(String namespaceURI, String localName,
@@ -122,7 +120,7 @@ final public class BufferEmitter implements StxEmitter {
       throws SAXException
    {
       buffer.addElement(SAXEvent.newElement(namespaceURI, localName,
-                                            qName, null, null));
+                                            qName, null, true, null));
    }
 
    public void characters(char[] ch, int start, int length)
