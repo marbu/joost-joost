@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.9 2002/10/30 09:30:24 obecker Exp $
+ * $Id: Processor.java,v 1.10 2002/10/31 13:31:18 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -62,7 +62,7 @@ import net.sf.joost.instruction.VariableFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.9 $ $Date: 2002/10/30 09:30:24 $
+ * @version $Revision: 1.10 $ $Date: 2002/10/31 13:31:18 $
  * @author Oliver Becker
  */
 
@@ -580,7 +580,7 @@ public class Processor extends XMLFilterImpl
 //           return; // white-space only characters found, do nothing
 //        }
 
-      if (!insideCDATA && context.stripSpace && s.trim().length() == 0) {
+      if (context.stripSpace && s.trim().length() == 0) {
          collectedCharacters.setLength(0);
          return; // white-space only characters found, do nothing
       }
@@ -1135,7 +1135,7 @@ public class Processor extends XMLFilterImpl
 
       if (lastElement != null)
          processLastElement(dummyNode); // dito, see startCDATA above
-      processCharacters(); // even if this CDATA section was empty
+      processCharacters(); // test for emptiness occurs there
 
       log4j.debug("after processing");
 
