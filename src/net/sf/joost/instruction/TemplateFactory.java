@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateFactory.java,v 1.10 2003/01/27 17:57:46 obecker Exp $
+ * $Id: TemplateFactory.java,v 1.11 2003/01/30 17:15:51 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>template</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 1.10 $ $Date: 2003/01/27 17:57:46 $
+ * @version $Revision: 1.11 $ $Date: 2003/01/30 17:15:51 $
  * @author Oliver Becker
  */
 
@@ -51,16 +51,6 @@ public final class TemplateFactory extends FactoryBase
 {
    /** allowed attributes for this element. */
    private HashSet attrNames;
-
-   /** Visibility values */
-   public static final int
-      PRIVATE_VISIBLE = 0,
-      PUBLIC_VISIBLE = 1,
-      GLOBAL_VISIBLE = 2;
-
-   /** Attribute value strings for the above visiblity values */
-   private static final String[] VISIBILITY_VALUES = 
-   { "private", "public", "global" }; // note: same order required!
 
 
    // Log4J initialization
@@ -116,13 +106,14 @@ public final class TemplateFactory extends FactoryBase
       }
 
       int visibility = getEnumAttValue("visibility", attrs,
-                                       VISIBILITY_VALUES, locator);
+                                       TemplateBase.VISIBILITY_VALUES, 
+                                       locator);
       if (visibility == -1)
-         visibility =  PRIVATE_VISIBLE; // default value
+         visibility =  TemplateBase.PRIVATE_VISIBLE; // default value
 
       // default is false
       boolean newScope = 
-         getEnumAttValue("new-scope", attrs,YESNO_VALUES, locator)
+         getEnumAttValue("new-scope", attrs, YESNO_VALUES, locator)
          == YES_VALUE;
 
       checkAttributes(qName, attrs, attrNames, locator);
@@ -170,7 +161,7 @@ public final class TemplateFactory extends FactoryBase
 
    /** The inner Instance class */
    public final class Instance 
-      extends NodeBase 
+      extends TemplateBase
       implements Cloneable, Comparable
    {
       /** The match pattern */
@@ -179,17 +170,6 @@ public final class TemplateFactory extends FactoryBase
       /** The priority of this template */
       private double priority;
 
-      /** The visibility of this template */
-      public int visibility;
-
-      /** Does this template establish a new scope for group variables? */
-      private boolean newScope;
-
-      /** stack for local variables */
-      private Stack localVarStack = new Stack();
-
-      /** The parent of this template */
-      public GroupBase parentGroup;
 
       //
       // Constructor
@@ -200,12 +180,9 @@ public final class TemplateFactory extends FactoryBase
                          boolean newScope)
          throws SAXParseException
       {
-         super(qName, parent, locator, false);
-         parentGroup = (GroupBase)parent;
+         super(qName, parent, locator, visibility, newScope);
          this.match = match;
          this.priority = priority;
-         this.visibility = visibility;
-         this.newScope = newScope;
       }
 
 
@@ -272,46 +249,6 @@ public final class TemplateFactory extends FactoryBase
       {
          double p = ((Instance)o).priority;
          return (p < priority) ? -1 : ((p > priority) ? 1 : 0);
-      }
-
-
-      public short process(Emitter emitter, Stack eventStack,
-                           Context context, short processStatus)
-         throws SAXException
-      {
-         if (log4j.isDebugEnabled())
-            log4j.debug(this + " status: " + processStatus);
-//           log4j.debug("size localVarStack: " + localVarStack.size());
-
-         context.currentGroup = parentGroup;
-         if ((processStatus & ST_PROCESSING) != 0) {
-            // template entered, remove existing local variables
-            context.localVars.clear();
-            if (newScope) {
-               // initialize group variables
-               parentGroup.enterRecursionLevel(emitter, eventStack, context);
-            }
-         }
-         else {
-            // template re-entered, restore local variables 
-            context.localVars = (Hashtable)localVarStack.pop();
-         }
-
-         // do processing (implemented in NodeBase)
-         short newStatus = super.process(emitter, eventStack, context, 
-                                         processStatus);
-
-         if ((newStatus & ST_PROCESSING) == 0) {
-            // processing was interrupted, store local variables
-            localVarStack.push(context.localVars.clone());
-         }
-         else {
-            // end of template encountered
-            if (newScope)
-               parentGroup.exitRecursionLevel();
-         }
-
-         return newStatus;
       }
 
 
