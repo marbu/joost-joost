@@ -1,0 +1,4 @@
+Changes since 20020828
+
+- added stx:process-attributes, 
+  implemented attribute patterns (<stx:template match="foo/@bar"> etc.)
