@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 1.4 2003/03/09 18:56:14 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 1.5 2003/03/13 10:54:06 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -47,7 +47,7 @@ import net.sf.joost.stx.Emitter;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.4 $ $Date: 2003/03/09 18:56:14 $
+ * @version $Revision: 1.5 $ $Date: 2003/03/13 10:54:06 $
  * @author Oliver Becker
  */
 
@@ -126,22 +126,36 @@ final public class ResultDocumentFactory extends FactoryBase
             // Opening a file twice may lead to unexpected results.
             StreamEmitter se = null;
             try {
-               FileOutputStream fos;
-               try {
-                  fos = new FileOutputStream(filename);
-               }
-               catch (java.io.FileNotFoundException fnfe) {
-                  int sepPos;
-                  if ((sepPos = filename.lastIndexOf('/')) == -1)
-                     throw fnfe;
-                  // else: filename contains directory parts,
-                  // possibly this directoty doesn't exist yet
+               // Variant 1:
+               int sepPos = filename.lastIndexOf('/');
+               if (sepPos != -1) {
+                  // filename contains directory parts, try to create it
                   File dir = new File(filename.substring(0, sepPos));
-                  // create it
                   dir.mkdirs();
-                  // try again
-                  fos = new FileOutputStream(filename);
                }
+               FileOutputStream fos = new FileOutputStream(filename);
+
+//                 // Variant 2:
+//                 FileOutputStream fos;
+//                 try {
+//                    fos = new FileOutputStream(filename);
+//                 }
+//                 catch (java.io.FileNotFoundException fnfe) {
+//                    int sepPos = filename.lastIndexOf('/');
+//                    if (sepPos == -1)
+//                       throw fnfe;
+//                    // else: filename contains directory parts,
+//                    // possibly this directoty doesn't exist yet
+//                    File dir = new File(filename.substring(0, sepPos));
+//                    // create it
+//                    dir.mkdirs();
+//                    // try again
+//                    fos = new FileOutputStream(filename);
+//                 }
+
+               // Note: both variants have the same average performance,
+               // no matter whether directories have to be created or not.
+
                se = new StreamEmitter(new OutputStreamWriter(fos), 
                                       encoding);
             }
