@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.31 2004/01/08 09:01:06 zubow Exp $
+ * $Id: Processor.java,v 2.32 2004/01/08 12:08:12 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -56,7 +56,7 @@ import net.sf.joost.trace.DebugProcessor;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.31 $ $Date: 2004/01/08 09:01:06 $
+ * @version $Revision: 2.32 $ $Date: 2004/01/08 12:08:12 $
  * @author Oliver Becker
  */
 
@@ -115,8 +115,11 @@ public class Processor extends XMLFilterImpl
    /** Last event (this Processor uses one look-ahead) */
    private SAXEvent lastElement = null;
 
-   /** The namespace support object provided by SAX2 */
-   private NamespaceSupport nsSupport = new NamespaceSupport();
+   /** The namespaces of the current scope */
+   private Hashtable inScopeNamespaces;
+
+   /** The namespace context as a stack */
+   private Stack namespaceContext = new Stack();
 
    /** Flag that controls namespace contexts */
    private boolean nsContextActive = false;
@@ -457,6 +460,7 @@ public class Processor extends XMLFilterImpl
             // property set, but still failed
             throw new SAXException("Can't create XMLReader for class " +
                                    prop);
+            // leave the method here
          }
          // try another SAX implementation
          String PARSER_IMPLS[] = {
@@ -506,6 +510,10 @@ public class Processor extends XMLFilterImpl
 
       // first Data frame; needed for the first target group
       dataStack.push(new Data(context));
+
+      // initialize namespaces
+      inScopeNamespaces = new Hashtable();
+      inScopeNamespaces.put("xml", NamespaceSupport.XMLNS);
 
       // array of global templates
       Vector tempVec = transformNode.getGlobalTemplates();
@@ -1332,16 +1340,27 @@ public class Processor extends XMLFilterImpl
    {
       try {
          context.targetHandler.startDocument();
-         for (java.util.Enumeration e = nsSupport.getPrefixes();
+
+         // declare current namespaces
+         for (Enumeration e = inScopeNamespaces.keys();
               e.hasMoreElements(); ) {
             String prefix = (String)e.nextElement();
             if (!prefix.equals("xml"))
                context.targetHandler.startPrefixMapping(
-                  prefix, nsSupport.getURI(prefix));
+                  prefix, (String)inScopeNamespaces.get(prefix));
          }
-         String defNs = nsSupport.getURI("");
-         if (defNs != null)
-            context.targetHandler.startPrefixMapping("", defNs);
+
+// If the Map interface would be used:
+//
+//           Map.Entry[] nsEntries = new Map.Entry[inScopeNamespaces.size()];
+//           inScopeNamespaces.entrySet().toArray(nsEntries);
+//           for (int i=0; i<nsEntries.length; i++) {
+//              String prefix = (String)nsEntries[i].getKey();
+//              if (!prefix.equals("xml"))
+//                 context.targetHandler.startPrefixMapping(
+//                    prefix, (String)nsEntries[i].getValue());
+//           }
+
       }
       catch (RuntimeException e) {
          // wrap exception
@@ -1365,14 +1384,24 @@ public class Processor extends XMLFilterImpl
       throws SAXException
    {
       try {
-         for (java.util.Enumeration e = nsSupport.getPrefixes();
+         // undeclare current namespaces
+         for (Enumeration e = inScopeNamespaces.keys();
               e.hasMoreElements(); ) {
             String prefix = (String)e.nextElement();
             if (!prefix.equals("xml"))
                context.targetHandler.endPrefixMapping(prefix);
          }
-         if (nsSupport.getURI("") != null)
-            context.targetHandler.endPrefixMapping("");
+
+// If the Map interface would be used
+//
+//           Map.Entry[] nsEntries = new Map.Entry[inScopeNamespaces.size()];
+//           inScopeNamespaces.entrySet().toArray(nsEntries);
+//           for (int i=0; i<nsEntries.length; i++) {
+//              String prefix = (String)nsEntries[i].getKey();
+//              if (!prefix.equals("xml"))
+//                 context.targetHandler.endPrefixMapping(prefix);
+//           }
+
          context.targetHandler.endDocument();
          context.targetHandler = null;
       }
@@ -1530,10 +1559,13 @@ public class Processor extends XMLFilterImpl
          return;
       }
 
-      lastElement = SAXEvent.newElement(uri, lName, qName, attrs, nsSupport);
+      lastElement = SAXEvent.newElement(uri, lName, qName, attrs, 
+                                        inScopeNamespaces);
 
-      if (!nsContextActive)
-         nsSupport.pushContext();
+      if (!nsContextActive) {
+         namespaceContext.push(inScopeNamespaces);
+         inScopeNamespaces = (Hashtable)inScopeNamespaces.clone();
+      }
       nsContextActive = false;
    }
 
@@ -1650,7 +1682,7 @@ public class Processor extends XMLFilterImpl
          }
          else {
             eventStack.pop();
-            nsSupport.popContext();
+            inScopeNamespaces = (Hashtable)namespaceContext.pop();
          }
       }
    }
@@ -1717,10 +1749,14 @@ public class Processor extends XMLFilterImpl
       }
 
       if (!nsContextActive) {
-         nsSupport.pushContext();
+         namespaceContext.push(inScopeNamespaces);
+         inScopeNamespaces = (Hashtable)inScopeNamespaces.clone();
          nsContextActive = true;
       }
-      nsSupport.declarePrefix(prefix, uri);
+      if (uri.equals("")) // undeclare namespace
+         inScopeNamespaces.remove(prefix);
+      else
+         inScopeNamespaces.put(prefix, uri);
    }
 
 

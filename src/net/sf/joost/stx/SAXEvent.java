@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEvent.java,v 1.16 2003/11/01 14:47:14 zubow Exp $
+ * $Id: SAXEvent.java,v 1.17 2004/01/08 12:08:12 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,13 +29,14 @@ import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.NamespaceSupport;
 
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 
 
 /** 
  * SAXEvent stores all information attached to an incoming SAX event,
  * it is the representation of a node in STX.
- * @version $Revision: 1.16 $ $Date: 2003/11/01 14:47:14 $
+ * @version $Revision: 1.17 $ $Date: 2004/01/08 12:08:12 $
  * @author Oliver Becker
  */
 final public class SAXEvent
@@ -64,7 +65,7 @@ final public class SAXEvent
    public boolean hasChildNodes = false;
 
    /** contains the position counters */
-   private Hashtable posHash;
+   private HashMap posHash;
 
 
 
@@ -84,7 +85,7 @@ final public class SAXEvent
    /** Create a new element node */
    public static SAXEvent newElement(String uri, String lName, String qName,
                                      Attributes attrs, 
-                                     NamespaceSupport nsSupport)
+                                     Hashtable inScopeNamespaces)
    {
       SAXEvent event = new SAXEvent();
       event.type = attrs != null ? ELEMENT : ELEMENT_END;
@@ -100,21 +101,7 @@ final public class SAXEvent
          else
             event.attrs = new AttributesImpl();
       }
-      if (nsSupport != null) {
-         // copy into a hashtable
-         if (event.namespaces == null)
-            event.namespaces = new Hashtable();
-         else
-            event.namespaces.clear();
-         for (Enumeration e = nsSupport.getPrefixes(); 
-              e.hasMoreElements(); ) {
-            String prefix = (String)e.nextElement();
-            event.namespaces.put(prefix, nsSupport.getURI(prefix));
-         }
-         String defaultURI = nsSupport.getURI("");
-         if (defaultURI != null)
-            event.namespaces.put("", defaultURI);
-      }
+      event.namespaces = inScopeNamespaces;
       event.hasChildNodes = false;
       event.value = "";
       return event;
@@ -206,12 +193,12 @@ final public class SAXEvent
    public void enableChildNodes(boolean hasChildNodes)
    {
       if (hasChildNodes) {
-         posHash = new Hashtable();
+         posHash = new HashMap();
          this.hasChildNodes = true;
       }
       else
          if (posHash == null)
-            posHash = new Hashtable();
+            posHash = new HashMap();
    }
 
 
