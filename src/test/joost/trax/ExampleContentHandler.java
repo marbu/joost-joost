@@ -3,7 +3,7 @@
  *
  *	Example for a sax-contenthandler for TraX-Transformer
  *
- *	$Id: ExampleContentHandler.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ *	$Id: ExampleContentHandler.java,v 1.2 2002/10/08 19:20:26 zubow Exp $
  *
  */
 
@@ -30,7 +30,7 @@ public class ExampleContentHandler implements ContentHandler {
     static Logger log = Logger.getLogger(ExampleContentHandler.class);
 
     public void setDocumentLocator(Locator locator) {
-        log.debug("setDocumentLocator");
+        log.info("setDocumentLocator");
     }
 
     public void startDocument() throws SAXException {
@@ -43,33 +43,33 @@ public class ExampleContentHandler implements ContentHandler {
 
     public void startPrefixMapping(String prefix, String uri)
         throws SAXException {
-        log.debug("startPrefixMapping: " + prefix + ", " + uri);
+        log.info("startPrefixMapping: " + prefix + ", " + uri);
     }
 
     public void endPrefixMapping(String prefix) throws SAXException {
-        log.debug("endPrefixMapping: " + prefix);
+        log.info("endPrefixMapping: " + prefix);
     }
 
     public void startElement( String namespaceURI, String localName,
         String qName, Attributes atts)
         throws SAXException {
 
-        log.debug("startElement: " + namespaceURI + ", "
+        log.info("startElement: " + namespaceURI + ", "
                          + localName + ", " + qName);
 
         int n = atts.getLength();
 
         for (int i = 0; i < n; i++) {
-            log.debug(", " + atts.getQName(i) + "='" + atts.getValue(i) + "'");
+            log.info(", " + atts.getQName(i) + "='" + atts.getValue(i) + "'");
         }
 
-        log.debug("");
+        log.info("");
     }
 
     public void endElement(String namespaceURI, String localName, String qName)
         throws SAXException {
 
-        log.debug("endElement: " + namespaceURI + ", "
+        log.info("endElement: " + namespaceURI + ", "
                            + localName + ", " + qName);
     }
 
@@ -79,24 +79,24 @@ public class ExampleContentHandler implements ContentHandler {
         String s = new String(ch, start, (length > 30) ? 30 : length);
 
         if (length > 30) {
-            log.debug("characters: \"" + s + "\"...");
+            log.info("characters: \"" + s + "\"...");
         } else {
-            log.debug("characters: \"" + s + "\"");
+            log.info("characters: \"" + s + "\"");
         }
     }
 
     public void ignorableWhitespace(char ch[], int start, int length)
         throws SAXException {
-        log.debug("ignorableWhitespace");
+        log.info("ignorableWhitespace");
     }
 
     public void processingInstruction(String target, String data)
         throws SAXException {
-        log.debug("processingInstruction: " + target + ", " + data);
+        log.info("processingInstruction: " + target + ", " + data);
     }
 
     public void skippedEntity(String name) throws SAXException {
-        log.debug("skippedEntity: " + name);
+        log.info("skippedEntity: " + name);
     }
 
     public static void main(String[] args) throws Exception {

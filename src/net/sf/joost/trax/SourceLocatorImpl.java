@@ -1,5 +1,5 @@
 /*
- * $Id: SourceLocatorImpl.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: SourceLocatorImpl.java,v 1.2 2002/10/08 19:16:51 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -39,7 +39,7 @@ public class SourceLocatorImpl implements SourceLocator {
     /**
      * Identifies the class version, maintained by CVS.
      */
-    private static final String cvsId = "$Header: /cvsroot/joost/joost/src/net/sf/joost/trax/SourceLocatorImpl.java,v 1.1 2002/08/27 09:40:51 obecker Exp $";
+    private static final String cvsId = "$Header: /cvsroot/joost/joost/src/net/sf/joost/trax/SourceLocatorImpl.java,v 1.2 2002/10/08 19:16:51 zubow Exp $";
 
     /**
      * Unique public key
@@ -74,7 +74,6 @@ public class SourceLocatorImpl implements SourceLocator {
             this.lineNo     = locator.getLineNumber();
             this.columnNo   = locator.getColumnNumber();
         }
-
     }
 
 
@@ -86,8 +85,8 @@ public class SourceLocatorImpl implements SourceLocator {
      * @param colNo     Column number
      */
     public SourceLocatorImpl(String publicId, String systemId, int lineNo,
-        int colNo)
-    {
+        int colNo) {
+
         this.publicId   = publicId;
         this.systemId   = systemId;
         this.lineNo     = lineNo;

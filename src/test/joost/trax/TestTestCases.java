@@ -3,7 +3,7 @@
  *
  *	Used by JUnit
  *
- *	$Id: TestTestCases.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ *	$Id: TestTestCases.java,v 1.2 2002/10/08 19:20:27 zubow Exp $
  *
  */
 
@@ -20,10 +20,12 @@ public class TestTestCases extends TestCase {
     public TestTestCases(String s) {
         super(s);
         //set properties
-        init();
+        //init();
     }
 
     protected void setUp() {
+        //set properties
+        init();
     }
 
     protected void tearDown() {
@@ -32,6 +34,13 @@ public class TestTestCases extends TestCase {
 
 //*****************************************************************************
 //some Tests
+
+    public void testRunTests0() {
+
+        String xmlId = "test/flat.xml";
+
+        assertTrue(TestCases.runTests0(xmlId));
+    }
 
     public void testRunTests1() {
 
@@ -343,7 +352,7 @@ public class TestTestCases extends TestCase {
 
         //setting joost as transformer
         String key = "javax.xml.transform.TransformerFactory";
-        String value = "joost.trax.TransformerFactoryImpl";
+        String value = "net.sf.joost.trax.TransformerFactoryImpl";
 
         //log.debug("Setting key " + key + " to " + value);
 
@@ -351,11 +360,15 @@ public class TestTestCases extends TestCase {
         String key2 = "javax.xml.parsers.SAXParser";
         String value2 = "org.apache.xerces.parsers.SAXParser";
 
+        String key3 = "org.xml.sax.driver";
+        String value3 = "org.apache.xerces.parsers.SAXParser";
+
         //log.debug("Setting key " + key2 + " to " + value2);
 
         Properties props = System.getProperties();
         props.put(key, value);
         props.put(key2, value2);
+        props.put(key3, value3);
 
         System.setProperties(props);
     }

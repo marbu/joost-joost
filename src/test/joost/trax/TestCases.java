@@ -3,7 +3,7 @@
  *
  *	TestCases for TraX-Transformer
  *
- *	$Id: TestCases.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ *	$Id: TestCases.java,v 1.2 2002/10/08 19:20:27 zubow Exp $
  *
  */
 
@@ -95,7 +95,8 @@ public class TestCases {
           return exampleSimple1(xmlsrc, stx);
 
         } catch( Exception ex ) {
-          handleException(ex);
+            handleException(ex);
+            //ex.printStackTrace();
           return false;
         }
     }
@@ -769,11 +770,16 @@ public class TestCases {
     // Create a transform factory instance.
     String tProp = System.getProperty("javax.xml.transform.TransformerFactory");
 
+    //register own ErrorListener for the TransformerFactory
+    ErrorListener fListener = new ErrorListenerImpl("TransformerFactory");
     TransformerFactory tfactory = TransformerFactory.newInstance();
+    tfactory.setErrorListener(fListener);
 
+    //register own ErrorListener for the TransformerFactory
+    ErrorListener tListener = new ErrorListenerImpl("Transformer");
     // Create a transformer for the stylesheet.
-    Transformer transformer
-      = tfactory.newTransformer();
+    Transformer transformer = tfactory.newTransformer();
+    //transformer.setErrorListener(tListener);
 
     // Transform the source XML to System.out.
     transformer.transform( new StreamSource(sourceID),
@@ -794,11 +800,16 @@ public class TestCases {
     // Create a transform factory instance.
     String tProp = System.getProperty("javax.xml.transform.TransformerFactory");
 
+    //register own ErrorListener for the TransformerFactory
+    ErrorListener fListener = new ErrorListenerImpl("Transformer");
     TransformerFactory tfactory = TransformerFactory.newInstance();
+    //tfactory.setErrorListener(fListener);
 
+    ErrorListener tListener = new ErrorListenerImpl("Transformer");
     // Create a transformer for the stylesheet.
     Transformer transformer
       = tfactory.newTransformer(new StreamSource(stxID));
+    //transformer.setErrorListener(tListener);
 
     // Transform the source XML to System.out.
     transformer.transform( new StreamSource(sourceID),
@@ -1124,12 +1135,18 @@ public class TestCases {
         String stxID_2)
         throws TransformerException, TransformerConfigurationException, SAXException, IOException
     {
+        //register own ErrorListener for the TransformerFactory
+        ErrorListener fListener = new ErrorListenerImpl("TransformerFactory");
+
+        //register own ErrorListener for the Transformer
+        //ErrorListener tListener = new ErrorListenerImpl("Transformer");
 
         TransformerFactory tfactory = TransformerFactory.newInstance();
+        tfactory.setErrorListener(fListener);
 
-        Templates stylesheet1 = tfactory.newTemplates(new StreamSource(stxID_1));
+        //Templates stylesheet1 = tfactory.newTemplates(new StreamSource(stxID_1));
 
-        Transformer transformer1 = stylesheet1.newTransformer();
+        //Transformer transformer1 = stylesheet1.newTransformer();
 
         // If one success, assume all will succeed.
 
@@ -1137,40 +1154,21 @@ public class TestCases {
 
             SAXTransformerFactory stf = (SAXTransformerFactory)tfactory;
 
-            XMLReader reader=null;
+            XMLReader reader = XMLReaderFactory.createXMLReader();
 
-            // Use JAXP1.1 ( if possible )
-
-            try {
-
-                javax.xml.parsers.SAXParserFactory factory=
-                    javax.xml.parsers.SAXParserFactory.newInstance();
-
-                factory.setNamespaceAware( true );
-
-                javax.xml.parsers.SAXParser jaxpParser=
-                    factory.newSAXParser();
-
-                reader=jaxpParser.getXMLReader();
-
-            } catch( javax.xml.parsers.ParserConfigurationException ex ) {
-                throw new org.xml.sax.SAXException( ex );
-            } catch( javax.xml.parsers.FactoryConfigurationError ex1 ) {
-                throw new org.xml.sax.SAXException( ex1.toString() );
-            } catch( NoSuchMethodError ex2 ) {
-            }
-
-            if( reader==null ) reader = XMLReaderFactory.createXMLReader();
-
+            // init transformation-filter
             XMLFilter filter1 = stf.newXMLFilter(new StreamSource(stxID_1));
 
             XMLFilter filter2 = stf.newXMLFilter(new StreamSource(stxID_2));
+
 
             if (null != filter1) // If one success, assume all were success.
             {
 
                 // transformer1 will use a SAX parser as it's reader.
                 filter1.setParent(reader);
+                //filter1.setContentHandler(new ExampleContentHandler());
+                //filter1.parse(new InputSource(sourceID));
 
                 // transformer2 will use transformer1 as it's reader.
                 filter2.setParent(filter1);
@@ -1192,6 +1190,7 @@ public class TestCases {
                 // SAX parser, and call parser.parse(new InputSource("xml/flat.xml")).
 
                 filter2.parse(new InputSource(sourceID));
+
             } else {
                 log.error( "Can't do exampleXMLFilter because "+
                            "tfactory doesn't support asXMLFilter()");
@@ -2169,9 +2168,9 @@ public class TestCases {
      */
     private static void  handleException( Exception ex ) {
 
-        log.error("EXCEPTION: ");
+        //log.error("EXCEPTION: ");
 
-        ex.printStackTrace();
+        //ex.printStackTrace();
 
         if( ex instanceof TransformerConfigurationException ) {
 

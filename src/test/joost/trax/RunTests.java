@@ -3,7 +3,7 @@
  *
  *	Tests without junit
  *
- *	$Id: RunTests.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ *	$Id: RunTests.java,v 1.2 2002/10/08 19:20:26 zubow Exp $
  *
  */
 
@@ -117,17 +117,17 @@ public class RunTests {
         try {
             //run testcases
             //log.info("Try to run runTest0 - Identity");
-            //TestCases.runTests0(xmlId);
+            //TestCases.runTests0("test/error.xml");
 
-            //log.info("Try to run runTest1");
-            TestCases.runTests1(xmlId, "test/flat.stx");
+            log.info("Try to run runTest1");
+            TestCases.runTests1("test/error.xml", "test/error.stx");
             //log.info("Try to run runTest1 again");
-            //TestCases.runTests1("testdata/out.xml", "test/sum3.stx");
+            //TestCases.runTests1("testdata/temp.xml", "test/sum3.stx");
 
             //TestCases.runTests2("test/othello2.xml", "test/play.stx", "testdata/output.xml");
 
             //TODO :
-            //TestCases.runTests2("test/flat.xml", "test/flat.stx", "testdata/temp.xml");
+            //TestCases.runTests2("test/error.xml", "test/error.stx", "testdata/temp.xml");
             //TestCases.runTests2("testdata/temp.xml", "test/sum3.stx", "testdata/temp2.xml");
 
             //test
@@ -159,11 +159,11 @@ public class RunTests {
             //reverse order
             //TestCases.runTests9("test/flat.xml", "test/sum3.stx", "test/flat.stx");
 
-            TestCases.runTests19(null, null);
+            //TestCases.runTests19(null, null);
 
             //TestCases.runTests18(null,null,null,null);
 
-            //TestCases.runTests16(null,null);
+            //TestCases.runTests22(null, null);
 
             //anotherTest7();
 
