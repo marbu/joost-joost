@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXHelper.java,v 1.9 2003/09/03 15:07:02 obecker Exp $
+ * $Id: TrAXHelper.java,v 1.10 2003/09/08 09:22:24 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -81,7 +81,8 @@ public class TrAXHelper implements TrAXConstants {
     protected static InputSource getInputSourceForStreamSources(Source source, ErrorListener errorListener)
     	throws TransformerConfigurationException {
 
-        log.debug("getting an InputSource from a StreamSource");
+        if (DEBUG)
+            log.debug("getting an InputSource from a StreamSource");
         InputSource input   = null;
         String systemId     = source.getSystemId();
 
@@ -90,7 +91,8 @@ public class TrAXHelper implements TrAXConstants {
         }
         try {
             if (source instanceof StreamSource) {
-                log.debug("Source is a StreamSource");
+                if (DEBUG)
+                    log.debug("Source is a StreamSource");
                 StreamSource stream   = (StreamSource)source;
                 InputStream istream   = stream.getInputStream();
                 Reader reader         = stream.getReader();
@@ -111,11 +113,13 @@ public class TrAXHelper implements TrAXConstants {
                         errorListener.fatalError(new TransformerConfigurationException("Source is not a StreamSource"));
                         return null;
                     } catch( TransformerException e2) {
-                        log.debug("Source is not a StreamSource");
+                        if (DEBUG)
+                            log.debug("Source is not a StreamSource");
                         throw new TransformerConfigurationException("Source is not a StreamSource");
                     }
                 }
-                log.debug("Source is not a StreamSource");
+                if (DEBUG)
+                    log.debug("Source is not a StreamSource");
                 throw new TransformerConfigurationException("Source is not a StreamSource");
             }
             //setting systemId
@@ -142,11 +146,13 @@ public class TrAXHelper implements TrAXConstants {
                             new TransformerConfigurationException(sE));
                     return null;
                 } catch( TransformerException e2) {
-                    log.debug(sE);
+                    if (DEBUG)
+                        log.debug(sE);
                     throw new TransformerConfigurationException(sE.getMessage());
                 }
             }
-            log.debug(sE);
+            if (DEBUG)
+                log.debug(sE);
             throw new TransformerConfigurationException(sE.getMessage());
         }
         return(input);
@@ -162,7 +168,8 @@ public class TrAXHelper implements TrAXConstants {
     public static StxEmitter initStxEmitter(Result result, Processor processor)
         throws TransformerException {
 
-        log.debug("init STXEmitter");
+        if (DEBUG)
+            log.debug("init STXEmitter");
         // Return the content handler for this Result object
         try {
             // Result object could be SAXResult, DOMResult, or StreamResult
@@ -170,18 +177,22 @@ public class TrAXHelper implements TrAXConstants {
                 final SAXResult target = (SAXResult)result;
                 final ContentHandler handler = target.getHandler();
                 if (handler != null) {
-                    log.debug("return SAX specific Implementation for " +
-                        "STXEmitter");
+                    if (DEBUG)
+                        log.debug("return SAX specific Implementation for " +
+                                  "STXEmitter");
                     //SAX specific Implementation
                     return new SAXEmitter(handler);
                 }
             } else if (result instanceof DOMResult) {
-                log.debug("return DOM specific Implementation for STXEmitter");
+                if (DEBUG)
+                   log.debug("return DOM specific Implementation for " + 
+                             "STXEmitter");
                 //DOM specific Implementation
                 return new DOMEmitter();
             } else if (result instanceof StreamResult) {
-                log.debug("return StreamRsult specific Implementation for " +
-                    "STXEmitter");
+                if (DEBUG)
+                   log.debug("return StreamRsult specific Implementation " + 
+                             "for STXEmitter");
                 // Get StreamResult
                 final StreamResult target = (StreamResult)result;
                 // StreamResult may have been created with a java.io.File,
@@ -190,21 +201,25 @@ public class TrAXHelper implements TrAXConstants {
                 // try to get a Writer from Result object
                 final Writer writer = target.getWriter();
                 if (writer != null) {
-                    log.debug("get a Writer object from Result object");
+                    if (DEBUG)
+                        log.debug("get a Writer object from Result object");
                     return new StreamEmitter(writer);
                 }
                 // or try to get an OutputStream from Result object
                 final OutputStream ostream = target.getOutputStream();
                 if (ostream != null) {
-                    log.debug("get an OutputStream from Result object");
+                    if (DEBUG)
+                        log.debug("get an OutputStream from Result object");
                     return new StreamEmitter(ostream, 
                                              processor.outputProperties);
                 }
                 // or try to get just a systemId string from Result object
                 String systemId = result.getSystemId();
-                log.debug("get a systemId string from Result object");
+                if (DEBUG)
+                    log.debug("get a systemId string from Result object");
                 if (systemId == null) {
-                    log.debug("JAXP_NO_RESULT_ERR");
+                    if (DEBUG)
+                        log.debug("JAXP_NO_RESULT_ERR");
                     throw new TransformerException("JAXP_NO_RESULT_ERR");
                 }
                 // System Id may be in one of several forms, (1) a uri
@@ -235,10 +250,12 @@ public class TrAXHelper implements TrAXConstants {
             }
          // If we cannot create the file specified by the SystemId
         } catch (IOException iE) {
-            log.debug(iE);
+            if (DEBUG)
+                log.debug(iE);
             throw new TransformerException(iE);
         } catch (ParserConfigurationException pE) {
-            log.debug(pE);
+            if (DEBUG)
+                log.debug(pE);
             throw new TransformerException(pE);
         }
         return null;
