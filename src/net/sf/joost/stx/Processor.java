@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.22 2003/09/03 15:03:08 obecker Exp $
+ * $Id: Processor.java,v 2.23 2003/10/23 14:45:15 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -70,7 +70,7 @@ import net.sf.joost.trace.DebugProcessor;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.22 $ $Date: 2003/09/03 15:03:08 $
+ * @version $Revision: 2.23 $ $Date: 2003/10/23 14:45:15 $
  * @author Oliver Becker
  */
 
@@ -235,13 +235,25 @@ public class Processor extends XMLFilterImpl
       }
 
       /**
-       * Constructor used when processing a built-in template
+       * Initial constructor for the first element of the data stack.
        * @param tg the target group
        */
       Data(GroupBase tg)
       {
          targetGroup = tg;
-         // other field are default initialized with 0 or null resp.
+         // other fields are default initialized with 0 or null resp.
+      }
+
+      /**
+       * Constructor used when processing a built-in template.
+       * @param data a {@link Processor.Data} element that will be copied 
+       *             partially
+       */ 
+      Data(Data data)
+      {
+         targetGroup = data.targetGroup;
+         currentGroup = data.currentGroup;
+         // other fields are default initialized with 0 or null resp.
       }
 
       /** just for debugging */
@@ -984,7 +996,7 @@ public class Processor extends XMLFilterImpl
          GroupBase tg = context.targetGroup;
          switch (event.type) {
          case SAXEvent.ROOT:
-            dataStack.push(new Data(dataStack.peek().targetGroup));
+            dataStack.push(new Data(dataStack.peek()));
             break;
          case SAXEvent.ELEMENT:
             if((tg.passThrough & PASS_THROUGH_ELEMENT) != 0)
@@ -992,7 +1004,7 @@ public class Processor extends XMLFilterImpl
                                     event.attrs, event.namespaces,
                                     tg.publicId, tg.systemId,
                                     tg.lineNo, tg.colNo);
-            dataStack.push(new Data(dataStack.peek().targetGroup));
+            dataStack.push(new Data(dataStack.peek()));
             break;
          case SAXEvent.TEXT:
             if((tg.passThrough & PASS_THROUGH_TEXT) != 0) {
@@ -1520,7 +1532,6 @@ public class Processor extends XMLFilterImpl
       }
 
       if (skipDepth == 0) {
-
          clearProcessSiblings();
 
          Data data = dataStack.pop();
