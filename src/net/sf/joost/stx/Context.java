@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 2.12 2004/02/10 12:39:41 obecker Exp $
+ * $Id: Context.java,v 2.13 2004/09/29 06:19:21 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -19,12 +19,17 @@
  * are Copyright (C) ______ _______________________. 
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): Thomas Behrends.
  */
 
 package net.sf.joost.stx;
 
-import net.sf.joost.TransformerHandlerResolver;
+import java.util.Hashtable;
+import java.util.Stack;
+
+import javax.xml.transform.URIResolver;
+import javax.xml.transform.sax.TransformerHandler;
+
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.instruction.GroupBase;
 import net.sf.joost.instruction.NodeBase;
@@ -32,16 +37,11 @@ import net.sf.joost.instruction.PSiblingsFactory;
 
 import org.xml.sax.Locator;
 
-import java.util.Hashtable;
-import java.util.Stack;
-import javax.xml.transform.URIResolver;
-import javax.xml.transform.sax.TransformerHandler;
-
 
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 2.12 $ $Date: 2004/02/10 12:39:41 $
+ * @version $Revision: 2.13 $ $Date: 2004/09/29 06:19:21 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
@@ -73,6 +73,10 @@ public final class Context implements Cloneable
 
    /** Encountered <code>stx:process-siblings</code> instruction */
    public PSiblingsFactory.Instance psiblings;
+
+   /** Hashtable for Stacks of group variables 
+       (key=group instance, value=Stack of Hashtables). */
+   public Hashtable groupVars = new Hashtable();
 
    /** Local defined variables of a template. */
    public Hashtable localVars = new Hashtable();
@@ -106,8 +110,7 @@ public final class Context implements Cloneable
    /**
     * @return a copy of this object.
     */
-   /* package private */
-   Context copy()
+   Context copy() // package private
    {
       Context context;
       try {
@@ -120,5 +123,20 @@ public final class Context implements Cloneable
       }
 
       return context;
+   }
+   
+   /** Instantiate a new emitter object for a new result event stream */
+   public void pushEmitter(StxEmitter stxEmitter)
+   {
+   	emitter = new Emitter(emitter, stxEmitter);
+   }
+
+   /** Restore previous emitter after finishing a result event stream */
+   public StxEmitter popEmitter()
+   {
+   	emitter.beforeRemoval();
+   	StxEmitter stxEmitter = (StxEmitter)emitter.contH;
+   	emitter = emitter.prev;
+   	return stxEmitter;
    }
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: ResultBufferFactory.java,v 2.1 2003/06/03 14:30:25 obecker Exp $
+ * $Id: ResultBufferFactory.java,v 2.2 2004/09/29 06:18:40 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,22 +24,23 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Stack;
 
 import net.sf.joost.emitter.BufferEmitter;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+
 
 /** 
  * Factory for <code>result-buffer</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.1 $ $Date: 2003/06/03 14:30:25 $
+ * @version $Revision: 2.2 $ $Date: 2004/09/29 06:18:40 $
  * @author Oliver Becker
  */
 
@@ -108,7 +109,8 @@ final public class ResultBufferFactory extends FactoryBase
          if (buffer == null) {
             GroupBase group = context.currentGroup;
             while (buffer == null && group != null) {
-               buffer = ((Hashtable)group.groupVars.peek()).get(expName);
+               buffer = ((Hashtable)((Stack)context.groupVars.get(group))
+                                            .peek()).get(expName);
                group = group.parentGroup;
             }
          }
@@ -128,7 +130,7 @@ final public class ResultBufferFactory extends FactoryBase
 
          if (clear)
             ((BufferEmitter)buffer).clear();
-         context.emitter.pushEmitter((BufferEmitter)buffer);
+         context.pushEmitter((BufferEmitter)buffer);
          return PR_CONTINUE;
       }
 
@@ -136,7 +138,7 @@ final public class ResultBufferFactory extends FactoryBase
       public short processEnd(Context context)
          throws SAXException
       {
-         ((BufferEmitter)context.emitter.popEmitter()).filled();
+         ((BufferEmitter)context.popEmitter()).filled();
          return super.processEnd(context);
       }
    }

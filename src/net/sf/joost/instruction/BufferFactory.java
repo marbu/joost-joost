@@ -1,5 +1,5 @@
 /*
- * $Id: BufferFactory.java,v 2.2 2003/06/03 14:30:19 obecker Exp $
+ * $Id: BufferFactory.java,v 2.3 2004/09/29 06:18:40 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,6 +30,7 @@ import org.xml.sax.SAXParseException;
 
 import java.util.Hashtable;
 import java.util.HashSet;
+import java.util.Stack;
 
 import net.sf.joost.emitter.BufferEmitter;
 import net.sf.joost.stx.Context;
@@ -39,7 +40,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Factory for <code>buffer</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2003/06/03 14:30:19 $
+ * @version $Revision: 2.3 $ $Date: 2004/09/29 06:18:40 $
  * @author Oliver Becker
  */
 
@@ -99,7 +100,9 @@ final public class BufferFactory extends FactoryBase
          super.process(context);
          Hashtable varTable;
          if (parent instanceof GroupBase) // group scope
-            varTable = (Hashtable)((GroupBase)parent).groupVars.peek();
+            varTable = (Hashtable)((Stack)context.groupVars.get(parent))
+                                          .peek();
+         
          else
             varTable = context.localVars;
 
@@ -107,7 +110,7 @@ final public class BufferFactory extends FactoryBase
             context.errorHandler.error(
                "Buffer `" + varName + "' already declared",
                publicId, systemId, lineNo, colNo);
-            return PR_CONTINUE;// if the errorHandler returns
+            return PR_CONTINUE; // if the errorHandler returns
          }
 
          BufferEmitter buffer = new BufferEmitter();
@@ -116,7 +119,7 @@ final public class BufferFactory extends FactoryBase
          if (varTable == context.localVars)
             parent.declareVariable(expName);
 
-         context.emitter.pushEmitter(buffer);
+         context.pushEmitter(buffer);
          return PR_CONTINUE;
       }
 
@@ -124,7 +127,7 @@ final public class BufferFactory extends FactoryBase
       public short processEnd(Context context)
          throws SAXException
       {
-         ((BufferEmitter)context.emitter.popEmitter()).filled();
+         ((BufferEmitter)context.popEmitter()).filled();
          return super.processEnd(context);
       }
    }

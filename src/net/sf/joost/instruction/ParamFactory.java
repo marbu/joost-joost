@@ -1,5 +1,5 @@
 /*
- * $Id: ParamFactory.java,v 2.5 2003/06/20 11:13:49 obecker Exp $
+ * $Id: ParamFactory.java,v 2.6 2004/09/29 06:18:40 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,25 +24,25 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
-import java.util.Hashtable;
 import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Stack;
 
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
-import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.stx.Value;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 
 /** 
  * Factory for <code>params</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.5 $ $Date: 2003/06/20 11:13:49 $
+ * @version $Revision: 2.6 $ $Date: 2004/09/29 06:18:40 $
  * @author Oliver Becker
  */
 
@@ -167,10 +167,9 @@ final public class ParamFactory extends FactoryBase
                // use contents
                next = contents;
                super.process(context);
-               context.emitter.pushEmitter(
+               context.pushEmitter(
                   new StringEmitter(new StringBuffer(),
-                                    "(`" + qName + "' started in line " +
-                                    lineNo + ")"));
+                     "(`" + qName + "' started in line " + lineNo + ")"));
                return PR_CONTINUE;
             }
          }
@@ -186,7 +185,7 @@ final public class ParamFactory extends FactoryBase
       public short processEnd(Context context)
          throws SAXException
       {
-         processParam(new Value(((StringEmitter)context.emitter.popEmitter())
+         processParam(new Value(((StringEmitter)context.popEmitter())
                                                        .getBuffer()
                                                        .toString()),
                       context);
@@ -201,7 +200,8 @@ final public class ParamFactory extends FactoryBase
          // determine scope
          Hashtable varTable;
          if (parent instanceof GroupBase) // global parameter
-            varTable = (Hashtable)((GroupBase)parent).groupVars.peek();
+            varTable = (Hashtable)((Stack)context.groupVars.get(parent))
+                                          .peek();
          else
             varTable = context.localVars;
 
