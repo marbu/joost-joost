@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 1.3 2002/12/30 11:54:44 obecker Exp $
+ * $Id: PDocumentFactory.java,v 1.4 2003/01/18 15:55:10 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -35,16 +35,18 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Stack;
 
+import net.sf.joost.grammar.EvalException;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Processor;
+import net.sf.joost.stx.Value;
 
 
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.3 $ $Date: 2002/12/30 11:54:44 $
+ * @version $Revision: 1.4 $ $Date: 2003/01/18 15:55:10 $
  * @author Oliver Becker
  */
 
@@ -81,7 +83,7 @@ public class PDocumentFactory extends FactoryBase
       throws SAXParseException
    {
       String hrefAtt = getAttribute(qName, attrs, "href", locator);
-      Tree hrefAVT = parseAVT(hrefAtt, nsSet, locator);
+      Tree href = parseExpr(hrefAtt, nsSet, locator);
 
       String baseAtt = attrs.getValue("base");
 
@@ -91,7 +93,7 @@ public class PDocumentFactory extends FactoryBase
          groupName = getExpandedName(groupAtt, nsSet, locator);
 
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, hrefAVT, baseAtt,
+      return new Instance(qName, parent, locator, href, baseAtt,
                           groupAtt, groupName);
    }
 
@@ -99,17 +101,17 @@ public class PDocumentFactory extends FactoryBase
    /** The inner Instance class */
    public class Instance extends ProcessBase
    {
-      Tree hrefAVT;
+      Tree href;
       String baseUri;
       String groupQName, groupExpName;
 
       public Instance(String qName, NodeBase parent, Locator locator, 
-                      Tree hrefAVT, String baseUri, 
+                      Tree href, String baseUri, 
                       String groupQName, String groupExpName)
       {
          super(qName, parent, locator);
          this.baseUri = baseUri;
-         this.hrefAVT = hrefAVT;
+         this.href = href;
          this.groupQName = groupQName;
          this.groupExpName = groupExpName;
       }
@@ -131,10 +133,6 @@ public class PDocumentFactory extends FactoryBase
             context.nextProcessGroup = groupExpName;
          }
 
-         context.currentInstruction = this;
-         String href = 
-            hrefAVT.evaluate(context, eventStack, eventStack.size()).string;
-
          Processor proc = context.currentProcessor;
          XMLReader reader = Processor.getXMLReader();
          reader.setErrorHandler(context.errorHandler);
@@ -150,31 +148,46 @@ public class PDocumentFactory extends FactoryBase
          // process stx:with-param
          super.process(emitter, eventStack, context, processStatus);
 
-         // determine effective base URI
+         context.currentInstruction = this;
+         Value v = href.evaluate(context, eventStack, eventStack.size());
+
          String base;
-         if ("#input".equals(baseUri) && context.locator != null)
-            base = context.locator.getSystemId();
-         else if ("#stylesheet".equals(baseUri))
-            base = systemId;
-         else
-            base = baseUri;
+         if (baseUri == null) { // determine default base URI
+            if (v.type == Value.NODE) // use #input
+               base = context.locator.getSystemId();
+               // TODO: take the node's base. The result differs if the
+               // node in v comes from a different document
+               // (for example, it was stored in a variable)
+            else // use #stylesheet
+               base = systemId;
+         }
+         else { // use specified base URI
+            if ("#input".equals(baseUri) && context.locator != null)
+               base = context.locator.getSystemId();
+            else if ("#stylesheet".equals(baseUri))
+               base = systemId;
+            else
+               base = baseUri;
+         }
 
          Locator prevLoc = context.locator;
          context.locator = null;
          proc.startInnerProcessing();
          try {
+            String hrefURI = v.convertToString().string;
             // TODO: use javax.xml.transform.URIResolver if present
-            String source;
-            if (base != null)
-               source = new URL(new URL(base), href).toExternalForm();
-            else
-               source = href;
-            reader.parse(source);
+            // source = theURIResolver.resolve(hrefURI, base);
+            reader.parse(new URL(new URL(base), hrefURI).toExternalForm());
          }
          catch (java.io.IOException ex) {
             // TODO: better error handling
             context.errorHandler.error(
                new SAXParseException(ex.toString(), 
+                                     publicId, systemId, lineNo, colNo));
+         }
+         catch (EvalException eex) { // raised by convertToString()
+            context.errorHandler.error(
+               new SAXParseException(eex.getMessage(), 
                                      publicId, systemId, lineNo, colNo));
          }
          proc.endInnerProcessing();
