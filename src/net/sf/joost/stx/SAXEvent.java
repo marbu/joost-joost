@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEvent.java,v 1.4 2002/10/29 19:09:11 obecker Exp $
+ * $Id: SAXEvent.java,v 1.5 2002/11/02 15:13:38 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,7 +33,7 @@ import java.util.Hashtable;
 
 /** 
  * SAXEvent stores all information attached to an incoming SAX event 
- * @version $Revision: 1.4 $ $Date: 2002/10/29 19:09:11 $
+ * @version $Revision: 1.5 $ $Date: 2002/11/02 15:13:38 $
  * @author Oliver Becker
  */
 final public class SAXEvent
@@ -45,14 +45,18 @@ final public class SAXEvent
    public static final int PI = 4;
    public static final int COMMENT = 5;
    public static final int ATTRIBUTE = 6;
+   // needed in buffers:
+   public static final int ELEMENT_END = 7;
+   public static final int MAPPING = 8;
+   public static final int MAPPING_END = 9;
 
    public int type;
    public String uri;
    public String lName;
-   public String qName;
+   public String qName; // PI->target, MAPPING->prefix
    public Attributes attrs;
    public NamespaceSupport nsSupport;
-   public String value;
+   public String value; // PI->data, MAPPING->uri, TEXT, ATTRIBUTES as usual
 
    private Hashtable posHash;
 
@@ -72,23 +76,24 @@ final public class SAXEvent
    private SAXEvent(int type, String uri, String lName, String qName,
                     Attributes attrs, NamespaceSupport nsSupport)
    {
-      this(type);
+      this(type); // ELEMENT, ELEMENT_END
       this.uri = uri;
       this.lName = lName;
       this.qName = qName;
-      this.attrs = new AttributesImpl(attrs);
+      if (attrs != null)
+         this.attrs = new AttributesImpl(attrs);
       this.nsSupport = nsSupport;
    }
 
    private SAXEvent(int type, String value)
    {
-      this(type);
+      this(type); // TEXT, CDATA, COMMENT
       this.value = value;
    }
 
    private SAXEvent(int type, String target, String data)
    {
-      this(type); // PI
+      this(type); // PI, MAPPING, MAPPING_END
       this.qName = target;
       this.value = data;
    }
@@ -96,7 +101,7 @@ final public class SAXEvent
    private SAXEvent(int type, String uri, String lName, String qName,
                     String value)
    {
-      this(type);
+      this(type); // ATTRIBUTE
       this.uri = uri;
       this.lName = lName;
       this.qName = qName;
@@ -111,7 +116,8 @@ final public class SAXEvent
                                      Attributes attrs, 
                                      NamespaceSupport nsSupport)
    {
-      return new SAXEvent(ELEMENT, uri, lName, qName, attrs, nsSupport);
+      return new SAXEvent(attrs != null ? ELEMENT : ELEMENT_END, 
+                          uri, lName, qName, attrs, nsSupport);
    }
 
    public static SAXEvent newText(String value)
@@ -144,6 +150,12 @@ final public class SAXEvent
       return new SAXEvent(ATTRIBUTE, 
                           attrs.getURI(index), attrs.getLocalName(index),
                           attrs.getQName(index), attrs.getValue(index));
+   }
+
+   public static SAXEvent newMapping(String prefix, String uri)
+   {
+      return new SAXEvent(uri != null ? MAPPING : MAPPING_END,
+                          prefix, uri);
    }
 
 
