@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXConstants.java,v 1.2 2002/10/08 19:19:42 zubow Exp $
+ * $Id: TrAXConstants.java,v 1.3 2002/10/19 23:53:33 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -39,6 +39,19 @@ public interface TrAXConstants {
      * The default encoding for xml
      */
     public static String DEFAULT_ENCODING   = "UTF-8";
+
+    /*
+     * URIs for Identifying Feature Flags and Properties :
+     * All XML readers are required to recognize the
+     * "http://xml.org/sax/features/namespaces" and the
+     * "http://xml.org/sax/features/namespace-prefixes" features
+     * (at least to get the feature values, if not set them) and to
+     * support a true value for the namespaces property and a false
+     * value for the namespace-prefixes property.
+     */
+    public static String NSURI              = "http://xml.org/sax/features/namespaces";
+    public static String NSURIPREFIX        = "http://xml.org/sax/features/namespace-prefixes";
+
 
     /*
      * Used for unique transformation.

@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.5 2002/10/15 19:02:14 zubow Exp $
+ * $Id: TransformerImpl.java,v 1.6 2002/10/19 23:53:33 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -37,6 +37,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
@@ -167,6 +168,38 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
                     if (saxSource.getXMLReader() != null) {
                         // should not be an DOMSource
                         if (xmlSource instanceof SAXSource) {
+
+                            XMLReader xmlReader = ((SAXSource)xmlSource).getXMLReader();
+
+                            /**
+                             * URIs for Identifying Feature Flags and Properties :
+                             * There is no fixed set of features or properties available for
+                             * SAX2, except for two features that all XML parsers must support.
+                             * Implementors are free to define new features and properties as
+                             * needed, using URIs to identify them.
+                             *
+                             * All XML readers are required to recognize the
+                             * "http://xml.org/sax/features/namespaces" and the
+                             * "http://xml.org/sax/features/namespace-prefixes" features
+                             * (at least to get the feature values, if not set them) and to
+                             * support a true value for the namespaces property and a false
+                             * value for the namespace-prefixes property. These requirements
+                             * ensure that all SAX2 XML readers can provide the minimal
+                             * required Namespace support for higher-level specs such as RDF,
+                             * XSL, XML Schemas, and XLink. XML readers are not required to
+                             * recognize or support any other features or any properties.
+                             *
+                             * For the complete list of standard SAX2 features and properties,
+                             * see the {@link org.xml.sax} Package Description.
+                             */
+                            if (xmlReader != null) {
+                                // set the required "http://xml.org/sax/features/namespaces" Feature
+                                this.processor.setFeature(NSURI, xmlReader.getFeature(NSURI));
+                                // set the required "http://xml.org/sax/features/namespace-prefixes" Feature
+                                this.processor.setFeature(NSURIPREFIX, xmlReader.getFeature(NSURIPREFIX));
+                                // maybe there would be other features
+                            }
+                            // set the the SAXSource as the parent of the STX-Processor
                             this.processor.setParent(saxSource.getXMLReader());
                         }
                     }
@@ -177,7 +210,8 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
                     // use ErrorListener
                     if(errorListener != null) {
                         try {
-                            errorListener.fatalError(new TransformerConfigurationException("InputSource is null - could not perform transformation"));
+                            errorListener.fatalError(
+                                    new TransformerConfigurationException("InputSource is null - could not perform transformation"));
                             return;
                         } catch( TransformerException e2) {
                             new TransformerConfigurationException(e2);
