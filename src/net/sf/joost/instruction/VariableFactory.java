@@ -1,5 +1,5 @@
 /*
- * $Id: VariableFactory.java,v 1.8 2002/12/23 11:57:35 obecker Exp $
+ * $Id: VariableFactory.java,v 1.9 2002/12/30 11:53:46 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>variable</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.8 $ $Date: 2002/12/23 11:57:35 $
+ * @version $Revision: 1.9 $ $Date: 2002/12/30 11:53:46 $
  * @author Oliver Becker
  */
 
@@ -91,7 +91,7 @@ final public class VariableFactory extends FactoryBase
             locator);
 
       // default is "no" (false)
-      boolean keepValue = (keepValueIndex == 0);
+      boolean keepValue = (keepValueIndex == YES_VALUE);
 
       checkAttributes(qName, attrs, attrNames, locator);
       return new Instance(qName, locator, nameAtt, varName, selectExpr, 

@@ -1,5 +1,5 @@
 /*
- * $Id: ResultBufferFactory.java,v 1.6 2002/12/15 17:00:13 obecker Exp $
+ * $Id: ResultBufferFactory.java,v 1.7 2002/12/30 11:53:46 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Emitter;
 /** 
  * Factory for <code>result-buffer</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.6 $ $Date: 2002/12/15 17:00:13 $
+ * @version $Revision: 1.7 $ $Date: 2002/12/30 11:53:46 $
  * @author Oliver Becker
  */
 
@@ -76,7 +76,7 @@ final public class ResultBufferFactory extends FactoryBase
 
       // default is "no" (false)
       boolean clear =
-         getEnumAttValue("clear", attrs, YESNO_VALUES, locator) == 0;
+         getEnumAttValue("clear", attrs, YESNO_VALUES, locator) == YES_VALUE;
 
       checkAttributes(qName, attrs, attrNames, locator);
       return new Instance(qName, parent, locator, nameAtt, bufName, clear);

@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateFactory.java,v 1.7 2002/12/17 16:46:42 obecker Exp $
+ * $Id: TemplateFactory.java,v 1.8 2002/12/30 11:53:46 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>template</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 1.7 $ $Date: 2002/12/17 16:46:42 $
+ * @version $Revision: 1.8 $ $Date: 2002/12/30 11:53:46 $
  * @author Oliver Becker
  */
 
@@ -138,9 +138,10 @@ public final class TemplateFactory extends FactoryBase
       if (visibility == -1)
          visibility =  PRIVATE_VISIBLE; // default value
 
-      // default (-1) is false, 0 means "yes" (true)
-      boolean recursionEntry = getEnumAttValue("recursion-entry-point", attrs,
-                                               YESNO_VALUES, locator) == 0;
+      // default is false
+      boolean recursionEntry = 
+         getEnumAttValue("recursion-entry-point", attrs,YESNO_VALUES, 
+                         locator) == YES_VALUE;
 
       checkAttributes(qName, attrs, attrNames, locator);
 

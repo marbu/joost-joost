@@ -1,5 +1,5 @@
 /*
- * $Id: FactoryBase.java,v 1.4 2002/12/15 16:56:44 obecker Exp $
+ * $Id: FactoryBase.java,v 1.5 2002/12/30 11:53:46 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.grammar.ExprParser;
 /**
  * Abstract base class for all factory classes which produce nodes
  * ({@link NodeBase}) for the tree representation of an STX stylesheet.
- * @version $Revision: 1.4 $ $Date: 2002/12/15 16:56:44 $
+ * @version $Revision: 1.5 $ $Date: 2002/12/30 11:53:46 $
  * @author Oliver Becker
  */
 
@@ -95,6 +95,13 @@ public abstract class FactoryBase
     */
    static protected final String[] YESNO_VALUES = { "yes", "no" };
 
+   /**
+    * Index in {@link #YESNO_VALUES}
+    */
+   static protected final int 
+      YES_VALUE = 0,
+      NO_VALUE = 1;
+ 
    /**
     * Looks for the attribute <code>name</code> in <code>attrs</code>
     * and checks if the value is among the values of <code>enumValues</code>.

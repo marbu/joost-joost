@@ -1,5 +1,5 @@
 /*
- * $Id: OptionsFactory.java,v 1.4 2002/11/27 10:03:11 obecker Exp $
+ * $Id: OptionsFactory.java,v 1.5 2002/12/30 11:53:46 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Processor;
 /**
  * Factory for <code>options</code> elements, which are represented by 
  * the inner Instance class.
- * @version $Revision: 1.4 $ $Date: 2002/11/27 10:03:11 $
+ * @version $Revision: 1.5 $ $Date: 2002/12/30 11:53:46 $
  * @author Oliver Becker
  */
 
@@ -101,13 +101,13 @@ final public class OptionsFactory extends FactoryBase
       }
 
       // default is "no" (false)
-      boolean stripSpace =
-         getEnumAttValue("strip-space", attrs, YESNO_VALUES, locator) == 0;
+      boolean stripSpace = getEnumAttValue("strip-space", attrs, 
+                                           YESNO_VALUES, locator) == YES_VALUE;
 
       // default is "yes" (true)
       boolean recognizeCdata =
          getEnumAttValue("recognize-cdata", attrs, YESNO_VALUES, 
-                         locator) != 1;
+                         locator) != NO_VALUE;
 
       checkAttributes(qName, attrs, attrNames, locator);
       return new Instance(qName, parent, locator, encodingAtt, defStxpNsAtt,
