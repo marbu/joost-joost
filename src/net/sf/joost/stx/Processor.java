@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.28 2002/12/25 08:27:15 obecker Exp $
+ * $Id: Processor.java,v 1.29 2003/01/15 14:28:58 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -61,7 +61,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.28 $ $Date: 2002/12/25 08:27:15 $
+ * @version $Revision: 1.29 $ $Date: 2003/01/15 14:28:58 $
  * @author Oliver Becker
  */
 
@@ -73,13 +73,13 @@ public class Processor extends XMLFilterImpl
     * Set by <code>stx:options' no-match-events</code>
     */
    public static final byte
-      IGNORE_NO_MATCH         = 0x0, // default, see Context
-      COPY_ELEMENT_NO_MATCH   = 0x1,
-      COPY_TEXT_NO_MATCH      = 0x2,
-      COPY_COMMENT_NO_MATCH   = 0x4,
-      COPY_PI_NO_MATCH        = 0x8,
-      COPY_ATTRIBUTE_NO_MATCH = 0x10,
-      COPY_NO_MATCH           = ~IGNORE_NO_MATCH; // all bits set
+      PASS_THROUGH_NONE      = 0x0, // default, see Context
+      PASS_THROUGH_ELEMENT   = 0x1,
+      PASS_THROUGH_TEXT      = 0x2,
+      PASS_THROUGH_COMMENT   = 0x4,
+      PASS_THROUGH_PI        = 0x8,
+      PASS_THROUGH_ATTRIBUTE = 0x10,
+      PASS_THROUGH_ALL       = ~PASS_THROUGH_NONE; // all bits set
 
    /**
     * <p>
@@ -389,7 +389,7 @@ public class Processor extends XMLFilterImpl
          if (optionsNode.defaultSTXPathNamespace != null)
             context.defaultSTXPathNamespace =
                optionsNode.defaultSTXPathNamespace;
-         context.noMatchEvents = optionsNode.noMatchEvents;
+         context.passThrough = optionsNode.passThrough;
          context.stripSpace = optionsNode.stripSpace;
          context.recognizeCdata = optionsNode.recognizeCdata;
          copyLocation = optionsNode;
@@ -741,7 +741,7 @@ public class Processor extends XMLFilterImpl
                log4j.debug("default - dataStack.push " + dataStack.peek());
             break;
          case SAXEvent.ELEMENT:
-            if((context.noMatchEvents & COPY_ELEMENT_NO_MATCH) != 0)
+            if((context.passThrough & PASS_THROUGH_ELEMENT) != 0)
                emitter.startElement(event.uri, event.lName, event.qName,
                                     event.attrs, event.nsSupport,
                                     copyLocation.publicId,
@@ -753,12 +753,12 @@ public class Processor extends XMLFilterImpl
                log4j.debug("default - dataStack.push " + dataStack.peek());
             break;
          case SAXEvent.TEXT:
-            if((context.noMatchEvents & COPY_TEXT_NO_MATCH) != 0)
+            if((context.passThrough & PASS_THROUGH_TEXT) != 0)
                emitter.characters(event.value.toCharArray(), 
                                   0, event.value.length());
             break;
          case SAXEvent.CDATA:
-            if((context.noMatchEvents & COPY_TEXT_NO_MATCH) != 0) {
+            if((context.passThrough & PASS_THROUGH_TEXT) != 0) {
                emitter.startCDATA(copyLocation.publicId,
                                   copyLocation.systemId,
                                   copyLocation.lineNo, copyLocation.colNo);
@@ -768,7 +768,7 @@ public class Processor extends XMLFilterImpl
             }
             break;
          case SAXEvent.COMMENT:
-            if((context.noMatchEvents & COPY_COMMENT_NO_MATCH) != 0)
+            if((context.passThrough & PASS_THROUGH_COMMENT) != 0)
                emitter.comment(event.value.toCharArray(), 
                                0, event.value.length(),
                                copyLocation.publicId,
@@ -776,7 +776,7 @@ public class Processor extends XMLFilterImpl
                                copyLocation.lineNo, copyLocation.colNo);
             break;
          case SAXEvent.PI:
-            if((context.noMatchEvents & COPY_PI_NO_MATCH) != 0)
+            if((context.passThrough & PASS_THROUGH_PI) != 0)
                emitter.processingInstruction(event.qName, event.value,
                                              copyLocation.publicId,
                                              copyLocation.systemId,
@@ -784,7 +784,7 @@ public class Processor extends XMLFilterImpl
                                              copyLocation.colNo);
             break;
          case SAXEvent.ATTRIBUTE:
-            if((context.noMatchEvents & COPY_ATTRIBUTE_NO_MATCH) != 0)
+            if((context.passThrough & PASS_THROUGH_ATTRIBUTE) != 0)
                emitter.addAttribute(event.uri, event.qName, event.lName,
                                     event.value,
                                     copyLocation.publicId,
@@ -1027,7 +1027,7 @@ public class Processor extends XMLFilterImpl
          short prStatus = data.lastProcStatus;
          if (data.lastTemplate == null) {
             // perform default action?
-            if ((context.noMatchEvents & COPY_ELEMENT_NO_MATCH) != 0)
+            if ((context.passThrough & PASS_THROUGH_ELEMENT) != 0)
                emitter.endElement(uri, lName, qName,
                                   copyLocation.publicId,
                                   copyLocation.systemId,

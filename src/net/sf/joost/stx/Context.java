@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 1.7 2002/12/23 08:19:46 obecker Exp $
+ * $Id: Context.java,v 1.8 2003/01/15 14:28:58 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -35,7 +35,7 @@ import java.util.Hashtable;
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 1.7 $ $Date: 2002/12/23 08:19:46 $
+ * @version $Revision: 1.8 $ $Date: 2003/01/15 14:28:58 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
@@ -73,8 +73,8 @@ public final class Context implements Cloneable
    public String defaultSTXPathNamespace = "";
 
    /** The rule how to process unmatched events 
-       (from <code>stx:options' no-match-events</code>) */
-   public byte noMatchEvents = Processor.IGNORE_NO_MATCH;
+       (from <code>stx:options' pass-through</code>) */
+   public byte passThrough = Processor.PASS_THROUGH_NONE;
 
    /** Should white-space only text nodes be stripped 
        (from <code>stx:options' strip-space</code>)? */
