@@ -10,7 +10,6 @@ stx:process-document
   is used, not the base of the node. This will give different results only
   if the node comes from another document with a different base URI, i.e.
   the node must have been stored in a variable.
-- URIResolver (TrAX) will not be used
 
 stx:result-document
 - no check for multiple openings of the same file (leads to invalid contents)
