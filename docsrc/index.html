@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.74 2004/11/06 22:49:48 obecker Exp $ -->
+<!-- $Id: index.html,v 1.75 2004/11/07 14:09:03 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -229,7 +229,7 @@
           </li>
       </ul>
       <p>
-      <strong></em>Supported STXPath functions</strong></strong>
+      <strong><em>Supported STXPath functions</em></strong>
       <ul>
       <li>string(object?)</li>
       <li>number(object?)</li>
@@ -307,7 +307,10 @@
         can be invoked by specifying <code>joost:html</code> in the
         <code>output-method</code> attribute. The prefix <code>joost</code>
         must be bound to <em>Joost</em>'s extension namespace                  
-        <code>http://joost.sf.net/extension</code>.
+        <code>http://joost.sf.net/extension</code>. CDATA boundaries will
+        not be printed in HTML. This means the beloved
+        <em>disable-output-escaping</em> feature of XSLT can be simulated
+        by using the <code>stx:cdata</code> instruction.
       </p>
                   
       <h5>Invoking Java methods</h5>
@@ -552,7 +555,7 @@
         parameter.
       </p>
 
-      <h5>Using external SAX2 filters</strong></h5>
+      <h5>Using external SAX2 filters</h5>
       <p>
         <em>Joost</em> implements the usage of external SAX2 filters as
         described in the WD of the STX specification section 4.19
