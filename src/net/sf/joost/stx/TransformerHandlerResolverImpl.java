@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerResolverImpl.java,v 2.2 2003/05/19 14:43:27 obecker Exp $
+ * $Id: TransformerHandlerResolverImpl.java,v 2.3 2003/05/23 11:02:03 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,6 +24,9 @@
 
 package net.sf.joost.stx;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Properties;
@@ -47,7 +50,7 @@ import net.sf.joost.TransformerHandlerResolver;
 /**
  * The default implementation of an {@link TransformerHandlerResolver}.
  * It supports currently only XSLT transformers.
- * @version $Revision: 2.2 $ $Date: 2003/05/19 14:43:27 $
+ * @version $Revision: 2.3 $ $Date: 2003/05/23 11:02:03 $
  * @author Oliver Becker
  */
 
@@ -55,7 +58,7 @@ public final class TransformerHandlerResolverImpl
    implements TransformerHandlerResolver
 {
    /** The URI identifying an XSLT transformation (the XSLT namespace) */
-   public static final String XSLT_METHOD = 
+   public static final String XSLT_FILTER = 
       "http://www.w3.org/1999/XSL/Transform";
 
    /** A custom resolver object registered via
@@ -79,43 +82,44 @@ public final class TransformerHandlerResolverImpl
    }
 
 
-   public TransformerHandler resolve(String method, String href, 
+   public TransformerHandler resolve(String filter, String href, String base,
                                      Hashtable params)
       throws SAXException
    {
       if (customResolver != null) {
          TransformerHandler handler =
-            customResolver.resolve(method, href, 
+            customResolver.resolve(filter, href, base,
                                    createExternalParameters(params));
          if (handler != null)
             return handler;
       }
 
-      return resolve(method, href, null, params);
+      return resolve(filter, href, base, null, params);
    }
 
 
-   public TransformerHandler resolve(String method, XMLReader reader, 
+   public TransformerHandler resolve(String filter, XMLReader reader, 
                                      Hashtable params)
       throws SAXException
    {
       if (customResolver != null) {
          TransformerHandler handler =
-            customResolver.resolve(method, reader,
+            customResolver.resolve(filter, reader,
                                    createExternalParameters(params));
          if (handler != null)
             return handler;
       }
 
-      return resolve(method, null, reader, params);
+      return resolve(filter, null, null, reader, params);
    }
 
 
-   private TransformerHandler resolve(String method, String href,
+   private TransformerHandler resolve(String filter, 
+                                      String href, String base,
                                       XMLReader reader, Hashtable params)
       throws SAXException
    {
-      if (XSLT_METHOD.equals(method)) {
+      if (XSLT_FILTER.equals(filter)) {
          final String TFPROP = "javax.xml.transform.TransformerFactory";
          String propVal = System.getProperty(TFPROP);
          boolean propChanged = false;
@@ -134,7 +138,7 @@ public final class TransformerHandlerResolverImpl
          }
          if (tf.getFeature(SAXTransformerFactory.FEATURE)) {
             SAXTransformerFactory stf = (SAXTransformerFactory)tf;
-            // distinguish the two Source (source or reader) variants
+            // distinguish the two Source (href or reader) variants
             Source source;
             if (reader != null)
                source = new SAXSource(reader, new InputSource());
@@ -142,7 +146,13 @@ public final class TransformerHandlerResolverImpl
                if (href == null)
                   throw new SAXException(
                      "Missing source for XSLT transformation");
-               source = new StreamSource(href);
+               try {
+                  source = new StreamSource(
+                              new URL(new URL(base), href).toExternalForm());
+               }
+               catch (MalformedURLException muex) {
+                  throw new SAXException(muex);
+               }
             }
             try {
                TransformerHandler handler = stf.newTransformerHandler(source);
@@ -166,5 +176,13 @@ public final class TransformerHandlerResolverImpl
       }
 
       return null;
+   }
+
+
+   public boolean available(String filter)
+   {
+      if (customResolver != null && customResolver.available(filter))
+         return true;
+      return XSLT_FILTER.equals(filter);
    }
 }
