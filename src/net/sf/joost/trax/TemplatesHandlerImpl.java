@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesHandlerImpl.java,v 1.8 2004/09/19 13:41:38 obecker Exp $
+ * $Id: TemplatesHandlerImpl.java,v 1.9 2004/10/24 20:40:41 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -29,8 +29,10 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.TemplatesHandler;
 
+import net.sf.joost.OptionalLog;
 import net.sf.joost.stx.Parser;
 
+import org.apache.commons.logging.Log;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 
@@ -47,9 +49,8 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
 
     // Define a static logger variable so that it references the
     // Logger instance named "TemplatesHandlerImpl".
-    private static org.apache.commons.logging.Log log = 
-        org.apache.commons.logging.
-        LogFactory.getLog(TemplatesHandlerImpl.class);
+    private static Object log = 
+        OptionalLog.getLog(TemplatesHandlerImpl.class);
 
     // member fields
     private Parser stxparser                = null;
@@ -63,7 +64,8 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
      */
     protected TemplatesHandlerImpl(TransformerFactoryImpl tfactory) {
 
-        log.debug("calling constructor");
+        if (log != null)
+            ((Log)log).debug("calling constructor");
         this.tfactory = tfactory;
         // construct a tree representation of an STX stylesheet
         stxparser = new Parser();
@@ -94,7 +96,8 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
      */
     public Templates getTemplates() {
 
-        log.debug("calling getTemplates()");
+        if (log != null)
+            ((Log)log).debug("calling getTemplates()");
         Templates templates = null;
         try {
             // construct TrAX-representation of an compiled STX stylesheet

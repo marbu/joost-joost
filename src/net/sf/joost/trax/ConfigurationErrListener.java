@@ -1,5 +1,5 @@
 /*
- * $Id: ConfigurationErrListener.java,v 1.1 2003/07/27 10:36:16 zubow Exp $
+ * $Id: ConfigurationErrListener.java,v 1.2 2004/10/24 20:40:41 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,8 +26,12 @@
 package net.sf.joost.trax;
 
 import javax.xml.transform.ErrorListener;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+
+import org.apache.commons.logging.Log;
+
+import net.sf.joost.OptionalLog;
 
 /**
  * This class acts as a default ErrorListener for the
@@ -36,10 +40,9 @@ import javax.xml.transform.TransformerConfigurationException;
 public class ConfigurationErrListener implements ErrorListener {
 
     // Define a static logger variable so that it references the
-    // Logger instance named "TransformerFactoryImpl".
-    private static org.apache.commons.logging.Log log =
-        org.apache.commons.logging.
-        LogFactory.getLog(ConfigurationErrListener.class);
+    // Logger instance named "ConfigurationErrListener".
+    private static Object log =
+        OptionalLog.getLog(ConfigurationErrListener.class);
 
     private ErrorListener userErrorListener;
 
@@ -66,7 +69,8 @@ public class ConfigurationErrListener implements ErrorListener {
             try {
                 userErrorListener.warning(tE);
             } catch( TransformerException e2) {
-                log.warn(e2);
+                if (log != null)
+                    ((Log)log).warn(e2);
                 if (e2 instanceof TransformerConfigurationException) {
                     throw (TransformerConfigurationException)tE;
                 } else {
@@ -74,7 +78,8 @@ public class ConfigurationErrListener implements ErrorListener {
                 }
             }
         } else {
-            log.warn(tE);
+            if (log != null)
+                ((Log)log).warn(tE);
             // no user defined errorlistener, so throw this exception
             if (tE instanceof TransformerConfigurationException) {
                 throw (TransformerConfigurationException)tE;
@@ -94,7 +99,8 @@ public class ConfigurationErrListener implements ErrorListener {
             try {
                 userErrorListener.error(tE);
             } catch( TransformerException e2) {
-                log.error(e2);
+                if (log != null)
+                    ((Log)log).error(e2);
                 if (e2 instanceof TransformerConfigurationException) {
                     throw (TransformerConfigurationException)tE;
                 } else {
@@ -102,7 +108,8 @@ public class ConfigurationErrListener implements ErrorListener {
                 }
             }
         } else {
-            log.error(tE);
+            if (log != null)
+                ((Log)log).error(tE);
             // no user defined errorlistener, so throw this exception
             if (tE instanceof TransformerConfigurationException) {
                 throw (TransformerConfigurationException)tE;
@@ -122,7 +129,8 @@ public class ConfigurationErrListener implements ErrorListener {
             try {
                 userErrorListener.fatalError(tE);
             } catch( TransformerException e2) {
-                log.fatal(e2);
+                if (log != null)
+                    ((Log)log).fatal(e2);
                 if (e2 instanceof TransformerConfigurationException) {
                     throw (TransformerConfigurationException)tE;
                 } else {
@@ -130,7 +138,8 @@ public class ConfigurationErrListener implements ErrorListener {
                 }
             }
         } else {
-            log.fatal(tE);
+            if (log != null)
+                ((Log)log).fatal(tE);
             // no user defined errorlistener, so throw this exception
             if (tE instanceof TransformerConfigurationException) {
                 throw (TransformerConfigurationException)tE;

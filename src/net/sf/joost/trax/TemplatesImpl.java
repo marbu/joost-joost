@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.20 2004/10/03 19:06:38 zubow Exp $
+ * $Id: TemplatesImpl.java,v 1.21 2004/10/24 20:40:41 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -31,10 +31,12 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 
+import net.sf.joost.OptionalLog;
 import net.sf.joost.stx.Parser;
 import net.sf.joost.stx.Processor;
 import net.sf.joost.trace.DebugProcessor;
 
+import org.apache.commons.logging.Log;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
@@ -49,8 +51,7 @@ public class TemplatesImpl implements Templates, TrAXConstants {
 
     // Define a static logger variable so that it references the
     // Logger instance named "TemplatesImpl".
-    private static org.apache.commons.logging.Log log = 
-        org.apache.commons.logging.LogFactory.getLog(TemplatesImpl.class);
+    private static Object log = OptionalLog.getLog(TemplatesImpl.class);
 
     /**
      * Holding a reference on a <code>TransformerFactoryImpl</code>
@@ -79,13 +80,14 @@ public class TemplatesImpl implements Templates, TrAXConstants {
         throws TransformerConfigurationException {
 
         if (DEBUG)
-            log.debug("calling constructor with existing Parser");
+            ((Log)log).debug("calling constructor with existing Parser");
         this.factory = factory;
         try {
             //configure the template
             init(stxParser);
         } catch (TransformerConfigurationException tE) {
-            log.fatal(tE);
+            if (log != null)
+                ((Log)log).fatal(tE);
             throw tE;
         }
     }
@@ -103,7 +105,7 @@ public class TemplatesImpl implements Templates, TrAXConstants {
         throws TransformerConfigurationException {
 
         if (DEBUG)
-            log.debug("calling constructor with SystemId " + 
+            ((Log)log).debug("calling constructor with SystemId " + 
                       isource.getSystemId());
         this.factory = factory;
         try {
@@ -125,14 +127,15 @@ public class TemplatesImpl implements Templates, TrAXConstants {
     private void init(Parser stxParser) throws TransformerConfigurationException {
 
         if (DEBUG)
-            log.debug("init without InputSource ");
+            ((Log)log).debug("init without InputSource ");
         try {
             // check if transformerfactory is in debug mode
             boolean debugmode =
                     ((Boolean)this.factory.getAttribute(DEBUG_FEATURE)).booleanValue();
 
             if (debugmode) {
-                log.info("init transformer in debug mode");
+                if (log != null)
+                    ((Log)log).info("init transformer in debug mode");
                 processor = new DebugProcessor(stxParser);
             } else {
                 processor = new Processor(stxParser);
@@ -140,10 +143,12 @@ public class TemplatesImpl implements Templates, TrAXConstants {
             if (factory.thResolver != null)
                 processor.setTransformerHandlerResolver(factory.thResolver);
         } catch (org.xml.sax.SAXException sE) {
-            log.fatal(sE);
+            if (log != null)
+                ((Log)log).fatal(sE);
             throw new TransformerConfigurationException(sE.getMessage());
         } catch (java.lang.NullPointerException nE) {
-            log.fatal(nE);
+            if (log != null)
+                ((Log)log).fatal(nE);
             throw new TransformerConfigurationException("Could not found value for property javax.xml.parsers.SAXParser " + nE.getMessage());
         }
     }
@@ -161,7 +166,7 @@ public class TemplatesImpl implements Templates, TrAXConstants {
         throws TransformerConfigurationException {
 
         if (DEBUG)
-            log.debug("init with InputSource " + isource.getSystemId());
+            ((Log)log).debug("init with InputSource " + isource.getSystemId());
         try {
             /**
              * Register ErrorListener from
@@ -174,7 +179,7 @@ public class TemplatesImpl implements Templates, TrAXConstants {
 
             if (debugmode) {
                 if (DEBUG)
-                    log.info("init transformer in debug mode");
+                    ((Log)log).info("init transformer in debug mode");
                 processor = new DebugProcessor(reader, isource,
                                                factory.getErrorListener(),
                                                factory.getURIResolver(),
@@ -189,18 +194,18 @@ public class TemplatesImpl implements Templates, TrAXConstants {
                 processor.setTransformerHandlerResolver(factory.thResolver);
         } catch (java.io.IOException iE) {
             if (DEBUG)
-                log.debug(iE);
+                ((Log)log).debug(iE);
             throw new TransformerConfigurationException(iE.getMessage(), iE);
         } catch (org.xml.sax.SAXException sE) {
             Exception emb = sE.getException();
             if (emb instanceof TransformerConfigurationException)
                 throw (TransformerConfigurationException)emb;
             if (DEBUG)
-                log.debug(sE);
+                ((Log)log).debug(sE);
             throw new TransformerConfigurationException(sE.getMessage(), sE);
         } catch (java.lang.NullPointerException nE) {
             if (DEBUG)
-                log.debug(nE);
+                ((Log)log).debug(nE);
             nE.printStackTrace(System.err);
             throw new TransformerConfigurationException("could not found value for property javax.xml.parsers.SAXParser ", nE);
         }
@@ -216,8 +221,8 @@ public class TemplatesImpl implements Templates, TrAXConstants {
 
         synchronized (reentryGuard) {
             if (DEBUG)
-                log.debug("calling newTransformer to get a Transformer " + 
-                          "object for Transformation");
+                ((Log)log).debug("calling newTransformer to get a " + 
+                                 "Transformer object for Transformation");
             //register the processor
             Transformer transformer = 
                 new TransformerImpl(processor.copy());
