@@ -1,5 +1,5 @@
 /*
- * $Id: PIFactory.java,v 2.3 2004/09/29 06:14:20 obecker Exp $
+ * $Id: PIFactory.java,v 2.4 2004/10/01 18:10:28 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>processing-instruction</code> elements, which are 
  * represented by the inner Instance class. 
- * @version $Revision: 2.3 $ $Date: 2004/09/29 06:14:20 $
+ * @version $Revision: 2.4 $ $Date: 2004/10/01 18:10:28 $
  * @author Oliver Becker
  */
 
@@ -53,6 +53,7 @@ final public class PIFactory extends FactoryBase
    {
       attrNames = new HashSet();
       attrNames.add("name");
+      attrNames.add("select");
    }
 
    /* @return <code>"processing-instruction"</code> */
@@ -68,9 +69,13 @@ final public class PIFactory extends FactoryBase
       String nameAtt = getAttribute(qName, attrs, "name", context);
       Tree nameAVT = parseAVT(nameAtt, context);
 
+      String selectAtt = attrs.getValue("select");
+      Tree selectExpr = 
+         (selectAtt != null) ? parseExpr(selectAtt, context) : null;
+         
       checkAttributes(qName, attrs, attrNames, context);
 
-      return new Instance(qName, parent, context, nameAVT);
+      return new Instance(qName, parent, context, nameAVT, selectExpr);
    }
 
 
@@ -80,16 +85,19 @@ final public class PIFactory extends FactoryBase
     */
    final public class Instance extends NodeBase
    {
-      private Tree name;
+      private Tree name, select;
       private StringEmitter strEmitter;
       private StringBuffer buffer;
       private String piName;
 
       protected Instance(String qName, NodeBase parent, ParseContext context,
-                         Tree name)
+                         Tree name, Tree select)
       {
-         super(qName, parent, context, true);
+         super(qName, parent, context,
+               // this element must be empty if there is a select attribute
+               select == null);
          this.name = name;
+         this.select = select;
          buffer = new StringBuffer();
          strEmitter = new StringEmitter(buffer, 
                          "(`" + qName + "' started in line " + lineNo + ")");
@@ -102,20 +110,35 @@ final public class PIFactory extends FactoryBase
       public short process(Context context)
          throws SAXException
       {
-         super.process(context);
-         // check for nesting of this stx:processing-instruction
-         if (context.emitter.isEmitterActive(strEmitter)) {
-            context.errorHandler.error(
-               "Can't create nested processing instruction here",
-               publicId, systemId, lineNo, colNo);
-            return PR_CONTINUE; // if the errorHandler returns
-         }
-         buffer.setLength(0);
-         context.pushEmitter(strEmitter);
-
          piName = name.evaluate(context, this).getString();
-
          // TO DO: is this piName valid?
+
+         if (select == null) {
+            super.process(context);
+            // check for nesting of this stx:processing-instruction
+            if (context.emitter.isEmitterActive(strEmitter)) {
+               context.errorHandler.error(
+                  "Can't create nested processing instruction here",
+                  publicId, systemId, lineNo, colNo);
+               return PR_CONTINUE; // if the errorHandler returns
+            }
+            buffer.setLength(0);
+            context.pushEmitter(strEmitter);
+         }
+         else {
+            String pi = select.evaluate(context, this).getStringValue();
+            int index = pi.lastIndexOf("?>");
+            if (index != -1) {
+               StringBuffer piBuf = new StringBuffer(pi);
+               do
+                  piBuf.insert(index+1, ' ');
+               while ((index = pi.lastIndexOf("?>", --index)) != -1);
+               pi = piBuf.toString();
+            }
+            context.emitter.processingInstruction(piName, pi,
+                                                  publicId, systemId, 
+                                                  lineNo, colNo);
+         }
          return PR_CONTINUE;
       }
 
