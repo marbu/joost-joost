@@ -1,7 +1,7 @@
 Changes since 20040330
 - flush output on error
 - added filter-method "http://www.ietf.org/rfc/rfc2616.txt#POST"
-- Bugfix: 936354
+- Bugfix: 936354, 1003790
 
 Changes since 20031219
 - added command line switches: -time, -m

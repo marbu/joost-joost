@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 2.9 2003/09/04 11:16:19 obecker Exp $
+ * $Id: PDocumentFactory.java,v 2.10 2004/08/22 12:28:54 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -51,7 +51,7 @@ import net.sf.joost.trax.TrAXHelper;
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.9 $ $Date: 2003/09/04 11:16:19 $
+ * @version $Revision: 2.10 $ $Date: 2004/08/22 12:28:54 $
  * @author Oliver Becker
  */
 
@@ -96,6 +96,7 @@ public class PDocumentFactory extends FactoryBase
       Tree href = parseExpr(hrefAtt, context);
 
       String baseAtt = attrs.getValue("base");
+      Tree baseAVT = baseAtt != null ? parseAVT(baseAtt, context) : null;
 
       String groupAtt = attrs.getValue("group");
 
@@ -116,7 +117,7 @@ public class PDocumentFactory extends FactoryBase
             context.locator);
 
       checkAttributes(qName, attrs, attrNames, context);
-      return new Instance(qName, parent, context, href, baseAtt,
+      return new Instance(qName, parent, context, href, baseAVT,
                           groupAtt, filterMethodAtt, filterSrcAtt);
    }
 
@@ -124,12 +125,11 @@ public class PDocumentFactory extends FactoryBase
    /** The inner Instance class */
    public class Instance extends ProcessBase
    {
-      Tree href;
-      String baseUri;
+      Tree href, baseUri;
 
       // Constructor
       public Instance(String qName, NodeBase parent, ParseContext context,
-                      Tree href, String baseUri, 
+                      Tree href, Tree baseUri, 
                       String groupQName, String method, String src)
 
          throws SAXParseException
@@ -173,12 +173,11 @@ public class PDocumentFactory extends FactoryBase
                base = systemId;
          }
          else { // use specified base URI
-            if ("#input".equals(baseUri) && context.locator != null)
+            base = baseUri.evaluate(context, this).string;
+            if ("#input".equals(base) && context.locator != null)
                base = context.locator.getSystemId();
-            else if ("#stylesheet".equals(baseUri))
+            else if ("#stylesheet".equals(base))
                base = systemId;
-            else
-               base = baseUri;
          }
 
          Locator prevLoc = context.locator;
@@ -222,9 +221,11 @@ public class PDocumentFactory extends FactoryBase
                   iSource = saxSource.getInputSource();
                }
                else {
+                  // construct the base URI relatively to systemId
+                  // and then href relatively to base
                   iSource = 
-                     new InputSource(new URL(new URL(base), hrefURI)
-                                         .toExternalForm());
+                     new InputSource(new URL(new URL(new URL(systemId), base), 
+                                             hrefURI).toExternalForm());
                   reader = defaultReader;
                }
 
