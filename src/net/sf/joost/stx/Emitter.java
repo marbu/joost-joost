@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.17 2003/05/14 11:53:08 obecker Exp $
+ * $Id: Emitter.java,v 1.18 2003/05/19 08:50:21 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.emitter.StxEmitter;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.17 $ $Date: 2003/05/14 11:53:08 $
+ * @version $Revision: 1.18 $ $Date: 2003/05/19 08:50:21 $
  * @author Oliver Becker
  */
 
@@ -57,8 +57,8 @@ public final class Emitter
    private Hashtable inScopeNamespaces;
    private Stack namespaceStack;
 
-   /** Stack for emitted events, allows well-formedness check */
-   private Stack outputEvents;
+   /** Stack for emitted start events, allows well-formedness check */
+   private Stack openedElements;
 
    /** Stack for handler objects and unprocessed elements */
    private Stack emitterStack;
@@ -80,7 +80,7 @@ public final class Emitter
       inScopeNamespaces.put("xml", "http://www.w3.org/XML/1998/namespace");
       namespaceStack = new Stack();
       namespaceStack.push(inScopeNamespaces.clone());
-      outputEvents = new Stack();
+      openedElements = new Stack();
       emitterStack = new Stack();
       this.errorHandler = errorHandler;
    }
@@ -148,8 +148,8 @@ public final class Emitter
                             lastLineNo, lastColNo);
       }
 
-      outputEvents.push(SAXEvent.newElement(lastUri, lastLName, lastQName, 
-                                            lastAttrs, null));
+      openedElements.push(lastUri);
+      openedElements.push(lastQName);
 
       lastAttrs = null; // flag: there's no startElement pending
    }
@@ -183,10 +183,8 @@ public final class Emitter
 
    public void startDocument() throws SAXException
    {
-      if (contH != null) {
+      if (contH != null) 
          contH.startDocument();
-         outputEvents.push(SAXEvent.newRoot());
-      }
    }
 
 
@@ -197,15 +195,13 @@ public final class Emitter
       if (contH != null) {
          if (lastAttrs != null)
             processLastElement();
-         if (outputEvents.size() > 1) {
-            SAXEvent ev = (SAXEvent)outputEvents.pop();
-
+         if (!openedElements.isEmpty()) {
             errorHandler.fatalError(
-               "Missing end tag for `" + ev.qName + "' at the document end", 
+               "Missing end tag for `" + openedElements.pop() + 
+               "' at the document end", 
                publicId, systemId, lineNo, colNo);
          }
          contH.endDocument();
-         outputEvents.pop();
       }
    }
 
@@ -259,8 +255,7 @@ public final class Emitter
          if (lastAttrs != null)
             processLastElement();
 
-         SAXEvent ev = (SAXEvent)outputEvents.pop();
-         if (ev == null || ev.type != SAXEvent.ELEMENT) {
+         if (openedElements.isEmpty()) {
             errorHandler.fatalError(
                "Attempt to emit unmatched end tag " +
                (qName != null ? "`" + qName + "' " : "") +
@@ -268,23 +263,24 @@ public final class Emitter
                publicId, systemId, lineNo, colNo);
             return; // if the errorHandler returns
          }
-         if (!qName.equals(ev.qName)) {
+         String elQName = (String)openedElements.pop();
+         String elUri = (String)openedElements.pop();
+         if (!qName.equals(elQName)) {
             errorHandler.fatalError(
                "Attempt to emit unmatched end tag `"+
-               qName + "' (`" + ev.qName + "' expected)",
+               qName + "' (`" + elQName + "' expected)",
                publicId, systemId, lineNo, colNo);
             return; // if the errorHandler returns
          }
-         if (!uri.equals(ev.uri)) {
+         if (!uri.equals(elUri)) {
             errorHandler.fatalError(
                "Attempt to emit unmatched end tag `{" + uri + "}" + qName + 
-               "' (`{" + ev.uri + "}" +           ev.qName + "' expected)",
+               "' (`{" + elUri + "}" +           elQName + "' expected)",
                publicId, systemId, lineNo, colNo);
             return; // if the errorHandler returns
          }
 
          contH.endElement(uri, lName, qName);
-         ev.removeRef();
 
          // Recall the namespaces in scope
          inScopeNamespaces = (Hashtable)namespaceStack.pop();
