@@ -1,6 +1,6 @@
 Changes since 20021107
 - stx:choose, stx:when, stx:otherwise, stx:else
-- stx:comment
+- stx:comment, stx:processing-instruction
 
 Changes since 20021104
 - added support for global parameters
