@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.35 2004/01/23 16:16:54 zubow Exp $
+ * $Id: Processor.java,v 2.36 2004/02/03 18:22:32 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -56,7 +56,7 @@ import net.sf.joost.trace.DebugProcessor;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.35 $ $Date: 2004/01/23 16:16:54 $
+ * @version $Revision: 2.36 $ $Date: 2004/02/03 18:22:32 $
  * @author Oliver Becker
  */
 
@@ -1945,7 +1945,7 @@ public class Processor extends XMLFilterImpl
      * Returns a reference to the event stack.
      * @return the event stack
      */
-    protected Stack getEventStack() {
+    public Stack getEventStack() {
         return this.eventStack;
     }
 
@@ -1958,18 +1958,10 @@ public class Processor extends XMLFilterImpl
     }
 
     /**
-     * Returns a ref to the inner processing (buffers, documents) stack.
-     * @return the inner processing stack
-     */
-    protected Stack getInnerProcessStack() {
-        return this.innerProcStack;
-    }
-
-    /**
      * Returns a ref to the current context of the processing.
      * @return the current context
      */
-    protected Context getContext() {
+    public Context getContext() {
         return this.context;
     }
 

@@ -1,5 +1,5 @@
 /*
- * $Id: TraceListener.java,v 1.3 2003/07/27 10:54:27 zubow Exp $
+ * $Id: TraceListener.java,v 1.4 2004/02/03 18:22:27 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -43,7 +43,7 @@ import net.sf.joost.stx.Processor;
  * {@link net.sf.joost.trax.TransformerImpl} with the help of the
  * {@link net.sf.joost.trace.TraceManager}
  * {@link net.sf.joost.trax.TransformerImpl#getTraceManager()}.
- * @version $Revision: 1.3 $ $Date: 2003/07/27 10:54:27 $
+ * @version $Revision: 1.4 $ $Date: 2004/02/03 18:22:27 $
  * @author Zubow
  */
 public interface TraceListener {
@@ -55,69 +55,56 @@ public interface TraceListener {
     /**
      * Called at the start of processing.
      */
-    void open(TraceMetaInfo meta);
+    void startSourceDocument();
 
     /**
      * Called at end of processing.
      */
-    void close(TraceMetaInfo meta);
+    void endSourceDocument();
 
     /**
      * Called when a start element event of the source was received.
      */
-    void startElementEvent(TraceMetaInfo meta);
+    void startSourceElement(SAXEvent saxevent);
 
     /**
      * Called when a end element event of the source was received.
      */
-    void endElementEvent(TraceMetaInfo meta);
+    void endSourceElement(SAXEvent saxevent);
 
     /**
      * Called when a text event of the source was received.
      */
-    void textEvent(TraceMetaInfo meta);
+    void sourceText(SAXEvent saxevent);
 
     /**
      * Called when a PI event of the source was received.
      */
-    void PIEvent(TraceMetaInfo meta);
+    void sourcePI(SAXEvent saxevent);
 
     /**
      * Called when a ns mapping of the source was received.
      */
-    void mappingEvent(TraceMetaInfo meta);
+    void sourceMapping(SAXEvent saxevent);
 
     /**
      * Called when a comment of the source was received.
      */
-    void commentEvent(TraceMetaInfo meta);
-
-    /**
-     * Indicates the start of a inner processing of a new buffer
-     * or another document.
-     */
-    void startInnerProcessingEvent();
-
-    /**
-     * Indicates the end of a inner processing of a new buffer
-     * or another document.
-     */
-    void endInnerProcessingEvent();
-
+    void sourceComment(SAXEvent saxevent);
 
     //----------------------------------------------
-    // Stylesheet events
+    // Transformation sheet events
     //----------------------------------------------
 
     /**
      * Called when an element of the stylesheet gets processed.
      */
-    void enterStxNode(TraceMetaInfo meta);
+    void enterInstructionNode(AbstractInstruction inst, SAXEvent event);
 
     /**
      * Called after an element of the stylesheet got processed.
      */
-    void leaveStxNode(TraceMetaInfo meta);
+    void leaveInstructionNode(AbstractInstruction inst, SAXEvent event);
 
 
     //----------------------------------------------
@@ -127,56 +114,45 @@ public interface TraceListener {
     /**
      * Called for emitter start document event.
      */
-    void startDocumentEmitterEvent();
+    void startResultDocument();
 
     /**
      * Called for emitter end document event.
      */
-    void endDocumentEmitterEvent(String publicId,
-                                 String systemId,
-                                 int lineNo,
-                                 int colNo);
+    void endResultDocument();
 
     /**
      * Called for emitter start element event.
      */
-    void startElementEmitterEvent(String uri, String lName, String qName,
-                                  Attributes attrs, Hashtable namespaces,
-                                  String publicId, String systemId,
-                                  int lineNo, int colNo);
+    void startResultElement(SAXEvent saxevent);
 
     /**
      * Called for emitter end element event.
      */
-    void endElementEmitterEvent(String uri, String lName, String qName,
-                                String publicId, String systemId,
-                                int lineNo, int colNo);
+    void endResultElement(SAXEvent saxevent);
 
     /**
      * Called for emitter text event.
      */
-    void textEmitterEvent(String value);
+    void resultText(SAXEvent saxevent);
 
     /**
      * Called for emitter PI event.
      */
-    void PIEmitterEvent(String target, String data,
-                        String publicId, String systemId,
-                        int lineNo, int colNo);
+    void resultPI(SAXEvent saxevent);
 
     /**
      * Called for emitter comment event.
      */
-    void commentEmitterEvent(String value, String publicId, String systemId,
-                             int lineNo, int colNo);
+    void resultComment(SAXEvent saxevent);
 
     /**
      * Called for emitter start CDATA event.
      */
-    void startCDATAEmitterEvent(String publicId, String systemId, int lineNo, int colNo);
+    void startResultCDATA();
 
     /**
      * Called for emitter end CDATA event.
      */
-    void endCDATAEmitterEvent();
+    void endResultCDATA();
 }

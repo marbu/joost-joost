@@ -1,5 +1,5 @@
 /*
- * $Id: DebugProcessor.java,v 1.9 2004/01/23 16:13:30 zubow Exp $
+ * $Id: DebugProcessor.java,v 1.10 2004/02/03 18:22:27 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,40 +26,75 @@ package net.sf.joost.trace;
 
 import net.sf.joost.trace.TraceManager;
 import net.sf.joost.stx.*;
+import net.sf.joost.stx.Parser;
 import net.sf.joost.instruction.TemplateFactory;
 import net.sf.joost.instruction.AbstractInstruction;
 import net.sf.joost.instruction.NodeBase;
 import net.sf.joost.instruction.AssignFactory;
 import net.sf.joost.trax.TransformerImpl;
 import net.sf.joost.Constants;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.Attributes;
-import org.xml.sax.XMLReader;
+import org.xml.sax.*;
 
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.URIResolver;
 import java.io.IOException;
 import java.util.Vector;
 import java.util.Arrays;
+import java.util.Hashtable;
 
 /**
  * Extends the {@link net.sf.joost.stx.Processor} with debug features.
- * @version $Revision: 1.9 $ $Date: 2004/01/23 16:13:30 $
+ * @version $Revision: 1.10 $ $Date: 2004/02/03 18:22:27 $
  * @author Zubow
  */
 public class DebugProcessor extends Processor {
 
-    private ParserListener parserListener;
-
-    // for tracing
+    /** the TraceManager for dynamic tracing */
     private TraceManager tmgr;
+    /** the TrAX-Transformer */
     private TransformerImpl transformer;
-
+    /** the ParserListener for static tracing */
+    private ParserListener parserListener;
+    /** the Joost-transformation-sheet parser */
     public Parser stxparser;
 
+    private Locator locator;
+
+    /** logger */
     private static org.apache.commons.logging.Log log =
             org.apache.commons.logging.LogFactory.getLog(DebugProcessor.class);
+
+    /**
+     * See {@link net.sf.joost.stx.Processor#Processor(net.sf.joost.stx.Processor)}
+     */
+    public DebugProcessor(Processor proc) {
+        super(proc);
+    }
+
+    /**
+     * See {@link net.sf.joost.stx.Processor#Processor(net.sf.joost.stx.Parser)}
+     */
+    public DebugProcessor(Parser stxParser)
+            throws SAXException {
+        super(stxParser);
+    }
+
+    /**
+     * See {@link net.sf.joost.stx.Processor#Processor(org.xml.sax.InputSource)}
+     */
+    public DebugProcessor(InputSource src)
+            throws IOException, SAXException {
+        super(src);
+    }
+
+    /**
+     * See {@link net.sf.joost.stx.Processor#Processor(InputSource, ErrorListener, URIResolver)}
+     */
+    public DebugProcessor(InputSource src, ErrorListener errorListener,
+                          URIResolver uriResolver)
+            throws IOException, SAXException {
+        super(src, errorListener, uriResolver);
+    }
 
     /**
      * See {@link net.sf.joost.stx.Processor#Processor(XMLReader, InputSource, ErrorListener, URIResolver, ParserListener)}
@@ -79,108 +114,79 @@ public class DebugProcessor extends Processor {
                           ErrorListener errorListener,
                           URIResolver uriResolver)
             throws IOException, SAXException {
-        super(src, errorListener, uriResolver);
+        super(reader, src, errorListener, uriResolver);
     }
 
-    /**
-     * See {@link net.sf.joost.stx.Processor#Processor(InputSource, ErrorListener, URIResolver)}
-     */
-    public DebugProcessor(InputSource src, ErrorListener errorListener,
-                          URIResolver uriResolver)
-            throws IOException, SAXException {
-        super(src, errorListener, uriResolver);
+
+    // ------------------------------------------------------------------------
+    // Methods
+    // ------------------------------------------------------------------------
+
+    public void setDocumentLocator(Locator locator) {
+        super.setDocumentLocator(locator);
+        this.locator = locator;
     }
 
-    /**
-     * See {@link net.sf.joost.stx.Processor#Processor(org.xml.sax.InputSource)}
-     */
-    public DebugProcessor(InputSource src)
-            throws IOException, SAXException {
-        super(src);
-    }
-
-    /**
-     * See {@link net.sf.joost.stx.Processor#Processor(net.sf.joost.stx.Parser)}
-     */
-    public DebugProcessor(Parser stxParser)
-            throws SAXException {
-        super(stxParser);
-    }
-
-    /**
-     * See {@link net.sf.joost.stx.Processor#Processor(net.sf.joost.stx.Processor)}
-     */
-    public DebugProcessor(Processor proc) {
-        super(proc);
+    public Locator getDocumentLocator() {
+        return locator;
     }
 
     /**
      * Overriden method for debug purpose
      */
     protected Emitter initializeEmitter(Context ctx, Parser parser) {
-        log.info("init debug-processor");
+        log.info("initialize DebugProcessor ...");
         // save reference to stx-parser for nssupport, ...
         this.stxparser = parser;
         return new DebugEmitter(ctx.errorHandler);
     }
 
     /**
-     * Overriden method for debug purpose
+     * Overriden method for the execution of a given instruction.
+     * @param inst the instruction to be executed
+     * @param event the current saxevent from source-document
+     * @return return codes, see {@link Constants}
+     * @throws SAXException in case of errors.
      */
     protected int processInstruction(AbstractInstruction inst, SAXEvent event)
             throws SAXException {
 
-        TraceManager tmgr = null;
-        int ret = -1;
-        boolean atomicnode = false;
+        boolean atomicnode  = false;
+        int ret             = -1;
 
         // check, if transformation should be chanceled
-        if (transformer.CHANCEL_TRANSFORMATION)
+        if (transformer.CHANCEL_TRANSFORMATION) {
             return Constants.PR_ERROR;
-
-        // propagate current executed instruction to debugger
-        tmgr = this.getTraceManager();
-
-        TraceMetaInfo meta = new TraceMetaInfo();
-        meta.inst = inst;
-        meta.eventStack = getEventStack();
-        meta.dataStack = getDataStack();
-        meta.context = getContext();
-        // think about this ?
-        meta.saxEvent = event;
+        }
 
         // found end element
         if (inst instanceof NodeBase.End) {
             // end node
-            tmgr.fireLeaveStylesheetNode(meta);
+            tmgr.fireLeaveInstructionNode(inst, event);
         } else {
             // no corresponding endElement
             if (inst.getNode().getNodeEnd() == null) {
                 // remind this
                 atomicnode = true;
             }
-            tmgr.fireEnterStylesheetNode(meta);
+            // fire callback on tracemanager
+            tmgr.fireEnterInstructionNode(inst, event);
         }
-
 
         // process instruction
         ret = inst.process(getContext());
 
         if (atomicnode && tmgr != null) {
-            meta = new TraceMetaInfo();
-            meta.inst = inst;
-            meta.eventStack = getEventStack();
-            meta.dataStack = getDataStack();
-            meta.context = getContext();
-            // think about this ?
-            meta.saxEvent = event;
-
-            tmgr.fireLeaveStylesheetNode(meta);
+            // fire callback on tracemanager
+            tmgr.fireLeaveInstructionNode(inst, event);
             atomicnode = false;
         }
         return ret;
     }
 
+    /**
+     * getter for property {@link #parserListener}
+     */
     public ParserListener getParserListener() {
         return parserListener;
     }
@@ -199,10 +205,16 @@ public class DebugProcessor extends Processor {
         return this.tmgr;
     }
 
+    /**
+     * getter for property {@link #transformer}
+     */
     public TransformerImpl getTransformer() {
         return transformer;
     }
 
+    /**
+     * setter for property {@link #transformer}
+     */
     public void setTransformer(TransformerImpl transformer) {
         this.transformer = transformer;
     }
@@ -215,34 +227,20 @@ public class DebugProcessor extends Processor {
      * overloaded method of ContentHandler for debug information
      */
     public void startDocument() throws SAXException {
-        TraceMetaInfo meta = new TraceMetaInfo();
-        meta.eventStack = getEventStack();
-        meta.dataStack = getDataStack();
-        meta.innerProcessStack = getInnerProcessStack();
-        meta.context = getContext();
-
         // process event
         super.startDocument();
-
         // fire startprocessing event to tracelistener
-        this.tmgr.fireStartProcessingEvent(meta);
+        this.tmgr.fireStartSourceDocument();
     }
 
     /**
      * overloaded method of ContentHandler for debug information
      */
     public void endDocument() throws SAXException {
-        TraceMetaInfo meta = new TraceMetaInfo();
-        meta.eventStack = getEventStack();
-        meta.dataStack = getDataStack();
-        meta.innerProcessStack = getInnerProcessStack();
-        meta.context = getContext();
-
         // process event
         super.endDocument();
-
         // fire endprocessing event to tracelistener
-        this.tmgr.fireEndProcessingEvent(meta);
+        this.tmgr.fireEndSourceDocument();
     }
 
     /**
@@ -251,22 +249,15 @@ public class DebugProcessor extends Processor {
     public void startElement(String uri, String lName, String qName,
                              Attributes attrs)
             throws SAXException {
-        // todo - namespace support - remove null value
-        SAXEvent saxevent = SAXEvent.newElement(uri, lName, qName, attrs, null);
+        SAXEvent saxevent;
 
-        TraceMetaInfo meta = new TraceMetaInfo();
-        meta.saxEvent = saxevent;
-        meta.eventStack = getEventStack();
-        meta.dataStack = getDataStack();
-        meta.innerProcessStack = getInnerProcessStack();
-        meta.context = getContext();
-        meta.lastElement = getLastElement();
+        // todo - namespace support - remove null value
+        saxevent = SAXEvent.newElement(uri, lName, qName, attrs, null);
 
         // process event
         super.startElement(uri, lName, qName, attrs);
-
         // inform debugger
-        this.tmgr.fireStartElementEvent(meta);
+        this.tmgr.fireStartSourceElement(saxevent);
     }
 
     /**
@@ -274,128 +265,84 @@ public class DebugProcessor extends Processor {
      */
     public void endElement(String uri, String lName, String qName)
             throws SAXException {
-        // todo - namespace support - remove null value
-        SAXEvent saxevent = SAXEvent.newElement(uri, lName, qName, null, null);
+        SAXEvent saxevent;
 
-        TraceMetaInfo meta = new TraceMetaInfo();
-        meta.saxEvent = saxevent;
-        meta.eventStack = getEventStack();
-        meta.dataStack = getDataStack();
-        meta.innerProcessStack = getInnerProcessStack();
-        meta.context = getContext();
-        meta.lastElement = getLastElement();
+        // todo - namespace support - remove null value
+        saxevent = SAXEvent.newElement(uri, lName, qName, null, null);
 
         // process event
         super.endElement(uri, lName, qName);
-
         // inform debugger
-        this.tmgr.fireEndElementEvent(meta);
+        this.tmgr.fireEndSourceElement(saxevent);
     }
 
 
     /**
      * overloaded method of ContentHandler for debug information
      */
-    public void characters(char[] ch, int start, int length) throws SAXException {
-        String text = new String(ch, start, length);
-        SAXEvent saxevent = SAXEvent.newText(text);
-        TraceMetaInfo meta = new TraceMetaInfo();
-        meta.saxEvent = saxevent;
-        meta.context = getContext();
+    public void characters(char[] ch, int start, int length)
+            throws SAXException {
+        SAXEvent saxevent;
 
+        saxevent = SAXEvent.newText(new String(ch, start, length));
         // process event
         super.characters(ch, start, length);
-
         // inform debugger
-        this.tmgr.fireTextEvent(meta);
+        this.tmgr.fireSourceText(saxevent);
     }
 
 
     /**
      * overloaded method of ContentHandler for debug information
      */
-    public void processingInstruction(String target, String data) throws SAXException {
-        SAXEvent saxevent = SAXEvent.newPI(target, data);
-        TraceMetaInfo meta = new TraceMetaInfo();
-        meta.saxEvent = saxevent;
-        meta.context = getContext();
+    public void processingInstruction(String target, String data)
+            throws SAXException {
+        SAXEvent saxevent;
 
+        saxevent = SAXEvent.newPI(target, data);
         // process event
         super.processingInstruction(target, data);
-
         // inform debugger
-        this.tmgr.firePIEvent(meta);
+        this.tmgr.fireSourcePI(saxevent);
     }
 
     /**
      * overloaded method of ContentHandler for debug information
      */
-    public void startPrefixMapping(String prefix, String uri) throws SAXException {
-        SAXEvent saxevent = SAXEvent.newMapping(prefix, uri);
-        TraceMetaInfo meta = new TraceMetaInfo();
-        meta.saxEvent = saxevent;
-        meta.context = getContext();
+    public void startPrefixMapping(String prefix, String uri)
+            throws SAXException {
+        SAXEvent saxevent;
 
+        saxevent= SAXEvent.newMapping(prefix, uri);
         // process event
         super.startPrefixMapping(prefix, uri);
-
         // inform debugger
-        this.tmgr.fireMappingEvent(meta);
+        this.tmgr.fireSourceMapping(saxevent);
     }
 
     /**
      * overloaded method of LexicalHandler for debug information
      */
-    public void comment(char[] ch, int start, int length) throws SAXException {
-        String comvalue = new String(ch, start, length);
-        SAXEvent saxevent = SAXEvent.newComment(comvalue);
-        TraceMetaInfo meta = new TraceMetaInfo();
-        meta.saxEvent = saxevent;
-        meta.context = getContext();
+    public void comment(char[] ch, int start, int length)
+            throws SAXException {
+        SAXEvent saxevent;
 
+        saxevent = SAXEvent.newComment(new String(ch, start, length));
         // process event
         super.comment(ch, start, length);
-
         // inform debugger
-        this.tmgr.fireCommentEvent(meta);
+        this.tmgr.fireSourceComment(saxevent);
     }
 
     /**
      * overloaded method of LexicalHandler for debug information
      */
     //public void startCDATA() {
-
     // problem - bestimme characters, die in einem CDATA-Abschnitt liegen
     //SAXEvent saxevent = SAXEvent.newCDATA()
     //}
     //public void endCDATA()
-    // todo - what about this ?
     //public void ignorableWhitespace(char[] ch, int start, int length)
     //public void startDTD(String name, String publicId, String systemId)
     //public void endDTD()
-
-    //
-    //--------------------------------------------------------------------------
-    //
-    /**
-     * overloaded method (joost specific) for debug information
-     */
-    public void startInnerProcessing() throws SAXException {
-        // process event
-        super.startInnerProcessing();
-
-        // inform debugger
-        this.tmgr.fireStartInnerProcessing();
-    }
-
-    /**
-     * overloaded method (joost specific) for debug information
-     */
-    public void endInnerProcessing() throws SAXException {
-        // process event
-        super.endInnerProcessing();
-
-        // inform debugger
-        this.tmgr.fireEndInnerProcessing();
-    }
 }

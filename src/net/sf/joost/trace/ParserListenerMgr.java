@@ -1,5 +1,5 @@
 /*
- * $Id: ParserListenerMgr.java,v 1.1 2004/01/23 16:13:40 zubow Exp $
+ * $Id: ParserListenerMgr.java,v 1.2 2004/02/03 18:22:27 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -35,17 +35,21 @@ import java.util.ArrayList;
 
 /**
  * This class implements the {@link ParserListener}-Interface for
- * debug purpose.
+ * static debug purpose (e.g. validation of breakpoints).
  *
  * @author Zubow
  */
 public class ParserListenerMgr implements ParserListener {
 
+    /** logger */
+    private static org.apache.commons.logging.Log log =
+            org.apache.commons.logging.LogFactory.getLog(ParserListenerMgr.class);
+
+    /** list of all registered {@link ParserListener} */
     private List parserListeners = null;
 
     /** default constructor */
     public ParserListenerMgr() {}
-
 
     /**
      * Check if parserlisteners are available.
