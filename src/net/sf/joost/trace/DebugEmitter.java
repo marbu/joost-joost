@@ -1,5 +1,5 @@
 /*
- * $Id: DebugEmitter.java,v 1.4 2004/02/13 16:19:02 zubow Exp $
+ * $Id: DebugEmitter.java,v 1.5 2004/02/18 17:28:34 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -39,7 +39,7 @@ import java.io.StringWriter;
 
 /**
  * Extends the {@link net.sf.joost.stx.Emitter} with debug features.
- * @version $Revision: 1.4 $ $Date: 2004/02/13 16:19:02 $
+ * @version $Revision: 1.5 $ $Date: 2004/02/18 17:28:34 $
  * @author Zubow
  */
 public class DebugEmitter extends Emitter {
@@ -96,7 +96,7 @@ public class DebugEmitter extends Emitter {
 
     public void pushEmitter(StxEmitter emitter)
       throws SAXException {
-        log.debug("pushing emitter " + writer.getHref());
+        //log.debug("pushing emitter " + writer.getHref());
         super.pushEmitter(emitter);
     }
 
