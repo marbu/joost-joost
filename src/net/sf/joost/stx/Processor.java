@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.35 2003/02/18 17:13:29 obecker Exp $
+ * $Id: Processor.java,v 1.36 2003/03/07 18:04:19 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -63,7 +63,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.35 $ $Date: 2003/02/18 17:13:29 $
+ * @version $Revision: 1.36 $ $Date: 2003/03/07 18:04:19 $
  * @author Oliver Becker
  */
 
@@ -939,20 +939,31 @@ public class Processor extends XMLFilterImpl
    private void processSiblings()
       throws SAXException
    {
-      // check, if one of the last consecutive stx:process-siblings terminates
-      int stackPos = dataStack.size()-1;
-      Data data = (Data)dataStack.peek();
-      Data stopData = null;
-      Hashtable storedVars = context.localVars;
+      Data stopData;
+      int stopPos = 0;
       do {
-         context.localVars = data.localVars;
-         if (!data.psiblings.matches(context, eventStack))
-            stopData = data;
-         data = (Data)dataStack.elementAt(--stackPos);
-      } while ((data.lastProcStatus & ST_SIBLINGS) != 0);
-      context.localVars = storedVars;
-      if (stopData != null) // the first of the non-matching templates
-         clearProcessSiblings(stopData, false);
+         // check, if one of the last consecutive stx:process-siblings 
+         // terminates
+         int stackPos = dataStack.size()-1;
+         Data data = (Data)dataStack.peek();
+         Hashtable storedVars = context.localVars;
+         stopData = null;
+         do {
+            context.localVars = data.localVars;
+            if (!data.psiblings.matches(context, eventStack)) {
+               stopData = data;
+               stopPos = stackPos;
+            }
+            data = (Data)dataStack.elementAt(--stackPos);
+         } while ((data.lastProcStatus & ST_SIBLINGS) != 0);
+         context.localVars = storedVars;
+         if (stopData != null) // the first of the non-matching templates
+            clearProcessSiblings(stopData, false);
+         // If after clearing the process siblings instructions there is
+         // a new ST_SIBLINGS on the stack, its match conditions must
+         // be checked here, too.
+      } while (stopData != null && dataStack.size() == stopPos+1 &&
+               (((Data)dataStack.peek()).lastProcStatus & ST_SIBLINGS) != 0);
    }
 
 
