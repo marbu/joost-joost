@@ -1,5 +1,5 @@
 /*
- * $Id: RunTests.java,v 1.5 2003/11/01 17:02:58 zubow Exp $
+ * $Id: RunTests.java,v 1.6 2003/12/28 12:21:20 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -42,7 +42,7 @@ public class RunTests {
     // Logger instance named "RunTests".
     static Logger log = Logger.getLogger(RunTests.class);
 
-    private static String log4jprop = "conf/log4j.properties";
+    private static String log4jprop = "joost/conf/log4j.properties";
 
     //xml-source
     private static String xmlId = null;
@@ -110,10 +110,10 @@ public class RunTests {
         try {
             //run testcases
             log.info("Try to run runTest0 - Identity");
-            TestCases.runTests0("test/flat.xml");
+            //TestCases.runTests0("test/flat.xml");
 
             //log.info("Try to run runTest1");
-            TestCases.runTests1("test/flat.xml", "test/flat.stx");
+            TestCases.runTests1("test/a.xml", "test/a.stx");
             //log.info("Try to run runTest1 again");
             //TestCases.runTests1("testdata/temp.xml", "test/sum3.stx");
 

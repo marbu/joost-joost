@@ -1,5 +1,5 @@
 /*
- * $Id: TestCases.java,v 1.8 2003/11/01 17:02:58 zubow Exp $
+ * $Id: TestCases.java,v 1.9 2003/12/28 12:21:20 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -813,9 +813,9 @@ public class TestCases {
     String tProp = System.getProperty("javax.xml.transform.TransformerFactory");
 
     //register own ErrorListener for the TransformerFactory
-    ErrorListener fListener = new ErrorListenerImpl("Transformer");
+    ErrorListener fListener = new ErrorListenerImpl("TransformerFactory");
     TransformerFactory tfactory = TransformerFactory.newInstance();
-    //tfactory.setErrorListener(fListener);
+    tfactory.setErrorListener(fListener);
 
     ErrorListener tListener = new ErrorListenerImpl("Transformer");
     // Create a transformer for the stylesheet.
@@ -2144,7 +2144,7 @@ public class TestCases {
      */
     public static String serializeDOM2String(Node node) throws IOException {
 
-        DOMWriterImpl serializer = new DOMWriterImpl();
+        DOMSerializerImpl serializer = new DOMSerializerImpl();
 
         return serializer.writeToString(node);
     }

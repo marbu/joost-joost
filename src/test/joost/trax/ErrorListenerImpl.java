@@ -1,5 +1,5 @@
 /*
- * $Id: ErrorListenerImpl.java,v 1.2 2003/11/01 17:02:57 zubow Exp $
+ * $Id: ErrorListenerImpl.java,v 1.3 2003/12/28 12:21:20 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -93,6 +93,7 @@ public class ErrorListenerImpl implements ErrorListener {
 
         System.err.println("ERROR occured - ErrorListenerImpl " + name);
         System.err.println(exception.getMessageAndLocation());
+        throw exception;
     }
 
     /**
