@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 2.7 2003/12/03 07:32:14 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 2.8 2003/12/09 11:35:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -47,7 +47,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.7 $ $Date: 2003/12/03 07:32:14 $
+ * @version $Revision: 2.8 $ $Date: 2003/12/09 11:35:18 $
  * @author Oliver Becker
  */
 
@@ -70,8 +70,8 @@ final public class ResultDocumentFactory extends FactoryBase
    {
       attrNames = new HashSet();
       attrNames.add("href");
-      attrNames.add("encoding");
-      attrNames.add("method");
+      attrNames.add("output-encoding");
+      attrNames.add("output-method");
    }
 
 
@@ -88,14 +88,14 @@ final public class ResultDocumentFactory extends FactoryBase
       String hrefAtt = getAttribute(qName, attrs, "href", context);
       Tree href = parseAVT(hrefAtt, context);
 
-      String encodingAtt = attrs.getValue("encoding");
+      String encodingAtt = attrs.getValue("output-encoding");
 
-      String methodAtt = attrs.getValue("method");
+      String methodAtt = attrs.getValue("output-method");
       if (methodAtt != null && 
           !methodAtt.equals("text") && !methodAtt.equals("xml") && 
           methodAtt.indexOf(':') == -1)
          throw new SAXParseException(
-            "Value of attribute `method' must be `xml', `text', " + 
+            "Value of attribute `output-method' must be `xml', `text', " + 
             "or a qualified name. Found `" + methodAtt + "'",
             context.locator);
 
