@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.23 2002/11/27 09:46:37 obecker Exp $
+ * $Id: Processor.java,v 1.24 2002/12/13 17:52:56 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -61,7 +61,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.23 $ $Date: 2002/11/27 09:46:37 $
+ * @version $Revision: 1.24 $ $Date: 2002/12/13 17:52:56 $
  * @author Oliver Becker
  */
 
@@ -186,11 +186,11 @@ public class Processor extends XMLFilterImpl
       SAXEvent lookAhead;
 
       /**
-       * Precedence categories (search space for templates). This array
+       * Currently visible templates (search space for templates). This array
        * (the field in the top most element of {@link #dataStack}) will be
        * used in {@link #findMatchingTemplate}.
        */
-      TemplateFactory.Instance[][] precedenceCategories;
+      TemplateFactory.Instance[] visibleTemplates;
 
       /**
        * Last process status while processing this template.
@@ -201,22 +201,22 @@ public class Processor extends XMLFilterImpl
 
       /** Constructor for the initialization of all fields */
       Data(TemplateFactory.Instance lt, long cp, SAXEvent la,
-           TemplateFactory.Instance[][] pc, short lps)
+           TemplateFactory.Instance[] vt, short lps)
       {
          lastTemplate = lt;
          contextPosition = cp;
          lookAhead = la;
-         precedenceCategories = pc;
+         visibleTemplates = vt;
          lastProcStatus = lps;
       }
 
       /**
        * Constructor used when processing a built-in template
-       * @param pc precedence categories
+       * @param vt visibleTemplates
        */
-      Data(TemplateFactory.Instance[][] pc)
+      Data(TemplateFactory.Instance[] vt)
       {
-         precedenceCategories = pc;
+         visibleTemplates = vt;
          // other field are default initialized with 0 or null resp.
       }
 
@@ -225,7 +225,7 @@ public class Processor extends XMLFilterImpl
       {
          return "Data{" + lastTemplate + "," + contextPosition + "," +
                 lookAhead + "," +
-                precedenceCategories + "," + lastProcStatus + "}";
+                visibleTemplates + "," + lastProcStatus + "}";
       }
    } // inner class Data
 
@@ -393,8 +393,8 @@ public class Processor extends XMLFilterImpl
       else
          copyLocation = transformNode;
 
-      // array of templates in precedence categories
-      dataStack.push(new Data(transformNode.precedenceCategories));
+      // array of visible templates from the top-level group
+      dataStack.push(new Data(transformNode.visibleTemplates));
 
       // array of global templates
       Vector tempVec = transformNode.getGlobalTemplates();
@@ -533,7 +533,7 @@ public class Processor extends XMLFilterImpl
       // init value for priority doesn't really matter
       double priority = Double.POSITIVE_INFINITY;
       long position = 0;
-      int i, j=0;
+      int i = 0;
 
       // how many process-self are on the stack?
       int selfcount = 0;
@@ -543,44 +543,43 @@ public class Processor extends XMLFilterImpl
            top--)
          selfcount++;
 
-      // first: lookup in the precedence categories
-      TemplateFactory.Instance[][] precedenceCategories =
-         ((Data)dataStack.peek()).precedenceCategories;
+      // first: lookup in the array of visible templates
+      TemplateFactory.Instance[] visibleTemplates =
+         ((Data)dataStack.peek()).visibleTemplates;
       lookup:
-      for (i=0; i<precedenceCategories.length; i++)
-         for (j=0; j<precedenceCategories[i].length; j++)
-            if (precedenceCategories[i][j].matches(context, eventStack) &&
+      for (i=0; i<visibleTemplates.length; i++)
+            if (visibleTemplates[i].matches(context, eventStack) &&
                 selfcount-- == 0) {
-               category = precedenceCategories[i];
+               category = visibleTemplates;
                break lookup;
             }
 
       // second: if nothing was found, lookup in the array of global templates
       if (category == null)
-         for (j=0; j<globalTemplates.length; j++)
-            if (globalTemplates[j].matches(context, eventStack) &&
+         for (i=0; i<globalTemplates.length; i++)
+            if (globalTemplates[i].matches(context, eventStack) &&
                 selfcount-- == 0) {
                category = globalTemplates;
                break;
             }
 
       if (category != null) { // means, we found a template
-         found = category[j];
+         found = category[i];
          priority = found.getPriority();
          // look for more templates with the same priority in the same
          // category
-         if (++j < category.length && priority == category[j].getPriority()) {
+         if (++i < category.length && priority == category[i].getPriority()) {
             // need to store the computed position (from matches(...))
             position = context.position;
-            for (; j<category.length &&
-                   priority == category[j].getPriority(); j++) {
-               if (category[j].matches(context, eventStack))
+            for (; i<category.length &&
+                   priority == category[i].getPriority(); i++) {
+               if (category[i].matches(context, eventStack))
                   context.errorHandler.error(
                      "Ambigous template rule with priority " + priority +
                      ", found matching template rule already in line " +
                      found.lineNo,
-                     category[j].publicId, category[j].systemId,
-                     category[j].lineNo, category[j].colNo);
+                     category[i].publicId, category[i].systemId,
+                     category[i].lineNo, category[i].colNo);
             }
             // restore position
             // (may have changed in one of the matches() tests)
@@ -736,7 +735,7 @@ public class Processor extends XMLFilterImpl
                   // processing suspended due to a stx:process-children
                   dataStack.push(
                      new Data(temp, context.position, context.lookAhead,
-                              temp.parentGroup.precedenceCategories,
+                              temp.parentGroup.visibleTemplates,
                               procStatus));
                   if (log4j.isDebugEnabled())
                      log4j.debug("children - dataStack.push " + 
@@ -751,7 +750,7 @@ public class Processor extends XMLFilterImpl
                // marker for findMatchingTemplate()
                dataStack.push(
                   new Data(temp, context.position, context.lookAhead,
-                           ((Data)dataStack.peek()).precedenceCategories,
+                           ((Data)dataStack.peek()).visibleTemplates,
                            procStatus));
                processEvent(); // recurse
                if (event.type == SAXEvent.TEXT || 
@@ -768,7 +767,7 @@ public class Processor extends XMLFilterImpl
                // stx:process-attributes, just for elements
                dataStack.push(
                   new Data(temp, context.position, context.lookAhead,
-                           temp.parentGroup.precedenceCategories,
+                           temp.parentGroup.visibleTemplates,
                            procStatus));
                processAttributes(event.attrs);
                dataStack.pop();
@@ -789,7 +788,7 @@ public class Processor extends XMLFilterImpl
          switch (event.type) {
          case SAXEvent.ROOT:
             dataStack.push(
-               new Data(((Data)dataStack.peek()).precedenceCategories));
+               new Data(((Data)dataStack.peek()).visibleTemplates));
             if (log4j.isDebugEnabled())
                log4j.debug("default - dataStack.push " + dataStack.peek());
             break;
@@ -801,7 +800,7 @@ public class Processor extends XMLFilterImpl
                                     copyLocation.systemId,
                                     copyLocation.lineNo, copyLocation.colNo);
             dataStack.push(
-               new Data(((Data)dataStack.peek()).precedenceCategories));
+               new Data(((Data)dataStack.peek()).visibleTemplates));
             if (log4j.isDebugEnabled())
                log4j.debug("default - dataStack.push " + dataStack.peek());
             break;

@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 1.4 2002/11/27 09:56:34 obecker Exp $
+ * $Id: GroupBase.java,v 1.5 2002/12/13 17:52:50 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,20 +43,12 @@ import net.sf.joost.stx.Value;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 1.4 $ $Date: 2002/11/27 09:56:34 $
+ * @version $Revision: 1.5 $ $Date: 2002/12/13 17:52:50 $
  * @author Oliver Becker
  */
 
 abstract public class GroupBase extends NodeBase
 {
-   /** mode of this group (loose or strict) */
-   protected short mode;
-
-   /** mode values */
-   protected static final short
-      LOOSE_MODE = 0,
-      STRICT_MODE = 1;
-
    /** Vector of all contained templates in this group */
    public Vector containedTemplates;
    
@@ -66,8 +58,11 @@ abstract public class GroupBase extends NodeBase
    /** Vector of all contained global templates in this group */
    private Vector containedGlobalTemplates;
    
-   /** Precedence categories */
-   public TemplateFactory.Instance[][] precedenceCategories;
+   /** 
+    * Visible templates: 
+    * templates from this group and public templates from subgroups
+    */
+   public TemplateFactory.Instance[] visibleTemplates;
    
    /** contained groups in this group */
    protected GroupFactory.Instance[] containedGroups;
@@ -87,11 +82,9 @@ abstract public class GroupBase extends NodeBase
 
 
    // Constructor
-   protected GroupBase(String qName, NodeBase parent, Locator locator, 
-                       short mode)
+   protected GroupBase(String qName, NodeBase parent, Locator locator)
    {
       super(qName, parent, locator, false);
-      this.mode = mode;
       this.parentGroup = (GroupBase)parent;
       containedTemplates = new Vector();
       containedPublicTemplates = new Vector();
@@ -100,7 +93,7 @@ abstract public class GroupBase extends NodeBase
    
    
    /**
-    * Determines the precedence categories for this group.
+    * Determines the visible templates for this group.
     */
    public void parsed()
       throws SAXException
@@ -147,14 +140,6 @@ abstract public class GroupBase extends NodeBase
       containedGroups = new GroupFactory.Instance[gvec.size()];
       gvec.toArray(containedGroups);
 
-      // compute precedence categories
-      // The second category for the transform element is empty because
-      // there are neither siblings nor a parent.
-      if (mode == STRICT_MODE || this instanceof TransformFactory.Instance)
-         precedenceCategories = new TemplateFactory.Instance[1][];
-      else
-         precedenceCategories = new TemplateFactory.Instance[2][];
-      
       // first category (strict and loose)
       // templates from the same group
       Vector firstCategory = new Vector(containedTemplates);
@@ -163,16 +148,12 @@ abstract public class GroupBase extends NodeBase
       for (int i=0; i<containedGroups.length; i++)
          firstCategory.addAll(containedGroups[i].containedPublicTemplates);
       
-      precedenceCategories[0] = 
+      visibleTemplates =
          new TemplateFactory.Instance[firstCategory.size()];
-      firstCategory.toArray(precedenceCategories[0]);
-      Arrays.sort(precedenceCategories[0]); // in descending priority order
+      firstCategory.toArray(visibleTemplates);
+      Arrays.sort(visibleTemplates); // in descending priority order
 
       for (int i=0; i<containedGroups.length; i++) {
-         // set templates for second category in children groups
-         // these are the templates of the first category of this group
-         containedGroups[i].setSecondCategory(firstCategory);
-
          // add global templates of all sub-groups 
          // (this removes the global templates in these groups)
          containedGlobalTemplates.addAll(
@@ -183,34 +164,7 @@ abstract public class GroupBase extends NodeBase
       groupVariables = new VariableBase[vvec.size()];
       vvec.toArray(groupVariables);
    }
-   
-   
-   protected void setSecondCategory(Vector templateVector)
-   {
-      if (mode == LOOSE_MODE) { // in loose mode only
-         // make a copy
-         Vector secondCategory = new Vector(templateVector);
-         // remove the templates from this group, that means ensure
-         // that the remaining templates are only from sibling groups
-         for (int i=0; i<precedenceCategories[0].length; i++)
-            secondCategory.removeElement(precedenceCategories[0][i]);
-         precedenceCategories[1] = 
-            new TemplateFactory.Instance[secondCategory.size()];
-         secondCategory.toArray(precedenceCategories[1]);
-         Arrays.sort(precedenceCategories[1]);
-      }
-      
-      // debugging
-//        System.err.println("Categories for group on line " + lineNo);
-//        for (int i=0; 
-//             i<precedenceCategories.length && precedenceCategories[i] != null; 
-//             i++) {
-//           System.err.println("No " + i);
-//           for (int j=0; j<precedenceCategories[i].length; j++)
-//              System.err.println(precedenceCategories[i][j]);
-//        }
-   }
-   
+
 
    /**
     * Initializes recursively the group variables of this group and
