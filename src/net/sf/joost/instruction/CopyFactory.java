@@ -1,5 +1,5 @@
 /*
- * $Id: CopyFactory.java,v 1.11 2002/11/27 10:03:10 obecker Exp $
+ * $Id: CopyFactory.java,v 1.12 2003/01/18 10:28:19 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,7 +46,7 @@ import net.sf.joost.grammar.PatternParser;
 /** 
  * Factory for <code>copy</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.11 $ $Date: 2002/11/27 10:03:10 $
+ * @version $Revision: 1.12 $ $Date: 2003/01/18 10:28:19 $
  * @author Oliver Becker
  */
 
@@ -148,7 +148,7 @@ final public class CopyFactory extends FactoryBase
                break;
             case SAXEvent.ELEMENT: {
                emitter.startElement(event.uri, event.lName, event.qName,
-                                    emptyAttList, event.nsSupport,
+                                    emptyAttList, event.namespaces,
                                     publicId, systemId, lineNo, colNo);
                // store element position, will change while matching
                long elPos = context.position;

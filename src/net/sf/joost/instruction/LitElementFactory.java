@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 1.5 2002/12/17 16:46:41 obecker Exp $
+ * $Id: LitElementFactory.java,v 1.6 2003/01/18 10:28:20 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -35,7 +35,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Stack;
 
-import net.sf.joost.Constants;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Emitter;
 import net.sf.joost.grammar.Tree;
@@ -44,7 +43,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for literal result elements, which are represented by the
  * inner Instance class. 
- * @version $Revision: 1.5 $ $Date: 2002/12/17 16:46:41 $
+ * @version $Revision: 1.6 $ $Date: 2003/01/18 10:28:20 $
  * @author Oliver Becker
 */
 
@@ -89,7 +88,7 @@ final public class LitElementFactory extends FactoryBase
       private String lName;
       private AttributesImpl attrs;
       private Tree[] avtList;
-      private NamespaceSupport nsSupport;
+      private Hashtable namespaces;
       
       protected Instance(String uri, String lName, String qName,
                          Attributes attrs, Tree[] avtList, Hashtable nsTable,
@@ -100,15 +99,7 @@ final public class LitElementFactory extends FactoryBase
          this.lName = lName;
          this.attrs = new AttributesImpl(attrs);
          this.avtList = avtList;
-
-         // Create mapping of namespace prefixes for this element
-         nsSupport = new NamespaceSupport();
-         for (Enumeration e = nsTable.keys(); e.hasMoreElements(); ) {
-            String prefix = (String)e.nextElement();
-            String nsUri = (String)nsTable.get(prefix);
-            if (!Constants.STX_NS.equals(nsUri)) // skip STX namespace
-               nsSupport.declarePrefix(prefix, nsUri);
-         }
+         this.namespaces = (Hashtable)nsTable.clone();
       }
       
       /**
@@ -131,7 +122,7 @@ final public class LitElementFactory extends FactoryBase
                attrs.setValue(i, 
                               avtList[i].evaluate(context, eventStack, 
                                                   eventStack.size()).string);
-            emitter.startElement(uri, lName, qName, attrs, nsSupport,
+            emitter.startElement(uri, lName, qName, attrs, namespaces,
                                  publicId, systemId, lineNo, colNo);
          }
          short newStatus = super.process(emitter, eventStack, context,
