@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 1.2 2002/12/23 08:25:24 obecker Exp $
+ * $Id: PDocumentFactory.java,v 1.3 2002/12/30 11:54:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.Processor;
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.2 $ $Date: 2002/12/23 08:25:24 $
+ * @version $Revision: 1.3 $ $Date: 2002/12/30 11:54:44 $
  * @author Oliver Becker
  */
 
@@ -65,6 +65,7 @@ public class PDocumentFactory extends FactoryBase
    {
       attrNames = new HashSet();
       attrNames.add("href");
+      attrNames.add("base");
       attrNames.add("group");
    }
 
@@ -82,13 +83,15 @@ public class PDocumentFactory extends FactoryBase
       String hrefAtt = getAttribute(qName, attrs, "href", locator);
       Tree hrefAVT = parseAVT(hrefAtt, nsSet, locator);
 
+      String baseAtt = attrs.getValue("base");
+
       String groupAtt = attrs.getValue("group");
       String groupName = null;
       if (groupAtt != null)
          groupName = getExpandedName(groupAtt, nsSet, locator);
 
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, hrefAVT,
+      return new Instance(qName, parent, locator, hrefAVT, baseAtt,
                           groupAtt, groupName);
    }
 
@@ -97,12 +100,15 @@ public class PDocumentFactory extends FactoryBase
    public class Instance extends ProcessBase
    {
       Tree hrefAVT;
+      String baseUri;
       String groupQName, groupExpName;
 
       public Instance(String qName, NodeBase parent, Locator locator, 
-                      Tree hrefAVT, String groupQName, String groupExpName)
+                      Tree hrefAVT, String baseUri, 
+                      String groupQName, String groupExpName)
       {
          super(qName, parent, locator);
+         this.baseUri = baseUri;
          this.hrefAVT = hrefAVT;
          this.groupQName = groupQName;
          this.groupExpName = groupExpName;
@@ -144,17 +150,26 @@ public class PDocumentFactory extends FactoryBase
          // process stx:with-param
          super.process(emitter, eventStack, context, processStatus);
 
+         // determine effective base URI
+         String base;
+         if ("#input".equals(baseUri) && context.locator != null)
+            base = context.locator.getSystemId();
+         else if ("#stylesheet".equals(baseUri))
+            base = systemId;
+         else
+            base = baseUri;
+
          Locator prevLoc = context.locator;
          context.locator = null;
          proc.startInnerProcessing();
          try {
             // TODO: use javax.xml.transform.URIResolver if present
-            URL source;
-            if (prevLoc != null)
-               source = new URL(new URL(prevLoc.getSystemId()), href);
+            String source;
+            if (base != null)
+               source = new URL(new URL(base), href).toExternalForm();
             else
-               source = new URL(href);
-            reader.parse(source.toExternalForm());
+               source = href;
+            reader.parse(source);
          }
          catch (java.io.IOException ex) {
             // TODO: better error handling
