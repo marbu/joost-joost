@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerImpl.java,v 1.3 2002/10/15 19:02:14 zubow Exp $
+ * $Id: TransformerHandlerImpl.java,v 1.4 2002/11/11 18:45:42 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,16 +26,20 @@
 package net.sf.joost.trax;
 
 //SAX
-import net.sf.joost.emitter.SAXEmitter;
+import net.sf.joost.emitter.DOMEmitter;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.stx.Processor;
 import org.apache.log4j.Logger;
+import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.*;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 
@@ -61,6 +65,10 @@ public class TransformerHandlerImpl implements TransformerHandler {
      */
     private Processor processor     = null;
     private Transformer transformer = null;
+    /**
+     * Handler for constructing the Resulttype.
+     */
+    private StxEmitter stxEmitter   = null;
 
     /**
      * Necessary for the document root.
@@ -117,28 +125,31 @@ public class TransformerHandlerImpl implements TransformerHandler {
 
         log.debug("setting Result - here SAXResult");
 
-        if (result instanceof SAXResult) {
-            this.result = result;
-        } else {
-
-            IllegalArgumentException iE =
-                    new IllegalArgumentException("Result is not a SAXResult");
+        try {
+            if (result instanceof Result) {
+                this.result = result;
+                //init saxresult
+                init(result);
+            }
+        } catch (TransformerException e) {
             ErrorListener errorListener = transformer.getErrorListener();
             // user ErrorListener if available
             if(errorListener != null) {
                 try {
-                    errorListener.fatalError(new TransformerConfigurationException(iE.getMessage(), iE));
+                    errorListener.fatalError(new TransformerConfigurationException(e.getMessage(), e));
                     return;
                 } catch( TransformerException e2) {
+                    TransformerConfigurationException tE =
+                            new TransformerConfigurationException(e.getMessage(), e);
+                    log.fatal(tE);
                     return;
                 }
             } else {
-                throw iE;
+                TransformerConfigurationException tE =
+                        new TransformerConfigurationException(e.getMessage(), e);
+                log.fatal(tE);
             }
         }
-
-        //init saxresult
-        init();
     }
 
 
@@ -158,26 +169,19 @@ public class TransformerHandlerImpl implements TransformerHandler {
     /**
      * Helpermethod
      */
-    private void init() {
+    private void init(Result result) throws TransformerException {
 
         log.debug("init emitter-class according to result");
-        //Emitter em = new Emitter();
-        StxEmitter out = null;
 
-        if (result instanceof SAXResult) {
-            log.debug("Result is a SAXResult");
-            SAXResult target = (SAXResult)result;
-            ContentHandler handler = target.getHandler();
-            if (handler != null) {
-                 out = new SAXEmitter(handler);
-            }
-        }
         if (this.transformer instanceof TransformerImpl) {
             this.processor =
                 ((TransformerImpl)this.transformer).getStxProcessor();
+
+            // initialize Emitter --> DOM-, SAX- or StreamEmitter
+            stxEmitter = TrAXHelper.initStxEmitter(result, processor);
             // setting Handler
-            this.processor.setContentHandler(out);
-            this.processor.setLexicalHandler(out);
+            this.processor.setContentHandler(stxEmitter);
+            this.processor.setLexicalHandler(stxEmitter);
         }
     }
 
@@ -205,6 +209,15 @@ public class TransformerHandlerImpl implements TransformerHandler {
      */
     public void endDocument() throws SAXException {
         processor.endDocument();
+
+        //set the constructed DOM-Node on the DOMResult
+        if (result instanceof DOMResult) {
+            log.debug("result is a DOMResult");
+            Node nodeResult = ((DOMEmitter)stxEmitter).getDOMTree();
+            //DOM specific Implementation
+            ((DOMResult)result).setNode(nodeResult);
+            return;
+        }
     }
 
     /**

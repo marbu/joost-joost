@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesHandlerImpl.java,v 1.3 2002/10/15 18:55:47 zubow Exp $
+ * $Id: TemplatesHandlerImpl.java,v 1.4 2002/11/11 18:41:50 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -108,7 +108,7 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
                     eListener.fatalError(new TransformerConfigurationException(tE));
                     return null;
                 } catch (TransformerException trE) {
-                    log.fatal(trE);
+                    log.fatal(tE);
                     return null;
                 }
             } else {

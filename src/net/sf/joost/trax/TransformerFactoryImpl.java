@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.3 2002/10/15 19:02:13 zubow Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.4 2002/11/11 18:46:19 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -36,6 +36,7 @@ import org.xml.sax.XMLFilter;
 import org.xml.sax.XMLReader;
 
 import javax.xml.transform.*;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.*;
@@ -63,9 +64,6 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     //Member
     private URIResolver resolver        = null;
     private ErrorListener errorListener = null;
-
-    //Hashtable for storing attributes
-    private Hashtable attHash           = new Hashtable();
 
     // Synch object to gaurd against setting values from the TrAX interface
     // or reentry while the transform is going on.
@@ -104,7 +102,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
                 errorListener.fatalError(tE);
                 return null;
             } catch( TransformerException e2) {
-                return null;
+                throw tE;
             }
         } else {
             // Feature is not supported by Joost.
@@ -217,16 +215,18 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         if (name.equals(SAXTransformerFactory.FEATURE_XMLFILTER)) {
             return true;
         }
+
+        String errMsg = "Unknown feature " + name;
         // user ErrorListener if available
         if(errorListener != null) {
             try {
-                errorListener.error(new TransformerConfigurationException("Unknown feature " + name));
+                errorListener.error(new TransformerConfigurationException(errMsg));
                 return false;
             } catch( TransformerException e2) {
-                return false;
+                throw new IllegalArgumentException(errMsg);
             }
         } else {
-            throw new IllegalArgumentException("Unknown feature " + name);
+            throw new IllegalArgumentException(errMsg);
         }
     }
 
@@ -255,8 +255,8 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
                         errorListener.fatalError(new TransformerConfigurationException(tE));
                         return null;
                     } catch( TransformerException e2) {
-                        new TransformerConfigurationException(e2);
-                        return null;
+                        log.fatal(tE);
+                        throw tE;
                     }
                 } else {
                     log.fatal(tE);
@@ -353,19 +353,27 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
             return new SAXSource(isource);
         } else {
 
+            String errMsg = "Unknown type of source";
+
             IllegalArgumentException iE =
-                    new IllegalArgumentException("Unknown type of source");
+                    new IllegalArgumentException(errMsg);
             // user ErrorListener if available
             if(errorListener != null) {
                 try {
                     errorListener.fatalError(new TransformerConfigurationException(iE.getMessage(), iE));
                     return null;
                 } catch( TransformerException e2) {
-                    return null;
+
+                    TransformerConfigurationException tE =
+                            new TransformerConfigurationException(iE.getMessage(), iE);
+                    log.fatal(tE);
+                    throw tE;
                 }
             } else {
-                log.error("Unknown type of source");
-                throw iE;
+                TransformerConfigurationException tE =
+                        new TransformerConfigurationException(iE.getMessage(), iE);
+                log.fatal(tE);
+                throw tE;
             }
         }
     }
@@ -484,15 +492,19 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
             // use ErrorListener if available
             if(errorListener != null) {
                 try {
-                    errorListener.fatalError(new TransformerException(ex));
+                    errorListener.fatalError(new TransformerConfigurationException(ex.getMessage(), ex));
                     return null;
                 } catch( TransformerException e2) {
-                    new TransformerConfigurationException(e2);
-                    return null;
+                    TransformerConfigurationException tE =
+                            new TransformerConfigurationException(ex.getMessage(), ex);
+                    log.fatal(tE);
+                    throw tE;
                 }
             } else {
-                log.fatal(ex);
-                throw new TransformerConfigurationException(ex);
+                    TransformerConfigurationException tE =
+                            new TransformerConfigurationException(ex.getMessage(), ex);
+                    log.fatal(tE);
+                    throw tE;
             }
         }
     }
@@ -520,8 +532,8 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
                     errorListener.fatalError(tE);
                     return null;
                 } catch( TransformerException e2) {
-                    new TransformerConfigurationException(e2);
-                    return null;
+                    log.fatal(tE);
+                    throw tE;
                 }
             } else {
                 log.fatal(tE);

@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.3 2002/10/15 19:01:01 zubow Exp $
+ * $Id: TemplatesImpl.java,v 1.4 2002/11/11 18:46:34 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
 
 import javax.xml.transform.*;
+import javax.xml.transform.TransformerConfigurationException;
 import java.util.Properties;
 
 
@@ -107,7 +108,8 @@ public class TemplatesImpl implements Templates, TrAXConstants {
                     eListener.fatalError(new TransformerConfigurationException(tE));
                     return;
                 } catch( TransformerException e2) {
-                    new TransformerConfigurationException(e2);
+                    log.debug(tE);
+                    throw tE;
                 }
             } else {
                 log.debug(tE);
@@ -206,11 +208,11 @@ public class TemplatesImpl implements Templates, TrAXConstants {
                     eListener.fatalError(new TransformerConfigurationException(tE));
                     return null;
                 } catch( TransformerException trE) {
-                    new TransformerConfigurationException(trE);
+                    log.fatal(tE);
                     return null;
                 }
             } else {
-                log.error(tE);
+                log.fatal(tE);
                 return null;
             }
 	    }
