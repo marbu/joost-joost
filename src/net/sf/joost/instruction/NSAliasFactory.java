@@ -1,5 +1,5 @@
 /*
- * $Id: NSAliasFactory.java,v 2.1 2003/08/31 19:38:52 obecker Exp $
+ * $Id: NSAliasFactory.java,v 2.2 2003/09/01 14:00:26 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -36,7 +36,7 @@ import net.sf.joost.stx.ParseContext;
 
 /** 
  * Factory for <code>namespace-alias</code> elements
- * @version $Revision: 2.1 $ $Date: 2003/08/31 19:38:52 $
+ * @version $Revision: 2.2 $ $Date: 2003/09/01 14:00:26 $
  * @author Oliver Becker
  */
 
@@ -88,7 +88,7 @@ final public class NSAliasFactory extends FactoryBase
          if (fromPrefix != "")
             throw new SAXParseException(
                "Undeclared namespace prefix `" + fromPrefix + 
-               "'found in the `stylesheet-prefix' attribute",
+               "' found in the `stylesheet-prefix' attribute",
                context.locator);
          else
             fromURI = "";
@@ -101,7 +101,7 @@ final public class NSAliasFactory extends FactoryBase
           toPrefix.indexOf(':') != -1)
          throw new SAXParseException(
             "The value of `result-prefix' must be either a NCName or " +
-            "the string `#default'. Found `" + fromPrefix + "'",
+            "the string `#default', found `" + toPrefix + "'",
             context.locator);
       if (toPrefix.equals("#default"))
          toPrefix = "";
@@ -110,7 +110,7 @@ final public class NSAliasFactory extends FactoryBase
          if (toPrefix != "")
             throw new SAXParseException(
                "Undeclared namespace prefix `" + toPrefix + 
-               "'found in the `result-prefix' attribute",
+               "' found in the `result-prefix' attribute",
                context.locator);
          else
             toURI = "";
@@ -124,7 +124,8 @@ final public class NSAliasFactory extends FactoryBase
          throw new SAXParseException(
             "Namespace alias for prefix `" + 
             (fromPrefix == "" ? "#default" : fromPrefix) + 
-            "' already declared as `" + alias + "'",
+            "' already declared as `" + 
+            (alias == "" ? "#default" : alias) + "'",
             context.locator);
       }
       // establish new alias mapping
