@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 2.2 2003/06/03 14:30:23 obecker Exp $
+ * $Id: LitElementFactory.java,v 2.3 2003/06/15 11:52:25 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,6 +30,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import java.util.Enumeration;
 import java.util.Hashtable;
 
 import net.sf.joost.Constants;
@@ -41,7 +42,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for literal result elements, which are represented by the
  * inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2003/06/03 14:30:23 $
+ * @version $Revision: 2.3 $ $Date: 2003/06/15 11:52:25 $
  * @author Oliver Becker
 */
 
@@ -96,7 +97,16 @@ final public class LitElementFactory
          this.lName = lName;
          this.attrs = new AttributesImpl(attrs);
          this.avtList = avtList;
-         this.namespaces = (Hashtable)context.nsSet.clone();
+
+         // store namespaces without those from exclude-result-prefixes
+         namespaces = (Hashtable)context.nsSet.clone();
+         for (Enumeration keys = namespaces.keys();
+              keys.hasMoreElements(); ) {
+            Object key = keys.nextElement();
+            if (context.transformNode.excludedNamespaces
+                                     .contains(namespaces.get(key)))
+               namespaces.remove(key);
+         }
       }
       
 

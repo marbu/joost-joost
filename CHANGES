@@ -12,6 +12,7 @@ Changes since 20030502
 - added filter-available()
 - renamed attribute 'default-stxpath-namespace' to 
   'stxpath-default-namespace' in stx:transform (spec change 2003-05-27)
+- added 'exclude-result-prefixes" to stx:transform
 - changed type of the 'href' attribute in stx:result-document from 
   expression to {uri-reference} (spec change 2003-06-09)
 - added (partial) support for TrAX output properties

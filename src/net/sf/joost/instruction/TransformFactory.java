@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 2.6 2003/06/13 09:00:14 obecker Exp $
+ * $Id: TransformFactory.java,v 2.7 2003/06/15 11:52:25 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,6 +30,7 @@ import org.xml.sax.SAXParseException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import net.sf.joost.stx.Context;
@@ -40,7 +41,7 @@ import net.sf.joost.stx.Processor;
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 2.6 $ $Date: 2003/06/13 09:00:14 $
+ * @version $Revision: 2.7 $ $Date: 2003/06/15 11:52:25 $
  * @author Oliver Becker
  */
 
@@ -63,6 +64,7 @@ public class TransformFactory extends FactoryBase
       attrNames.add("pass-through");
       attrNames.add("recognize-cdata");
       attrNames.add("strip-space");
+      attrNames.add("exclude-result-prefixes");
    }
 
    /** @return <code>"transform"</code> */
@@ -115,10 +117,36 @@ public class TransformFactory extends FactoryBase
          getEnumAttValue("recognize-cdata", attrs, YESNO_VALUES, 
                          context) != NO_VALUE;
 
+      String excludedPrefixes = attrs.getValue("exclude-result-prefixes");
+      HashSet excludedNamespaces = new HashSet();
+      excludedNamespaces.add(STX_NS);
+      if (excludedPrefixes != null) {
+         StringTokenizer tokenizer = new StringTokenizer(excludedPrefixes);
+         while (tokenizer.hasMoreTokens()) {
+            String prefix = tokenizer.nextToken();
+            if ("#all".equals(prefix)) {
+               excludedNamespaces.addAll(context.nsSet.values());
+               continue; // while
+            }
+            if ("#default".equals(prefix))
+               prefix = "";
+            Object ns = context.nsSet.get(prefix);
+            if (ns != null)
+               excludedNamespaces.add(ns);
+            else
+               if (prefix != "") // #default
+                  throw new SAXParseException(
+                     "No namespace declared for prefix `" + prefix + 
+                     "' in the `exclude-result-prefixes' attribute", 
+                     context.locator);
+         }
+      }
+
       checkAttributes(qName, attrs, attrNames, context);
 
       return new Instance(parent, qName, context, encodingAtt, defStxpNsAtt,
-                          passThrough, stripSpace, recognizeCdata);
+                          passThrough, stripSpace, recognizeCdata,
+                          excludedNamespaces);
    }
 
 
@@ -133,6 +161,7 @@ public class TransformFactory extends FactoryBase
       // stx:transform attributes (options)
       public String outputEncoding;
       public String stxpathDefaultNamespace;
+      public HashSet excludedNamespaces;
 
       // used to transfer the list of compilable nodes from an included
       // STX sheet to the calling Parser object
@@ -142,7 +171,8 @@ public class TransformFactory extends FactoryBase
       public Instance(NodeBase parent, String qName, ParseContext context,
                       String outputEncoding,
                       String stxpathDefaultNamespace, byte passThrough,
-                      boolean stripSpace, boolean recognizeCdata)
+                      boolean stripSpace, boolean recognizeCdata,
+                      HashSet excludedNamespaces)
       {
          super(qName, parent, context,
                passThrough, stripSpace, recognizeCdata);
@@ -155,6 +185,8 @@ public class TransformFactory extends FactoryBase
                                      : DEFAULT_ENCODING; // in Constants
          this.stxpathDefaultNamespace = 
             (stxpathDefaultNamespace != null) ? stxpathDefaultNamespace : "";
+
+         this.excludedNamespaces = excludedNamespaces;
       }
 
 
