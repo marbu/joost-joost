@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.9 2003/03/20 13:27:49 obecker Exp $
+ * $Id: Main.java,v 1.10 2003/04/29 15:15:15 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,13 +42,13 @@ import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.9 $ $Date: 2003/03/20 13:27:49 $
+ * @version $Revision: 1.10 $ $Date: 2003/04/29 15:15:15 $
  * @author Oliver Becker
  */
-public class Main
+public class Main implements Constants
 {
-   // Log4J initialization
-   private static Logger log4j = Logger.getLogger(Main.class);
+   // Joost must be able to run without Log4j
+   private static Logger log4j;
 
 
    /** 
@@ -67,7 +67,7 @@ public class Main
       // log4j properties filename (optional)
       String log4jProperties = null;
 
-      // log4j message level 
+      // log4j message level (this is an object of the class Level)
       Level log4jLevel = null;
 
       // set to true if a command line parameter was wrong
@@ -81,6 +81,9 @@ public class Main
 
       // debugging
       boolean dontexit = false;
+
+      if (DEBUG)
+         log4j = Logger.getLogger(Main.class);
 
       // parse command line argument list
       for (int i=0; i<args.length; i++) {
@@ -113,7 +116,7 @@ public class Main
                   wrongParameter = true;
                }
             }
-            else if("-log-properties".equals(args[i])) {
+            else if(DEBUG && "-log-properties".equals(args[i])) {
                // this option needs a parameter
                if (++i < args.length && args[i].charAt(0) != '-') {
                   log4jProperties = args[i];
@@ -124,7 +127,7 @@ public class Main
                   wrongParameter = true;
                }
             }
-            else if ("-log-level".equals(args[i])) {
+            else if (DEBUG && "-log-level".equals(args[i])) {
                // this option needs a parameter
                if (++i < args.length && args[i].charAt(0) != '-') {
                   if ("off".equals(args[i])) {
@@ -218,25 +221,28 @@ public class Main
 + "  -o <filename>\n"
 + "             write result to the file <filename>\n"
 + "  -pdf       pass the result to FOP for PDF generation (requires -o)\n"
-+ "  -log-properties <properties-file>\n"
++ (DEBUG ?
+  "  -log-properties <properties-file>\n"
 + "             use the file <properties-file> for log4j initialization\n"
 + "             (default is the embedded file log4j.properties)\n"
 + "  -log-level all|debug|info|warn|error|fatal|all\n"
 + "             set the log level for the root logger object\n"
 + "             (default is specified in the properties file being used)\n\n"
+: "\n")
 + "Parameters for the transformation (e.g. <stx:param name=\"par\"/>) must be"
 + "\nspecified as par=value\n",
 printHelp ? 0 : 1);
       }
 
-      // use specified log4j properties file
-      if (log4jProperties != null)
-         PropertyConfigurator.configure(log4jProperties);
+      if (DEBUG) {
+         // use specified log4j properties file
+         if (log4jProperties != null)
+            PropertyConfigurator.configure(log4jProperties);
 
-      // set log level specified on the the command line
-      if (log4jLevel != null)
-         log4j.getRootLogger().setLevel(log4jLevel);
-
+         // set log level specified on the the command line
+         if (log4jLevel != null)
+            log4j.getRootLogger().setLevel(log4jLevel);
+      }
 
       try {
          // Create a new STX Processor object
@@ -336,7 +342,7 @@ printHelp ? 0 : 1);
             }
             else {
                System.err.println(embedded.toString());
-               if (log4j.isDebugEnabled())
+               if (log4jLevel != null)
                   embedded.printStackTrace(System.err);
             }
          }
