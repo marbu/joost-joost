@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.11 2002/11/27 09:48:03 obecker Exp $
+ * $Id: Emitter.java,v 1.12 2002/11/27 15:33:54 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.emitter.StxEmitter;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.11 $ $Date: 2002/11/27 09:48:03 $
+ * @version $Revision: 1.12 $ $Date: 2002/11/27 15:33:54 $
  * @author Oliver Becker
  */
 
@@ -60,7 +60,7 @@ public final class Emitter
    /** Stack for emitted events, allows well-formedness check */
    private Stack outputEvents;
 
-   /** Stack of handler objects */
+   /** Stack for handler objects and unprocessed elements */
    private Stack emitterStack;
 
    // last properties of the element 
@@ -103,10 +103,10 @@ public final class Emitter
 
 
    /** Process a stored element start tag (from startElement) */
-   private void processStartElement()
+   private void processLastElement()
       throws SAXException
    {
-//        log4j.debug("processStartElement: " + lastQName);
+//        log4j.debug("processLastElement: " + lastQName);
 //        traceMemory();
 
       Hashtable lastNs = (Hashtable)namespaceStack.peek();
@@ -203,7 +203,7 @@ public final class Emitter
    {
       if (contH != null) {
          if (lastAttrs != null)
-            processStartElement();
+            processLastElement();
          if (outputEvents.size() > 1) {
             SAXEvent ev = (SAXEvent)outputEvents.pop();
 
@@ -225,7 +225,7 @@ public final class Emitter
    {
       if (contH != null) {
          if (lastAttrs != null)
-            processStartElement();
+            processLastElement();
          lastUri = uri;
          lastLName = lName;
          lastQName = qName;
@@ -262,7 +262,7 @@ public final class Emitter
    {
       if (contH != null) {
          if (lastAttrs != null)
-            processStartElement();
+            processLastElement();
 
          SAXEvent ev = null;
          try {
@@ -322,7 +322,7 @@ public final class Emitter
    {
       if (contH != null) {
          if (lastAttrs != null)
-            processStartElement();
+            processLastElement();
          if (insideCDATA) { // prevent output of "]]>" in this CDATA section
             String str = new String(ch, start, length);
             int index = str.indexOf("]]>");
@@ -351,7 +351,7 @@ public final class Emitter
    {
       if (contH != null) {
          if (lastAttrs != null)
-            processStartElement();
+            processLastElement();
          try {
             contH.processingInstruction(target, data);
          }
@@ -369,7 +369,7 @@ public final class Emitter
       throws SAXException
    {
       if (contH != null && lastAttrs != null)
-         processStartElement();
+         processLastElement();
       if (lexH != null) {
          try {
             lexH.comment(ch, start, length);
@@ -387,7 +387,7 @@ public final class Emitter
       throws SAXException
    {
       if (contH != null && lastAttrs != null)
-         processStartElement();
+         processLastElement();
       if (lexH != null) {
          try {
             lexH.startCDATA();
@@ -419,11 +419,17 @@ public final class Emitter
    public void pushEmitter(StxEmitter emitter)
       throws SAXException
    {
-      if (contH != null && lastAttrs != null)
-         processStartElement();
       // save old handlers
       emitterStack.push(contH);
       emitterStack.push(lexH);
+      // save last element
+      if (lastAttrs != null) {
+         emitterStack.push(SAXEvent.newElement(lastUri, lastLName, lastQName,
+                                               lastAttrs, null));
+         lastAttrs = null;
+      }
+      else
+         emitterStack.push(null);
       contH = emitter;
       lexH = emitter;
    }
@@ -436,11 +442,20 @@ public final class Emitter
       throws SAXException
    {
       if (lastAttrs != null)
-         processStartElement();
+         processLastElement();
       StxEmitter ret = null;
       if (contH instanceof StxEmitter) {
          // save current emitter for returning
          ret = (StxEmitter)contH;
+         // restore the previous unprocessed element
+         Object obj = emitterStack.pop();
+         if (obj != null) {
+            SAXEvent e = (SAXEvent)obj;
+            lastUri = e.uri;
+            lastQName = e.qName;
+            lastLName = e.lName;
+            lastAttrs = (AttributesImpl)e.attrs;
+         }
          // restore previous handlers
          lexH = (LexicalHandler)emitterStack.pop();
          contH = (ContentHandler)emitterStack.pop();
