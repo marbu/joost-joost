@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.2 2002/08/28 09:48:24 obecker Exp $
+ * $Id: Main.java,v 1.3 2002/09/20 12:51:09 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.2 $ $Date: 2002/08/28 09:48:24 $
+ * @version $Revision: 1.3 $ $Date: 2002/09/20 12:51:09 $
  * @author Oliver Becker
  */
 public class Main
@@ -293,10 +293,14 @@ printHelp ? 0 : 1);
          System.err.println(ex.toString());
          System.exit(1);
       }
+      /*
       catch (SAXParseException ex) {
          log4j.warn("This shouldn't happen: " + ex);
+         if (log4j.isDebugEnabled())
+            ex.printStackTrace(System.err);
          System.exit(1);
       }
+      */
       catch (SAXException ex) {
          Exception embedded = ex.getException();
          if (embedded != null) {
