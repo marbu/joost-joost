@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 1.2 2002/11/02 15:24:51 obecker Exp $
+ * $Id: GroupBase.java,v 1.3 2002/11/05 13:09:28 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.stx.Value;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 1.2 $ $Date: 2002/11/02 15:24:51 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/05 13:09:28 $
  * @author Oliver Becker
  */
 
@@ -144,12 +144,9 @@ abstract public class GroupBase extends NodeBase
       }
       
       // create group array
-      objs = gvec.toArray();
-      length = objs.length;
-      containedGroups = new GroupFactory.Instance[length];
-      for (int i=0; i<length; i++)
-         containedGroups[i] = (GroupFactory.Instance)objs[i];
-      
+      containedGroups = new GroupFactory.Instance[gvec.size()];
+      gvec.toArray(containedGroups);
+
       // compute precedence categories
       // The second category for the transform element is empty because
       // there are neither siblings nor a parent.
@@ -166,12 +163,11 @@ abstract public class GroupBase extends NodeBase
       for (int i=0; i<containedGroups.length; i++)
          firstCategory.addAll(containedGroups[i].containedPublicTemplates);
       
-      objs = firstCategory.toArray();
-      Arrays.sort(objs); // in descending priority order
-      precedenceCategories[0] = new TemplateFactory.Instance[objs.length];
-      for (int i=0; i<objs.length; i++)
-         precedenceCategories[0][i] = (TemplateFactory.Instance)objs[i];
-      
+      precedenceCategories[0] = 
+         new TemplateFactory.Instance[firstCategory.size()];
+      firstCategory.toArray(precedenceCategories[0]);
+      Arrays.sort(precedenceCategories[0]); // in descending priority order
+
       for (int i=0; i<containedGroups.length; i++) {
          // set templates for second category in children groups
          // these are the templates of the first category of this group
@@ -184,10 +180,8 @@ abstract public class GroupBase extends NodeBase
       }
 
       // create array of group variables
-      objs = vvec.toArray();
-      groupVariables = new VariableBase[objs.length];
-      for (int i=0; i<objs.length; i++)
-         groupVariables[i] = (VariableBase)objs[i];
+      groupVariables = new VariableBase[vvec.size()];
+      vvec.toArray(groupVariables);
    }
    
    
@@ -200,11 +194,10 @@ abstract public class GroupBase extends NodeBase
          // that the remaining templates are only from sibling groups
          for (int i=0; i<precedenceCategories[0].length; i++)
             secondCategory.removeElement(precedenceCategories[0][i]);
-         Object[] objs = secondCategory.toArray();
-         Arrays.sort(objs);
-         precedenceCategories[1] = new TemplateFactory.Instance[objs.length];
-         for (int i=0; i<objs.length; i++)
-            precedenceCategories[1][i] = (TemplateFactory.Instance)objs[i];
+         precedenceCategories[1] = 
+            new TemplateFactory.Instance[secondCategory.size()];
+         secondCategory.toArray(precedenceCategories[1]);
+         Arrays.sort(precedenceCategories[1]);
       }
       
       // debugging

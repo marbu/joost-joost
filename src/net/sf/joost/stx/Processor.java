@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.12 2002/11/04 14:07:52 obecker Exp $
+ * $Id: Processor.java,v 1.13 2002/11/05 13:09:30 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -61,7 +61,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.12 $ $Date: 2002/11/04 14:07:52 $
+ * @version $Revision: 1.13 $ $Date: 2002/11/05 13:09:30 $
  * @author Oliver Becker
  */
 
@@ -387,12 +387,11 @@ public class Processor extends XMLFilterImpl
       dataStack.push(new Data(transformNode.precedenceCategories));
 
       // array of global templates
-      Object[] objs = transformNode.getGlobalTemplates().toArray();
-      Arrays.sort(objs);
-      globalTemplates = new TemplateFactory.Instance[objs.length];
-      for (int i=0; i<objs.length; i++) {
-         globalTemplates[i] = (TemplateFactory.Instance)objs[i];
-      }
+      Vector tempVec = transformNode.getGlobalTemplates();
+      globalTemplates = 
+         new TemplateFactory.Instance[tempVec.size()];
+      tempVec.toArray(globalTemplates);
+      Arrays.sort(globalTemplates);
 
       // initialize all group stx:variables
       transformNode.initGroupVariables(emitter, eventStack, context);
