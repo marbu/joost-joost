@@ -56,8 +56,17 @@ name = [a-zA-Z_][a-zA-Z_.0-9-]*
 "and"    { last = new Symbol(AND,yychar,yychar+3,yytext()); return last; }
 "or"     { last = new Symbol(OR,yychar,yychar+2,yytext()); return last; }
 
+" "+     { }
 
-" "      { }
+"parent::" { 
+   last = new Symbol(PARENT,yychar,yychar+yytext().length(),yytext()); 
+   return last; }
+"ancestor::" { 
+   last = new Symbol(ANCESTOR,yychar,yychar+yytext().length(),yytext()); 
+   return last; }
+"namespace::" { 
+   last = new Symbol(NAMESPACE,yychar,yychar+yytext().length(),yytext()); 
+   return last; }
 
 "text()" { 
    last = new Symbol(TEXT,yychar,yychar+yytext().length(),yytext()); 
