@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.19 2004/09/19 13:49:39 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.20 2004/09/28 19:08:30 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -43,7 +43,7 @@ import org.xml.sax.SAXException;
  *  Is is designed for using <code>StreamResult</code>.
  *  So this class outputs a StreamResult to the output target -
  *  {@link #outwriter} (e.g. a registered <code>FileWriter</code>).
- *  @version $Revision: 1.19 $ $Date: 2004/09/19 13:49:39 $
+ *  @version $Revision: 1.20 $ $Date: 2004/09/28 19:08:30 $
  *  @author Oliver Becker, Anatolij Zubow
  */
 public class StreamEmitter implements StxEmitter {
@@ -67,8 +67,8 @@ public class StreamEmitter implements StxEmitter {
     private boolean propTextOutput = false; 
 
     private StringBuffer nsDeclarations = new StringBuffer();
-    private String uri, qName;
-    private Attributes attrs;
+    private String lastQName;
+    private Attributes lastAttrs;
 
     private boolean insideCDATA = false;
 
@@ -191,7 +191,7 @@ public class StreamEmitter implements StxEmitter {
         if (val != null) {
             if (val.equals("text"))
                 propTextOutput = true;
-            else if(!val.equals("xml"))
+            else if (!val.equals("xml"))
                 log.warn("Unsupported output method `" + val + 
                          "', use default `xml' method instead");
         }
@@ -229,20 +229,19 @@ public class StreamEmitter implements StxEmitter {
     private boolean processLastElement(boolean end)
         throws SAXException {
 
-        if (qName != null) {
+        if (lastQName != null) {
 
             StringBuffer out = new StringBuffer("<");
-            out.append(qName);
+            out.append(lastQName);
 
             out.append(nsDeclarations.toString()); // pre 1.4 compatibility
             nsDeclarations.setLength(0);
 
-            int length = attrs.getLength();
+            int length = lastAttrs.getLength();
             for (int i=0; i<length; i++) {
 
-                out.append(' ').append(attrs.getQName(i)).append("=\"");
-                int startIndex = 0;
-                char[] attChars = attrs.getValue(i).toCharArray();
+                out.append(' ').append(lastAttrs.getQName(i)).append("=\"");
+                char[] attChars = lastAttrs.getValue(i).toCharArray();
 
                 // output escaping
                 for (int j=0; j<attChars.length; j++)
@@ -276,7 +275,7 @@ public class StreamEmitter implements StxEmitter {
 
             }
 
-            qName = null;
+            lastQName = null;
 
             return true;
         }
@@ -337,16 +336,15 @@ public class StreamEmitter implements StxEmitter {
      * SAX2-Callback
      */
     public void startElement(String uri, String lName, String qName,
-                            Attributes attrs)
+                             Attributes attrs)
         throws SAXException {
 
         if (propTextOutput)
             return;
 
         processLastElement(false);
-        this.uri = uri;
-        this.qName = qName;
-        this.attrs = attrs;
+        this.lastQName = qName;
+        this.lastAttrs = attrs;
     }
 
 
