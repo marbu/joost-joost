@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.6 2002/10/22 13:05:26 obecker Exp $
+ * $Id: Processor.java,v 1.7 2002/10/24 12:57:37 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -27,17 +27,18 @@ package net.sf.joost.stx;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
-import org.xml.sax.Locator;
 import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
-import org.xml.sax.ext.DeclHandler;
-import org.xml.sax.ext.LexicalHandler;
-import org.xml.sax.helpers.XMLFilterImpl;
-import org.xml.sax.helpers.XMLReaderFactory;
+import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.ext.DeclHandler;
+import org.xml.sax.ext.LexicalHandler;
+import org.xml.sax.helpers.NamespaceSupport;
+import org.xml.sax.helpers.XMLFilterImpl;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 import javax.xml.transform.ErrorListener;
 
@@ -61,7 +62,7 @@ import net.sf.joost.instruction.VariableFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.6 $ $Date: 2002/10/22 13:05:26 $
+ * @version $Revision: 1.7 $ $Date: 2002/10/24 12:57:37 $
  * @author Oliver Becker
  */
 
@@ -99,7 +100,6 @@ public class Processor extends XMLFilterImpl
    /** The node representing the stylesheet */
    private TransformFactory.Instance transformNode;
 
-
    /**
     * Array of global visible templates (templates with an attribute
     * <code>visibility="global"</code>).
@@ -132,6 +132,13 @@ public class Processor extends XMLFilterImpl
 
    /** The output encoding specified in the stylesheet */
    private String outputEncoding = null;
+
+
+   /** The namespace support object provided by SAX2 */
+   private NamespaceSupport nsSupport = new NamespaceSupport();
+
+   /** Flag that controls namespace contexts */
+   private boolean contextActive = false;
 
    /**
     * Stack for input events (of type {@link SAXEvent}). Every
@@ -679,7 +686,8 @@ public class Processor extends XMLFilterImpl
       else { // no matching template found, perform default action
          if((context.noMatchEvents & COPY_ELEMENT_NO_MATCH) != 0)
             emitter.startElement(lastElement.uri, lastElement.lName, 
-                                 lastElement.qName, lastElement.attrs);
+                                 lastElement.qName, lastElement.attrs,
+                                 lastElement.nsSupport);
          dataStack.push(
             new Data(((Data)dataStack.peek()).precedenceCategories));
          if (log4j.isDebugEnabled())
@@ -838,7 +846,6 @@ public class Processor extends XMLFilterImpl
          log4j.debug(qName);
          log4j.debug("eventStack: " + eventStack);
          log4j.debug("dataStack: " + dataStack);
-//           traceMemory();
       }
 
       if (skipDepth > 0) {
@@ -846,7 +853,7 @@ public class Processor extends XMLFilterImpl
          return;
       }
 
-      SAXEvent me = SAXEvent.newElement(uri, lName, qName, attrs);
+      SAXEvent me = SAXEvent.newElement(uri, lName, qName, attrs, nsSupport);
       // look-ahead mechanism
       if (lastElement != null) {
          processLastElement(me);
@@ -859,6 +866,10 @@ public class Processor extends XMLFilterImpl
 
       if (collectedCharacters.length() != 0)
          processCharacters();
+         if (!contextActive) {
+            nsSupport.pushContext();
+         }
+         contextActive = false;
    }
 
 
@@ -900,7 +911,6 @@ public class Processor extends XMLFilterImpl
                prStatus = data.lastTemplate.process(emitter, eventStack, 
                                                     context, prStatus);
                if ((prStatus & ST_ATTRIBUTES) != 0) {
-                  // TODO: attribute processing
                   processAttributes(((SAXEvent)eventStack.peek()).attrs);
                   attributeLoop = true;
                }
@@ -919,6 +929,7 @@ public class Processor extends XMLFilterImpl
                log4j.debug("eventStack.pop " + eventStack.pop());
             else
                eventStack.pop();
+            nsSupport.popContext();
          }
       }
       else {
@@ -927,6 +938,7 @@ public class Processor extends XMLFilterImpl
                log4j.debug("eventStack.pop " + eventStack.pop());
             else
                eventStack.pop();
+            nsSupport.popContext();
          }
       }
    }
@@ -1001,10 +1013,37 @@ public class Processor extends XMLFilterImpl
    }
 
 
-//     public void startPrefixMapping(String prefix, String uri)
-//        throws SAXException
-//     {
-//     }
+   /** 
+    * This dummy node is used as look-ahead in {@link #startPrefixMapping}.
+    * This is more or less a hack. Actually the look-ahead must be an element,
+    * but we don't know its properties (name etc) at the moment. Since
+    * text nodes are the only look-ahead nodes whose properties can be
+    * accessed, we use a text node with an empty string here. (Any other
+    * type would do it as well, but that seems to be even more weird ...
+    * constructing an empty element is difficult)
+    * We can't use <code>null</code> because this would mean there are no
+    * children at all, which in turn affects the result of a call to the
+    * function <code>has-child-nodes</code>
+    */
+   private static SAXEvent dummyNode = SAXEvent.newText("");
+
+   public void startPrefixMapping(String prefix, String uri)
+      throws SAXException
+   {
+      if (lastElement != null) {
+         processLastElement(dummyNode); // use the dummy node as explained
+         lastElement = null;
+      }
+      if (skipDepth > 0)
+         return;
+
+      if (!contextActive) {
+         nsSupport.pushContext();
+         contextActive = true;
+      }
+      nsSupport.declarePrefix(prefix, uri);
+   }
+
 
 //     public void endPrefixMapping(String prefix)
 //        throws SAXException

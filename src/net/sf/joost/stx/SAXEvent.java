@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEvent.java,v 1.2 2002/09/20 12:52:02 obecker Exp $
+ * $Id: SAXEvent.java,v 1.3 2002/10/24 12:57:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -26,13 +26,14 @@ package net.sf.joost.stx;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.AttributesImpl;
+import org.xml.sax.helpers.NamespaceSupport;
 
 import java.util.Hashtable;
 
 
 /** 
  * SAXEvent stores all information attached to an incoming SAX event 
- * @version $Revision: 1.2 $ $Date: 2002/09/20 12:52:02 $
+ * @version $Revision: 1.3 $ $Date: 2002/10/24 12:57:37 $
  * @author Oliver Becker
  */
 final public class SAXEvent
@@ -49,6 +50,7 @@ final public class SAXEvent
    public String lName;
    public String qName;
    public Attributes attrs;
+   public NamespaceSupport nsSupport;
    public String value;
 
    private Hashtable posHash;
@@ -67,13 +69,14 @@ final public class SAXEvent
    }
 
    private SAXEvent(int type, String uri, String lName, String qName,
-                    Attributes attrs)
+                    Attributes attrs, NamespaceSupport nsSupport)
    {
       this(type);
       this.uri = uri;
       this.lName = lName;
       this.qName = qName;
       this.attrs = new AttributesImpl(attrs);
+      this.nsSupport = nsSupport;
    }
 
    private SAXEvent(int type, String value)
@@ -104,9 +107,10 @@ final public class SAXEvent
    // Factory methods
    //
    public static SAXEvent newElement(String uri, String lName, String qName,
-                                     Attributes attrs)
+                                     Attributes attrs, 
+                                     NamespaceSupport nsSupport)
    {
-      return new SAXEvent(ELEMENT, uri, lName, qName, attrs);
+      return new SAXEvent(ELEMENT, uri, lName, qName, attrs, nsSupport);
    }
 
    public static SAXEvent newText(String value)

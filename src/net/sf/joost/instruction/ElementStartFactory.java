@@ -1,5 +1,5 @@
 /*
- * $Id: ElementStartFactory.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: ElementStartFactory.java,v 1.2 2002/10/24 12:57:35 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>element-start</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2002/10/24 12:57:35 $
  * @author Oliver Becker
  */
 
@@ -164,7 +164,7 @@ final public class ElementStartFactory extends FactoryBase
             }
 
             emitter.startElement(elUri, elLocal, elName, 
-                                 new AttributesImpl());
+                                 new AttributesImpl(), null);
          }
          return processStatus;
       }

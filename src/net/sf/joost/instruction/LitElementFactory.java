@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: LitElementFactory.java,v 1.2 2002/10/24 12:57:35 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,19 +29,22 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
+import org.xml.sax.helpers.NamespaceSupport;
 
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Stack;
 
-import net.sf.joost.stx.Emitter;
+import net.sf.joost.Constants;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.Emitter;
 import net.sf.joost.grammar.Tree;
 
 
 /** 
  * Factory for literal result elements, which are represented by the
  * inner Instance class. 
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2002/10/24 12:57:35 $
  * @author Oliver Becker
 */
 
@@ -73,8 +76,7 @@ final public class LitElementFactory extends FactoryBase
       for (int i=0; i<avtList.length; i++) 
          avtList[i] = parseAVT(attrs.getValue(i), nsSet, locator);
 
-      return new Instance(uri, lName, qName, attrs, avtList, locator);
-
+      return new Instance(uri, lName, qName, attrs, avtList, nsSet, locator);
    }
 
 
@@ -86,15 +88,26 @@ final public class LitElementFactory extends FactoryBase
       private String lName;
       private AttributesImpl attrs;
       private Tree[] avtList;
+      private NamespaceSupport nsSupport;
       
       protected Instance(String uri, String lName, String qName,
-                         Attributes attrs, Tree[] avtList, Locator locator)
+                         Attributes attrs, Tree[] avtList, Hashtable nsTable,
+                         Locator locator)
       {
          super(qName, locator, false);
          this.uri = uri;
          this.lName = lName;
          this.attrs = new AttributesImpl(attrs);
          this.avtList = avtList;
+
+         // Create mapping of namespace prefixes for this element
+         nsSupport = new NamespaceSupport();
+         for (Enumeration e = nsTable.keys(); e.hasMoreElements(); ) {
+            String prefix = (String)e.nextElement();
+            String nsUri = (String)nsTable.get(prefix);
+            if (!Constants.STX_NS.equals(nsUri)) // skip STX namespace
+               nsSupport.declarePrefix(prefix, nsUri);
+         }
       }
       
       /**
@@ -117,7 +130,7 @@ final public class LitElementFactory extends FactoryBase
                attrs.setValue(i, 
                               avtList[i].evaluate(context, eventStack, 
                                                   eventStack.size()).string);
-            emitter.startElement(uri, lName, qName, attrs);
+            emitter.startElement(uri, lName, qName, attrs, nsSupport);
          }
          short newStatus = super.process(emitter, eventStack, context,
                                          processStatus);

@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: Emitter.java,v 1.2 2002/10/24 12:57:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,17 +24,18 @@
 
 package net.sf.joost.stx;
 
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
+import org.xml.sax.helpers.NamespaceSupport;
 
-import java.util.Stack;
-import java.util.EmptyStackException;
 import java.util.Hashtable;
+import java.util.EmptyStackException;
 import java.util.Enumeration;
+import java.util.Stack;
 
 
 
@@ -42,7 +43,7 @@ import java.util.Enumeration;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2002/10/24 12:57:37 $
  * @author Oliver Becker
  */
 
@@ -132,7 +133,7 @@ public final class Emitter
          
       contH.startElement(lastUri, lastLName, lastQName, lastAttrs);
       outputEvents.push(SAXEvent.newElement(lastUri, lastLName, lastQName, 
-                                            lastAttrs));
+                                            lastAttrs, null));
 
       lastAttrs = null; // flag: there's no startElement pending
    }
@@ -196,7 +197,7 @@ public final class Emitter
 
 
    public void startElement(String uri, String lName, String qName,
-                            Attributes attrs)
+                            Attributes attrs, NamespaceSupport nsSupport)
       throws SAXException
    {
       if (contH != null) {
@@ -211,6 +212,18 @@ public final class Emitter
             lastAttrs = new AttributesImpl(attrs);
          else
             lastAttrs = new AttributesImpl();
+
+         if (nsSupport != null) {
+            for (Enumeration e = nsSupport.getPrefixes();
+                 e.hasMoreElements(); ) {
+               String prefix = (String)e.nextElement();
+               inScopeNamespaces.put(prefix, nsSupport.getURI(prefix));
+            }
+            String defaultNS = nsSupport.getURI("");
+            // NamespaceSupport stores the null namespace as null.
+            // We use the empty string instead
+            inScopeNamespaces.put("", defaultNS == null ? "" : defaultNS);
+         }
       }
    }
 
