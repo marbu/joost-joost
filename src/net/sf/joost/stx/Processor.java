@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.1 2003/04/27 15:36:24 obecker Exp $
+ * $Id: Processor.java,v 2.2 2003/04/29 11:38:15 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -64,7 +64,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.1 $ $Date: 2003/04/27 15:36:24 $
+ * @version $Revision: 2.2 $ $Date: 2003/04/29 11:38:15 $
  * @author Oliver Becker
  */
 
@@ -720,7 +720,6 @@ public class Processor extends XMLFilterImpl
             // loop as long as stx:process-attributes interrupts the inner 
             // while
             attributeLoop = false;
-            context.currentItem = null;
 
             int ret = PR_CONTINUE;
             while (inst != null && ret == PR_CONTINUE) {

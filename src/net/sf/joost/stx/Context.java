@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 2.0 2003/04/25 16:47:18 obecker Exp $
+ * $Id: Context.java,v 2.1 2003/04/29 11:38:14 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import java.util.Stack;
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:47:18 $
+ * @version $Revision: 2.1 $ $Date: 2003/04/29 11:38:14 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
@@ -53,9 +53,6 @@ public final class Context implements Cloneable
 
    /** The position of the current node. */
    public long position;
-
-   /** The current item. <code>null</code> means: the current node */
-   public Value currentItem;
 
    /** The currently processed statement in the transformation sheet */
    public NodeBase currentInstruction;

@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.0 2003/04/25 16:54:15 obecker Exp $
+ * $Id: FunctionTable.java,v 2.1 2003/04/29 11:38:15 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:54:15 $
+ * @version $Revision: 2.1 $ $Date: 2003/04/29 11:38:15 $
  * @author Oliver Becker
  */
 final public class FunctionTable
@@ -59,7 +59,6 @@ final public class FunctionTable
          new NumberConv(),
          new BooleanConv(),
          new Position(), 
-         new CurrentItem(),
          new Level(),
          new GetNode(),
          new HasChildNodes(),
@@ -152,8 +151,6 @@ final public class FunctionTable
    {
       if (args != null)                     // argument present
          return args.evaluate(context, top);
-      else if (context.currentItem != null) // current item present
-         return context.currentItem.copy();
       else if (top > 0)                     // use current node
          return 
             new Value((SAXEvent)context.ancestorStack.elementAt(top-1), top);
@@ -292,30 +289,6 @@ final public class FunctionTable
       public Value evaluate(Context context, int top, Tree args)
       {
          return new Value(context.position);
-      }
-   }
-
-
-   /**
-    * The <code>current-item</code> function.
-    * Returns the current item for an <code>stx:for-each</code>, 
-    * or the current node otherwise
-    */
-   final public class CurrentItem implements Instance
-   {
-      /** @return 0 */
-      public int getMinParCount() { return 0; }
-      /** @return 0 */
-      public int getMaxParCount() { return 0; }
-      /** @return "current-item" */
-      public String getName() { return "{}current-item"; }
-
-      public Value evaluate(Context context, int top, Tree args)
-      {
-         return context.currentItem != null 
-            ? context.currentItem.copy() // Values may change
-            : new Value((SAXEvent)context.ancestorStack.elementAt(top-1), 
-                        top);
       }
    }
 
