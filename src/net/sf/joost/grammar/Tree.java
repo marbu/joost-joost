@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 1.10 2003/01/12 16:42:57 obecker Exp $
+ * $Id: Tree.java,v 1.11 2003/01/16 16:13:45 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 1.10 $ $Date: 2003/01/12 16:42:57 $
+ * @version $Revision: 1.11 $ $Date: 2003/01/16 16:13:45 $
  * @author Oliver Becker
  */
 public class Tree
@@ -462,38 +462,51 @@ public class Tree
          case ADD:
             if (left == null)
                return right.evaluate(context, events, top).convertToNumber();
-            v1 = left.evaluate(context, events, top).convertToNumber();
-            v2 = right.evaluate(context, events, top).convertToNumber();
-            v1.number += v2.number;
+            v1 = left.evaluate(context, events, top);
+            v2 = right.evaluate(context, events, top);
+            if (v1.type == Value.EMPTY || v2.type == Value.EMPTY)
+               return v1;
+            v1.convertToNumber().number += v2.convertToNumber().number;
             return v1;
 
          case SUB:
             if (left == null) {
-               v1 = right.evaluate(context, events, top).convertToNumber();
+               v1 = right.evaluate(context, events, top);
+               if (v1.type == Value.EMPTY)
+                  return v1;
+               v1.convertToNumber();
                v1.number = -v1.number;
                return v1;
             }
-            v1 = left.evaluate(context, events, top).convertToNumber();
-            v2 = right.evaluate(context, events, top).convertToNumber();
-            v1.number -= v2.number;
+            v1 = left.evaluate(context, events, top);
+            v2 = right.evaluate(context, events, top);
+            if (v1.type == Value.EMPTY || v2.type == Value.EMPTY)
+               return v1;
+            v1.convertToNumber().number -= v2.convertToNumber().number;
             return v1;
 
          case MULT:
-            v1 = left.evaluate(context, events, top).convertToNumber();
-            v2 = right.evaluate(context, events, top).convertToNumber();
-            v1.number *= v2.number;
+            v1 = left.evaluate(context, events, top);
+            v2 = right.evaluate(context, events, top);
+            if (v1.type == Value.EMPTY || v2.type == Value.EMPTY)
+               return v1;
+            v1.convertToNumber().number *= v2.convertToNumber().number;
             return v1;
 
          case DIV:
-            v1 = left.evaluate(context, events, top).convertToNumber();
-            v2 = right.evaluate(context, events, top).convertToNumber();
-            v1.number /= v2.number;
+            v1 = left.evaluate(context, events, top);
+            v2 = right.evaluate(context, events, top);
+            if (v1.type == Value.EMPTY || v2.type == Value.EMPTY)
+               return v1;
+            v1.convertToNumber().number /= v2.convertToNumber().number;
             return v1;
 
          case MOD:
-            v1 = left.evaluate(context, events, top).convertToNumber();
-            v2 = right.evaluate(context, events, top).convertToNumber();
-            v1.number %= v2.number;
+            v1 = left.evaluate(context, events, top);
+            v2 = right.evaluate(context, events, top);
+            if (v1.type == Value.EMPTY || v2.type == Value.EMPTY)
+               return v1;
+            v1.convertToNumber().number %= v2.convertToNumber().number;
             return v1;
 
          case AND:
@@ -601,12 +614,14 @@ public class Tree
             // determine effective parent node sequence (-> v1)
             if (left != null) { // preceding path
                v1 = left.evaluate(context, events, top);
+               if (v1.type == Value.EMPTY)
+                  return v1;
                if (v1.type != Value.NODE)
-                  throw new EvalException("sub expression before `/@" +
+                  throw new EvalException("sub expression before `/" + 
+                                          (type == NAMESPACE ? "namespace::" 
+                                                             : "@") +
                                           value + "' must evaluate to a " +
                                           "node (got " + v1 + ")");
-               if (v1.event == null) // emtpy sequence
-                  return v1;
             }
             else if(top > 0) // use current node
                v1 = new Value((SAXEvent)events.elementAt(top-1), top-1);
@@ -633,7 +648,7 @@ public class Tree
                }
                else if (type == NAMESPACE) {
                   if (e == null || e.nsSupport == null)
-                     return Value.EMPTY_SEQ;
+                     return new Value();
                   if ("*".equals(value)) { // return all declared namespaces
                      for (Enumeration en=e.nsSupport.getPrefixes();
                           en.hasMoreElements(); ) {
@@ -702,7 +717,7 @@ public class Tree
             if (ret != null)
                return ret;
             else
-               return Value.EMPTY_SEQ;
+               return new Value();
          }
 
          case DOT: 
@@ -714,7 +729,7 @@ public class Tree
                   return new Value((SAXEvent)events.elementAt(top-1), top);
             }
             else
-               return Value.EMPTY_SEQ;
+               return new Value();
 
          case DDOT:
             if (top > 1) {
@@ -727,7 +742,7 @@ public class Tree
             }
             else
                // path selects nothing
-               return Value.EMPTY_SEQ;
+               return new Value();
 
          case TEXT_TEST:
             // return the string value of the look-ahead node if it's a text
@@ -738,7 +753,7 @@ public class Tree
                    context.lookAhead.type == SAXEvent.CDATA))
                return new Value(context.lookAhead.value);
             else
-               return Value.EMPTY_SEQ;
+               return new Value();
 
          case ROOT:
             // set top to 1
@@ -746,7 +761,7 @@ public class Tree
 
          case CHILD:
             if (top < events.size() && left.matches(context, events, top+1)) {
-               if (right != null) 
+               if (right != null)
                   // path continues, evaluate recursively with top+1
                   return right.evaluate(context, events, top+1);
                else 
@@ -754,7 +769,7 @@ public class Tree
                   return new Value((SAXEvent)events.elementAt(top), top+1);
             }
             else // path selects nothing
-               return Value.EMPTY_SEQ;
+               return new Value();
 
          case DESC: {
             Value ret = null, last = null; // for constructing the result seq
@@ -771,7 +786,7 @@ public class Tree
             if (ret != null)
                return ret;
             else // empty sequence
-               return Value.EMPTY_SEQ;
+               return new Value();
          }
 
          case PARENT:
@@ -785,30 +800,30 @@ public class Tree
             }
             else
                // path selects nothing
-               return Value.EMPTY_SEQ;
+               return new Value();
 
          case ANC:
             // TODO
             log4j.warn("ancestor axis is not implemented yet");
-            return Value.EMPTY_SEQ;
+            return new Value();
 
          case LIST:
             log4j.error("LIST: this shouldn't happen");
-            return Value.EMPTY_SEQ;
+            return new Value();
 
          case SEQ: {
             if (left != null)
                v1 = left.evaluate(context, events, top);
             else
-               v1 = Value.EMPTY_SEQ;
+               v1 = new Value();
             if (right != null)
                v2 = right.evaluate(context, events, top);
             else
-               v2 = Value.EMPTY_SEQ;
+               v2 = new Value();
             // if we get an empty sequence, return the other value
-            if (v1 == Value.EMPTY_SEQ)
+            if (v1.type == Value.EMPTY)
                return v2;
-            if (v2 == Value.EMPTY_SEQ)
+            if (v2.type == Value.EMPTY)
                return v1;
             // append v1 and v2
             Value tmp = v1;
@@ -829,7 +844,7 @@ public class Tree
                                     context.currentInstruction.systemId,
                                     context.currentInstruction.lineNo,
                                     context.currentInstruction.colNo);
-         return Value.EMPTY_SEQ; // if the errorHandler decides to continue ...
+         return new Value(); // if the errorHandler decides to continue ...
       }
    }
 
