@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.33 2003/01/30 17:17:27 obecker Exp $
+ * $Id: Processor.java,v 1.34 2003/02/02 15:06:21 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -63,7 +63,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.33 $ $Date: 2003/01/30 17:17:27 $
+ * @version $Revision: 1.34 $ $Date: 2003/02/02 15:06:21 $
  * @author Oliver Becker
  */
 
@@ -575,10 +575,7 @@ public class Processor extends XMLFilterImpl
       // possible jump to another group (changed visibleTemplates)
       dataStack.push(
          new Data(null, context.position, context.lookAhead,
-                  context.nextProcessGroup != null 
-                  ? ((GroupBase)transformNode.namedGroups.get(
-                       context.nextProcessGroup)).visibleTemplates 
-                  :((Data)dataStack.peek()).visibleTemplates,
+                  context.nextProcessGroup.visibleTemplates,
                   ST_BUFFER));
    }
 
@@ -710,11 +707,7 @@ public class Processor extends XMLFilterImpl
                   // processing suspended due to a stx:process-children
                   dataStack.push(
                      new Data(temp, context.position, context.lookAhead,
-                              context.nextProcessGroup != null 
-                                ? ((GroupBase)transformNode.namedGroups.get(
-                                     context.nextProcessGroup))
-                                  .visibleTemplates
-                                : temp.parentGroup.visibleTemplates,
+                              context.nextProcessGroup.visibleTemplates,
                               procStatus));
                   if (log4j.isDebugEnabled())
                      log4j.debug("children - dataStack.push " + 
@@ -729,9 +722,10 @@ public class Processor extends XMLFilterImpl
                // marker for findMatchingTemplate()
                dataStack.push(
                   new Data(temp, context.position, context.lookAhead,
-                           context.nextProcessGroup != null 
-                              ? ((GroupBase)transformNode.namedGroups.get(
-                                   context.nextProcessGroup)).visibleTemplates
+                           context.nextProcessGroup != null
+                              // target group specified
+                              ? context.nextProcessGroup.visibleTemplates
+                              // else: use previous group
                               : ((Data)dataStack.peek()).visibleTemplates,
                            procStatus));
                processEvent(); // recurse
@@ -755,10 +749,7 @@ public class Processor extends XMLFilterImpl
                }
                dataStack.push(
                   new Data(temp, context.position, context.lookAhead,
-                           context.nextProcessGroup != null 
-                              ? ((GroupBase)transformNode.namedGroups.get(
-                                   context.nextProcessGroup)).visibleTemplates
-                              : temp.parentGroup.visibleTemplates,
+                           context.nextProcessGroup.visibleTemplates,
                            procStatus, context.psiblings,
                            context.localVars, event));
             }
@@ -766,10 +757,7 @@ public class Processor extends XMLFilterImpl
                // stx:process-attributes, just for elements
                dataStack.push(
                   new Data(temp, context.position, context.lookAhead,
-                           context.nextProcessGroup != null 
-                              ? ((GroupBase)transformNode.namedGroups.get(
-                                   context.nextProcessGroup)).visibleTemplates
-                              : temp.parentGroup.visibleTemplates,
+                           context.nextProcessGroup.visibleTemplates,
                            procStatus));
                processAttributes(event.attrs);
                dataStack.pop();
@@ -1028,11 +1016,8 @@ public class Processor extends XMLFilterImpl
          if (!clearLast && (prStatus & ST_PROCESSING) == 0) {
             // put back the last stx:process-siblings instruction
             // there might have been a group attribute
-            stopData.visibleTemplates = context.nextProcessGroup != null 
-               ? ((GroupBase)
-               transformNode.namedGroups.get(context.nextProcessGroup))
-                  .visibleTemplates
-               : data.template.parentGroup.visibleTemplates;
+            stopData.visibleTemplates = 
+               context.nextProcessGroup.visibleTemplates;
             stopData.psiblings = context.psiblings;
             dataStack.push(stopData);
          }
@@ -1203,10 +1188,7 @@ public class Processor extends XMLFilterImpl
             if ((prStatus & ST_SIBLINGS) != 0) {
                dataStack.push(
                   new Data(data.template, context.position, context.lookAhead,
-                           context.nextProcessGroup != null 
-                              ? ((GroupBase)transformNode.namedGroups.get(
-                                   context.nextProcessGroup)).visibleTemplates
-                              : data.template.parentGroup.visibleTemplates,
+                           context.nextProcessGroup.visibleTemplates,
                            prStatus, context.psiblings, context.localVars,
                            (SAXEvent)eventStack.peek()));
             }
