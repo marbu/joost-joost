@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.38 2003/03/13 16:27:11 obecker Exp $
+ * $Id: Processor.java,v 1.39 2003/03/18 16:47:03 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -63,7 +63,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.38 $ $Date: 2003/03/13 16:27:11 $
+ * @version $Revision: 1.39 $ $Date: 2003/03/18 16:47:03 $
  * @author Oliver Becker
  */
 
@@ -159,12 +159,12 @@ public class Processor extends XMLFilterImpl
    private Stack eventStack = new Stack();
 
    /** 
-    * Stack needed for the processing of buffers, because each buffer has
-    * its own ancestor stack ({@link #eventStack}). This stack stores also
+    * Stack needed for inner processing (buffers, documents).
+    * This stack stores the event stack for <code>stx:process-document</code>,
     * character data that has been already read as look-ahead
-    * ({@link #collectedCharacters}).
+    * ({@link #collectedCharacters}), and local variables.
     */
-   private Stack bufferStack = new Stack();
+   private Stack innerProcStack = new Stack();
 
    /** Stack for {@link Data} objects */
    private Stack dataStack = new Stack();
@@ -570,8 +570,10 @@ public class Processor extends XMLFilterImpl
       throws SAXException
    {
       // there might be characters already read
-      bufferStack.push(collectedCharacters.toString());
+      innerProcStack.push(collectedCharacters.toString());
       collectedCharacters.setLength(0);
+      // store local variables
+      innerProcStack.push(context.localVars.clone());
       // possible jump to another group (changed visibleTemplates)
       dataStack.push(
          new Data(null, context.position, context.lookAhead,
@@ -591,7 +593,8 @@ public class Processor extends XMLFilterImpl
 
       // remove Data object from startInnerProcessing()
       dataStack.pop(); 
-      collectedCharacters.append(bufferStack.pop());
+      context.localVars = (Hashtable)innerProcStack.pop();
+      collectedCharacters.append(innerProcStack.pop());
    }
 
 
@@ -1052,13 +1055,13 @@ public class Processor extends XMLFilterImpl
 
       // perform this only at the begin of a transformation,
       // not at the begin of processing another document
-      if (bufferStack.empty()) {
+      if (innerProcStack.empty()) {
          // initialize all group stx:variables
          transformNode.initGroupVariables(emitter, eventStack, context);
          emitter.startDocument();
       }
       else { // stx:process-document
-         bufferStack.push(eventStack);
+         innerProcStack.push(eventStack);
          eventStack = new Stack();
       }
 
@@ -1106,12 +1109,12 @@ public class Processor extends XMLFilterImpl
             else
                eventStack.pop();
 
-            if (bufferStack.empty())
+            if (innerProcStack.empty())
                emitter.endDocument(transformNode.publicId, 
                                    transformNode.systemId,
                                    transformNode.lineNo, transformNode.colNo);
             else
-               eventStack = (Stack)bufferStack.pop();
+               eventStack = (Stack)innerProcStack.pop();
          }
       }
       else
