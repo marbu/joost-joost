@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.6 2003/02/03 12:20:17 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.7 2003/04/25 16:53:16 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -40,7 +40,7 @@ import java.util.Hashtable;
  *  Is is designed for using <code>StreamResult</code>.
  *  So this class outputs a StreamResult to the output target -
  *  {@link #outwriter} (e.g. a registered <code>FileWriter</code>).
- *  @version $Revision: 1.6 $ $Date: 2003/02/03 12:20:17 $
+ *  @version $Revision: 1.7 $ $Date: 2003/04/25 16:53:16 $
  *  @author Oliver Becker, Anatolij Zubow
  */
 public class StreamEmitter implements StxEmitter {
@@ -80,7 +80,8 @@ public class StreamEmitter implements StxEmitter {
     public StreamEmitter(Writer writer, String encoding)
         throws IOException {
 
-        log4j.debug("init StreamEmitter");
+        if (DEBUG) 
+            log4j.debug("init StreamEmitter");
 
         outwriter = writer;
         encodingformat = encoding;
@@ -97,7 +98,8 @@ public class StreamEmitter implements StxEmitter {
     public StreamEmitter(OutputStream out, String encoding)
         throws IOException {
 
-        log4j.debug("init StreamEmitter");
+        if (DEBUG)
+            log4j.debug("init StreamEmitter");
 
         OutputStreamWriter writer;
 
@@ -230,7 +232,8 @@ public class StreamEmitter implements StxEmitter {
 
                 //stream string to writer
                 outwriter.write(out.toString());
-                log4j.debug(out);
+                if (DEBUG)
+                    log4j.debug(out);
 
             } catch (IOException ex) {
 
@@ -354,7 +357,7 @@ public class StreamEmitter implements StxEmitter {
                     }
                 outwriter.write(out.toString());
             }
-            if (log4j.isDebugEnabled()) 
+            if (DEBUG)
                log4j.debug("`" + new String(ch, start, length) + "'");
             
 
