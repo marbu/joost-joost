@@ -1,5 +1,5 @@
 /*
- * $Id: VariableBase.java,v 2.0 2003/04/25 16:46:35 obecker Exp $
+ * $Id: VariableBase.java,v 2.1 2003/05/26 11:50:34 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,8 +28,9 @@ import org.xml.sax.Locator;
 
 
 /**
- * Common base class for {@link VariableFactory.Instance} and
- * {@link BufferFactory.Instance}.
+ * Common base class for variables, parameters, and buffers.
+ * @version $Revision: 2.1 $ $Date: 2003/05/26 11:50:34 $
+ * @author Oliver Becker
  */
 public class VariableBase extends NodeBase
 {

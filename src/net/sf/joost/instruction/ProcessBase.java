@@ -1,5 +1,5 @@
 /*
- * $Id: ProcessBase.java,v 2.4 2003/05/23 12:04:48 obecker Exp $
+ * $Id: ProcessBase.java,v 2.5 2003/05/26 11:50:34 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,6 +43,8 @@ import net.sf.joost.stx.Context;
 /**
  * Common base class for all <code>stx:process-<em>xxx</em></code>
  * instructions
+ * @version $Revision: 2.5 $ $Date: 2003/05/26 11:50:34 $
+ * @author Oliver Becker
  */
 public class ProcessBase extends NodeBase
 {

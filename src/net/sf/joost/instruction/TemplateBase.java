@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateBase.java,v 2.2 2003/05/02 05:58:09 obecker Exp $
+ * $Id: TemplateBase.java,v 2.3 2003/05/26 11:50:34 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,6 +37,8 @@ import net.sf.joost.stx.Context;
 /**
  * Common base class for {@link TemplateFactory.Instance} and
  * {@link ProcedureFactory.Instance}.
+ * @version $Revision: 2.3 $ $Date: 2003/05/26 11:50:34 $
+ * @author Oliver Becker
  */
 
 public abstract class TemplateBase extends NodeBase
