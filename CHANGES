@@ -1,7 +1,9 @@
 Changes since 20040330
-- flush output on error
+- boosted Joost's performance about 25% 
+  (major internal refactoring contributed by Thomas Behrends)
 - added 'select' attribute to stx:message
 - added filter-method "http://www.ietf.org/rfc/rfc2616.txt#POST"
+- flush output on error
 - Bugfix: 936354, 1003790
 
 Changes since 20031219
