@@ -1,5 +1,5 @@
 /*
- * $Id: OptionsFactory.java,v 1.2 2002/10/29 19:09:10 obecker Exp $
+ * $Id: OptionsFactory.java,v 1.3 2002/11/04 14:58:20 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,17 +41,17 @@ import net.sf.joost.stx.Processor;
 /**
  * Factory for <code>options</code> elements, which are represented by 
  * the inner Instance class.
- * @version $Revision: 1.2 $ $Date: 2002/10/29 19:09:10 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/04 14:58:20 $
  * @author Oliver Becker
  */
 
 final public class OptionsFactory extends FactoryBase
 {
-   /** The local element name. */
-   private static final String name = "options";
-
    /** allowed attributes for this element */
    private HashSet attrNames;
+
+   private static final String[] NO_MATCH_EVENTS_VALUES =
+   { "ignore", "text", "copy" };
 
    // Log4J initialization
    private static org.apache.log4j.Logger log4j = 
@@ -69,9 +69,10 @@ final public class OptionsFactory extends FactoryBase
       attrNames.add("strip-space");
    }
 
+   /** @return "options" */
    public String getName()
    {
-      return name;
+      return "options";
    }
 
    public NodeBase createNode(NodeBase parent, String uri, String lName, 
@@ -88,48 +89,25 @@ final public class OptionsFactory extends FactoryBase
 
       String defStxpNsAtt = attrs.getValue("default-stxpath-namespace");
 
-      String noMatchEventsAtt = attrs.getValue("no-match-events");
-      byte noMatchEvents;
-      if (noMatchEventsAtt == null || "ignore".equals(noMatchEventsAtt))
-         noMatchEvents = Processor.IGNORE_NO_MATCH;
-      else if ("text".equals(noMatchEventsAtt))
-         noMatchEvents = Processor.COPY_TEXT_NO_MATCH;
-      else if ("copy".equals(noMatchEventsAtt))
-         noMatchEvents = Processor.COPY_NO_MATCH;
-      else
-         throw new SAXParseException("Value of attribute `no-match-events' " +
-                                     "must be one of `ignore', `text', or " +
-                                     "`copy' (found `" + noMatchEventsAtt +
-                                     "')",
-                                     locator);
-
-      String stripSpaceAtt = attrs.getValue("strip-space");
-      boolean stripSpace = false; // default
-      if (stripSpaceAtt != null) {
-         if ("yes".equals(stripSpaceAtt))
-            stripSpace = true;
-         else if ("no".equals(stripSpaceAtt))
-            stripSpace = false;
-         else
-            throw new SAXParseException("Value of attribute `strip-space' " +
-                                        "must be either `yes' or `no' " + 
-                                        "(found `" + stripSpaceAtt + "')",
-                                        locator);
+      // default is "ignore"
+      byte noMatchEvents = 0;
+      switch (getEnumAttValue("no-match-events", attrs,
+                              NO_MATCH_EVENTS_VALUES, locator)) {
+      case -1:
+      case 0: noMatchEvents = Processor.IGNORE_NO_MATCH;     break;
+      case 1: noMatchEvents = Processor.COPY_TEXT_NO_MATCH;  break;
+      case 2: noMatchEvents = Processor.COPY_NO_MATCH;       break;
+      default: log4j.fatal("Unexpected return value from getEnumAttValue");
       }
 
-      String recognizeCdataAtt = attrs.getValue("recognize-cdata");
-      boolean recognizeCdata = true; // default
-      if (recognizeCdataAtt != null) {
-         if ("no".equals(recognizeCdataAtt))
-            recognizeCdata = false;
-         else if ("yes".equals(recognizeCdataAtt))
-            recognizeCdata = true;
-         else
-            throw new SAXParseException("Value of attribute `recognize-cdata'"
-                                        + "must be either `yes' or `no' " + 
-                                        "(found `" + recognizeCdataAtt + "')",
-                                        locator);
-      }
+      // default is "no" (false)
+      boolean stripSpace =
+         getEnumAttValue("strip-space", attrs, YESNO_VALUES, locator) == 0;
+
+      // default is "yes" (true)
+      boolean recognizeCdata =
+         getEnumAttValue("recognize-cdata", attrs, YESNO_VALUES, 
+                         locator) != 1;
 
       checkAttributes(qName, attrs, attrNames, locator);
       return new Instance(qName, locator, encodingAtt, defStxpNsAtt,

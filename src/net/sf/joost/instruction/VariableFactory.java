@@ -1,5 +1,5 @@
 /*
- * $Id: VariableFactory.java,v 1.2 2002/11/02 15:16:50 obecker Exp $
+ * $Id: VariableFactory.java,v 1.3 2002/11/04 14:58:21 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,15 +45,12 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>variable</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2002/11/02 15:16:50 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/04 14:58:21 $
  * @author Oliver Becker
  */
 
 final public class VariableFactory extends FactoryBase
 {
-   /** The local element name. */
-   private static final String name = "variable";
-
    /** allowed attributes for this element */
    private HashSet attrNames;
 
@@ -66,9 +63,10 @@ final public class VariableFactory extends FactoryBase
       attrNames.add("keep-value");
    }
 
+   /** @return "variable" */
    public String getName()
    {
-      return name;
+      return "variable";
    }
 
    public NodeBase createNode(NodeBase parent, String uri, String lName, 
@@ -100,23 +98,15 @@ final public class VariableFactory extends FactoryBase
       else
          selectExpr = null;
 
-      String keepValueAtt = attrs.getValue("keep-value");
-      boolean keepValue = false;
-      if (keepValueAtt != null) {
-         if (!(parent instanceof GroupBase))
-            throw new SAXParseException(
-               "Attribute `keep-value' is not allowed for local variables",
-               locator);
-         if ("yes".equals(keepValueAtt))
-            keepValue = true;
-         else if ("no".equals(keepValueAtt))
-            keepValue = false;
-         else
-            throw new SAXParseException(
-               "Value of attribute `keep-value' must be either `yes' or " +
-               "`no' (found `"+ keepValueAtt + "')", 
-               locator);
-      }
+      int keepValueIndex = getEnumAttValue("keep-value", attrs, YESNO_VALUES,
+                                           locator);
+      if (keepValueIndex != -1 && !(parent instanceof GroupBase))
+         throw new SAXParseException(
+            "Attribute `keep-value' is not allowed for local variables",
+            locator);
+
+      // default is "no" (false)
+      boolean keepValue = (keepValueIndex == 0);
 
       checkAttributes(qName, attrs, attrNames, locator);
       return new Instance(qName, locator, nameAtt,
