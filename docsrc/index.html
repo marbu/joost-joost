@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.42 2003/06/01 19:43:11 obecker Exp $ -->
+<!-- $Id: index.html,v 1.43 2003/06/10 13:00:30 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -24,15 +24,14 @@
       for XML (STX)</a>.</strong>
       It is intended as a kind of reference implementation which
       demonstrates the functionality of STX.<br>
-      (And by the way: Joost [<em>yohst</em>] is also the given name of
-      a good friend's little son ...)
+      (And by the way: Joost [pronounced <em>yohst</em>] is also the
+      given name of a good friend's little son ...)
       </p>
 
-    <table cellspacing="10pt" width="40%" align="right"
-           style="background-color: #ffffee;
-                  margin-left: 10pt; margin-bottom: 10pt">
-      <tr>
-      <td>
+      <table cellspacing="10pt" width="40%" align="right"
+             style="background-color: #ffffee;
+                    margin-left: 10pt; margin-bottom: 10pt">
+      <tr><td>
         <p><strong>Tell me about your use cases</strong></p>
         <p>I'm currently writing an academic thesis about different
         transformation approaches. So I am particularly interested in
@@ -53,8 +52,7 @@
         <a href="mailto:obecker@informatik.hu-berlin.de">personal e-mail</a>
         if you want to share your experience with me. The academic world and
         me will always appreciate your support. :-)</p>
-      </td>
-      </tr>
+      </td></tr>
       </table>
 
       <p>The latest version was created <strong>@@@DATE@@@</strong>
@@ -131,8 +129,8 @@
       
       <h4>Features</h4>
       <p>
-      Supported stx elements (and their attributes) in the namespace
-       <code>http://stx.sourceforge.net/2002/ns</code>
+      <strong>Supported stx elements</strong> (and their attributes)
+      in the namespace <code>http://stx.sourceforge.net/2002/ns</code>
       <ul>
       <li>stx:transform (version, default-stxpath-namespace?,
           output-encoding?, pass-through?, strip-space?,
@@ -178,7 +176,7 @@
           (<em>prints its content to standard error output</em>)</li>
       </ul>
       <p>
-      Supported STXPath functions
+      <strong>Supported STXPath functions</strong>
       <ul>
       <li>string(obj?)</li>
       <li>number(obj?)</li>
@@ -214,6 +212,16 @@
       <li>sum(sequence)</li>
       <li>filter-available(string)</li>
       </ul>
+      <p>
+      <strong>Built-in extension functions</strong><br>
+      A built-in extension function must be used with a fully-qualified
+      name and the prefix bound to the namespace
+      <code>http://joost.sf.net/functions</code>
+      <ul>
+      <li>sequence(obj)<br>
+          converts a Java array or a <code>java.util.List</code> object to
+          a sequence, see <em>Extensions</em> below</li>
+      </ul> 
 
       <h4>Limitations</h4>
       <ul>
@@ -226,9 +234,192 @@
          <li>...</li>
       </ul>
 
+      <h4>Extensions</h4>
+      <p>
+      <em>Joost</em> allows calling extension functions written in Java. An
+      extension function is invoked using the notation
+      <code>prefix:localname(<em>params?</em>)</code>. The
+      <code>prefix</code> must be bound to a namespace indicating the Java
+      class the function belongs to. This namespace must use the URN
+      notation "<code>java:</code>" followed by the full-qualified class name,
+      for example "<code>java:java.util.Random</code>". The referenced class
+      must be found in the current classpath.
+      </p>
+      <p>
+      The rules for calling Java extension functions are similar to those
+      used by Saxon or Xalan:
+      </p>
+      <ul>
+        <li>
+          <p>
+            A <strong>static method</strong> can be called directly.
+            The localname of the function must match the name of a public
+            static method in this class. The names match if they contain
+            the same characters, excluding hyphens and forcing any character
+            that follows a hyphen to upper-case. For example the STXPath
+            function call <code>prefix:to-string()</code> matches the Java
+            method <code>toString();</code> but the function call can also
+            be written as <code>prefix:toString()</code> if you prefer.
+          </p>
+          <p>
+            The number of the arguments supplied to the function call must
+            match exactly the number of the parameters of the Java method.
+            If there are more than one candidate, <em>Joost</em> attempts
+            to find the one that is the best fit to the types of the
+            supplied arguments (see <em>Conversion rules</em> below).
+            <em>Joost</em> will report an error if no matching method at
+            all can be found, or if several methods may be used but none
+            is preferable to the others.
+          </p>
+          <p>
+            Example:
+            <br> 
+            <code>&lt;stx:value-of select="math:sqrt($arg)"
+                  xmlns:math="java:java.lang.Math"/&gt;</code>
+          </p>
+        </li>
+        <li>
+          <p>
+            A <strong>constructor</strong> is called by using a function
+            named <code>prefix:new</code>. If there are several constructors,
+            then again <em>Joost</em> tries to find the one that is the best
+            fit, according to the types of the supplied arguments. The result
+            of calling <code>new()</code> is an STXPath value of type Java
+            Object; the only things that can be done with a Java Object are
+            to assign it to a variable, to pass it to an extension function,
+            and to convert it to a <code>string</code>, <code>number</code>,
+            or <code>boolean</code>, using the rules given below.
+          </p>
+        </li>
+        <li>
+          <p>
+            An <strong>instance-level method</strong> is called by supplying
+            an extra first argument of type Java Object which is the object
+            on which the method is to be invoked. Matching of method names
+            is done as for static methods.
+          </p>
+          <p>
+            Example: <br>
+            <code>&lt;stx:value-of select="date:to-string(date:new())"
+                  xmlns:date="java:java.util.Date" /&gt;</code>
+          </p>
+        </li>
+      </ul>
+      <p><strong>Conversion rules</strong><br>
+      Depending on the type of the values supplied to the function call,
+      <em>Joost</em> tries to find a method that have an argument with one
+      of the following types (more specific types appear first in the list;
+      if the argument in the function call is a non-empty sequence, only
+      the first item will be considered):
+      </p>
+      <table border="1" cellpadding="4" cellspacing="0">
+        <tr>
+          <th>supplied STXPath type</th>
+          <th>required Java type</th>
+        </tr>
+        <tr>
+          <td>empty sequence</td>
+          <td><code>Object</code>
+              (or a derived type, i.e. a reference type)</td>
+        </tr>
+        <tr>
+          <td><code>boolean</code></td>
+          <td><code>boolean</code>, <code>byte</code>, <code>short</code>,
+              <code>int</code>, <code>long</code>, <code>char</code>,
+              <code>String</code>, <code>float</code>, <code>double</code>,
+              <code>Object</code></td>
+        </tr>
+        <tr>
+          <td><code>number</code></td>
+          <td><code>double</code>, <code>float</code>, <code>long</code>,
+              <code>int</code>, <code>short</code>, <code>byte</code>,
+              <code>String</code>, <code>char</code>, <code>boolean</code>,
+              <code>Object</code></td>
+        </tr>
+        <tr>
+          <td><code>node</code>, <code>string</code></td>
+          <td><code>String</code>, <code>char</code>, <code>double</code>,
+              <code>float</code>, <code>int</code>, <code>long</code>,
+              <code>short</code>, <code>byte</code>, <code>boolean</code>,
+              <code>Object</code></td>
+        </tr>
+      </table>
+      <p>
+      The result of a function call will be converted as follows:
+      </p>
+      <table border="1" cellpadding="4" cellspacing="0">
+        <tr>
+          <th>return type</th>
+          <th>STXPath type / value</th>
+        </tr>
+        <tr>
+          <td><code>void</code></td>
+          <td>empty sequence</td>
+        </tr>
+        <tr>
+          <td><code>String</code>, <code>char</code></td>
+          <td><code>string</code></td>
+        </tr>
+        <tr>
+          <td><code>boolean</code></td>
+          <td><code>boolean</code></td>
+        </tr>
+        <tr>
+          <td><code>double</code>, <code>float</code>, <code>byte</code>,
+              <code>short</code>, <code>int</code>, <code>long</code></td>
+          <td><code>number</code></td>
+        </tr>
+        <tr>
+          <td>anything else, i.e. any reference type, including the value
+              <code>null</code></td>
+          <td>wrapped Java Object</td>
+        </tr>
+      </table>
+      <p>A wrapped Java Object may be converted to another data type as
+      follows.</p>
+      <table border="1" cellpadding="4" cellspacing="0">
+        <tr>
+          <th>required type</th>
+          <th>conversion rule</th>
+        </tr>
+        <tr>
+          <td><code>node</code></td>
+          <td>not possible</td>
+        </tr>
+        <tr>
+          <td><code>string</code></td>
+          <td><code>null</code> will be converted to the empty string,
+              any other object will be converted by calling its
+              <code>toString()</code> method</td>
+        </tr>
+        <tr>
+          <td><code>boolean</code></td>
+          <td><code>null</code> will be converted to <code>false</code>,
+              any other object will be converted via a
+              <code>string</code> conversion and then applying the
+              STXPath function <code>boolean()</code></td>
+        </tr>
+        <tr>
+          <td><code>number</code></td>
+          <td>via a <code>string</code> conversion and then applying the
+              STXPath function <code>number()</code></td>
+        </tr>
+      </table>
+
+      <p>
+        A wrapped Java Object of type <code>Object[]</code> or
+        <code>java.util.List</code> may be converted to a sequence using
+        the <em>Joost</em> extension function <code>sequence</code>.
+        If the supplied parameter is neither an array nor a <code>List</code>
+        object, this function returns its parameter.
+      </p>
+
+        
       <h4>Examples</h4>
       <p>
-      Please browse <em>Joost</em>'s CVS <a target="_top"
+      The current release contains an <code>example</code> directory with a
+      set of selected STX examples. Additionally you may browse
+      <em>Joost</em>'s CVS <a target="_top"
       href="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/joost/test/">test</a>
       directory as well as the <a target="_top"
       href="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/stx/stx/examples/">examples</a> directory from the STX CVS tree.
@@ -237,7 +428,7 @@
       <a target="_top" href="http://sourceforge.net">
       <img src="http://sourceforge.net/sflogo.php?group_id=55258&amp;type=5"
            width="210" height="62" border="0" alt="SourceForge Logo"
-           align="right"></a>
+           align="right" style="margin-bottom: 5pt;"></a>
       <strong>Have fun and tell me what you think!</strong><br>
       <div style="font-size: small">
          <a target="_top"
