@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 1.1 2002/11/02 15:22:58 obecker Exp $
+ * $Id: PBufferFactory.java,v 1.2 2002/11/02 15:55:00 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.1 $ $Date: 2002/11/02 15:22:58 $
+ * @version $Revision: 1.2 $ $Date: 2002/11/02 15:55:00 $
  * @author Oliver Becker
  */
 
@@ -121,66 +121,64 @@ public class PBufferFactory extends FactoryBase
       {
          // find buffer
          Object buffer = null;
-//          if ((processStatus & ST_PROCESSING) != 0) {
-            buffer = context.localVars.get(expName);
-            if (buffer == null) {
-               GroupBase group = context.currentGroup;
-               while (buffer == null && group != null) {
-                  buffer = ((Hashtable)group.groupVars.peek()).get(expName);
-                  group = group.parent;
-               }
+         buffer = context.localVars.get(expName);
+         if (buffer == null) {
+            GroupBase group = context.currentGroup;
+            while (buffer == null && group != null) {
+               buffer = ((Hashtable)group.groupVars.peek()).get(expName);
+               group = group.parent;
             }
-            if (buffer == null) {
-               context.errorHandler.error(
-                  "Can't process an undeclared buffer `" + bufName + "'",
-                  publicId, systemId, lineNo, colNo);
-               return processStatus;
-            }
+         }
+         if (buffer == null) {
+            context.errorHandler.error(
+               "Can't process an undeclared buffer `" + bufName + "'",
+               publicId, systemId, lineNo, colNo);
+            return processStatus;
+         }
 
-            // walk through the buffer and emit events to the Processor object
-            Vector bufv = (Vector)buffer;
-            int size = bufv.size();
-            Processor proc = context.currentProcessor;
-            for (int i=0; i<size; i++) {
-               SAXEvent event = (SAXEvent)bufv.elementAt(i);
-               log4j.debug("Buffer Processing " + event);
-               switch (event.type) {
-               case SAXEvent.ELEMENT:
-                  proc.startElement(event.uri, event.lName, event.qName,
-                                    event.attrs);
-                  break;
-               case SAXEvent.ELEMENT_END:
-                  proc.endElement(event.uri, event.lName, event.qName);
-                  break;
-               case SAXEvent.TEXT:
-                  proc.characters(event.value.toCharArray(), 
-                                  0, event.value.length());
-                  break;
-               case SAXEvent.CDATA:
-                  proc.startCDATA();
-                  proc.characters(event.value.toCharArray(), 
-                                  0, event.value.length());
-                  proc.endCDATA();
-                  break;
-               case SAXEvent.PI:
-                  proc.processingInstruction(event.qName, event.value);
-                  break;
-               case SAXEvent.COMMENT:
-                  proc.comment(event.value.toCharArray(), 
+         // walk through the buffer and emit events to the Processor object
+         Vector bufv = (Vector)buffer;
+         int size = bufv.size();
+         Processor proc = context.currentProcessor;
+         for (int i=0; i<size; i++) {
+            SAXEvent event = (SAXEvent)bufv.elementAt(i);
+            log4j.debug("Buffer Processing " + event);
+            switch (event.type) {
+            case SAXEvent.ELEMENT:
+               proc.startElement(event.uri, event.lName, event.qName,
+                                 event.attrs);
+               break;
+            case SAXEvent.ELEMENT_END:
+               proc.endElement(event.uri, event.lName, event.qName);
+               break;
+            case SAXEvent.TEXT:
+               proc.characters(event.value.toCharArray(), 
                                0, event.value.length());
-                  break;
-               case SAXEvent.MAPPING:
-                  proc.startPrefixMapping(event.qName, event.uri);
-                  break;
-               case SAXEvent.MAPPING_END:
-                  proc.endPrefixMapping(event.qName);
-                  break;
-               default:
-                  log4j.error("Unexpected type: " + event.type + 
-                              " (" + event + ")");
-               }
+               break;
+            case SAXEvent.CDATA:
+               proc.startCDATA();
+               proc.characters(event.value.toCharArray(), 
+                               0, event.value.length());
+               proc.endCDATA();
+               break;
+            case SAXEvent.PI:
+               proc.processingInstruction(event.qName, event.value);
+               break;
+            case SAXEvent.COMMENT:
+               proc.comment(event.value.toCharArray(), 
+                            0, event.value.length());
+               break;
+            case SAXEvent.MAPPING:
+               proc.startPrefixMapping(event.qName, event.uri);
+               break;
+            case SAXEvent.MAPPING_END:
+               proc.endPrefixMapping(event.qName);
+               break;
+            default:
+               log4j.error("Unexpected type: " + event.type + 
+                           " (" + event + ")");
             }
-//          }
+         }
          return processStatus;
       }
    }

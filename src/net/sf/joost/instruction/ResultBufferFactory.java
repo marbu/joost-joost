@@ -1,5 +1,5 @@
 /*
- * $Id: ResultBufferFactory.java,v 1.1 2002/11/02 15:22:58 obecker Exp $
+ * $Id: ResultBufferFactory.java,v 1.2 2002/11/02 15:55:00 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,9 +28,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.ext.LexicalHandler;
 
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Stack;
@@ -38,15 +36,12 @@ import java.util.Vector;
 
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Emitter;
-import net.sf.joost.stx.SAXEvent;
-import net.sf.joost.stx.Value;
-import net.sf.joost.grammar.Tree;
 
 
 /** 
  * Factory for <code>result-buffer</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.1 $ $Date: 2002/11/02 15:22:58 $
+ * @version $Revision: 1.2 $ $Date: 2002/11/02 15:55:00 $
  * @author Oliver Becker
  */
 

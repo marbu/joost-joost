@@ -1,5 +1,5 @@
 /*
- * $Id: BufferFactory.java,v 1.1 2002/11/02 15:22:58 obecker Exp $
+ * $Id: BufferFactory.java,v 1.2 2002/11/02 15:55:00 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,25 +28,20 @@ import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.ext.LexicalHandler;
 
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.Stack;
 import java.util.Vector;
 
-import net.sf.joost.grammar.Tree;
-import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Value;
 
 
 /** 
  * Factory for <code>buffer</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.1 $ $Date: 2002/11/02 15:22:58 $
+ * @version $Revision: 1.2 $ $Date: 2002/11/02 15:55:00 $
  * @author Oliver Becker
  */
 
@@ -93,24 +88,6 @@ final public class BufferFactory extends FactoryBase
          nameLocal = nameAtt;
          nameUri = ""; // no default namespace usage
       }
-
-//       String keepValueAtt = attrs.getValue("keep-value");
-//       boolean keepValue = false;
-//       if (keepValueAtt != null) {
-//          if (!(parent instanceof GroupBase))
-//             throw new SAXParseException(
-//                "Attribute `keep-value' is not allowed for local variables",
-//                locator);
-//          if ("yes".equals(keepValueAtt))
-//             keepValue = true;
-//          else if ("no".equals(keepValueAtt))
-//             keepValue = false;
-//          else
-//             throw new SAXParseException(
-//                "Value of attribute `keep-value' must be either `yes' or " +
-//                "`no' (found `"+ keepValueAtt + "')", 
-//                locator);
-//       }
 
       checkAttributes(qName, attrs, attrNames, locator);
 
