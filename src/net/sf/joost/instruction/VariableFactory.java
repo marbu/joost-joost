@@ -1,5 +1,5 @@
 /*
- * $Id: VariableFactory.java,v 1.11 2003/02/20 09:25:30 obecker Exp $
+ * $Id: VariableFactory.java,v 1.12 2003/02/21 14:20:34 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>variable</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.11 $ $Date: 2003/02/20 09:25:30 $
+ * @version $Revision: 1.12 $ $Date: 2003/02/21 14:20:34 $
  * @author Oliver Becker
  */
 
@@ -160,8 +160,10 @@ final public class VariableFactory extends FactoryBase
                // select attribute present
                v = select.evaluate(context, eventStack, this);
             }
-            else
-               v = new Value();
+            else {
+               // initialize with the empty string
+               v = new Value("");
+            }
 
             // determine scope
             Hashtable varTable;
