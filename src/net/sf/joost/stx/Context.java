@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 1.6 2002/12/19 14:24:44 obecker Exp $
+ * $Id: Context.java,v 1.7 2002/12/23 08:19:46 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -35,7 +35,7 @@ import java.util.Hashtable;
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 1.6 $ $Date: 2002/12/19 14:24:44 $
+ * @version $Revision: 1.7 $ $Date: 2002/12/23 08:19:46 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
@@ -64,6 +64,9 @@ public final class Context implements Cloneable
 
    /** Local defined variables of a template. */
    public Hashtable localVars = new Hashtable();
+
+   /** Parameters passed to the next template */
+   public Hashtable passedParameters = new Hashtable();
 
    /** The default namespace for matching patterns 
        (from <code>stx:options' default-stxpath-namespace</code>) */
