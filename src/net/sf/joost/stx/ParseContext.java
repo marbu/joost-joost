@@ -1,5 +1,5 @@
 /*
- * $Id: ParseContext.java,v 2.5 2004/12/17 18:25:40 obecker Exp $
+ * $Id: ParseContext.java,v 2.6 2004/12/27 18:46:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -26,6 +26,7 @@ package net.sf.joost.stx;
 
 import java.util.Hashtable;
 
+import javax.xml.transform.ErrorListener;
 import javax.xml.transform.URIResolver;
 
 import net.sf.joost.instruction.TransformFactory;
@@ -37,7 +38,7 @@ import org.xml.sax.Locator;
 /**
  * Instances of this class provide context information while parsing
  * an STX document.
- * @version $Revision: 2.5 $ $Date: 2004/12/17 18:25:40 $
+ * @version $Revision: 2.6 $ $Date: 2004/12/27 18:46:33 $
  * @author Oliver Becker
  */
 public final class ParseContext
@@ -49,7 +50,7 @@ public final class ParseContext
    public Hashtable nsSet;
 
    /** The error handler for the parser */
-   public ErrorHandler errorHandler;
+   private ErrorHandler errorHandler;
 
    /** The URI resolver for <code>stx:include</code> instructions */
    public URIResolver uriResolver;
@@ -62,4 +63,18 @@ public final class ParseContext
    
    /** Are calls on Java extension functions allowed? */
    public boolean allowExternalFunctions = true;
+   
+   /** Returns (and constructs if necessary) an error handler */
+   public ErrorHandler getErrorHandler()
+   {
+      if (errorHandler == null)
+         errorHandler = new ErrorHandlerImpl(null, true);
+      return errorHandler;
+   }
+   
+   /** Sets an error listener that will be used to construct an error handler */
+   public void setErrorListener(ErrorListener errorListener)
+   {
+      errorHandler = new ErrorHandlerImpl(errorListener, true);
+   }
 }
