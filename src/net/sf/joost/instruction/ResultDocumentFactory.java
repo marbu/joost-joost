@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 2.6 2003/10/22 15:43:53 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 2.7 2003/12/03 07:32:14 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -47,7 +47,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.6 $ $Date: 2003/10/22 15:43:53 $
+ * @version $Revision: 2.7 $ $Date: 2003/12/03 07:32:14 $
  * @author Oliver Becker
  */
 
@@ -71,6 +71,7 @@ final public class ResultDocumentFactory extends FactoryBase
       attrNames = new HashSet();
       attrNames.add("href");
       attrNames.add("encoding");
+      attrNames.add("method");
    }
 
 
@@ -89,8 +90,18 @@ final public class ResultDocumentFactory extends FactoryBase
 
       String encodingAtt = attrs.getValue("encoding");
 
+      String methodAtt = attrs.getValue("method");
+      if (methodAtt != null && 
+          !methodAtt.equals("text") && !methodAtt.equals("xml") && 
+          methodAtt.indexOf(':') == -1)
+         throw new SAXParseException(
+            "Value of attribute `method' must be `xml', `text', " + 
+            "or a qualified name. Found `" + methodAtt + "'",
+            context.locator);
+
       checkAttributes(qName, attrs, attrNames, context);
-      return new Instance(qName, parent, context, href, encodingAtt);
+      return new Instance(qName, parent, context, href, encodingAtt, 
+                          methodAtt);
    }
 
 
@@ -98,14 +109,15 @@ final public class ResultDocumentFactory extends FactoryBase
    final public class Instance extends NodeBase
    {
       private Tree href;
-      private String encoding;
+      private String encoding, method;
 
       protected Instance(String qName, NodeBase parent, ParseContext context,
-                         Tree href, String encoding)
+                         Tree href, String encoding, String method)
       {
          super(qName, parent, context, true);
          this.href = href;
          this.encoding = encoding;
+         this.method = method;
       }
       
 
@@ -175,6 +187,8 @@ final public class ResultDocumentFactory extends FactoryBase
             Properties props = (Properties)context.currentProcessor
                                                   .outputProperties.clone();
             props.setProperty(OutputKeys.ENCODING, encoding);
+            if (method != null)
+               props.setProperty(OutputKeys.METHOD, method);
             se = new StreamEmitter(osw, props);
             localFieldStack.push(osw);
          }

@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.12 2003/10/23 15:05:45 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.13 2003/12/03 07:32:13 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -40,7 +40,7 @@ import javax.xml.transform.OutputKeys;
  *  Is is designed for using <code>StreamResult</code>.
  *  So this class outputs a StreamResult to the output target -
  *  {@link #outwriter} (e.g. a registered <code>FileWriter</code>).
- *  @version $Revision: 1.12 $ $Date: 2003/10/23 15:05:45 $
+ *  @version $Revision: 1.13 $ $Date: 2003/12/03 07:32:13 $
  *  @author Oliver Becker, Anatolij Zubow
  */
 public class StreamEmitter implements StxEmitter {
@@ -63,6 +63,9 @@ public class StreamEmitter implements StxEmitter {
 
     /** output property: version */
     private String propVersion = "1.0";
+
+    /** output property: method */
+    private boolean propTextOutput = false; 
 
     private StringBuffer nsDeclarations = new StringBuffer();
     private String uri, qName;
@@ -90,20 +93,8 @@ public class StreamEmitter implements StxEmitter {
 
         outwriter = writer;
 
-        if (outputProperties != null) {
-            propEncoding = outputProperties.getProperty(OutputKeys.ENCODING)
-                                           .toUpperCase();
-            propOmitXmlDeclaration = 
-                outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION)
-                                .equals("yes");
-            if (!propEncoding.equals("UTF-8") && 
-                !propEncoding.equals("UTF-16"))
-                propOmitXmlDeclaration = false;
-            propStandalone = 
-                outputProperties.getProperty(OutputKeys.STANDALONE)
-                                .equals("yes");
-            propVersion = outputProperties.getProperty(OutputKeys.VERSION);
-        }
+        if (outputProperties != null)
+            readOutputProperties(outputProperties);
    }
 
 
@@ -120,20 +111,8 @@ public class StreamEmitter implements StxEmitter {
         if (DEBUG)
             log.debug("init StreamEmitter");
 
-        if (outputProperties != null) {
-            propEncoding = outputProperties.getProperty(OutputKeys.ENCODING)
-                                           .toUpperCase();
-            propOmitXmlDeclaration = 
-                outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION)
-                                .equals("yes");
-            if (!propEncoding.equals("UTF-8") && 
-                !propEncoding.equals("UTF-16"))
-                propOmitXmlDeclaration = false;
-            propStandalone = 
-                outputProperties.getProperty(OutputKeys.STANDALONE)
-                                .equals("yes");
-            propVersion = outputProperties.getProperty(OutputKeys.VERSION);
-        }
+        if (outputProperties != null)
+            readOutputProperties(outputProperties);
 
         OutputStreamWriter writer;
 
@@ -192,6 +171,29 @@ public class StreamEmitter implements StxEmitter {
 
     }
 
+
+    private void readOutputProperties(Properties outputProperties)
+    {
+        propEncoding = outputProperties.getProperty(OutputKeys.ENCODING)
+                                       .toUpperCase();
+        propOmitXmlDeclaration = 
+            outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION)
+                            .equals("yes");
+        if (!propEncoding.equals("UTF-8") && 
+             !propEncoding.equals("UTF-16"))
+             propOmitXmlDeclaration = false;
+        propStandalone = 
+            outputProperties.getProperty(OutputKeys.STANDALONE)
+                            .equals("yes");
+        propVersion = outputProperties.getProperty(OutputKeys.VERSION);
+
+        String methodProp = outputProperties.getProperty(OutputKeys.METHOD);
+        if (methodProp.equals("text"))
+            propTextOutput = true;
+        else if(!methodProp.equals("xml"))
+           log.warn("Unsupported output method `" + methodProp + 
+                    "', use default `xml' method instead");
+    }
 
 
     /**
@@ -276,7 +278,7 @@ public class StreamEmitter implements StxEmitter {
      */
     public void startDocument() throws SAXException {
 
-        if (propOmitXmlDeclaration)
+        if (propOmitXmlDeclaration || propTextOutput)
             return;
 
         try {
@@ -303,11 +305,12 @@ public class StreamEmitter implements StxEmitter {
      */
     public void endDocument() throws SAXException {
 
-        processLastElement(false);
+        if (!propTextOutput)
+            processLastElement(false);
 
         try {
-
-            outwriter.write("\n");
+            if (!propTextOutput)
+                outwriter.write("\n");
             outwriter.flush();
 
         } catch (IOException ex) {
@@ -326,6 +329,9 @@ public class StreamEmitter implements StxEmitter {
                             Attributes attrs)
         throws SAXException {
 
+        if (propTextOutput)
+            return;
+
         processLastElement(false);
         this.uri = uri;
         this.qName = qName;
@@ -338,6 +344,9 @@ public class StreamEmitter implements StxEmitter {
      */
     public void endElement(String uri, String lName, String qName)
         throws SAXException {
+
+        if (propTextOutput)
+            return;
 
         // output end tag only if processLastElement didn't output
         // something (here: empty element tag)
@@ -364,11 +373,12 @@ public class StreamEmitter implements StxEmitter {
     public void characters(char[] ch, int start, int length)
         throws SAXException {
 
-        processLastElement(false);
+        if (!propTextOutput)
+            processLastElement(false);
 
         try {
 
-            if (insideCDATA) {
+            if (insideCDATA || propTextOutput) {
                 outwriter.write(ch, start, length);
             } else {
                 StringBuffer out = new StringBuffer(length);
@@ -401,6 +411,9 @@ public class StreamEmitter implements StxEmitter {
     public void startPrefixMapping(String prefix, String uri)
         throws SAXException {
 
+        if (propTextOutput)
+            return;
+
         processLastElement(false);
         if ("".equals(prefix))
             nsDeclarations.append(" xmlns=\"");
@@ -422,6 +435,9 @@ public class StreamEmitter implements StxEmitter {
      */
     public void processingInstruction(String target, String data)
         throws SAXException {
+
+        if (propTextOutput)
+            return;
 
         processLastElement(false);
 
@@ -496,6 +512,9 @@ public class StreamEmitter implements StxEmitter {
     public void startCDATA() 
         throws SAXException { 
 
+        if (propTextOutput)
+            return;
+
         processLastElement(false);
         try {
 
@@ -518,6 +537,9 @@ public class StreamEmitter implements StxEmitter {
     public void endCDATA() 
         throws SAXException { 
 
+        if (propTextOutput)
+            return;
+
         insideCDATA = false;
         try {
 
@@ -537,6 +559,9 @@ public class StreamEmitter implements StxEmitter {
      */
     public void comment(char[] ch, int start, int length)
         throws SAXException {
+
+        if (propTextOutput)
+            return;
 
         processLastElement(false);
 

@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 2.10 2003/08/31 19:38:52 obecker Exp $
+ * $Id: TransformFactory.java,v 2.11 2003/12/03 07:32:14 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Processor;
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 2.10 $ $Date: 2003/08/31 19:38:52 $
+ * @version $Revision: 2.11 $ $Date: 2003/12/03 07:32:14 $
  * @author Oliver Becker
  */
 
@@ -64,6 +64,7 @@ public class TransformFactory extends FactoryBase
       attrNames = new HashSet();
       attrNames.add("version");
       attrNames.add("output-encoding");
+      attrNames.add("output-method");
       attrNames.add("stxpath-default-namespace");
       attrNames.add("pass-through");
       attrNames.add("recognize-cdata");
@@ -95,6 +96,16 @@ public class TransformFactory extends FactoryBase
                                      context.locator); 
 
       String encodingAtt = attrs.getValue("output-encoding");
+
+      String methodAtt = attrs.getValue("output-method");
+      if (methodAtt != null && 
+          !methodAtt.equals("text") && !methodAtt.equals("xml") && 
+          methodAtt.indexOf(':') == -1)
+         throw new SAXParseException(
+            "Value of attribute `output-method' must be `xml', `text', " + 
+            "or a qualified name. Found `" + methodAtt + "'",
+            context.locator);
+
       String defStxpNsAtt = attrs.getValue("stxpath-default-namespace");
 
       // default is "none"
@@ -163,7 +174,8 @@ public class TransformFactory extends FactoryBase
 
       checkAttributes(qName, attrs, attrNames, context);
 
-      return new Instance(parent, qName, context, encodingAtt, defStxpNsAtt,
+      return new Instance(parent, qName, context, encodingAtt, methodAtt,
+                          defStxpNsAtt,
                           passThrough, stripSpace, recognizeCdata,
                           excludedNamespaces);
    }
@@ -182,6 +194,7 @@ public class TransformFactory extends FactoryBase
 
       // stx:transform attributes (options)
       public String outputEncoding;
+      public String outputMethod;
       public String stxpathDefaultNamespace;
       public HashSet excludedNamespaces;
 
@@ -191,7 +204,7 @@ public class TransformFactory extends FactoryBase
 
       // Constructor
       public Instance(NodeBase parent, String qName, ParseContext context,
-                      String outputEncoding,
+                      String outputEncoding, String outputMethod,
                       String stxpathDefaultNamespace, byte passThrough,
                       boolean stripSpace, boolean recognizeCdata,
                       HashSet excludedNamespaces)
@@ -219,6 +232,10 @@ public class TransformFactory extends FactoryBase
          this.outputEncoding = 
             (outputEncoding != null) ? outputEncoding 
                                      : DEFAULT_ENCODING; // in Constants
+
+         this.outputMethod =
+            (outputMethod != null) ? outputMethod : "xml";
+
          this.stxpathDefaultNamespace = 
             (stxpathDefaultNamespace != null) ? stxpathDefaultNamespace : "";
 

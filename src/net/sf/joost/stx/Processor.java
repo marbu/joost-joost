@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.25 2003/12/02 12:18:56 zubow Exp $
+ * $Id: Processor.java,v 2.26 2003/12/03 07:32:14 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -56,7 +56,7 @@ import net.sf.joost.trace.DebugProcessor;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.25 $ $Date: 2003/12/02 12:18:56 $
+ * @version $Revision: 2.26 $ $Date: 2003/12/03 07:32:14 $
  * @author Oliver Becker
  */
 
@@ -531,7 +531,8 @@ public class Processor extends XMLFilterImpl
       outputProperties.setProperty(OutputKeys.ENCODING,
                                    transformNode.outputEncoding);
       outputProperties.setProperty(OutputKeys.MEDIA_TYPE, "text/xml");
-      outputProperties.setProperty(OutputKeys.METHOD, "xml");
+      outputProperties.setProperty(OutputKeys.METHOD, 
+                                   transformNode.outputMethod);
       outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
       outputProperties.setProperty(OutputKeys.STANDALONE, "no");
       outputProperties.setProperty(OutputKeys.VERSION, "1.0");
