@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 1.11 2003/01/16 16:10:37 obecker Exp $
+ * $Id: FunctionTable.java,v 1.12 2003/01/18 10:45:38 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 1.11 $ $Date: 2003/01/16 16:10:37 $
+ * @version $Revision: 1.12 $ $Date: 2003/01/18 10:45:38 $
  * @author Oliver Becker
  */
 public final class FunctionTable
@@ -74,6 +74,7 @@ public final class FunctionTable
          new SubstringBefore(),
          new SubstringAfter(),
          new Translate(),
+         new Count(),
          new Sum()
       };
       functionHash = new Hashtable(functions.length);
@@ -832,6 +833,39 @@ public final class FunctionTable
    }
 
 
+   //
+   // Sequence functions
+   //
+
+   /**
+    * The <code>count</code> function.
+    * Returns the number of items in the sequence.
+    */
+   public class Count implements Instance
+   {
+      /** @return 1 */
+      public int getMinParCount() { return 1; }
+      /** @return 1 */
+      public int getMaxParCount() { return 1; }
+      /** @return "count" */
+      public String getName() { return "{}count"; }
+
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value v = args.evaluate(context, events, top);
+         if (v.type == Value.EMPTY) // empty sequence
+            return v.setNumber(0);
+         int count = 1;
+         while (v.next != null) {
+            count++;
+            v = v.next;
+         }
+         return v.setNumber((double)count);
+      }
+   }
+
+
    /**
     * The <code>sum</code> function.
     * Returns the sum of all items in the sequence.
@@ -850,7 +884,7 @@ public final class FunctionTable
       {
          Value v = args.evaluate(context, events, top);
          if (v.type == Value.EMPTY) // empty sequence
-            return v;
+            return v.setNumber(0);
          double sum = 0;
          while (v != null) {
             sum += v.convertToNumber().number;
@@ -860,8 +894,3 @@ public final class FunctionTable
       }
    }
 }
-
-
-
-
-
