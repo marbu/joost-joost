@@ -1,5 +1,5 @@
 /*
- * $Id: WhileFactory.java,v 2.5 2004/09/29 06:07:48 obecker Exp $
+ * $Id: WhileFactory.java,v 2.6 2004/11/06 12:58:22 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>while</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.5 $ $Date: 2004/09/29 06:07:48 $
+ * @version $Revision: 2.6 $ $Date: 2004/11/06 12:58:22 $
  * @author Oliver Becker
  */
 
@@ -64,8 +64,9 @@ final public class WhileFactory extends FactoryBase
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String testAtt = getAttribute(qName, attrs, "test", context);
-      Tree testExpr = parseExpr(testAtt, context);
+      Tree testExpr = parseExpr(getAttribute(qName, attrs, "test", context), 
+                                context);
+
       checkAttributes(qName, attrs, attrNames, context);
       return new Instance(qName, parent, context, testExpr);
    }

@@ -1,5 +1,5 @@
 /*
- * $Id: ForEachFactory.java,v 2.6 2004/02/02 10:38:42 obecker Exp $
+ * $Id: ForEachFactory.java,v 2.7 2004/11/06 13:03:05 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>for-each-item</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.6 $ $Date: 2004/02/02 10:38:42 $
+ * @version $Revision: 2.7 $ $Date: 2004/11/06 13:03:05 $
  * @author Oliver Becker
  */
 
@@ -71,10 +71,11 @@ final public class ForEachFactory extends FactoryBase
       String nameAtt = getAttribute(qName, attrs, "name", context);
       String expName = getExpandedName(nameAtt, context);
 
-      String selectAtt = getAttribute(qName, attrs, "select", context);
-      Tree selectExpr = parseExpr(selectAtt, context);
-      checkAttributes(qName, attrs, attrNames, context);
+      Tree selectExpr = 
+         parseExpr(getAttribute(qName, attrs, "select", context), 
+                   context);
 
+      checkAttributes(qName, attrs, attrNames, context);
       return new Instance(qName, parent, context, nameAtt, expName,
                           selectExpr);
    }
