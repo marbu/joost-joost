@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 1.6 2003/03/13 14:59:21 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 1.7 2003/03/18 17:11:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Stack;
 
+import net.sf.joost.Constants;
 import net.sf.joost.emitter.StreamEmitter;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.grammar.Tree;
@@ -47,12 +48,16 @@ import net.sf.joost.stx.Emitter;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.6 $ $Date: 2003/03/13 14:59:21 $
+ * @version $Revision: 1.7 $ $Date: 2003/03/18 17:11:32 $
  * @author Oliver Becker
  */
 
 final public class ResultDocumentFactory extends FactoryBase
 {
+   // Log4J initialization
+   private static org.apache.log4j.Logger log4j =
+      org.apache.log4j.Logger.getLogger(ResultDocumentFactory.class);
+
    /** allowed attributes for this element */
    private HashSet attrNames;
 
@@ -87,7 +92,7 @@ final public class ResultDocumentFactory extends FactoryBase
 
 
    /** Represents an instance of the <code>result-document</code> element. */
-   final public class Instance extends NodeBase
+   final public class Instance extends NodeBase implements Constants
    {
       private Tree href;
       private String encoding;
@@ -156,8 +161,21 @@ final public class ResultDocumentFactory extends FactoryBase
                // Note: both variants have the same average performance,
                // no matter whether directories have to be created or not.
 
-               se = new StreamEmitter(new OutputStreamWriter(fos, encoding), 
-                                      encoding);
+               OutputStreamWriter osw;
+               try {
+                  osw = new OutputStreamWriter(fos, encoding);
+               }
+               catch (java.io.UnsupportedEncodingException e) {
+                  String msg = 
+                     "Unsupported encoding `" + encoding + "', using " + 
+                     DEFAULT_ENCODING;
+                  context.errorHandler.warning(
+                     msg, publicId, systemId, lineNo, colNo);
+                  log4j.warn(msg);
+                  osw = new OutputStreamWriter(fos, 
+                                               encoding = DEFAULT_ENCODING);
+               }
+               se = new StreamEmitter(osw, encoding);
             }
             catch (java.io.IOException ex) {
                context.errorHandler.error(ex.toString(), 
