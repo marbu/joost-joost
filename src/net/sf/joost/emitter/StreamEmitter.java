@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.11 2003/06/19 10:50:48 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.12 2003/10/23 15:05:45 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -40,7 +40,7 @@ import javax.xml.transform.OutputKeys;
  *  Is is designed for using <code>StreamResult</code>.
  *  So this class outputs a StreamResult to the output target -
  *  {@link #outwriter} (e.g. a registered <code>FileWriter</code>).
- *  @version $Revision: 1.11 $ $Date: 2003/06/19 10:50:48 $
+ *  @version $Revision: 1.12 $ $Date: 2003/10/23 15:05:45 $
  *  @author Oliver Becker, Anatolij Zubow
  */
 public class StreamEmitter implements StxEmitter {
@@ -221,7 +221,7 @@ public class StreamEmitter implements StxEmitter {
             StringBuffer out = new StringBuffer("<");
             out.append(qName);
 
-            out.append(nsDeclarations);
+            out.append(nsDeclarations.toString()); // pre 1.4 compatibility
             nsDeclarations.setLength(0);
 
             int length = attrs.getLength();
