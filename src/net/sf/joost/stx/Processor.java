@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.43 2004/10/03 20:08:48 zubow Exp $
+ * $Id: Processor.java,v 2.44 2004/10/24 18:00:41 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -37,6 +37,7 @@ import javax.xml.transform.OutputKeys;
 import javax.xml.transform.URIResolver;
 
 import net.sf.joost.Constants;
+import net.sf.joost.OptionalLog;
 import net.sf.joost.TransformerHandlerResolver;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.grammar.EvalException;
@@ -48,6 +49,7 @@ import net.sf.joost.instruction.ProcessBase;
 import net.sf.joost.instruction.TemplateFactory;
 import net.sf.joost.instruction.TransformFactory;
 
+import org.apache.commons.logging.Log;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -67,7 +69,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.43 $ $Date: 2004/10/03 20:08:48 $
+ * @version $Revision: 2.44 $ $Date: 2004/10/24 18:00:41 $
  * @author Oliver Becker
  */
 
@@ -357,8 +359,7 @@ public class Processor extends XMLFilterImpl
    // **********************************************************************
 
 
-   private static org.apache.commons.logging.Log log =
-      org.apache.commons.logging.LogFactory.getLog(Processor.class);
+   private static Object log = OptionalLog.getLog(Processor.class);
 
 
    //
@@ -550,7 +551,7 @@ public class Processor extends XMLFilterImpl
       }
 
       if (DEBUG)
-         log.debug("Using " + reader.getClass().getName());
+         ((Log)log).debug("Using " + reader.getClass().getName());
       return reader;
    }
 
@@ -634,7 +635,10 @@ public class Processor extends XMLFilterImpl
                             this);
       }
       catch (SAXException ex) {
-         log.warn("Accessing " + parent + ": " + ex);
+         if (log != null)
+            ((Log)log).warn("Accessing " + parent + ": " + ex);
+         else
+            System.err.println("Warning - Accessing " + parent + ": " + ex);
       }
    }
 
@@ -731,7 +735,10 @@ public class Processor extends XMLFilterImpl
             return param.toJavaObject(Object.class);
       }
       catch (EvalException ex) { // shouldn't happen here
-         log.fatal(ex);
+         if (log != null)
+            ((Log)log).fatal(ex);
+         else
+            System.err.println("Fatal error: " + ex);
       }
       return null;
    }
@@ -916,8 +923,8 @@ public class Processor extends XMLFilterImpl
             while (inst != null && processStatus == PR_CONTINUE) {
                
                if (DEBUG)
-                  if (log.isDebugEnabled())
-                     log.debug(inst.lineNo + ": " + inst);
+                  if (((Log)log).isDebugEnabled())
+                     ((Log)log).debug(inst.lineNo + ": " + inst);
                
                processStatus = inst.process(context);
                inst = inst.next;
@@ -970,9 +977,9 @@ public class Processor extends XMLFilterImpl
    {
       SAXEvent event = (SAXEvent)eventStack.peek();
       if (DEBUG)
-         if (log.isDebugEnabled()) {
-            log.debug(event);
-            log.debug(context.localVars);
+         if (((Log)log).isDebugEnabled()) {
+            ((Log)log).debug(event);
+            ((Log)log).debug(context.localVars);
          }
 
       if (dataStack.peek().lastProcStatus == PR_SIBLINGS)
@@ -987,9 +994,9 @@ public class Processor extends XMLFilterImpl
          inst = doProcessLoop(inst, event, false);
 
          if (DEBUG)
-            if (log.isDebugEnabled()) {
-               log.debug("stop " + processStatus);
-               log.debug(context.localVars);
+            if (((Log)log).isDebugEnabled()) {
+               ((Log)log).debug("stop " + processStatus);
+               ((Log)log).debug(context.localVars);
             }
 
          switch (processStatus) {
@@ -1071,7 +1078,10 @@ public class Processor extends XMLFilterImpl
                   break;
 
                default:
-                  log.error("Unexpected event: " + event);
+                  if (log != null)
+                     ((Log)log).error("Unexpected event: " + event);
+                  else
+                     System.err.println("Error - Unexpected event: " + event);
                }
             }
             else
@@ -1087,8 +1097,8 @@ public class Processor extends XMLFilterImpl
                inst = doProcessLoop(inst, event, false);
 
                if (DEBUG)
-                  if (log.isDebugEnabled())
-                     log.debug("stop " + processStatus);
+                  if (((Log)log).isDebugEnabled())
+                     ((Log)log).debug("stop " + processStatus);
 
                switch (processStatus) {
                case PR_CHILDREN:
@@ -1134,10 +1144,11 @@ public class Processor extends XMLFilterImpl
 
          default:
             // Mustn't happen
-            log.error("Unexpected return value from process() " + 
-                      processStatus);
-            throw new SAXException(
-               "Unexpected return value from process() " + processStatus);
+            String msg = "Unexpected return value from process() " + 
+                         processStatus;
+            if (log != null)
+               ((Log)log).error(msg);
+            throw new SAXException(msg);
          }
       }
       else {
@@ -1199,7 +1210,10 @@ public class Processor extends XMLFilterImpl
             break;
 
          default:
-            log.warn("no default action for " + event);
+            if (log != null)
+               ((Log)log).error("no default action for " + event);
+            else
+               System.err.println("Error - no default action for " + event);
          }
       }
    }
@@ -1213,8 +1227,8 @@ public class Processor extends XMLFilterImpl
       throws SAXException
    {
       if (DEBUG)
-         if (log.isDebugEnabled())
-            log.debug(lastElement);
+         if (((Log)log).isDebugEnabled())
+            ((Log)log).debug(lastElement);
 
       // determine if the look-ahead is a text node
       String s = collectedCharacters.toString();
@@ -1249,8 +1263,8 @@ public class Processor extends XMLFilterImpl
       String s = collectedCharacters.toString();
 
       if (DEBUG)
-         if (log.isDebugEnabled())
-            log.debug("`" + s + "'");
+         if (((Log)log).isDebugEnabled())
+            ((Log)log).debug("`" + s + "'");
 
       if (skipDepth > 0 && context.targetHandler != null) {
          if (insideCDATA) {
@@ -1301,15 +1315,15 @@ public class Processor extends XMLFilterImpl
       dataStack.push(new Data(PR_ATTRIBUTES, null, null, null, context));
       for (int i=0; i<attrs.getLength(); i++) {
          if (DEBUG)
-            if (log.isDebugEnabled())
-               log.debug(attrs.getQName(i));
+            if (((Log)log).isDebugEnabled())
+               ((Log)log).debug(attrs.getQName(i));
          SAXEvent ev = SAXEvent.newAttribute(attrs, i);
          eventStack.push(ev);
          processEvent();
          eventStack.pop();
          if (DEBUG)
-            if (log.isDebugEnabled())
-               log.debug("done " + attrs.getQName(i));
+            if (((Log)log).isDebugEnabled())
+               ((Log)log).debug("done " + attrs.getQName(i));
       }
       Data d = dataStack.pop();
       // restore position, current group and variables
@@ -1408,9 +1422,9 @@ public class Processor extends XMLFilterImpl
             inst = doProcessLoop(inst, (SAXEvent)topEvent, false);
 
             if (DEBUG)
-               if (log.isDebugEnabled()) {
-                  log.debug("stop " + processStatus);
-                  log.debug(context.localVars);
+               if (((Log)log).isDebugEnabled()) {
+                  ((Log)log).debug("stop " + processStatus);
+                  ((Log)log).debug(context.localVars);
                }
 
             switch (processStatus) {
@@ -1614,7 +1628,10 @@ public class Processor extends XMLFilterImpl
             }
          }
          else {
-            log.error("encountered 'else' " + prStatus);
+            if (log != null)
+               ((Log)log).error("encountered 'else' " + prStatus);
+            else
+               System.err.println("Error - encountered 'else' " + prStatus);
          }
       }
       else {
@@ -1643,7 +1660,11 @@ public class Processor extends XMLFilterImpl
          }
       }
       else
-         log.error("skipDepth at document end: " + skipDepth);
+         if (log != null)
+            ((Log)log).error("skipDepth at document end: " + skipDepth);
+         else
+            System.err.println("Error - skipDepth at document end: " + 
+                               skipDepth);
    }
 
 
@@ -1652,10 +1673,10 @@ public class Processor extends XMLFilterImpl
       throws SAXException
    {
       if (DEBUG)
-         if (log.isDebugEnabled()) {
-            log.debug(qName);
-            log.debug("eventStack: " + eventStack);
-            log.debug("dataStack: " + dataStack);
+         if (((Log)log).isDebugEnabled()) {
+            ((Log)log).debug(qName);
+            ((Log)log).debug("eventStack: " + eventStack);
+            ((Log)log).debug("dataStack: " + dataStack);
          }
 
       // look-ahead mechanism
@@ -1687,8 +1708,8 @@ public class Processor extends XMLFilterImpl
       throws SAXException
    {
       if (DEBUG)
-         if (log.isDebugEnabled()) {
-            log.debug(qName + " (skipDepth: " + skipDepth + ")");
+         if (((Log)log).isDebugEnabled()) {
+            ((Log)log).debug(qName + " (skipDepth: " + skipDepth + ")");
             // log.debug("eventStack: " + eventStack.toString());
             // log.debug("dataStack: " + dataStack.toString());
          }
@@ -1733,8 +1754,8 @@ public class Processor extends XMLFilterImpl
             inst = doProcessLoop(inst, (SAXEvent)eventStack.peek(), true);
 
             if (DEBUG)
-               if (log.isDebugEnabled())
-                  log.debug("stop " + processStatus);
+               if (((Log)log).isDebugEnabled())
+                  ((Log)log).debug("stop " + processStatus);
 
             switch (processStatus) {
             case PR_CHILDREN:
@@ -1762,7 +1783,10 @@ public class Processor extends XMLFilterImpl
             }
          }
          else {
-            log.error("encountered 'else' " + prStatus);
+            if (log != null)
+               ((Log)log).error("encountered 'else' " + prStatus);
+            else
+               System.err.println("Error - encountered 'else' " + prStatus);
          }
       }
       else {
@@ -1912,7 +1936,7 @@ public class Processor extends XMLFilterImpl
          return;
 
       if (DEBUG)
-         log.debug("");
+         ((Log)log).debug("");
 
       if (skipDepth > 0) {
          if (context.targetHandler != null)
@@ -1960,8 +1984,8 @@ public class Processor extends XMLFilterImpl
       throws SAXException
    {
       if (DEBUG)
-         if (log.isDebugEnabled())
-            log.debug(new String(ch,start,length));
+         if (((Log)log).isDebugEnabled())
+            ((Log)log).debug(new String(ch,start,length));
 
       if (insideDTD)
          return;

@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 2.11 2004/09/29 06:07:48 obecker Exp $
+ * $Id: PDocumentFactory.java,v 2.12 2004/10/24 18:00:16 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,6 +24,23 @@
 
 package net.sf.joost.instruction;
 
+import java.net.URL;
+import java.util.HashSet;
+
+import javax.xml.transform.Source;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.sax.TransformerHandler;
+
+import net.sf.joost.OptionalLog;
+import net.sf.joost.grammar.Tree;
+import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
+import net.sf.joost.stx.Processor;
+import net.sf.joost.stx.Value;
+import net.sf.joost.trax.TrAXHelper;
+
+import org.apache.commons.logging.Log;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -32,26 +49,12 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
-import javax.xml.transform.Source;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.sax.TransformerHandler;
-
-import java.net.URL;
-import java.util.HashSet;
-
-import net.sf.joost.grammar.Tree;
-import net.sf.joost.stx.Context;
-import net.sf.joost.stx.ParseContext;
-import net.sf.joost.stx.Processor;
-import net.sf.joost.stx.Value;
-import net.sf.joost.trax.TrAXHelper;
 
 
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.11 $ $Date: 2004/09/29 06:07:48 $
+ * @version $Revision: 2.12 $ $Date: 2004/10/24 18:00:16 $
  * @author Oliver Becker
  */
 
@@ -60,12 +63,11 @@ public class PDocumentFactory extends FactoryBase
    /** allowed attributes for this element */
    private HashSet attrNames;
 
-   private static org.apache.commons.logging.Log log;
+   private static Object log;
    static {
       if (DEBUG) 
          // Log initialization
-         log = org.apache.commons.logging.
-               LogFactory.getLog(PDocumentFactory.class);
+         log = OptionalLog.getLog(PDocumentFactory.class);
    }
 
 
@@ -210,7 +212,7 @@ public class PDocumentFactory extends FactoryBase
                      }
                      catch (SAXException ex) {
                         if (log != null)
-                           log.warn("Accessing " + reader + ": " + ex);
+                           ((Log)log).warn("Accessing " + reader + ": " + ex);
                         context.errorHandler.warning(
                            "Accessing " + reader + ": " + ex,
                            publicId, systemId, lineNo, colNo);
@@ -242,7 +244,7 @@ public class PDocumentFactory extends FactoryBase
                   }
                   catch (SAXException ex) {
                      if (log != null)
-                        log.warn("Accessing " + reader + ": " + ex);
+                        ((Log)log).warn("Accessing " + reader + ": " + ex);
                      context.errorHandler.warning(
                         "Accessing " + reader + ": " + ex,
                         publicId, systemId, lineNo, colNo);

@@ -1,5 +1,5 @@
 /*
- * $Id: CopyFactory.java,v 2.7 2004/02/05 11:41:48 obecker Exp $
+ * $Id: CopyFactory.java,v 2.8 2004/10/24 18:00:16 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,22 +24,23 @@
 
 package net.sf.joost.instruction;
 
+import java.util.HashSet;
+
+import net.sf.joost.OptionalLog;
+import net.sf.joost.grammar.Tree;
+import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
+import net.sf.joost.stx.SAXEvent;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import java.util.HashSet;
-
-import net.sf.joost.stx.Context;
-import net.sf.joost.stx.ParseContext;
-import net.sf.joost.stx.SAXEvent;
-import net.sf.joost.grammar.Tree;
-
 /** 
  * Factory for <code>copy</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.7 $ $Date: 2004/02/05 11:41:48 $
+ * @version $Revision: 2.8 $ $Date: 2004/10/24 18:00:16 $
  * @author Oliver Becker
  */
 
@@ -52,12 +53,11 @@ final public class CopyFactory extends FactoryBase
    private static Attributes emptyAttList = new AttributesImpl();
 
 
-   private static org.apache.commons.logging.Log log;
+   private static Object log;
    static {
       if (DEBUG)
          // Log initialization
-         log = org.apache.commons.logging.
-               LogFactory.getLog(CopyFactory.class);
+         log = OptionalLog.getLog(CopyFactory.class);
    }
 
 
@@ -203,7 +203,8 @@ final public class CopyFactory extends FactoryBase
             break;
          default:
             if (log != null)
-               log.error("Unknown SAXEvent type");
+               ((org.apache.commons.logging.Log)log).error(
+                  "Unknown SAXEvent type " + event.type);
             throw new SAXParseException("Unknown SAXEvent type",
                                         publicId, systemId, lineNo, colNo);
          }
