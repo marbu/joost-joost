@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 2.9 2004/01/23 09:53:23 obecker Exp $
+ * $Id: NodeBase.java,v 2.10 2004/10/30 11:20:09 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Abstract base class for all instances of nodes in the STX transformation 
  * sheet
- * @version $Revision: 2.9 $ $Date: 2004/01/23 09:53:23 $
+ * @version $Revision: 2.10 $ $Date: 2004/10/30 11:20:09 $
  * @author Oliver Becker
  */
 public abstract class NodeBase 
@@ -51,8 +51,8 @@ public abstract class NodeBase
    /** 
     * Generic class that represents the end of an element in the STX
     * transformation sheet (the end tag). Its {@link #process} method
-    * simply calls {@link #processEnd} in the appropriate {@link NodeBase}
-    * object.
+    * simply calls {@link #processEnd(Context context)} in the appropriate 
+    * {@link NodeBase} object.
     */
    public final class End extends AbstractInstruction
    {
