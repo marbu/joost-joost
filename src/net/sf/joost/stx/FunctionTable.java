@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 1.13 2003/01/20 17:28:37 obecker Exp $
+ * $Id: FunctionTable.java,v 1.14 2003/01/25 07:21:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 1.13 $ $Date: 2003/01/20 17:28:37 $
+ * @version $Revision: 1.14 $ $Date: 2003/01/25 07:21:44 $
  * @author Oliver Becker
  */
 public final class FunctionTable
@@ -1107,9 +1107,11 @@ public final class FunctionTable
          if (v.type == Value.EMPTY) // empty sequence
             return v.setNumber(0);
          double sum = 0;
+         Value next;
          while (v != null) {
+            next = v.next;
             sum += v.convertToNumber().number;
-            v = v.next;
+            v = next;
          }
          return new Value(sum);
       }

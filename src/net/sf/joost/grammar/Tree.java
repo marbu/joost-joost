@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 1.14 2003/01/21 10:19:51 obecker Exp $
+ * $Id: Tree.java,v 1.15 2003/01/25 07:21:42 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 1.14 $ $Date: 2003/01/21 10:19:51 $
+ * @version $Revision: 1.15 $ $Date: 2003/01/25 07:21:42 $
  * @author Oliver Becker
  */
 public class Tree
@@ -512,17 +512,20 @@ public class Tree
          case LT:
          case LE:
          case GT:
-         case GE:
+         case GE: {
             v1 = left.evaluate(context, events, top);
             v2 = right.evaluate(context, events, top);
             if (v1.type == Value.EMPTY || v2.type == Value.EMPTY)
                return v1.setBoolean(false);
 
+            Value inext, jnext;
             // sequences: find a pair that the comparison is true
-            for (Value vi = v1; vi != null; vi = vi.next)
+            for (Value vi = v1.copy(); vi != null; vi = inext) {
+               inext = vi.next; // convertToXxx function will cut the sequence
                // must copy the original value because items will be converted
                // in comparisons
-               for (Value vj = v2.copy(); vj != null; vj = vj.next)
+               for (Value vj = v2.copy(); vj != null; vj = jnext) {
+                  jnext = vj.next;
                   switch (type) {
                   case EQ:
                      if (vi.type == Value.BOOLEAN || 
@@ -583,10 +586,11 @@ public class Tree
                         return v1.setBoolean(true);
                      break;
                   } // inner switch
-
+               } // for (vi ...
+            } // for (vj ...
             // none of the item comparisons evaluated to true
             return v1.setBoolean(false);
-
+         }
 
          // Logical expressions
          case AND:
