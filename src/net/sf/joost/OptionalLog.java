@@ -1,5 +1,5 @@
 /*
- * $Id: OptionalLog.java,v 1.2 2004/10/25 20:39:33 obecker Exp $
+ * $Id: OptionalLog.java,v 1.3 2004/11/06 13:08:51 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -35,24 +35,44 @@ import org.apache.commons.logging.Log;
  * method returns <code>null</code>. This approach prevents a
  * <code>NoClassDefFoundError</code> in case logging is not available.
  *  
- * @version $Revision: 1.2 $ $Date: 2004/10/25 20:39:33 $
+ * @version $Revision: 1.3 $ $Date: 2004/11/06 13:08:51 $
  * @author Oliver Becker
  */
 public final class OptionalLog
 {
-   private static Method getLogMethod;
+   private static Method getLogMethodClass, getLogMethodString;
    static {
       try {
          Class c = Class.forName("org.apache.commons.logging.LogFactory");
-         Class[] declaredParams = { Class.class };
-         getLogMethod = c.getDeclaredMethod("getLog", declaredParams);
-         // one trial invocation
-         Object[] actualParams  = { OptionalLog.class };
-         getLogMethod.invoke(null, actualParams);
+         try {
+            // look for getLog(Class _class)
+            Class[] declaredParams = { Class.class };
+            getLogMethodClass = c.getDeclaredMethod("getLog", declaredParams);
+            // one trial invocation
+            Object[] actualParams  = { OptionalLog.class };
+            getLogMethodClass.invoke(null, actualParams);
+         }
+         catch (Throwable t) {
+            // Something went wrong, logging is not available
+            getLogMethodClass = null;
+         }
+         try {
+            // look for getLog(String name)
+            Class[] declaredParams = { String.class };
+            getLogMethodString = c.getDeclaredMethod("getLog", declaredParams);
+            // one trial invocation
+            Object[] actualParamsString  = { OptionalLog.class.getName() };
+            getLogMethodString.invoke(null, actualParamsString);
+         }
+         catch (Throwable t) {
+            // Something went wrong, logging is not available
+            getLogMethodString = null;
+         }
       }
       catch (Throwable t) {
-         // Something went wrong, logging is not available
-         getLogMethod = null;
+         // Class not found, logging is not available
+         getLogMethodClass = null;
+         getLogMethodString = null;
       }
    }
    
@@ -62,10 +82,29 @@ public final class OptionalLog
     */
    public static Log getLog(Class _class)
    {
-      if (getLogMethod != null) {
+      if (getLogMethodClass != null) {
          Object[] params = { _class };
          try {
-            return (Log)getLogMethod.invoke(null, params);
+            return (Log)getLogMethodClass.invoke(null, params);
+         }
+         catch (Throwable t) {
+            // Shouldn't happen ...
+         }
+      }
+      return null;
+   }
+
+   
+   /** 
+    * Returns a <code>org.apache.commons.logging.Log</log> object if this
+    * class is available, otherwise <code>null</code>
+    */
+   public static Log getLog(String name)
+   {
+      if (getLogMethodString != null) {
+         Object[] params = { name };
+         try {
+            return (Log)getLogMethodString.invoke(null, params);
          }
          catch (Throwable t) {
             // Shouldn't happen ...
