@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 1.7 2002/11/06 12:16:16 obecker Exp $
+ * $Id: FunctionTable.java,v 1.8 2002/11/28 09:57:57 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 1.7 $ $Date: 2002/11/06 12:16:16 $
+ * @version $Revision: 1.8 $ $Date: 2002/11/28 09:57:57 $
  * @author Oliver Becker
  */
 public final class FunctionTable
@@ -272,8 +272,10 @@ public final class FunctionTable
             if (e == null)
                return new Value("");
          }
-         else // use current node (last event)
+         else if (top > 0) // use current node (last event)
             e = (SAXEvent)events.elementAt(top-1);
+         else // no event available (e.g. init of global variables)
+            return new Value("");
 
          switch (e.type) {
          case SAXEvent.ELEMENT:
@@ -314,8 +316,10 @@ public final class FunctionTable
             if (e == null)
                return new Value("");
          }
-         else // use current node (last event)
+         else if (top > 0) // use current node (last event)
             e = (SAXEvent)events.elementAt(top-1);
+         else // no event available (e.g. init of global variables)
+            return new Value("");
 
          switch (e.type) {
          case SAXEvent.ELEMENT:
@@ -357,8 +361,10 @@ public final class FunctionTable
             if (e == null)
                return new Value("");
          }
-         else // use current node (last event)
+         else if (top > 0) // use current node (last event)
             e = (SAXEvent)events.elementAt(top-1);
+         else // no event available (e.g. init of global variables)
+            return new Value("");
 
          if (e.type == SAXEvent.ELEMENT || e.type == SAXEvent.ATTRIBUTE)
             return new Value(e.uri);
@@ -395,8 +401,10 @@ public final class FunctionTable
             if (e == null)
                return new Value("");
          }
-         else // use current node (last event)
+         else if (top > 0) // use current node (last event)
             e = (SAXEvent)events.elementAt(top-1);
+         else // no event available (e.g. init of global variables)
+            return new Value("");
 
          switch (e.type) {
          case SAXEvent.ELEMENT:
@@ -537,8 +545,10 @@ public final class FunctionTable
          Value v;
          if (args != null)
             v = args.evaluate(context, events, top);
-         else
+         else if (top > 0) // use current node (last event)
             v = new Value((SAXEvent)events.elementAt(top-1), top);
+         else // no event available (e.g. init of global variables)
+            return new Value(0);
          v.setNumber(v.convertToString().string.length());
          return v;
       }
@@ -564,8 +574,11 @@ public final class FunctionTable
          Value v;
          if (args != null)
             v = args.evaluate(context, events, top);
-         else
+         else if (top > 0) // use current node (last event)
             v = new Value((SAXEvent)events.elementAt(top-1), top);
+         else // no event available (e.g. init of global variables)
+            return new Value("");
+
          StringBuffer res = new StringBuffer();
          String str = v.convertToString().string;
          int len = str.length();
