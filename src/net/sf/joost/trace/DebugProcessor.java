@@ -1,5 +1,5 @@
 /*
- * $Id: DebugProcessor.java,v 1.2 2003/07/27 10:54:27 zubow Exp $
+ * $Id: DebugProcessor.java,v 1.3 2003/08/28 16:09:51 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -31,13 +31,14 @@ import net.sf.joost.stx.SAXEvent;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.Attributes;
+import org.xml.sax.XMLReader;
 
 import javax.xml.transform.ErrorListener;
 import java.io.IOException;
 
 /**
  * Extends the {@link net.sf.joost.stx.Processor} with debug features.
- * @version $Revision: 1.2 $ $Date: 2003/07/27 10:54:27 $
+ * @version $Revision: 1.3 $ $Date: 2003/08/28 16:09:51 $
  * @author Zubow
  */
 public class DebugProcessor extends Processor {
@@ -47,6 +48,15 @@ public class DebugProcessor extends Processor {
 
     // testing
     public Parser stxparser;
+
+    /**
+     * See {@link net.sf.joost.stx.Processor#Processor(org.xml.sax.XMLReader, org.xml.sax.InputSource, javax.xml.transform.ErrorListener)}
+     */
+    public DebugProcessor(XMLReader reader, InputSource src, 
+                          ErrorListener errorListener)
+            throws IOException, SAXException {
+        super(reader, src, errorListener);
+    }
 
     /**
      * See {@link net.sf.joost.stx.Processor#Processor(org.xml.sax.InputSource, javax.xml.transform.ErrorListener)}

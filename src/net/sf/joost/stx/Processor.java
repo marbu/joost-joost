@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.19 2003/07/27 10:55:25 zubow Exp $
+ * $Id: Processor.java,v 2.20 2003/08/28 16:09:49 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -69,7 +69,7 @@ import net.sf.joost.trace.DebugProcessor;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.19 $ $Date: 2003/07/27 10:55:25 $
+ * @version $Revision: 2.20 $ $Date: 2003/08/28 16:09:49 $
  * @author Oliver Becker
  */
 
@@ -326,7 +326,8 @@ public class Processor extends XMLFilterImpl
 
    /**
     * Constructs a new <code>Processor</code> instance by parsing an
-    * STX transformation sheet.
+    * STX transformation sheet. This constructor attempts to create
+    * its own {@link XMLReader} object.
     * @param src the source for the STX transformation sheet
     * @param errorListener an ErrorListener object for reporting errors
     *        while <em>parsing the transformation sheet</em> (not for
@@ -339,8 +340,38 @@ public class Processor extends XMLFilterImpl
       throws IOException, SAXException
    {
       // create one XMLReader for parsing *and* processing
-      XMLReader reader = getXMLReader();
+      this(getXMLReader(), src, errorListener);
+   }
 
+
+   /**
+    * Constructs a new <code>Processor</code> instance by parsing an
+    * STX transformation sheet. This constructor attempts to create
+    * its own {@link XMLReader} object.
+    * @param src the source for the STX transformation sheet
+    * @throws IOException if <code>src</code> couldn't be retrieved
+    * @throws SAXException if a SAX parser couldn't be created
+    */
+   public Processor(InputSource src)
+      throws IOException, SAXException
+   {
+      this(src, null);
+   }
+
+
+   /**
+    * Constructs a new <code>Processor</code> instance by parsing an
+    * STX transformation sheet.
+    * @param reader the parser that is used for reading the transformation 
+    *               sheet
+    * @param src the source for the STX transformation sheet
+    * @throws IOException if <code>src</code> couldn't be retrieved
+    * @throws SAXException if a SAX parser couldn't be created
+    */
+   public Processor(XMLReader reader, InputSource src, 
+                    ErrorListener errorListener)
+      throws IOException, SAXException
+   {
       // create a Parser for parsing the STX transformation sheet
       ErrorHandlerImpl errorHandler = new ErrorHandlerImpl(errorListener,
                                                            true);
@@ -355,20 +386,6 @@ public class Processor extends XMLFilterImpl
 
       // re-use this XMLReader for processing
       setParent(reader);
-   }
-
-
-   /**
-    * Constructs a new <code>Processor</code> instance by parsing an
-    * STX transformation sheet.
-    * @param src the source for the STX transformation sheet
-    * @throws IOException if <code>src</code> couldn't be retrieved
-    * @throws SAXException if a SAX parser couldn't be created
-    */
-   public Processor(InputSource src)
-      throws IOException, SAXException
-   {
-      this(src, null);
    }
 
 
