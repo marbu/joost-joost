@@ -1,5 +1,5 @@
 /*
- * $Id: TextFactory.java,v 1.5 2002/12/13 17:46:15 obecker Exp $
+ * $Id: TextFactory.java,v 1.6 2002/12/22 18:38:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.Emitter;
 /** 
  * Factory for <code>text</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.5 $ $Date: 2002/12/13 17:46:15 $
+ * @version $Revision: 1.6 $ $Date: 2002/12/22 18:38:18 $
  * @author Oliver Becker
  */
 
@@ -95,6 +95,10 @@ public class TextFactory extends FactoryBase
       /** the buffer of the StringWriter or the StringEmitter resp. */
       private StringBuffer buffer;
 
+      /** levels of recursive calls */
+      private int recursionLevel = 0;
+
+
       public Instance(String qName, NodeBase parent, Locator locator,
                       int markup)
          throws SAXParseException
@@ -141,26 +145,23 @@ public class TextFactory extends FactoryBase
       {
          // pre stx:process-...
          if ((processStatus & ST_PROCESSING) != 0) {
-
-            // check for nesting of this stx:text instructions
-            if (emitter.isEmitterActive(stxEmitter)) {
-               context.errorHandler.error(
-                  "Can't create nested text content here",
-                  publicId, systemId, lineNo, colNo);
-               return processStatus; // if the errorHandler returns
+            if (recursionLevel++ == 0) { // outermost invocation
+               buffer.setLength(0);
+               emitter.pushEmitter(stxEmitter);
             }
-            // empty buffer
-            buffer.setLength(0);
-            emitter.pushEmitter(stxEmitter);
+            // else: nothing to do
          }
 
          processStatus = super.process(emitter, eventStack, context,
                                        processStatus);
 
          if ((processStatus & ST_PROCESSING) != 0) {
-            emitter.popEmitter();
-            emitter.characters(buffer.toString().toCharArray(), 
-                               0, buffer.length());
+            if (--recursionLevel == 0) { // outermost invocation
+               emitter.popEmitter();
+               emitter.characters(buffer.toString().toCharArray(), 
+                                  0, buffer.length());
+            }
+            // else: nothing to do
          }
 
          return processStatus;
