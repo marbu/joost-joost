@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.9 2003/06/09 10:23:49 obecker Exp $
+ * $Id: FunctionTable.java,v 2.10 2003/06/10 08:43:49 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.9 $ $Date: 2003/06/09 10:23:49 $
+ * @version $Revision: 2.10 $ $Date: 2003/06/10 08:43:49 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -55,7 +55,7 @@ final public class FunctionTable implements Constants
    private static String FNSP = "{" + FUNC_NS + "}";
 
    // Joost extension namespace prefix
-   private static String JENSP = "{http://joost.sourceforge.net/functions}";
+   private static String JENSP = "{" + JOOST_FUNC_NS + "}";
 
    /** Contains one instance for each function. */
    private Hashtable functionHash;
@@ -1585,8 +1585,10 @@ final public class FunctionTable implements Constants
 
             if (candidateMethods.size() == 0)
                throw new SAXParseException(
-                  "No function found matching `" + lName + "' with " + 
-                  paramCount + " parameter" + (paramCount != 1 ? "s" : "") + 
+                  "No function found matching `" + fName + "' " +
+                  (lName.equals(fName) ? "" : "(" + lName + ") ") +
+                  "with " + paramCount + " parameter" + 
+                  (paramCount != 1 ? "s" : "") + 
                   " in class " + className,
                   locator);
          }
@@ -1640,12 +1642,14 @@ final public class FunctionTable implements Constants
                }
                if (minDistance == Double.POSITIVE_INFINITY)
                   throw new EvalException(
-                     "None of the Java constructors matches this function " +
-                     "call to `new'");
+                     "None of the Java constructors in " + 
+                     targetClass.getName() + 
+                     " matches this function call to `new'");
                if (ambigous)
                   throw new EvalException(
-                     "There are several Java constructors that match " +
-                     "the function call to `new' equally well ");
+                     "There are several Java constructors in " +
+                     targetClass.getName() + 
+                     " that match the function call to `new' equally well ");
             } // end else (choose best constructor)
 
             // set current parameters
@@ -1715,11 +1719,14 @@ final public class FunctionTable implements Constants
                }
                if (minDistance == Double.POSITIVE_INFINITY)
                   throw new EvalException(
-                     "None of the Java methods matches this function call " +
-                     "to `" + theMethod.getName() + "'");
+                     "None of the Java methods in " + 
+                     targetClass.getName() +
+                     " matches this function call to `" + 
+                     theMethod.getName() + "'");
                if (ambigous)
                   throw new EvalException(
-                     "There are several Java methods that match function `" + 
+                     "There are several Java methods in " +
+                     targetClass.getName() + " that match function `" + 
                      theMethod.getName() + "' equally well");
             } // end else (choose best method)
 
@@ -1776,8 +1783,14 @@ final public class FunctionTable implements Constants
 
       // These functions will never be called. 
       // However, they are required by the Instance interface.
+
+      /** Not called */
       public int getMinParCount() { return 0; }
+
+      /** Not called */
       public int getMaxParCount() { return 0; }
+
+      /** Not called */
       public String getName() { return null; }
    }
 }
