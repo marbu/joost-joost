@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.47 2003/06/16 14:31:13 obecker Exp $ -->
+<!-- $Id: index.html,v 1.48 2003/06/20 08:27:25 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -236,18 +236,18 @@
 
       <h4>Extensions</h4>
       <p>
-      <em>Joost</em> allows calling extension functions written in Java. An
-      extension function is invoked using the notation
-      <code>prefix:localname(<em>params?</em>)</code>. The
-      <code>prefix</code> must be bound to a namespace indicating the Java
-      class the function belongs to. This namespace must use the URN
-      notation "<code>java:</code>" followed by the full-qualified class name,
-      for example "<code>java:java.util.Random</code>". The referenced class
-      must be found in the current classpath.
+        <em>Joost</em> allows calling extension functions written in Java.
+        An extension function is invoked using the notation
+        <code>prefix:localname(<em>params?</em>)</code>. The
+        <code>prefix</code> must be bound to a namespace indicating the Java
+        class the function belongs to. This namespace must use the URN
+        notation "<code>java:</code>" followed by the full-qualified class
+        name, for example "<code>java:java.util.Random</code>". The
+        referenced class must be found in the current classpath.
       </p>
       <p>
-      The rules for calling Java extension functions are similar to those
-      used by Saxon or Xalan:
+        The rules for calling Java extension functions are similar to those
+        used by Saxon or Xalan:
       </p>
       <ul>
         <li>
@@ -305,12 +305,21 @@
           </p>
         </li>
       </ul>
-      <p><strong>Conversion rules</strong><br>
-      Depending on the type of the values supplied to the function call,
-      <em>Joost</em> tries to find a method that has an argument with one
-      of the following types (Java types with a higher conversion preference
-      appear first in the list; if the argument in the function call is a
-      non-empty sequence, only the first item will be considered):
+      <p>
+        It's recommended not to call an extension function having
+        side-effects within the predicates of a match pattern, because
+        the order of calls to these functions and whether such a function
+        will be called at all is undefined (implementation dependent).<br>
+        (For example in
+        <code>match="a[ex:foo()]//b[ex:bar()]/c[ex:baz()]"</code>)
+      </p>
+      <p>
+        <strong>Conversion rules</strong><br>
+        Depending on the type of the values supplied to the function call,
+        <em>Joost</em> tries to find a method that has an argument with one
+        of the following types (Java types with a higher conversion preference
+        appear first in the list; if the argument in the function call is a
+        non-empty sequence, only the first item will be considered):
       </p>
       <table border="1" cellpadding="4" cellspacing="0">
         <tr>
@@ -353,13 +362,13 @@
         </tr>
       </table>
       <p>
-      If the target type is <code>java.lang.Object</code> then a conversion
-      according to the following table will be performed. If the target type
-      is <code>java.util.List</code> then a <code>java.util.ArrayList</code>
-      will be constructed containing a list of <code>java.lang.Object</code>s
-      (see table) for each of the items. An empty sequence will be
-      represented as an empty list (not as a list with a <code>null</code>
-      member).
+        If the target type is <code>java.lang.Object</code> then a conversion
+        according to the following table will be performed. If the target type
+        is <code>java.util.List</code> then a <code>java.util.ArrayList</code>
+        will be constructed containing a list of
+        <code>java.lang.Object</code>s (see table) for each of the items. An
+        empty sequence will be represented as an empty list (not as a list
+        with a <code>null</code> member).
       </p>
       <table border="1" cellpadding="4" cellspacing="0">
         <tr>
@@ -394,7 +403,7 @@
               
                 
       <p>
-      The result of a function call will be converted as follows:
+        The result of a function call will be converted as follows:
       </p>
       <table border="1" cellpadding="4" cellspacing="0">
         <tr>
@@ -424,8 +433,10 @@
           <td>wrapped Java Object</td>
         </tr>
       </table>
-      <p>A wrapped Java Object may be converted to another data type as
-      follows.</p>
+      <p>
+        A wrapped Java Object may be converted to another data type as
+        follows.
+      </p>
       <table border="1" cellpadding="4" cellspacing="0">
         <tr>
           <th>required type</th>
@@ -496,22 +507,24 @@
         
       <h4>Examples</h4>
       <p>
-      The current release contains an <code>example</code> directory with a
-      set of selected STX examples. Additionally you may browse
-      <em>Joost</em>'s CVS <a target="_top"
-      href="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/joost/test/">test</a>
-      directory as well as the <a target="_top"
-      href="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/stx/stx/examples/">examples</a> directory from the STX CVS tree.
-
+        The current release contains an <code>example</code> directory with a
+        set of selected STX examples. Additionally you may browse
+        <em>Joost</em>'s CVS <a target="_top"
+        href="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/joost/test/">test</a>
+        directory as well as the <a target="_top"
+        href="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/stx/stx/examples/">examples</a> directory from the STX CVS tree.
+      </p>
       <p>
-      <a target="_top" href="http://sourceforge.net">
-      <img src="http://sourceforge.net/sflogo.php?group_id=55258&amp;type=5"
-           width="210" height="62" border="0" alt="SourceForge Logo"
-           align="right" style="margin-bottom: 5pt;"></a>
-      <strong>Have fun and tell me what you think!</strong><br>
-      <div style="font-size: small">
-         <a target="_top"
-            href="http://www.informatik.hu-berlin.de/~obecker/index_e.shtml">ob</a> / @@@DATE@@@
-      </div>
+        <a target="_top" href="http://sourceforge.net">
+        <img src="http://sourceforge.net/sflogo.php?group_id=55258&amp;type=5"
+             width="210" height="62" border="0" alt="SourceForge Logo"
+             align="right" style="margin-bottom: 5pt;"></a>
+        <strong>Have fun and tell me what you think!</strong>
+        <br><br>
+        <span style="font-size: small">
+          <a target="_top"
+             href="http://www.informatik.hu-berlin.de/~obecker/index_e.shtml">ob</a> / @@@DATE@@@
+        </span>
+      </p>
    </body>
 </html>
