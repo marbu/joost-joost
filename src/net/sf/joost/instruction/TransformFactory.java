@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 1.2 2002/11/02 15:22:58 obecker Exp $
+ * $Id: TransformFactory.java,v 1.3 2002/11/04 14:55:57 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,14 +41,16 @@ import net.sf.joost.stx.Emitter;
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 1.2 $ $Date: 2002/11/02 15:22:58 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/04 14:55:57 $
  * @author Oliver Becker
  */
 
 public class TransformFactory extends FactoryBase
 {
-   /** The local element name. */
-   private static final String name = "transform";
+   // Log4J initialization
+   private static org.apache.log4j.Logger log4j =
+      org.apache.log4j.Logger.getLogger(TransformFactory.class);
+
 
    /** allowed attributes for this element. */
    private HashSet attrNames;
@@ -61,9 +63,10 @@ public class TransformFactory extends FactoryBase
       attrNames.add("strict-mode");
    }
 
+   /** @return "transform" */
    public String getName()
    {
-      return name;
+      return "transform";
    }
 
    public NodeBase createNode(NodeBase parent, String uri, String lName, 
@@ -83,18 +86,13 @@ public class TransformFactory extends FactoryBase
                                      locator); 
 
       String modeAtt = attrs.getValue("strict-mode");
-      short mode = GroupBase.STRICT_MODE; // default value
-      if (modeAtt != null) {
-         if ("yes".equals(modeAtt))
-            mode = GroupBase.STRICT_MODE;
-         else if ("no".equals(modeAtt))
-            mode = GroupBase.LOOSE_MODE;
-         else 
-            throw new SAXParseException("Value of attribute `strict-mode' " +
-                                        "must be either `yes' or `no' " +
-                                        "(found `" + modeAtt + "')", locator);
-      }
-      
+      if (modeAtt != null) 
+         log4j.warn("Attribute `strict-mode' is deprecated");
+      short mode = 
+         getEnumAttValue("strict-mode", attrs, YESNO_VALUES, locator) == 1
+            ? GroupBase.LOOSE_MODE 
+            : GroupBase.STRICT_MODE;
+
       checkAttributes(qName, attrs, attrNames, locator);
 
       return new Instance(qName, locator, mode);
