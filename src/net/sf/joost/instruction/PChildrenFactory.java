@@ -1,5 +1,5 @@
 /*
- * $Id: PChildrenFactory.java,v 1.2 2002/09/10 07:32:16 obecker Exp $
+ * $Id: PChildrenFactory.java,v 1.3 2002/10/22 10:13:43 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -34,12 +34,13 @@ import java.util.Stack;
 
 import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.SAXEvent;
 
 
 /** 
  * Factory for <code>process-children</code> elements, which are represented 
  * by the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2002/09/10 07:32:16 $
+ * @version $Revision: 1.3 $ $Date: 2002/10/22 10:13:43 $
  * @author Oliver Becker
  */
 
@@ -75,6 +76,20 @@ public class PChildrenFactory extends FactoryBase
                               Context context, short processStatus)
          throws SAXException
       {
+         /* 
+            stx:process-children breaks the processing flow.
+            The current status is controlled by the processStatus parameter.
+            For a startElement event the matching template starts the
+            processing with ST_PROCESSING set and all other bits unset.
+            This method toggles the bits (clear ST_PROCESSING, set
+            ST_CHILDREN) to signal the Processor object to break the
+            execution.
+            On the matching endElement event the processing continues
+            by switching the bits back.
+            This method enables the detection of multiple calls of
+            stx:process-children, which must be regarded as an error.
+         */
+
          // ST_PROCESSING off: search mode
          if ((processStatus & ST_PROCESSING) == 0) {
             // toggle ST_PROCESSING
@@ -82,8 +97,16 @@ public class PChildrenFactory extends FactoryBase
          }
          // ST_PROCESSING on, other bits off
          else if (processStatus == ST_PROCESSING) {
-            // ST_PROCESSING off, ST_CHILDREN on
-            return ST_CHILDREN;
+            SAXEvent event = (SAXEvent)eventStack.peek();
+            if (event.type == SAXEvent.ELEMENT || 
+                event.type == SAXEvent.ROOT) {
+               // break the processing, ST_PROCESSING off, ST_CHILDREN on
+               return ST_CHILDREN;
+            }
+            else {
+               // stay in processing mode, ST_CHILDREN on
+               return (short)(processStatus | ST_CHILDREN);
+            }
          }
          // else: ST_PROCESSING on, any other bits on
          else
