@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.12 2003/06/10 13:11:08 obecker Exp $
+ | $Id: build.xml,v 1.13 2004/01/07 08:03:36 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -105,11 +105,16 @@
     </antcall>
   </target>
 
+  <target name="maketests" depends="compile"
+    description="compiles the java sources from the test subdirectory">
+    <javac debug="on" srcdir="${src}" includes="test/**"
+           destdir="${classes}" classpathref="cp" />
+  </target>
   
   <target name="compile" depends="dep, mk.classes"
-    description="compiles all java sources into the classes subdirectory (with debug information)"> 
-    <javac debug="on" srcdir="${src}" destdir="${classes}"
-           classpathref="cp" />
+    description="compiles the java sources into the classes subdirectory (with debug information)"> 
+    <javac debug="on" srcdir="${src}" excludes="test/**"
+           destdir="${classes}" classpathref="cp" />
     <copy file="conf/log4j.properties" todir="${classes}" />
   </target>
 
