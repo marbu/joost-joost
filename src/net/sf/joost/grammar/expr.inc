@@ -1,5 +1,5 @@
 /*
- * $Id: expr.inc,v 1.6 2003/03/20 13:14:40 obecker Exp $
+ * $Id: expr.inc,v 1.7 2003/04/30 15:06:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -171,7 +171,7 @@ Unfortunately this results in shift/reduce conflicts in CUP.
 
 NodeAccessor ::= 
    DOLLAR Name:n  /* Variable */
-      {: RESULT = new Tree(Tree.VAR, n, 
+      {: RESULT = new Tree(Tree.VAR, n, parser.j_transform,
                            parser.j_nsSet, parser.j_locator); :}
  | FunctionCall:t
       {: RESULT = t; :}
@@ -214,7 +214,7 @@ AccessorStep ::=
 
 NodeNameTest ::=
    Name:n
-      {: RESULT = new Tree(Tree.NAME_TEST, n, 
+      {: RESULT = new Tree(Tree.NAME_TEST, n, parser.j_transform,
                            parser.j_nsSet, parser.j_locator); :}
  | STAR
       {: RESULT = new Tree(Tree.WILDCARD, null); :}
@@ -243,7 +243,7 @@ KindTest ::=
 
 AttributeNameTest ::=
    AT Name:n
-      {: RESULT = new Tree(Tree.ATTR, n,
+      {: RESULT = new Tree(Tree.ATTR, n, parser.j_transform,
                            parser.j_nsSet, parser.j_locator); :}
  | AT STAR
       {: RESULT = new Tree(Tree.ATTR_WILDCARD, null); :}
@@ -257,7 +257,7 @@ AttributeNameTest ::=
 
 FunctionCall ::=
    Name:n LPAR ParaSeq:e RPAR
-      {: RESULT = new Tree(Tree.FUNCTION, n, e,
+      {: RESULT = new Tree(Tree.FUNCTION, n, e, parser.j_transform,
                            parser.j_nsSet, parser.j_locator); :}
  ;
 

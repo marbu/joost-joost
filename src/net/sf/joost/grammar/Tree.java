@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 2.2 2003/04/29 15:11:16 obecker Exp $
+ * $Id: Tree.java,v 2.3 2003/04/30 15:05:16 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,8 +32,10 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Stack;
 
+import net.sf.joost.Constants;
 import net.sf.joost.instruction.GroupBase;
 import net.sf.joost.instruction.NodeBase;
+import net.sf.joost.instruction.TransformFactory;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.FunctionTable;
 import net.sf.joost.stx.SAXEvent;
@@ -42,7 +44,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 2.2 $ $Date: 2003/04/29 15:11:16 $
+ * @version $Revision: 2.3 $ $Date: 2003/04/30 15:05:16 $
  * @author Oliver Becker
  */
 final public class Tree
@@ -153,7 +155,8 @@ final public class Tree
     *
     * @param nsSet the table of namespace prefix mappings
     */
-   public Tree(int type, String value, Hashtable nsSet, Locator locator)
+   public Tree(int type, String value, TransformFactory.Instance transform,
+               Hashtable nsSet, Locator locator)
       throws SAXParseException
    {
       this(type, null, null, value);
@@ -177,14 +180,20 @@ final public class Tree
          }
       }
       else {
-         if (type == NAME_TEST) {
+         switch (type) {
+         case NAME_TEST:
             // no qualified name: uri depends on the value of
-            // <stx:options default-stxpath-namespace="..." />
-            // set to null as a flag
-            uri = null;
-         }
-         else
+            // <stx:transform default-stxpath-namespace="..." />
+            uri = transform.defaultSTXPathNamespace;
+            break;
+         case FUNCTION:
+            // use the fixed default function namespace
+            uri = Constants.FUNC_NS;
+            break;
+         default:
             uri = "";
+            break;
+         }
          lName = qName;
       }
    }
@@ -222,11 +231,12 @@ final public class Tree
    }
 
 
-   public Tree(int type, String qName, Tree left, Hashtable nsSet,
+   public Tree(int type, String qName, Tree left, 
+               TransformFactory.Instance t, Hashtable nsSet,
                Locator locator)
       throws SAXParseException
    {
-      this(type, qName, nsSet, locator);
+      this(type, qName, t, nsSet, locator);
       this.left = left;
       func = funcTable.getFunction(uri, lName, left, locator);
    }
@@ -300,9 +310,6 @@ final public class Tree
          SAXEvent parent = (SAXEvent)context.ancestorStack.elementAt(top-2);
          switch (type) {
          case NAME_TEST:
-            // reset namespace during the first access
-            if (uri == null)
-               uri = context.defaultSTXPathNamespace;
             if (!(uri.equals(e.uri) && lName.equals(e.lName)))
                return false;
             if (setPosition)
