@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.39 2003/03/18 16:47:03 obecker Exp $
+ * $Id: Processor.java,v 1.40 2003/03/19 11:27:12 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -63,7 +63,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.39 $ $Date: 2003/03/18 16:47:03 $
+ * @version $Revision: 1.40 $ $Date: 2003/03/19 11:27:12 $
  * @author Oliver Becker
  */
 
@@ -721,11 +721,7 @@ public class Processor extends XMLFilterImpl
                // marker for findMatchingTemplate()
                dataStack.push(
                   new Data(temp, context.position, context.lookAhead,
-                           context.nextProcessGroup != null
-                              // target group specified
-                              ? context.nextProcessGroup.visibleTemplates
-                              // else: use previous group
-                              : ((Data)dataStack.peek()).visibleTemplates,
+                           context.nextProcessGroup.visibleTemplates,
                            procStatus));
                processEvent(); // recurse
                if (event.type == SAXEvent.TEXT || 

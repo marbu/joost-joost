@@ -1,5 +1,5 @@
 /*
- * $Id: ProcessBase.java,v 1.4 2003/02/18 17:20:28 obecker Exp $
+ * $Id: ProcessBase.java,v 1.5 2003/03/19 11:27:12 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -48,8 +48,6 @@ public class ProcessBase extends NodeBase
 
    // base group for the next processing; set in the first call
    protected GroupBase nextProcessGroup = null;
-
-   private boolean incomplete = true;
 
    public ProcessBase(String qName, NodeBase parent, Locator locator,
                       String groupQName, String groupExpName)
@@ -111,7 +109,7 @@ public class ProcessBase extends NodeBase
       throws SAXException
    {
       if ((processStatus & ST_PROCESSING) != 0) {
-         if (incomplete) { // first entered
+         if (nextProcessGroup == null) { // first entered
             // Evaluate group attribute
             if (groupExpName != null) {
                nextProcessGroup = (GroupBase)
@@ -124,14 +122,9 @@ public class ProcessBase extends NodeBase
                   // recover: ignore group attribute, use current group
             }
             if (nextProcessGroup == null) { // means: still null
-               // use parent group 
-               if (!(this instanceof PSelfFactory.Instance)) {
-                  nextProcessGroup = context.currentGroup;
-               }
-               // else (process-self): next process group = last group,
-               // i.e. the group must be determined by the processor
+               // use current group 
+               nextProcessGroup = context.currentGroup;
             }
-            incomplete = false;
          }
          context.nextProcessGroup = nextProcessGroup;
 

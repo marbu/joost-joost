@@ -5,6 +5,8 @@ Changes since 20030224
 - change for buffers: allow stx:process-buffer inside of stx:result-buffer
   for the same buffer; its new contents is available not before the buffer
   has been completely filled (stx:result-buffer has finished)
+- change for stx:process-self: if no group is specified then the base
+  group for matching is the current group, not the previous group
 - Bugfixes: 697408, 699541, 702885, 703059, 705697
 
 Changes since 20030203
