@@ -1,5 +1,5 @@
 /*
- * $Id: PChildrenFactory.java,v 1.3 2002/10/22 10:13:43 obecker Exp $
+ * $Id: PChildrenFactory.java,v 1.4 2002/11/18 19:54:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,17 +40,16 @@ import net.sf.joost.stx.SAXEvent;
 /** 
  * Factory for <code>process-children</code> elements, which are represented 
  * by the inner Instance class. 
- * @version $Revision: 1.3 $ $Date: 2002/10/22 10:13:43 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/18 19:54:18 $
  * @author Oliver Becker
  */
 
 public class PChildrenFactory extends FactoryBase
 {
-   private static final String name = "process-children";
-
+   /** @return <code>process-children</code> */
    public String getName()
    {
-      return name;
+      return "process-children";
    }
 
    public NodeBase createNode(NodeBase parent, String uri, String local, 
@@ -111,9 +110,9 @@ public class PChildrenFactory extends FactoryBase
          // else: ST_PROCESSING on, any other bits on
          else
             context.errorHandler.error("Encountered `" + qName + "' after " +
-               (((processStatus & ST_CHILDREN) != 0) ? "process-children" : 
-                ((processStatus & ST_SELF)     != 0) ? "process-self" : 
-                ((processStatus & ST_SIBLINGS) != 0) ? "process-siblings" : 
+              (((processStatus & ST_CHILDREN) != 0) ? "stx:process-children" : 
+               ((processStatus & ST_SELF)     != 0) ? "stx:process-self" : 
+               ((processStatus & ST_SIBLINGS) != 0) ? "stx:process-siblings" : 
                                       "????"),
                                        publicId, systemId, lineNo, colNo);
          return processStatus; // if errorHandler returned

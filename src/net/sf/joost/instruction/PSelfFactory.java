@@ -1,5 +1,5 @@
 /*
- * $Id: PSelfFactory.java,v 1.2 2002/09/10 07:32:16 obecker Exp $
+ * $Id: PSelfFactory.java,v 1.3 2002/11/18 19:54:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,17 +39,16 @@ import net.sf.joost.stx.Context;
 /**
  * Factory for <code>process-self</code> elements, which are represented by 
  * the inner Instance class.
- * @version $Revision: 1.2 $ $Date: 2002/09/10 07:32:16 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/18 19:54:18 $
  * @author Oliver Becker
  */
 
 public class PSelfFactory extends FactoryBase
 {
-   private static final String name = "process-self";
-
+   /** @return <code>process-self</code> */
    public String getName()
    {
-      return name;
+      return "process-self";
    }
 
    public NodeBase createNode(NodeBase parent, String uri, String lName, 
@@ -88,9 +87,9 @@ public class PSelfFactory extends FactoryBase
          // else: ST_PROCESSING on, any other bits on
          else
             context.errorHandler.error("Encountered `" + qName + "' after " +
-               (((processStatus & ST_CHILDREN) != 0) ? "process-children" : 
-                ((processStatus & ST_SELF)     != 0) ? "process-self" : 
-                ((processStatus & ST_SIBLINGS) != 0) ? "process-siblings" : 
+              (((processStatus & ST_CHILDREN) != 0) ? "stx:process-children" : 
+               ((processStatus & ST_SELF)     != 0) ? "stx:process-self" : 
+               ((processStatus & ST_SIBLINGS) != 0) ? "stx:process-siblings" : 
                                       "????"),
                                        publicId, systemId, lineNo, colNo);
          return processStatus; // if errorHandler returned

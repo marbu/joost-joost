@@ -1,5 +1,5 @@
 /*
- * $Id: ChooseFactory.java,v 1.4 2002/11/15 18:24:53 obecker Exp $
+ * $Id: ChooseFactory.java,v 1.5 2002/11/18 19:54:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.stx.Context;
 /** 
  * Factory for <code>choose</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.4 $ $Date: 2002/11/15 18:24:53 $
+ * @version $Revision: 1.5 $ $Date: 2002/11/18 19:54:18 $
  * @author Oliver Becker
  */
 
@@ -133,7 +133,7 @@ final public class ChooseFactory extends FactoryBase
          if (node instanceof OtherwiseFactory.Instance) {
             if (children == null) {
                throw new SAXParseException(
-                  "`" + qName + "' must have at least one stx.when child " +
+                  "`" + qName + "' must have at least one stx:when child " +
                   "before stx:otherwise",
                   node.publicId, node.systemId, node.lineNo, node.colNo);
             }
@@ -149,7 +149,7 @@ final public class ChooseFactory extends FactoryBase
       {
          if (children == null)
             throw new SAXParseException(
-               "`" + qName + "' must have at least one `when' child", 
+               "`" + qName + "' must have at least one stx:when child", 
                publicId, systemId, lineNo, colNo);
       }
 
