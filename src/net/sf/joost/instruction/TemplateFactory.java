@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateFactory.java,v 1.3 2002/10/29 19:09:10 obecker Exp $
+ * $Id: TemplateFactory.java,v 1.4 2002/11/02 15:11:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>template</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 1.3 $ $Date: 2002/10/29 19:09:10 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/02 15:11:18 $
  * @author Oliver Becker
  */
 
@@ -62,6 +62,11 @@ public final class TemplateFactory extends FactoryBase
       PRIVATE_VISIBLE = 0,
       PUBLIC_VISIBLE = 1,
       GLOBAL_VISIBLE = 2;
+
+   /** Attribute value strings for the above visiblity values */
+   private static final String[] VISIBILITY_VALUES = 
+   { "private", "public", "global" }; // note: same order required!
+
 
    // Log4J initialization
    private static org.apache.log4j.Logger log4j = 
@@ -130,36 +135,14 @@ public final class TemplateFactory extends FactoryBase
          priority = computePriority(matchPattern);
       }
 
-      int visibility = PRIVATE_VISIBLE; // default value
-      String visibilityAtt = attrs.getValue("visibility");
-      if (visibilityAtt != null) {
-         if ("public".equals(visibilityAtt))
-            visibility = PUBLIC_VISIBLE;
-         else if ("global".equals(visibilityAtt))
-            visibility = GLOBAL_VISIBLE;
-         else if ("private".equals(visibilityAtt))
-            visibility = PRIVATE_VISIBLE;
-         else 
-            throw new SAXParseException("Value of attribute `visibility' " +
-                                        "must be one of `private', " + 
-                                        "`public', or `global' (found `" + 
-                                        visibilityAtt + "')",
-                                        locator);
-      }
+      int visibility = getEnumAttValue("visibility", attrs,
+                                       VISIBILITY_VALUES, locator);
+      if (visibility == -1)
+         visibility =  PRIVATE_VISIBLE; // default value
 
-      String recursionEntryAtt = attrs.getValue("recursion-entry-point");
-      boolean recursionEntry = false;
-      if (recursionEntryAtt != null) {
-         if ("yes".equals(recursionEntryAtt))
-            recursionEntry = true;
-         else if ("no".equals(recursionEntryAtt))
-            recursionEntry = false;
-         else
-            throw new SAXParseException("Value of attribute " + 
-                                        "`recursion-entry-point' must " +
-                                        "be either `yes' or `no' (found `"+ 
-                                        recursionEntryAtt + "')", locator);
-      }
+      // default (-1) is false, 0 means "yes" (true)
+      boolean recursionEntry = getEnumAttValue("recursion-entry-point", attrs,
+                                               YESNO_VALUES, locator) == 0;
 
       checkAttributes(qName, attrs, attrNames, locator);
 
