@@ -1,4 +1,5 @@
 Changes since 20030502
+- added (partial) support for TrAX output properties
 - added 'separator' attribute to stx:value-of; 
   since @separator defaults to " ", the default behaviour changed if 
   @select evaluates to a sequence

@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.10 2003/05/23 11:14:45 obecker Exp $
+ * $Id: Processor.java,v 2.11 2003/05/28 13:22:26 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -45,8 +45,10 @@ import javax.xml.transform.ErrorListener;
 import java.util.Arrays;
 import java.util.EmptyStackException;
 import java.util.Hashtable;
+import java.util.Properties;
 import java.util.Stack;
 import java.util.Vector;
+import javax.xml.transform.OutputKeys;
 
 import java.io.IOException;
 
@@ -64,7 +66,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.10 $ $Date: 2003/05/23 11:14:45 $
+ * @version $Revision: 2.11 $ $Date: 2003/05/28 13:22:26 $
  * @author Oliver Becker
  */
 
@@ -149,6 +151,8 @@ public class Processor extends XMLFilterImpl
    private Stack innerProcStack = new Stack();
 
 
+
+   public Properties outputProperties;
 
 
 
@@ -470,6 +474,24 @@ public class Processor extends XMLFilterImpl
       globalTemplates = new TemplateFactory.Instance[tempVec.size()];
       tempVec.toArray(globalTemplates);
       Arrays.sort(globalTemplates);
+      initOutputProperties();
+   }
+
+
+    /**
+     * Initialize the output properties to the values specified in the
+     * transformation sheet or to their default values, resp.
+     */
+   public void initOutputProperties()
+   {
+      outputProperties = new Properties();
+      outputProperties.setProperty(OutputKeys.ENCODING, 
+                                   transformNode.outputEncoding);
+      outputProperties.setProperty(OutputKeys.MEDIA_TYPE, "text/xml");
+      outputProperties.setProperty(OutputKeys.METHOD, "xml");
+      outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+      outputProperties.setProperty(OutputKeys.STANDALONE, "no");
+      outputProperties.setProperty(OutputKeys.VERSION, "1.0");
    }
 
 

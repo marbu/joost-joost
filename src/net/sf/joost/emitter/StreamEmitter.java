@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.8 2003/04/29 15:10:58 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.9 2003/05/28 13:22:27 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -33,14 +33,15 @@ import org.xml.sax.SAXException;
 import java.io.*;
 import java.util.Enumeration;
 import java.util.Hashtable;
-
+import java.util.Properties;
+import javax.xml.transform.OutputKeys;
 
 /**
  *  This class implements an emitter for byte or character streams.
  *  Is is designed for using <code>StreamResult</code>.
  *  So this class outputs a StreamResult to the output target -
  *  {@link #outwriter} (e.g. a registered <code>FileWriter</code>).
- *  @version $Revision: 1.8 $ $Date: 2003/04/29 15:10:58 $
+ *  @version $Revision: 1.9 $ $Date: 2003/05/28 13:22:27 $
  *  @author Oliver Becker, Anatolij Zubow
  */
 public class StreamEmitter implements StxEmitter {
@@ -51,13 +52,19 @@ public class StreamEmitter implements StxEmitter {
      */
     private Writer outwriter;
 
-    /**
-     * The encoding for the output (e.g. UTF-8).
-     */
-    private String encodingformat;
 
+    /** output property: encoding */
+    private String propEncoding = DEFAULT_ENCODING;
 
-    private boolean omitXmlDeclaration = false;
+    /** output property: omit-xml-declaration */
+    private boolean propOmitXmlDeclaration = false;
+
+    /** output property: standalone */
+    private boolean propStandalone = false;
+
+    /** output property: version */
+    private String propVersion = "1.0";
+
 
     private Hashtable newNamespaces = new Hashtable();
     private String uri, qName;
@@ -73,50 +80,75 @@ public class StreamEmitter implements StxEmitter {
    /**
     * Constructor - Sets a <code>Writer</code> and output encoding.
     * @param writer A <code>Writer</code> receives the output.
-    * @param encoding The encoding (e.g. UTF-8) for the output.
+    * @param outputProperties The set of output properties to be used.
     * @throws IOException When an error occurs while accessing
     * <code>Writer</code>.
     */
-    public StreamEmitter(Writer writer, String encoding)
+    public StreamEmitter(Writer writer, Properties outputProperties)
         throws IOException {
 
         if (DEBUG) 
             log.debug("init StreamEmitter");
 
         outwriter = writer;
-        encodingformat = encoding;
+
+        if (outputProperties != null) {
+            propEncoding = outputProperties.getProperty(OutputKeys.ENCODING)
+                                           .toUpperCase();
+            propOmitXmlDeclaration = 
+                outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION)
+                                .equals("yes");
+            if (!propEncoding.equals("UTF-8") && 
+                !propEncoding.equals("UTF-16"))
+                propOmitXmlDeclaration = false;
+            propStandalone = 
+                outputProperties.getProperty(OutputKeys.STANDALONE)
+                                .equals("yes");
+            propVersion = outputProperties.getProperty(OutputKeys.VERSION);
+        }
    }
 
 
    /**
     * Constructor - Sets a <code>OutputStream</code> and output encoding.
     * @param out A <code>OutputStream</code> receives the output.
-    * @param encoding The encoding (e.g. UTF-8) for the output.
+    * @param outputProperties The set of output properties to be used.
     * @throws IOException When an error occurs while accessing
     * <code>OutputStream</code>.
     */
-    public StreamEmitter(OutputStream out, String encoding)
+    public StreamEmitter(OutputStream out, Properties outputProperties)
         throws IOException {
 
         if (DEBUG)
             log.debug("init StreamEmitter");
 
-        OutputStreamWriter writer;
-
-        if (encoding == null) {
-            encoding = DEFAULT_ENCODING;
+        if (outputProperties != null) {
+            propEncoding = outputProperties.getProperty(OutputKeys.ENCODING)
+                                           .toUpperCase();
+            propOmitXmlDeclaration = 
+                outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION)
+                                .equals("yes");
+            if (!propEncoding.equals("UTF-8") && 
+                !propEncoding.equals("UTF-16"))
+                propOmitXmlDeclaration = false;
+            propStandalone = 
+                outputProperties.getProperty(OutputKeys.STANDALONE)
+                                .equals("yes");
+            propVersion = outputProperties.getProperty(OutputKeys.VERSION);
         }
+
+        OutputStreamWriter writer;
 
         try {
 
-            writer = new OutputStreamWriter(out, encodingformat = encoding);
+            writer = new OutputStreamWriter(out, propEncoding);
 
         } catch (java.io.UnsupportedEncodingException e) {
 
-            log.warn("Unsupported encoding " + encoding + ", using " +
+            log.warn("Unsupported encoding " + propEncoding + ", using " +
                     DEFAULT_ENCODING);
             writer = new OutputStreamWriter(out,
-                encodingformat = DEFAULT_ENCODING);
+                propEncoding = DEFAULT_ENCODING);
         }
 
         outwriter = new BufferedWriter(writer);
@@ -130,7 +162,7 @@ public class StreamEmitter implements StxEmitter {
     public StreamEmitter()
         throws IOException {
 
-        this(System.out, DEFAULT_ENCODING);
+        this(System.out, null);
 
     }
 
@@ -143,7 +175,7 @@ public class StreamEmitter implements StxEmitter {
     */
     public StreamEmitter(Writer writer) throws IOException {
 
-        this(writer, DEFAULT_ENCODING);
+        this(writer, null);
 
     }
 
@@ -151,14 +183,14 @@ public class StreamEmitter implements StxEmitter {
     /**
     * Constructor - Set output to a <code>File</code> file and output encoding
     * @param filename The Filename of the output file.
-    * @param encoding The encoding (e.g. UTF-8) for the output.
+    * @param outputProperties The set of output properties to be used.
     * @throws IOException When an error occurs while accessing the
     * <code>FileOutputStream</code>.
     */
-    public StreamEmitter(String filename, String encoding)
+    public StreamEmitter(String filename, Properties outputProperties)
         throws IOException {
 
-        this(new FileOutputStream(filename), encoding);
+        this(new FileOutputStream(filename), outputProperties);
 
     }
 
@@ -172,7 +204,7 @@ public class StreamEmitter implements StxEmitter {
      */
     public void setOmitXmlDeclaration(boolean flag)
     {
-        omitXmlDeclaration = flag;
+        propOmitXmlDeclaration = flag;
     }
 
 
@@ -256,13 +288,18 @@ public class StreamEmitter implements StxEmitter {
      */
     public void startDocument() throws SAXException {
 
-        if (omitXmlDeclaration)
+        if (propOmitXmlDeclaration)
             return;
 
         try {
 
-            outwriter.write("<?xml version=\"1.0\" encoding=\"" +
-                encodingformat + "\"?>\n");
+            outwriter.write("<?xml version=\"");
+            outwriter.write(propVersion);
+            outwriter.write("\" encoding=\"");
+            outwriter.write(propEncoding);
+            if (propStandalone)
+               outwriter.write("\" standalone=\"yes");
+            outwriter.write("\"?>\n");
 
         } catch (IOException ex) {
 

@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.13 2003/05/23 11:15:55 obecker Exp $
+ * $Id: TransformerImpl.java,v 1.14 2003/05/28 13:22:23 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -46,7 +46,8 @@ import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
-import java.util.Hashtable;
+import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Properties;
 
 
@@ -66,10 +67,10 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
 
     private static Processor processor = null;
 
-    private Hashtable paramhash         = new Hashtable();
-
     private URIResolver uriRes          = null;
     private ErrorListener errorListener = null;
+
+    private HashSet supportedProperties = new HashSet();
 
     /**
      * Synch object to gaurd against setting values from the TrAX interface
@@ -90,10 +91,6 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
     */
     private TraceManager traceManager = new TraceManager(this);
 
-    /**
-     * Defaultconstructor.
-     */
-    protected TransformerImpl() {}
 
     /**
      * Constructor
@@ -101,7 +98,14 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
      */
     protected TransformerImpl(Processor processor) {
         this.processor = processor;
+        supportedProperties.add(OutputKeys.ENCODING);
+        supportedProperties.add(OutputKeys.MEDIA_TYPE);
+        supportedProperties.add(OutputKeys.METHOD);
+        supportedProperties.add(OutputKeys.OMIT_XML_DECLARATION);
+        supportedProperties.add(OutputKeys.STANDALONE);
+        supportedProperties.add(OutputKeys.VERSION);
     }
+
 
     /**
      * Get an instance of the tracemanager for this transformation.
@@ -304,21 +308,21 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
     }
 
     /**
-     * Getter for outputProperties.
-     * Not yet supported.
-     * @param name The key-value of the outputProperties.
-     * @return <code>String</code>
+     * Getter for an output property.
+     * @param name The key of the output property.
+     * @return The value for that property, <code>null</code> if not set.
      * @throws IllegalArgumentException
      */
     public String getOutputProperty(String name)
         throws IllegalArgumentException {
 
-        throw new IllegalArgumentException("OutputProperties not supported");
+        if (supportedProperties.contains(name))
+            return processor.outputProperties.getProperty(name);
+        throw new IllegalArgumentException("Unsupported property " + name);
     }
 
     /**
-     * Setter for OutputProperty (not implemented).
-     * Not yet supported.
+     * Setter for an output property.
      * @param name The key of the outputProperty.
      * @param value The value of the outputProperty.
      * @throws IllegalArgumentException
@@ -326,27 +330,50 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
     public void setOutputProperty(String name, String value)
             throws IllegalArgumentException {
 
-        throw new IllegalArgumentException("OutputProperties not supported");
+        if (supportedProperties.contains(name)) {
+            if (OutputKeys.METHOD.equals(name) && !"xml".equals(value))
+                throw new IllegalArgumentException(
+                              "Unsupported output method " + value);
+            processor.outputProperties.setProperty(name, value);
+        }
+        else
+            throw new IllegalArgumentException("Unsupported property " + 
+                                               name);
     }
 
     /**
-     * Not yet supported.
-     * @return <code>Properties</code>
+     * Getter for {@link Processor#outputProperties}
+     * @return a copy of the current output properties
      */
     public Properties getOutputProperties() {
-        return null;
+        return (Properties)processor.outputProperties.clone();
     }
 
     /**
-     * Setter for OutputProperties (not implemented).
-     * Not yet supported.
-     * @param oformat A <code>Properties</code> object.
+     * Setter for {@link Processor#outputProperties}
+     * @param oformat A <code>Properties</code> object, that replaces
+     * the current set of output properties.
      * @throws IllegalArgumentException
      */
     public void setOutputProperties(Properties oformat)
             throws IllegalArgumentException {
-
-        throw new IllegalArgumentException("OutputProperties not supported");
+        if (oformat == null)
+            processor.initOutputProperties(); // re-initialize
+        else {
+            // check properties in oformat
+            for (Enumeration e = oformat.keys(); e.hasMoreElements(); ) {
+                Object prop = e.nextElement();
+                if (!supportedProperties.contains(prop)) 
+                    throw new IllegalArgumentException(
+                                  "Unsupported property " + prop);
+                if (OutputKeys.METHOD.equals(prop) && 
+                    !"xml".equals(oformat.getProperty((String)prop)))
+                    throw new IllegalArgumentException(
+                                  "Unsupported output method " + 
+                                  oformat.getProperty((String)prop));
+            }
+            processor.outputProperties = (Properties)oformat.clone();
+        }
     }
 
     /**
