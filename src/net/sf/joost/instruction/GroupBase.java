@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: GroupBase.java,v 1.2 2002/11/02 15:24:51 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.stx.Value;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2002/11/02 15:24:51 $
  * @author Oliver Becker
  */
 
@@ -76,7 +76,7 @@ abstract public class GroupBase extends NodeBase
    public GroupBase parent;
    
    /** Group variables  */
-   private VariableFactory.Instance[] groupVariables;
+   private VariableBase[] groupVariables;
 
    /** Group variable values */
    public Stack groupVars = new Stack();
@@ -139,7 +139,7 @@ abstract public class GroupBase extends NodeBase
          }
          else if (objs[i] instanceof GroupFactory.Instance) 
             gvec.addElement(objs[i]);
-         else if (objs[i] instanceof VariableFactory.Instance) 
+         else if (objs[i] instanceof VariableBase) 
             vvec.addElement(objs[i]);
       }
       
@@ -185,9 +185,9 @@ abstract public class GroupBase extends NodeBase
 
       // create array of group variables
       objs = vvec.toArray();
-      groupVariables = new VariableFactory.Instance[objs.length];
+      groupVariables = new VariableBase[objs.length];
       for (int i=0; i<objs.length; i++)
-         groupVariables[i] = (VariableFactory.Instance)objs[i];
+         groupVariables[i] = (VariableBase)objs[i];
    }
    
    
