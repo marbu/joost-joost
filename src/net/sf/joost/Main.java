@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.13 2003/07/23 09:44:32 obecker Exp $
+ * $Id: Main.java,v 1.14 2003/07/30 15:16:00 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.13 $ $Date: 2003/07/23 09:44:32 $
+ * @version $Revision: 1.14 $ $Date: 2003/07/30 15:16:00 $
  * @author Oliver Becker
  */
 public class Main implements Constants
@@ -175,6 +175,10 @@ public class Main implements Constants
             }
          }
          // command line argument doesn't have a leading '-'
+         else if (args[i].trim().length() == 0) {
+            // empty parameter? ingore 
+            // (causes otherwise an error on Windows 98 with joost.bat)
+         }
          else if (args[i].indexOf('=') != -1) {
             // parameter assignment, skip here, process later
          }
@@ -188,7 +192,7 @@ public class Main implements Constants
          }
          else {
             // supernumerary parameters
-            System.err.println("Unknown parameter " + args[i]);
+            System.err.println("Unknown parameter `" + args[i] + "'");
             wrongParameter = true;
          }
       }
