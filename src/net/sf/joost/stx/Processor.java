@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.36 2004/02/03 18:22:32 zubow Exp $
+ * $Id: Processor.java,v 2.37 2004/02/07 12:29:35 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,10 +24,22 @@
 
 package net.sf.joost.stx;
 
-import net.sf.joost.Constants;
-import net.sf.joost.TransformerHandlerResolver;
-import net.sf.joost.instruction.*;
-import org.xml.sax.*;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Properties;
+import java.util.Stack;
+import java.util.Vector;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.ext.DeclHandler;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.NamespaceSupport;
@@ -37,26 +49,24 @@ import org.xml.sax.helpers.XMLReaderFactory;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.URIResolver;
-import java.io.IOException;
-import java.util.*;
+
 import net.sf.joost.Constants;
 import net.sf.joost.TransformerHandlerResolver;
 import net.sf.joost.grammar.EvalException;
 import net.sf.joost.instruction.AbstractInstruction;
 import net.sf.joost.instruction.GroupBase;
-import net.sf.joost.instruction.GroupFactory;
 import net.sf.joost.instruction.NodeBase;
+import net.sf.joost.instruction.ProcessBase;
 import net.sf.joost.instruction.PSiblingsFactory;
 import net.sf.joost.instruction.TemplateFactory;
 import net.sf.joost.instruction.TransformFactory;
-import net.sf.joost.trace.DebugEmitter;
-import net.sf.joost.trace.DebugProcessor;
+
 
 
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.36 $ $Date: 2004/02/03 18:22:32 $
+ * @version $Revision: 2.37 $ $Date: 2004/02/07 12:29:35 $
  * @author Oliver Becker
  */
 
@@ -861,6 +871,78 @@ public class Processor extends XMLFilterImpl
    }
 
 
+   /** contains the last return value after processing STX instructions */
+   private int processStatus;
+
+   /**
+    * Performs the processing of the linked instruction chain until
+    * an end condition was met. This method stores the last return
+    * value in the class member variable {@link #processStatus}.
+    * @param inst the first instruction in the chain
+    * @param event the current event
+    * @param skipProcessBase set if ProcessBase instructions shouldn't be
+    *                        reported
+    * @return the last processed instruction
+    */
+   private AbstractInstruction doProcessLoop(AbstractInstruction inst,
+                                             SAXEvent event,
+                                             boolean skipProcessBase)
+      throws SAXException
+   {
+      processStatus = PR_CONTINUE;
+
+      while (inst != null && processStatus == PR_CONTINUE) {
+         // check, if this is the original class: call process() directly
+         if (getClass().equals(Processor.class)) {
+            while (inst != null && processStatus == PR_CONTINUE) {
+               
+               if (DEBUG)
+                  if (log.isDebugEnabled())
+                     log.debug(inst.lineNo + ": " + inst);
+               
+               processStatus = inst.process(context);
+               inst = inst.next;
+            }
+         }
+         // otherwise: this is a derived class
+         else {
+            while (inst != null && processStatus == PR_CONTINUE) {
+               // skip ProcessBase if requested
+               if (skipProcessBase && inst.getNode() instanceof ProcessBase)
+                  processStatus = inst.process(context);
+               else
+                  processStatus = processInstruction(inst, event);
+               inst = inst.next;
+            }
+         }
+
+         if (processStatus == PR_ATTRIBUTES) {
+            // stx:process-attributes encountered 
+            // (i.e. the current node must be an element with attributes)
+            processAttributes(event.attrs);
+            processStatus = PR_CONTINUE;
+         }
+      }
+      return inst;
+   }
+
+
+   /**
+    * Process an instruction. 
+    * This method should be overridden for debug purposes.
+    * @param inst The instruction which should be processed
+    * @param event The current event
+    * @return see {@link AbstractInstruction#process}
+    * @throws SAXException in case of parse-errors
+    */
+   protected int processInstruction(AbstractInstruction inst, SAXEvent event)
+      throws SAXException
+   {
+      // process instruction
+      return inst.process(context);
+   }
+
+
    /**
     * Processes the upper most event on the event stack.
     */
@@ -879,177 +961,165 @@ public class Processor extends XMLFilterImpl
 
       TemplateFactory.Instance temp = findMatchingTemplate();
       if (temp != null) {
-         boolean attributeLoop;
          AbstractInstruction inst = temp;
          context.localVars.clear();
          Hashtable currentParams = context.passedParameters;
-         do {
-            // loop as long as stx:process-attributes interrupts the inner
-            // while
-            attributeLoop = false;
 
-            int ret = PR_CONTINUE;
-            while (inst != null && ret == PR_CONTINUE) {
-               if (DEBUG)
-                  if (log.isDebugEnabled()) {
-                     log.debug(inst);
-                     log.debug("in line: " + inst.getNode().lineNo);
-                  }
+         inst = doProcessLoop(inst, event, false);
 
-               // process instruction
-               ret = processInstruction(inst, event);
-
-               // next instruction
-               inst = inst.next;
+         if (DEBUG)
+            if (log.isDebugEnabled()) {
+               log.debug("stop " + processStatus);
+               log.debug(context.localVars);
             }
-            if (DEBUG)
-               if (log.isDebugEnabled()) {
-                  log.debug("stop " + ret);
-                  log.debug(context.localVars);
-               }
-            switch (ret) {
-            case PR_CONTINUE: // templated finished
-               if (event.type == SAXEvent.ELEMENT ||
-                   event.type == SAXEvent.ROOT) {
-                  skipDepth = 1;
-                  collectedCharacters.setLength(0); // clear text
-               }
-               break;
-            case PR_CHILDREN: // stx:process-children encountered
-               dataStack.push(new Data(PR_CHILDREN, temp, inst, currentParams,
-                                       context));
 
-               if (context.targetHandler != null) {
-                  // instruction had a filter attribute
+         switch (processStatus) {
+         case PR_CONTINUE: // templated finished
+            if (event.type == SAXEvent.ELEMENT ||
+                event.type == SAXEvent.ROOT) {
+               skipDepth = 1;
+               collectedCharacters.setLength(0); // clear text
+            }
+            break;
+
+         case PR_CHILDREN: // stx:process-children encountered
+            dataStack.push(new Data(PR_CHILDREN, temp, inst, currentParams,
+                                    context));
+
+            if (context.targetHandler != null) {
+               // instruction had a filter attribute
+               startExternDocument();
+               if (collectedCharacters.length() > 0) {
+                  context.targetHandler.characters(
+                     collectedCharacters.toString().toCharArray(),
+                     0, collectedCharacters.length());
+                  collectedCharacters.setLength(0);
+               }
+               skipDepth = 1;
+            }
+            break;
+
+         case PR_SELF: // stx:process-self encountered
+            dataStack.push(new Data(PR_SELF, temp, inst, currentParams,
+                                    context));
+            if (context.targetHandler != null) {
+               // instruction had a filter attribute
+               switch (event.type) {
+               case SAXEvent.ELEMENT:
                   startExternDocument();
-                  if (collectedCharacters.length() > 0) {
-                     context.targetHandler.characters(
-                        collectedCharacters.toString().toCharArray(),
-                        0, collectedCharacters.length());
-                     collectedCharacters.setLength(0);
-                  }
+                  context.targetHandler.startElement(
+                     event.uri, event.lName, event.qName, event.attrs);
                   skipDepth = 1;
-               }
-               break;
-            case PR_SELF: // stx:process-self encountered
-               dataStack.push(new Data(PR_SELF, temp, inst, currentParams,
-                                       context));
-               if (context.targetHandler != null) {
-                  // instruction had a filter attribute
-                  switch (event.type) {
-                  case SAXEvent.ELEMENT:
-                     startExternDocument();
-                     context.targetHandler.startElement(
-                        event.uri, event.lName, event.qName, event.attrs);
-                     skipDepth = 1;
-                     break;
-                  case SAXEvent.TEXT:
-                     startExternDocument();
-                     context.targetHandler.characters(
-                        event.value.toCharArray(), 0, event.value.length());
-                     endExternDocument();
-                     break;
-                  case SAXEvent.CDATA:
-                     startExternDocument();
-                     context.targetHandler.startCDATA();
-                     context.targetHandler.characters(
-                        event.value.toCharArray(), 0, event.value.length());
-                     context.targetHandler.endCDATA();
-                     endExternDocument();
-                     break;
-                  case SAXEvent.PI:
-                     startExternDocument();
-                     context.targetHandler.processingInstruction(
-                        event.qName, event.value);
-                     endExternDocument();
-                     break;
-                  case SAXEvent.COMMENT:
-                     startExternDocument();
-                     context.targetHandler.comment(
-                        event.value.toCharArray(), 0, event.value.length());
-                     endExternDocument();
-                     break;
-                  case SAXEvent.ROOT:
-                     context.targetHandler.startDocument();
-                     skipDepth = 1;
-                     break;
-                  case SAXEvent.ATTRIBUTE:
-                     // nothing to do
-                     break;
-                  default:
-                     log.error("Unexpected event: " + event);
-                  }
-               }
-               else
-                  processEvent(); // recurse
-               if (event.type == SAXEvent.TEXT ||
-                   event.type == SAXEvent.CDATA ||
-                   event.type == SAXEvent.COMMENT ||
-                   event.type == SAXEvent.PI ||
-                   event.type == SAXEvent.ATTRIBUTE) {
-                  // no children present, continue processing
-                  dataStack.pop();
-                  ret = PR_CONTINUE;
-                  while (inst != null && ret == PR_CONTINUE) {
-                     if (DEBUG)
-                        if (log.isDebugEnabled())
-                           log.debug(inst);
+                  break;
 
-                     // process text instruction
-                     ret = processInstruction(inst, event);
+               case SAXEvent.TEXT:
+                  startExternDocument();
+                  context.targetHandler.characters(
+                     event.value.toCharArray(), 0, event.value.length());
+                  endExternDocument();
+                  break;
 
-                     inst = inst.next;
-                  }
-                  if (DEBUG)
-                     if (log.isDebugEnabled())
-                        log.debug("stop " + ret);
-                  switch (ret) {
-                  case PR_CHILDREN:
-                  case PR_SELF:
-                     NodeBase start = inst.getNode();
-                     context.errorHandler.error(
-                        "Encountered `" + start.qName +
-                        "' after stx:process-self",
-                        start.publicId, start.systemId,
-                        start.lineNo, start.colNo);
-                     // falls through, if the error handler returns
-                  case PR_ERROR:
-                     throw new SAXException("Non-recoverable error");
-                  case PR_SIBLINGS:
-                     dataStack.push(
-                        new Data(PR_SIBLINGS, temp, inst, currentParams,
-                                 context, event));
-                     break;
-                  // case PR_ATTRIBUTES: won't happen
-                  // case PR_CONTINUE: nothing to do
-                  }
-               }
-               break;
-            case PR_SIBLINGS: // stx:process-siblings encountered
-               if (event.type == SAXEvent.ELEMENT ||
-                   event.type == SAXEvent.ROOT) {
-                  // end of template reached, skip contents
+               case SAXEvent.CDATA:
+                  startExternDocument();
+                  context.targetHandler.startCDATA();
+                  context.targetHandler.characters(
+                     event.value.toCharArray(), 0, event.value.length());
+                  context.targetHandler.endCDATA();
+                  endExternDocument();
+                  break;
+
+               case SAXEvent.PI:
+                  startExternDocument();
+                  context.targetHandler.processingInstruction(
+                     event.qName, event.value);
+                  endExternDocument();
+                  break;
+
+               case SAXEvent.COMMENT:
+                  startExternDocument();
+                  context.targetHandler.comment(
+                     event.value.toCharArray(), 0, event.value.length());
+                  endExternDocument();
+                  break;
+
+               case SAXEvent.ROOT:
+                  context.targetHandler.startDocument();
                   skipDepth = 1;
-                  collectedCharacters.setLength(0); // clear text
+                  break;
+
+               case SAXEvent.ATTRIBUTE:
+                  // nothing to do
+                  break;
+
+               default:
+                  log.error("Unexpected event: " + event);
                }
-               dataStack.push(
-                  new Data(PR_SIBLINGS, temp, inst, currentParams,
-                           context, event));
-               break;
-            case PR_ATTRIBUTES: // stx:process-attributes encountered
-               // happens only for elements with attributes
-               processAttributes(event.attrs);
-               attributeLoop = true; // continue processing
-               break;
-            case PR_ERROR: // errorHandler returned after a fatal error
-               throw new SAXException("Non-recoverable error");
-            default:
-               // Mustn't happen
-               log.error("Unexpected return value from process() " + ret);
-               throw new SAXException(
-                  "Unexpected return value from process() " + ret);
             }
-         } while(attributeLoop);
+            else
+               processEvent(); // recurse
+            if (event.type == SAXEvent.TEXT ||
+                event.type == SAXEvent.CDATA ||
+                event.type == SAXEvent.COMMENT ||
+                event.type == SAXEvent.PI ||
+                event.type == SAXEvent.ATTRIBUTE) {
+               // no children present, continue processing
+               dataStack.pop();
+
+               inst = doProcessLoop(inst, event, false);
+
+               if (DEBUG)
+                  if (log.isDebugEnabled())
+                     log.debug("stop " + processStatus);
+
+               switch (processStatus) {
+               case PR_CHILDREN:
+               case PR_SELF:
+                  NodeBase start = inst.getNode();
+                  context.errorHandler.error(
+                     "Encountered `" + start.qName +
+                     "' after stx:process-self",
+                     start.publicId, start.systemId,
+                     start.lineNo, start.colNo);
+                  // falls through, if the error handler returns
+
+               case PR_ERROR:
+                  throw new SAXException("Non-recoverable error");
+
+               case PR_SIBLINGS:
+                  dataStack.push(
+                     new Data(PR_SIBLINGS, temp, inst, currentParams,
+                              context, event));
+                  break;
+               // case PR_ATTRIBUTES: won't happen
+               // case PR_CONTINUE: nothing to do
+               }
+            }
+            break;
+
+         case PR_SIBLINGS: // stx:process-siblings encountered
+            if (event.type == SAXEvent.ELEMENT ||
+                event.type == SAXEvent.ROOT) {
+               // end of template reached, skip contents
+               skipDepth = 1;
+               collectedCharacters.setLength(0); // clear text
+            }
+            dataStack.push(
+               new Data(PR_SIBLINGS, temp, inst, currentParams,
+                        context, event));
+            break;
+
+         // case PR_ATTRIBUTES: won't happen
+
+         case PR_ERROR: // errorHandler returned after a fatal error
+            throw new SAXException("Non-recoverable error");
+
+         default:
+            // Mustn't happen
+            log.error("Unexpected return value from process() " + 
+                      processStatus);
+            throw new SAXException(
+               "Unexpected return value from process() " + processStatus);
+         }
       }
       else {
          // no template found, default action
@@ -1058,6 +1128,7 @@ public class Processor extends XMLFilterImpl
          case SAXEvent.ROOT:
             dataStack.push(new Data(dataStack.peek()));
             break;
+
          case SAXEvent.ELEMENT:
             if((tg.passThrough & PASS_THROUGH_ELEMENT) != 0)
                emitter.startElement(event.uri, event.lName, event.qName,
@@ -1066,12 +1137,14 @@ public class Processor extends XMLFilterImpl
                                     tg.lineNo, tg.colNo);
             dataStack.push(new Data(dataStack.peek()));
             break;
+
          case SAXEvent.TEXT:
             if((tg.passThrough & PASS_THROUGH_TEXT) != 0) {
                emitter.characters(event.value.toCharArray(),
                                   0, event.value.length());
             }
             break;
+
          case SAXEvent.CDATA:
             if((tg.passThrough & PASS_THROUGH_TEXT) != 0) {
                emitter.startCDATA(tg.publicId, tg.systemId,
@@ -1081,6 +1154,7 @@ public class Processor extends XMLFilterImpl
                emitter.endCDATA();
             }
             break;
+
          case SAXEvent.COMMENT:
             if((tg.passThrough & PASS_THROUGH_COMMENT) != 0)
                emitter.comment(event.value.toCharArray(),
@@ -1088,12 +1162,14 @@ public class Processor extends XMLFilterImpl
                                tg.publicId, tg.systemId,
                                tg.lineNo, tg.colNo);
             break;
+
          case SAXEvent.PI:
             if((tg.passThrough & PASS_THROUGH_PI) != 0)
                emitter.processingInstruction(event.qName, event.value,
                                              tg.publicId, tg.systemId,
                                              tg.lineNo, tg.colNo);
             break;
+
          case SAXEvent.ATTRIBUTE:
             if((tg.passThrough & PASS_THROUGH_ATTRIBUTE) != 0)
                emitter.addAttribute(event.uri, event.qName, event.lName,
@@ -1101,27 +1177,13 @@ public class Processor extends XMLFilterImpl
                                     tg.publicId, tg.systemId,
                                     tg.lineNo, tg.colNo);
             break;
+
          default:
             log.warn("no default action for " + event);
          }
       }
    }
 
-
-   /**
-    * Process the current instruction. This method should be
-    * overriden for debug purpose.
-    * @param inst The instruction which should be processed
-    * @param event The current saxevent
-    * @return see {@link AbstractInstruction#process}
-    * @throws SAXException in case of parse-errors
-    */
-   protected int processInstruction(AbstractInstruction inst, SAXEvent event)
-      throws SAXException
-   {
-      // process instruction
-      return inst.process(context);
-   }
 
    /**
     * Process last element start (stored as {@link #lastElement} in
@@ -1216,8 +1278,7 @@ public class Processor extends XMLFilterImpl
    {
       // actually only the target group need to be put on this stack ..
       // (for findMatchingTemplate)
-      dataStack.push(new Data(PR_ATTRIBUTES, null, null, null,
-                              context));
+      dataStack.push(new Data(PR_ATTRIBUTES, null, null, null, context));
       for (int i=0; i<attrs.getLength(); i++) {
          if (DEBUG)
             if (log.isDebugEnabled())
@@ -1312,6 +1373,8 @@ public class Processor extends XMLFilterImpl
       // because the end of of the parent has been encountered
       if (!clearLast)
          topEvent = eventStack.pop();
+      else
+         topEvent = eventStack.peek();
       Hashtable storedVars = context.localVars;
       Data data;
       do {
@@ -1321,29 +1384,17 @@ public class Processor extends XMLFilterImpl
          context.position = data.contextPosition; // restore position
          context.localVars = data.localVars;      // restore variables
          AbstractInstruction inst = data.instruction;
-         int ret;
+
          do {
-            // ignore further stx:process-siblings instructions in this
-            // template if the processing was stopped by another
-            // stx:process-siblings or clearLast==true
-            ret = PR_CONTINUE;
-            while (inst != null && ret == PR_CONTINUE) {
-               if (DEBUG)
-                  if (log.isDebugEnabled())
-                     log.debug(inst);
-               //ret = inst.process(context);
-               ret = processInstruction(inst, (SAXEvent)topEvent);
-               inst = inst.next;
-            }
+            inst = doProcessLoop(inst, (SAXEvent)topEvent, false);
+
             if (DEBUG)
                if (log.isDebugEnabled()) {
-                  log.debug("stop " + ret);
+                  log.debug("stop " + processStatus);
                   log.debug(context.localVars);
                }
-            switch (ret) {
-            case PR_ATTRIBUTES:
-               processAttributes(data.sibEvent.attrs);
-               break;
+
+            switch (processStatus) {
             case PR_CHILDREN:
             case PR_SELF:
                NodeBase start = inst.getNode();
@@ -1354,11 +1405,17 @@ public class Processor extends XMLFilterImpl
                // falls through, if the error handler returns
             case PR_ERROR:
                throw new SAXException("Non-recoverable error");
+            // case PR_ATTRIBUTES: won't happen
             // case PR_CONTINUE or PR_SIBLINGS: ok, nothing to do
             }
-         } while (ret == PR_SIBLINGS &&
+
+            // ignore further stx:process-siblings instructions in this
+            // template if the processing was stopped by another
+            // stx:process-siblings or clearLast==true
+         } while (processStatus == PR_SIBLINGS &&
                   (clearLast || data != stopData));
-         if (ret == PR_SIBLINGS) {
+
+         if (processStatus == PR_SIBLINGS) {
             // put back the last stx:process-siblings instruction
             stopData.instruction = inst;
             // there might have been a group attribute
@@ -1518,21 +1575,9 @@ public class Processor extends XMLFilterImpl
             context.position = data.contextPosition; // restore position
             context.localVars = data.localVars;
             AbstractInstruction inst = data.instruction;
-            int ret = PR_CONTINUE;
-            while (inst != null && ret == PR_CONTINUE) {
-               if (DEBUG)
-                  if (log.isDebugEnabled())
-                     log.debug(inst);
-               //ret = inst.process(context); // AZu
-               if (! (inst.getNode() instanceof ProcessBase) ) {
-                  ret = processInstruction(inst, null);
-               } else {
-                  ret = inst.process(context); // AZu
-               }
+            inst = doProcessLoop(inst, (SAXEvent)eventStack.peek(), true);
 
-               inst = inst.next;
-            }
-            switch (ret) {
+            switch (processStatus) {
             case PR_CHILDREN:
             case PR_SELF:
                NodeBase start = inst.getNode();
@@ -1664,31 +1709,13 @@ public class Processor extends XMLFilterImpl
             context.localVars = data.localVars;
             Object topData = dataStack.peek();
             AbstractInstruction inst = data.instruction;
-            int ret = PR_CONTINUE;
-            while (inst != null && ret == PR_CONTINUE) {
-               if (DEBUG)
-                  if (log.isDebugEnabled())
-                     log.debug(inst);
-               //ret = inst.process(context); // AZu
-               if (! (inst.getNode() instanceof ProcessBase) ) {
-                  SAXEvent event = SAXEvent.newElement(uri, lName, qName, null, null);
-                  ret = processInstruction(inst, event);
-               } else {
-                  ret = inst.process(context); // AZu
-               }
+            inst = doProcessLoop(inst, (SAXEvent)eventStack.peek(), true);
 
-               inst = inst.next;
-               // if we encountered stx:process-attributes
-               if (ret == PR_ATTRIBUTES) {
-                  processAttributes(((SAXEvent)eventStack.peek()).attrs);
-                  ret = PR_CONTINUE;
-               }
-            }
             if (DEBUG)
                if (log.isDebugEnabled())
-                  log.debug("stop " + ret);
+                  log.debug("stop " + processStatus);
 
-            switch (ret) {
+            switch (processStatus) {
             case PR_CHILDREN:
             case PR_SELF: {
                NodeBase start = inst.getNode();
@@ -1699,12 +1726,16 @@ public class Processor extends XMLFilterImpl
                  start.publicId, start.systemId, start.lineNo, start.colNo);
                throw new SAXException("Non-recoverable error");
             }
+
             case PR_SIBLINGS:
                dataStack.push(
                   new Data(PR_SIBLINGS, data.template, inst,
                            data.passedParams, context,
                            (SAXEvent)eventStack.peek()));
                break;
+
+            // case PR_ATTRIBUTES: won't happen
+
             case PR_ERROR:
                throw new SAXException("Non-recoverable error");
             }
