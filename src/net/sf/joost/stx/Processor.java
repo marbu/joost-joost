@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.23 2003/10/23 14:45:15 obecker Exp $
+ * $Id: Processor.java,v 2.24 2003/11/01 14:45:41 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,16 +24,10 @@
 
 package net.sf.joost.stx;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.XMLReader;
+import net.sf.joost.Constants;
+import net.sf.joost.TransformerHandlerResolver;
+import net.sf.joost.instruction.*;
+import org.xml.sax.*;
 import org.xml.sax.ext.DeclHandler;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.NamespaceSupport;
@@ -41,18 +35,10 @@ import org.xml.sax.helpers.XMLFilterImpl;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import javax.xml.transform.ErrorListener;
-
-import java.util.Arrays;
-import java.util.EmptyStackException;
-import java.util.Hashtable;
-import java.util.Properties;
-import java.util.Stack;
-import java.util.Vector;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.URIResolver;
-
 import java.io.IOException;
-
+import java.util.*;
 import net.sf.joost.Constants;
 import net.sf.joost.TransformerHandlerResolver;
 import net.sf.joost.grammar.EvalException;
@@ -70,7 +56,7 @@ import net.sf.joost.trace.DebugProcessor;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.23 $ $Date: 2003/10/23 14:45:15 $
+ * @version $Revision: 2.24 $ $Date: 2003/11/01 14:45:41 $
  * @author Oliver Becker
  */
 
@@ -246,9 +232,9 @@ public class Processor extends XMLFilterImpl
 
       /**
        * Constructor used when processing a built-in template.
-       * @param data a {@link Processor.Data} element that will be copied 
+       * @param data a {@link Processor.Data} element that will be copied
        *             partially
-       */ 
+       */
       Data(Data data)
       {
          targetGroup = data.targetGroup;
@@ -376,7 +362,7 @@ public class Processor extends XMLFilterImpl
    /**
     * Constructs a new <code>Processor</code> instance by parsing an
     * STX transformation sheet.
-    * @param reader the parser that is used for reading the transformation 
+    * @param reader the parser that is used for reading the transformation
     *               sheet
     * @param src the source for the STX transformation sheet
     * @param errorListener an ErrorListener object for reporting errors
@@ -387,7 +373,7 @@ public class Processor extends XMLFilterImpl
     * @throws IOException if <code>src</code> couldn't be retrieved
     * @throws SAXException if a SAX parser couldn't be created
     */
-   public Processor(XMLReader reader, InputSource src, 
+   public Processor(XMLReader reader, InputSource src,
                     ErrorListener errorListener,
                     URIResolver uriResolver)
       throws IOException, SAXException
@@ -463,7 +449,7 @@ public class Processor extends XMLFilterImpl
             // property set, but still failed
             throw new SAXException("Can't create XMLReader for class " +
                                    prop);
-            // leave the method here
+            // leaveStxNode the method here
          }
          // try another SAX implementation
          String PARSER_IMPLS[] = {
@@ -501,7 +487,9 @@ public class Processor extends XMLFilterImpl
    {
       context = new Context();
 
-      emitter = context.emitter = new Emitter(context.errorHandler);
+      emitter = context.emitter = initializeEmitter(context, stxParser);
+
+      //emitter = context.emitter = new Emitter(context.errorHandler);
       eventStack = context.ancestorStack;
 
       setErrorHandler(context.errorHandler); // register error handler
@@ -520,6 +508,17 @@ public class Processor extends XMLFilterImpl
       Arrays.sort(globalTemplates);
       initOutputProperties();
    }
+
+    /**
+     * The initialization of the emitter could be overriden
+     * for debug purpose.
+     * @param ctx The current context
+     * @param parser The stx-parser
+     * @return an emitter-instance
+     */
+    protected Emitter initializeEmitter(Context ctx, Parser parser) {
+        return new Emitter(ctx.errorHandler);
+    }
 
 
     /**
@@ -834,9 +833,15 @@ public class Processor extends XMLFilterImpl
             int ret = PR_CONTINUE;
             while (inst != null && ret == PR_CONTINUE) {
                if (DEBUG)
-                  if (log.isDebugEnabled())
+                  if (log.isDebugEnabled()) {
                      log.debug(inst);
-               ret = inst.process(context);
+                     log.debug("in line: " + inst.getNode().lineNo);
+                  }
+
+               // process instruction
+               ret = processInstruction(inst, event);
+
+               // next instruction
                inst = inst.next;
             }
             if (DEBUG)
@@ -933,7 +938,10 @@ public class Processor extends XMLFilterImpl
                      if (DEBUG)
                         if (log.isDebugEnabled())
                            log.debug(inst);
-                     ret = inst.process(context);
+
+                     // process text instruction
+                     ret = processInstruction(inst, event);
+
                      inst = inst.next;
                   }
                   if (DEBUG)
@@ -1047,6 +1055,21 @@ public class Processor extends XMLFilterImpl
       }
    }
 
+
+   /**
+    * Process the current instruction. This method should be
+    * overriden for debug purpose.
+    * @param inst The instruction which should be processed
+    * @param event The current saxevent
+    * @return see {@link AbstractInstruction#process}
+    * @throws SAXException in case of parse-errors
+    */
+   protected int processInstruction(AbstractInstruction inst, SAXEvent event)
+      throws SAXException
+   {
+      // process instruction
+      return inst.process(context);
+   }
 
    /**
     * Process last element start (stored as {@link #lastElement} in
@@ -1862,9 +1885,10 @@ public class Processor extends XMLFilterImpl
      * Returns a ref to the last element (look ahead)
      * @return the last element
      */
-    public SAXEvent getLastElement() {
+    protected SAXEvent getLastElement() {
         return this.lastElement;
     }
+
    // **********************************************************************
 
 //     private static long maxUsed = 0;
