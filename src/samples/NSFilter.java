@@ -1,5 +1,5 @@
 /*
- * $Id: NSFilter.java,v 1.1 2003/05/20 11:29:30 obecker Exp $
+ * $Id: NSFilter.java,v 1.2 2003/05/23 11:17:04 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -50,17 +50,19 @@ import net.sf.joost.trax.TrAXConstants;
 /**
  * Example class that demonstrates the usage of external filters in Joost.
  * <p>
- * For simplicity this class unifies three tasks: 
+ * For simplicity this example comprises three tasks within one class: 
  * <ul>
- * <li>starting the application in the main method</li>
- * <li>returning itself as an TransformerHandlerResolver</li>
+ * <li>starting the application in the main method, registering an object
+ *     as a resolver for TransformerHandler objects</li>
+ * <li>acting as a TransformerHandlerResolver, that returns itself</li>
  * <li>acting as a TransformerHandler, that removes all elements in a
- *     given namespace (passed as parameter)</li>
- * @version $Revision: 1.1 $ $Date: 2003/05/20 11:29:30 $
+ *     given namespace (passed as a parameter)</li>
+ * @version $Revision: 1.2 $ $Date: 2003/05/23 11:17:04 $
  * @author Oliver Becker
  */
 
-public class NSFilter extends XMLFilterImpl 
+public class NSFilter 
+   extends XMLFilterImpl 
    implements TransformerHandler, TransformerHandlerResolver
 {
    public static void main(String[] args)
@@ -106,19 +108,19 @@ public class NSFilter extends XMLFilterImpl
 
 
    /** 
-    * The method attribute value to be used in the STX transformation sheet
+    * The filter attribute value to be used in the STX transformation sheet
     */
-   private static final String METHOD = 
+   private static final String FILTER = 
       "http://joost.sf.net/samples/NSFilter";
 
-   public TransformerHandler resolve(String method, String href, 
+   public TransformerHandler resolve(String filter, String href, String base,
                                      Hashtable params)
       throws SAXException
    {
-      if (METHOD.equals(method)) {
+      if (FILTER.equals(filter)) {
          if (href != null)
             throw new SAXException("Specification of an external source '" + 
-                                   href + "' not allowed for " + method);
+                                   href + "' not allowed for " + filter);
          skipUri = (String)params.get("uri");
          return this;
       }
@@ -126,15 +128,20 @@ public class NSFilter extends XMLFilterImpl
          return null;
    }
 
-   public TransformerHandler resolve(String method, XMLReader reader,
+   public TransformerHandler resolve(String filter, XMLReader reader,
                                      Hashtable params)
       throws SAXException
    {
-      if (METHOD.equals(method)) 
+      if (FILTER.equals(filter)) 
          throw new SAXException("Provision of internal code not allowed for "
-                                + method);
+                                + filter);
       else
          return null;
+   }
+
+   public boolean available(String filter)
+   {
+      return FILTER.equals(filter);
    }
 
 
