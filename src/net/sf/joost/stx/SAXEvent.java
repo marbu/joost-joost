@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEvent.java,v 1.13 2003/06/30 19:22:43 obecker Exp $
+ * $Id: SAXEvent.java,v 1.14 2003/07/01 11:56:36 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -35,7 +35,7 @@ import java.util.Hashtable;
 /** 
  * SAXEvent stores all information attached to an incoming SAX event,
  * it is the representation of a node in STX.
- * @version $Revision: 1.13 $ $Date: 2003/06/30 19:22:43 $
+ * @version $Revision: 1.14 $ $Date: 2003/07/01 11:56:36 $
  * @author Oliver Becker
  */
 final public class SAXEvent
@@ -215,14 +215,68 @@ final public class SAXEvent
    }
 
 
+
+   // *******************************************************************
+
+   /** 
+    * This class replaces java.lang.Long for counting because I need to 
+    * change the wrapped value and want to avoid the creation of a new
+    * object in each increment. Is this really better (faster)?
+    */
+   private final class Counter
+   {
+      public long value;
+      public Counter()
+      {
+         value = 1;
+      }
+   }
+
+   // *******************************************************************
+
+   /**
+    * This class acts as a wrapper for a pair of {@link String} objects.
+    * Such a pair is needed as a key for a hashtable.
+    */
+   private static final class DoubleString
+   {
+      private String s1, s2;
+      private int hashValue;
+      public DoubleString(String s1, String s2)
+      {
+         this.s1 = s1;
+         this.s2 = s2;
+         hashValue = s1.hashCode() ^ s1.hashCode();
+      }
+
+      public int hashCode()
+      {
+         return hashValue;
+      }
+
+      public boolean equals(Object o)
+      {
+         if (!(o instanceof DoubleString))
+            return false;
+         DoubleString ds = (DoubleString)o;
+         return s1.equals(ds.s1) && s2.equals(ds.s2);
+      }
+   }
+
+   // *******************************************************************
+
+
+   private static final DoubleString GENERIC_ELEMENT = 
+      new DoubleString("*", "*");
    /**
     * Increments the associated counters for an element.
     */
    public void countElement(String uri, String lName)
    {
-      String[] keys = { "node()", "{*}*", 
-                        "{" + uri + "}" + lName,
-                        "{*}" + lName, "{" + uri + "}*" };
+      Object[] keys = { "node()", GENERIC_ELEMENT,  
+                        new DoubleString(uri, lName),
+                        new DoubleString("*", lName),
+                        new DoubleString(uri, "*") };
       _countPosition(keys);
    }
 
@@ -253,101 +307,93 @@ final public class SAXEvent
       _countPosition(keys);
    }
 
+   private static final DoubleString GENERIC_PI = 
+      new DoubleString("pi()", "");
    /**
     * Increment the associated counters for a processing instruction node.
     */
    public void countPI(String target)
    {
-      String[] keys = { "node()", "pi()", "pi(" + target + ")" };
+      Object[] keys = { "node()", GENERIC_PI, 
+                        new DoubleString("pi()", target) };
       _countPosition(keys);
    }
-
-//     /**
-//      * Increment the associated counters for an attribute node.
-//      */
-//     public void countAttribute(String uri, String lName)
-//     {
-//        String[] keys = { "@{*}*", "@{" + uri + "}" + lName,
-//                          "@{*}" + lName, "@{" + uri + "}*" };
-//        _countPosition(keys);
-//     }
-
 
    /**
     * Performs the real counting. Will be used by the count* functions.
     */
-   private void _countPosition(String[] keys)
+   private void _countPosition(Object[] keys)
    {
-      // Use an array instead of the Long class, because the wrapped value
-      // needs to be updated.
-      long[] c;
+      Counter c;
       for (int i=0; i<keys.length; i++) {
-         c = (long[])posHash.get(keys[i]);
+         c = (Counter)posHash.get(keys[i]);
          if (c == null)
-            posHash.put(keys[i], c = new long[1]);
-         c[0]++;
+            posHash.put(keys[i], new Counter());
+         else
+            c.value++;
+         // posHash.put(keys[i], new Long(l.longValue()+1));
       }
    }
 
 
-   public long getPositionOf(String expName)
+   public long getPositionOf(String uri, String lName)
    {
-      long[] c = (long[])posHash.get(expName);
+      Counter c = (Counter)posHash.get(new DoubleString(uri, lName));
       if (c == null) {
          // Shouldn't happen
          throw new NullPointerException();
       }
-      return c[0];
+      return c.value;
    }
 
    public long getPositionOfNode()
    {
-      long[] c = (long[])posHash.get("node()");
+      Counter c = (Counter)posHash.get("node()");
       if (c == null) {
          // Shouldn't happen
          throw new NullPointerException();
       }
-      return c[0];
+      return c.value;
    }
 
    public long getPositionOfText()
    {
-      long[] c = (long[])posHash.get("text()");
+      Counter c = (Counter)posHash.get("text()");
       if (c == null) {
          // Shouldn't happen
          throw new NullPointerException();
       }
-      return c[0];
+      return c.value;
    }
 
    public long getPositionOfCDATA()
    {
-      long[] c = (long[])posHash.get("cdata()");
+      Counter c = (Counter)posHash.get("cdata()");
       if (c == null) {
          // Shouldn't happen
          throw new NullPointerException();
       }
-      return c[0];
+      return c.value;
    }
 
    public long getPositionOfComment()
    {
-      long[] c = (long[])posHash.get("comment()");
+      Counter c = (Counter)posHash.get("comment()");
       if (c == null) {
          // Shouldn't happen
          throw new NullPointerException();
       }
-      return c[0];
+      return c.value;
    }
 
    public long getPositionOfPI(String target)
    {
-      long[] c = (long[])posHash.get("pi(" + target + ")");
+      Counter c = (Counter)posHash.get(new DoubleString("pi()", target));
       if (c == null) {
          // Shouldn't happen
          throw new NullPointerException();
       }
-      return c[0];
+      return c.value;
    }
 
 
