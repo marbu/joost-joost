@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 2.5 2003/06/11 15:51:16 obecker Exp $
+ * $Id: PDocumentFactory.java,v 2.6 2003/07/06 10:36:28 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,10 +25,13 @@
 package net.sf.joost.instruction;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
+import org.xml.sax.ext.LexicalHandler;
+import javax.xml.transform.sax.TransformerHandler;
 
 import java.net.URL;
 import java.util.HashSet;
@@ -43,7 +46,7 @@ import net.sf.joost.stx.Value;
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.5 $ $Date: 2003/06/11 15:51:16 $
+ * @version $Revision: 2.6 $ $Date: 2003/07/06 10:36:28 $
  * @author Oliver Becker
  */
 
@@ -70,6 +73,8 @@ public class PDocumentFactory extends FactoryBase
       attrNames.add("href");
       attrNames.add("base");
       attrNames.add("group");
+      attrNames.add("filter");
+      attrNames.add("src");
    }
 
    /** @return <code>"process-document"</code> */
@@ -89,9 +94,24 @@ public class PDocumentFactory extends FactoryBase
 
       String groupAtt = attrs.getValue("group");
 
+      String filterAtt = attrs.getValue("filter");
+
+      if (groupAtt != null && filterAtt != null)
+         throw new SAXParseException(
+            "It's not allowed to use both `group' and `filter' attributes",
+            context.locator);
+
+      String srcAtt = attrs.getValue("src");
+
+      if (srcAtt != null && filterAtt == null)
+         throw new SAXParseException(
+            "Missing `filter' attribute in `" + qName + 
+            "' (`src' is present)",
+            context.locator);
+
       checkAttributes(qName, attrs, attrNames, context);
       return new Instance(qName, parent, context, href, baseAtt,
-                          groupAtt);
+                          groupAtt, filterAtt, srcAtt);
    }
 
 
@@ -104,10 +124,11 @@ public class PDocumentFactory extends FactoryBase
       // Constructor
       public Instance(String qName, NodeBase parent, ParseContext context,
                       Tree href, String baseUri, 
-                      String groupQName)
+                      String groupQName, String filter, String src)
+
          throws SAXParseException
       {
-         super(qName, parent, context, groupQName, null, null);
+         super(qName, parent, context, groupQName, filter, src);
          this.baseUri = baseUri;
          this.href = href;
       }
@@ -126,10 +147,20 @@ public class PDocumentFactory extends FactoryBase
          Processor proc = context.currentProcessor;
          XMLReader reader = Processor.getXMLReader();
          reader.setErrorHandler(context.errorHandler);
-         reader.setContentHandler(proc);
+         ContentHandler contH = proc;
+         LexicalHandler lexH = proc;
+         if (filter != null) {
+            // use external SAX filter (TransformerHandler)
+            TransformerHandler handler = getProcessHandler(context);
+            if (handler == null)
+               return PR_ERROR;
+            contH = handler;
+            lexH = handler;
+         }
+         reader.setContentHandler(contH);
          try {
             reader.setProperty(
-               "http://xml.org/sax/properties/lexical-handler", proc);
+               "http://xml.org/sax/properties/lexical-handler", lexH);
          }
          catch (SAXException ex) {
             if (log != null)

@@ -1,4 +1,5 @@
 Changes since 20030623
+- added 'filter' and 'src' attributes to stx:process-document
 - Bugfix: 765301
 
 Changes since 20030502
