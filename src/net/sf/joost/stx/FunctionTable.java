@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 1.14 2003/01/25 07:21:44 obecker Exp $
+ * $Id: FunctionTable.java,v 1.15 2003/01/25 08:12:40 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 1.14 $ $Date: 2003/01/25 07:21:44 $
+ * @version $Revision: 1.15 $ $Date: 2003/01/25 08:12:40 $
  * @author Oliver Becker
  */
 public final class FunctionTable
@@ -68,6 +68,9 @@ public final class FunctionTable
          new Not(),
          new True(),
          new False(),
+         new Floor(),
+         new Ceiling(),
+         new Round(),
          new Concat(),
          new StringLength(),
          new NormalizeSpace(),
@@ -563,6 +566,92 @@ public final class FunctionTable
          throws SAXException, EvalException
       {
          return new Value(false);
+      }
+   }
+
+
+
+   //
+   // Number functions
+   //
+
+   /**
+    * The <code>floor</code> function.
+    * Returns the largest integer that is not greater than the argument.
+    */
+   public class Floor implements Instance
+   {
+      /** @return 1 **/
+      public int getMinParCount() { return 1; }
+      /** @return 1 */
+      public int getMaxParCount() { return 1; }
+      /** @return "floor" */
+      public String getName() { return "{}floor"; }
+
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value v = args.evaluate(context, events, top);
+         if (v.type == Value.EMPTY)
+            return v;
+         v.convertToNumber();
+         v.number = Math.floor(v.number);
+         return v;
+      }
+   }
+
+
+   /**
+    * The <code>ceiling</code> function.
+    * Returns the smallest integer that is not less than the argument.
+    */
+   public class Ceiling implements Instance
+   {
+      /** @return 1 **/
+      public int getMinParCount() { return 1; }
+      /** @return 1 */
+      public int getMaxParCount() { return 1; }
+      /** @return "ceiling" */
+      public String getName() { return "{}ceiling"; }
+
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value v = args.evaluate(context, events, top);
+         if (v.type == Value.EMPTY)
+            return v;
+         v.convertToNumber();
+         v.number = Math.ceil(v.number);
+         return v;
+      }
+   }
+
+
+   /**
+    * The <code>round</code> function.
+    * Returns the integer that is closest to the argument.
+    */
+   public class Round implements Instance
+   {
+      /** @return 1 **/
+      public int getMinParCount() { return 1; }
+      /** @return 1 */
+      public int getMaxParCount() { return 1; }
+      /** @return "round" */
+      public String getName() { return "{}round"; }
+
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value v = args.evaluate(context, events, top);
+         if (v.type == Value.EMPTY)
+            return v;
+         v.convertToNumber();
+         // test for special cases
+         if (Double.isNaN(v.number) || Double.isInfinite(v.number))
+            return v;
+         v.number = (double)Math.round(v.number);
+         return v;
       }
    }
 
@@ -1107,9 +1196,8 @@ public final class FunctionTable
          if (v.type == Value.EMPTY) // empty sequence
             return v.setNumber(0);
          double sum = 0;
-         Value next;
          while (v != null) {
-            next = v.next;
+            Value next = v.next;
             sum += v.convertToNumber().number;
             v = next;
          }
