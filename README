@@ -1,0 +1,30 @@
+$Id: README,v 1.1 2002/08/27 09:40:51 obecker Exp $
+
+This module contains Java source files for Joost.
+
+The file build.xml is the Ant buildfile. Apache Ant is a Java-based build tool
+and can be downloaded from http://jakarta.apache.org/ant/
+
+For compiling you need several jars in the lib subdirectory or in your
+classpath respectively. The CVS contains only joostGen.jar, compiled from 
+the sources in the helper module.
+
+Additionally you have to install
+- log4j from http://jakarta.apache.org/log4j/
+  (Latest tested version: 1.2.6)
+- junit.jar from http://junit.org/ and
+  xercesImpl.jar from http://xml.apache.org/xerces2-j/
+  for compiling the src/test package
+- fop.jar and avalon-framework-cvs-20020315.jar
+  from http://xml.apache.org/fop/ 
+  (Latest tested version: 0.20.4)
+  for compiling sf.net.joost.emitter.FOPEmitter.java
+  (If you don't want a FOP connection just remove this file and
+  comment out some lines in sf.net.joost.Main.java)
+
+If you don't have Java 1.4 installed on your computer, you have to 
+add manually a SAX2 compliant parser and the JAXP 1.1 interfaces, too.
+
+
+This software is released under the Mozilla Public License Version 1.1,
+see http://www.mozilla.org/MPL/

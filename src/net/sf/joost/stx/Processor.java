@@ -1,0 +1,1083 @@
+/*
+ * $Id: Processor.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is: this file
+ *
+ * The Initial Developer of the Original Code is Oliver Becker.
+ *
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
+ * All Rights Reserved.
+ *
+ * Contributor(s): ______________________________________.
+ */
+
+package net.sf.joost.stx;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.Locator;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
+import org.xml.sax.ext.DeclHandler;
+import org.xml.sax.ext.LexicalHandler;
+import org.xml.sax.helpers.XMLFilterImpl;
+import org.xml.sax.helpers.XMLReaderFactory;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+
+import javax.xml.transform.ErrorListener;
+
+import java.util.Arrays;
+import java.util.Stack;
+import java.util.EmptyStackException;
+import java.util.Hashtable;
+import java.util.Vector;
+
+import java.io.IOException;
+
+import net.sf.joost.instruction.NodeBase;
+import net.sf.joost.instruction.TransformFactory;
+import net.sf.joost.instruction.OptionsFactory;
+import net.sf.joost.instruction.TemplateFactory;
+import net.sf.joost.instruction.GroupFactory;
+import net.sf.joost.instruction.VariableFactory;
+
+
+/**
+ * Processes an XML document as SAX XMLFilter. Actions are contained
+ * within a list of templates, received from a stylesheet node.
+ * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @author Oliver Becker
+ */
+
+public class Processor extends XMLFilterImpl
+   implements Constants, LexicalHandler /*, DeclHandler */
+{
+   /**
+    * Possible actions when no matching template was found.
+    * Set by <code>stx:options' no-match-events</code>
+    */
+   public static final byte
+      IGNORE_NO_MATCH         = 0x0, // default, see Context
+      COPY_ELEMENT_NO_MATCH   = 0x1,
+      COPY_TEXT_NO_MATCH      = 0x2,
+      COPY_COMMENT_NO_MATCH   = 0x4,
+      COPY_PI_NO_MATCH        = 0x8,
+      COPY_ATTRIBUTE_NO_MATCH = 0x10,
+      COPY_NO_MATCH           = ~IGNORE_NO_MATCH; // all bits set
+
+   /**
+    * <p>
+    * We need a node from the stylesheet whose location can be passed to
+    * {@link Emitter#endElement Emitter.endElement}. Per default this is
+    * the root element <code>stx:transform</code>. If <code>stx:options</code>
+    * exists then it is this <code>stx:options</code>.
+    * <p>
+    * In case copy is the default action for non-matched elements,
+    * (<code>&lt;stx:options no-match-events="copy"/&gt;</code>)
+    * a single <code>stx:element-start</code> will cause an error when
+    * creating the end tag while performing the default action. The location
+    * of this error then will be the <code>stx:options</code> element.
+    */
+   private NodeBase copyLocation;
+
+   /** The node representing the stylesheet */
+   private TransformFactory.Instance transformNode;
+
+
+   /**
+    * Array of global visible templates (templates with an attribute
+    * <code>visibility="global"</code>).
+    */
+   private TemplateFactory.Instance[] globalTemplates;
+
+   /** The Context object */
+   private Context context;
+
+   /** The Emitter object */
+   private Emitter emitter = new Emitter();
+
+   /**
+    * Depth in the subtree to be skipped; increased by startElement
+    * and decreased by endElement.
+    */
+   private int skipDepth = 0;
+
+   /** 
+    * Set to true between {@link #startDTD} and {@link #endDTD}, 
+    * needed for ignoring comments
+    */
+   private boolean insideDTD = false;
+
+   /** Buffer for collecting character data into single text nodes */
+   private StringBuffer collectedCharacters = new StringBuffer();
+
+   /** Last event (this Processor uses one look-ahead) */
+   private SAXEvent lastElement = null;
+
+   /** The output encoding specified in the stylesheet */
+   private String outputEncoding = null;
+
+   /**
+    * Stack for input events (of type {@link SAXEvent}). Every
+    * <code>startElement</code> event pushes itself on this stack, every
+    * <code>endElement</code> event pops its event from the stack.
+    * Character events (text()), comments, PIs will be put on the stack
+    * before processing and removed immediately afterwards. This stack is
+    * needed for matching and for position counting within the parent of
+    * each event.
+    */
+   private Stack eventStack = new Stack();
+
+   /** Stack for {@link Data} objects */
+   private Stack dataStack = new Stack();
+
+   // **********************************************************************
+   /**
+    * Inner class for data which is processing/template specific.
+    * Objects of this class will be put on the instance stack
+    * {@link #dataStack}.
+    */
+   private final class Data
+   {
+      /** The last instantiated template */
+      TemplateFactory.Instance lastTemplate;
+
+      /** The context position of the current node (from {@link Context}) */
+      long contextPosition;
+
+      /** The look ahead event for the current node (from {@link Context}) */
+      SAXEvent lookAhead;
+
+      /**
+       * Precedence categories (search space for templates). This array
+       * (the field in the top most element of {@link #dataStack}) will be
+       * used in {@link #findMatchingTemplate}.
+       */
+      TemplateFactory.Instance[][] precedenceCategories;
+
+      /**
+       * Last process status while processing this template.
+       * The values used are defined in {@link Constants} as "process state
+       * values".
+       */
+      short lastProcStatus;
+
+      /** Constructor for the initialization of all fields */
+      Data(TemplateFactory.Instance lt, long cp, SAXEvent la,
+           TemplateFactory.Instance[][] pc, short lps)
+      {
+         lastTemplate = lt;
+         contextPosition = cp;
+         lookAhead = la;
+         precedenceCategories = pc;
+         lastProcStatus = lps;
+      }
+
+      /**
+       * Constructor used when processing a built-in template
+       * @param pc precedence categories
+       */
+      Data(TemplateFactory.Instance[][] pc)
+      {
+         precedenceCategories = pc;
+         // other field are default initialized with 0 or null resp.
+      }
+
+      /** just for debugging */
+      public String toString()
+      {
+         return "Data{" + lastTemplate + "," + contextPosition + "," +
+                lookAhead + "," +
+                precedenceCategories + "," + lastProcStatus + "}";
+      }
+   } // inner class Data
+
+   // **********************************************************************
+
+
+   // Log4J initialization
+   private static org.apache.log4j.Logger log4j =
+      org.apache.log4j.Logger.getLogger(Processor.class);
+
+
+   //
+   // Constructors
+   //
+
+   /**
+    * Constructs a new <code>Processor</code> instance by parsing an 
+    * STX stylesheet.
+    * @param src the source for the STX stylesheet
+    * @param errorListener an ErrorListener object for reporting errors
+    *        while <em>parsing the stylesheet</em> (not for processing of 
+    *        XML input with this stylesheet, see {@link #setErrorListener})
+    * @throws IOException if <code>src</code> couldn't be retrieved
+    * @throws SAXException if a SAX parser couldn't be created
+    */
+   public Processor(InputSource src, ErrorListener errorListener)
+      throws IOException, SAXException
+   {
+      // create one XMLReader for parsing *and* processing
+      XMLReader reader = getXMLReader();
+
+      // create a Parser for parsing the STX stylesheet
+      ErrorHandlerImpl errorHandler = new ErrorHandlerImpl(errorListener, 
+                                                           true);
+      Parser stxParser = new Parser(errorHandler);
+      reader.setContentHandler(stxParser);
+      reader.setErrorHandler(errorHandler);
+
+      // parse the stylesheet
+      reader.parse(src);
+
+      init(stxParser);
+
+      // re-use this XMLReader for processing
+      setParent(reader);
+   }
+
+
+   /**
+    * Constructs a new <code>Processor</code> instance by parsing an 
+    * STX stylesheet.
+    * @param src the source for the STX stylesheet
+    * @throws IOException if <code>src</code> couldn't be retrieved
+    * @throws SAXException if a SAX parser couldn't be created
+    */
+   public Processor(InputSource src)
+      throws IOException, SAXException
+   {
+      this(src, null);
+   }
+
+
+   /**
+    * Constructs a new Processor instance from an existing Parser
+    * (Joost-Representation of an STX stylesheet)
+    * @param stxParser the joost-Representation of a stylesheet
+    * @throws SAXException if a SAX parent parser couldn't be created
+    */
+   public Processor(Parser stxParser)
+      throws SAXException
+   {
+      init(stxParser);
+      setParent(getXMLReader());
+   }
+
+
+   /**
+    * Constructs a copy of the given Processor.
+    * @param proc the original Processor object
+    */
+   public Processor(Processor proc)
+   {
+      transformNode = proc.transformNode;
+      copyLocation = proc.copyLocation;
+      globalTemplates = proc.globalTemplates;
+      dataStack.push(proc.dataStack.elementAt(0));
+      context = proc.context.copy();
+      outputEncoding = proc.outputEncoding;
+      setParent(proc.getParent());
+   }
+
+
+   /** 
+    * Create an <code>XMLReader</code> object (a SAX Parser)
+    * @throws SAXException if a SAX Parser couldn't be created
+    */
+   private XMLReader getXMLReader()
+      throws SAXException
+   {
+      // Using pure SAX2, not JAXP
+      XMLReader reader = null;
+      try {
+         // try default parser implementation
+         reader = XMLReaderFactory.createXMLReader();
+      }
+      catch (SAXException e) {
+         String prop = System.getProperty("org.xml.sax.driver");
+         if (prop != null) {
+            // property set, but still failed
+            throw new SAXException("Can't create XMLReader for class " +
+                                   prop);
+            // leave the method here
+         }
+         // try another SAX implementation
+         String PARSER_IMPLS[] = {
+            "org.apache.crimson.parser.XMLReaderImpl", // Crimson
+            "org.apache.xerces.parsers.SAXParser",     // Xerces
+            "gnu.xml.aelfred2.SAXDriver"               // Aelfred nonvalidating
+         };
+         for (int i=0; i<PARSER_IMPLS.length; i++) {
+            try {
+               reader = XMLReaderFactory.createXMLReader(PARSER_IMPLS[i]);
+               break; // for (...)
+            }
+            catch (SAXException e1) { } // continuing
+         }
+         if (reader == null) {
+            throw new SAXException("Can't find SAX parser implementation.\n" +
+                  "Please specify a parser class via the system property " +
+                  "'org.xml.sax.driver'");
+         }
+      }
+
+      log4j.info("Using " + reader.getClass().getName());
+      return reader;
+   }
+
+
+   /**
+    * Initialize a <code>Processor</code> object from an STX Parser
+    * @throws SAXException if global variables of the STX stylesheet 
+    * couldn't be initialized
+    */
+   private void init(Parser stxParser)
+      throws SAXException
+   {
+      context = new Context();
+      context.currentGroup = transformNode = stxParser.getTransformNode();
+      if (transformNode.options != null) {
+         OptionsFactory.Instance optionsNode = transformNode.options;
+         outputEncoding = optionsNode.outputEncoding;
+         if ("#input".equals(outputEncoding))
+            outputEncoding = null;
+         if (optionsNode.defaultSTXPathNamespace != null)
+            context.defaultSTXPathNamespace =
+               optionsNode.defaultSTXPathNamespace;
+         context.noMatchEvents = optionsNode.noMatchEvents;
+         context.stripSpace = optionsNode.stripSpace;
+         copyLocation = optionsNode;
+      }
+      else
+         copyLocation = transformNode;
+
+      // array of templates in precedence categories
+      dataStack.push(new Data(transformNode.precedenceCategories));
+
+      // array of global templates
+      Object[] objs = transformNode.getGlobalTemplates().toArray();
+      Arrays.sort(objs);
+      globalTemplates = new TemplateFactory.Instance[objs.length];
+      for (int i=0; i<objs.length; i++) {
+         globalTemplates[i] = (TemplateFactory.Instance)objs[i];
+      }
+
+      // initialize all group stx:variables
+      transformNode.initGroupVariables(emitter, eventStack, context);
+   }
+
+
+   /**
+    * Assigns a parent to this filter instance. Attempts to register itself
+    * as a lexical handler on this parent.
+    */
+   public void setParent(XMLReader parent)
+   {
+      super.setParent(parent);
+
+      try {
+         parent.setProperty("http://xml.org/sax/properties/lexical-handler",
+                            this);
+         parent.setContentHandler(this);
+         setErrorHandler(context.errorHandler); // Processor is an XMLFilter
+      }
+      catch (SAXException ex) {
+         log4j.warn(ex);
+      }
+   }
+
+
+
+   /**
+    * Registers a content handler.
+    */
+   public void setContentHandler(ContentHandler handler)
+   {
+      emitter.setContentHandler(handler);
+   }
+
+   /**
+    * Registers a lexical handler.
+    */
+   public void setLexicalHandler(LexicalHandler handler)
+   {
+      emitter.setLexicalHandler(handler);
+   }
+
+   /**
+    * Registers a declaration handler. Does nothing at the moment.
+    */
+   public void setDeclHandler(DeclHandler handler)
+   {
+   }
+
+
+   /** Standard prefix for SAX2 properties */
+   private static String PROP_PREFIX = "http://xml.org/sax/properties/";
+
+   /**
+    * Set the property of a value on the underlying XMLReader.
+    */
+   public void setProperty(String prop, Object value)
+      throws SAXNotRecognizedException, SAXNotSupportedException
+   {
+      if ((PROP_PREFIX + "lexical-handler").equals(prop))
+         setLexicalHandler((LexicalHandler)value);
+      else if ((PROP_PREFIX + "declaration-handler").equals(prop))
+         setDeclHandler((DeclHandler)value);
+      else
+         super.setProperty(prop, value);
+   }
+
+
+   /**
+    * Registers a <code>ErrorListener</code> object for reporting
+    * errors while processing (transforming) the XML input
+    */
+   public void setErrorListener(ErrorListener listener)
+   {
+      context.errorHandler.errorListener = listener;
+   }
+
+
+   /**
+    * @return the output encoding specified in the STX stylesheet
+    */
+   public String getOutputEncoding()
+   {
+      return outputEncoding;
+   }
+
+
+   /**
+    * @return the matching template for the current event stack.
+    */
+   private TemplateFactory.Instance findMatchingTemplate()
+      throws SAXException
+   {
+      TemplateFactory.Instance found = null;
+      TemplateFactory.Instance[] category = null;
+      // init value for priority doesn't really matter
+      double priority = Double.POSITIVE_INFINITY;
+      long position = 0;
+      int i, j=0;
+
+      // how many process-self are on the stack?
+      int selfcount = 0;
+      for (int top=dataStack.size();
+           top > 0 &&
+           (((Data)dataStack.elementAt(top-1)).lastProcStatus & ST_SELF) != 0;
+           top--)
+         selfcount++;
+
+      // first: lookup in the precedence categories
+      TemplateFactory.Instance[][] precedenceCategories =
+         ((Data)dataStack.peek()).precedenceCategories;
+      lookup:
+      for (i=0; i<precedenceCategories.length; i++)
+         for (j=0; j<precedenceCategories[i].length; j++)
+            if (precedenceCategories[i][j].matches(context, eventStack) &&
+                selfcount-- == 0) {
+               category = precedenceCategories[i];
+               break lookup;
+            }
+
+      // second: if nothing was found, lookup in the array of global templates
+      if (category == null)
+         for (j=0; j<globalTemplates.length; j++)
+            if (globalTemplates[j].matches(context, eventStack) &&
+                selfcount-- == 0) {
+               category = globalTemplates;
+               break;
+            }
+
+      if (category != null) { // means, we found a template
+         found = category[j];
+         priority = found.getPriority();
+         // look for more templates with the same priority in the same
+         // category
+         if (++j < category.length && priority == category[j].getPriority()) {
+            // need to store the computed position (from matches(...))
+            position = context.position;
+            for (; j<category.length &&
+                   priority == category[j].getPriority(); j++) {
+               if (category[j].matches(context, eventStack))
+                  context.errorHandler.error(
+                     "Ambigous template rule with priority " + priority +
+                     ", found matching template rule already in line " +
+                     found.lineNo,
+                     category[j].publicId, category[j].systemId,
+                     category[j].lineNo, category[j].colNo);
+            }
+            // restore position
+            // (may have changed in one of the matches() tests)
+            context.position = position;
+         }
+      }
+
+      return found;
+   }
+
+
+   /**
+    * Process a text node (from several consecutive <code>characters</code>
+    * events)
+    */
+   private void processCharacters()
+      throws SAXException
+   {
+      String s = collectedCharacters.toString();
+
+      if (log4j.isDebugEnabled())
+         log4j.debug("'" + s + "'");
+
+//        strip: while (context.stripSpace) {
+//           // 'while' acts as an 'if' surrogat (see break below)
+//           // strip white-space only text nodes from the input
+//           int len = s.length();
+//           char c;
+//           for (int i=0; i<len; i++) {
+//              if ((c = s.charAt(i)) != ' ' &&
+//                  c != '\t' && c != '\n' && c != '\r')
+//                 // found non-white-space
+//                 break strip; // can't do this inside of an 'if'
+//           }
+//           collectedCharacters.setLength(0);
+//           return; // white-space only characters found, do nothing
+//        }
+      if (context.stripSpace && s.trim().length() == 0) {
+         collectedCharacters.setLength(0);
+         return; // white-space only characters found, do nothing
+      }
+
+
+      // don't modify the event stack after process-self
+      if ((((Data)dataStack.peek()).lastProcStatus & ST_SELF) == 0) {
+         ((SAXEvent)eventStack.peek()).countText();
+         eventStack.push(SAXEvent.newText(s));
+         if (log4j.isDebugEnabled())
+            log4j.debug("eventStack.push " + eventStack.peek());
+         context.lookAhead = null;
+      }
+
+      TemplateFactory.Instance temp = findMatchingTemplate();
+      if (temp != null) {
+         short procStatus = temp.process(emitter, eventStack, context,
+                                         ST_PROCESSING);
+         // simulate end event, if there is a process-children statement
+         if ((procStatus & ST_CHILDREN) != 0)
+            temp.process(emitter, eventStack, context, ST_CHILDREN);
+         else if ((procStatus & ST_SELF) != 0) {
+            // marker for findMatchingTemplate()
+            dataStack.push(
+               new Data(null, 0, null,
+                        ((Data)dataStack.peek()).precedenceCategories,
+                        procStatus));
+            processCharacters(); // recurse (process-self)
+            dataStack.pop();
+            temp.process(emitter, eventStack, context, ST_SELF);
+         }
+      }
+      else if((context.noMatchEvents & COPY_TEXT_NO_MATCH) != 0)
+         emitter.characters(s.toCharArray(), 0, s.length());
+
+      // as above: don't modify the event stack after process-self
+      if ((((Data)dataStack.peek()).lastProcStatus & ST_SELF) == 0) {
+         if (log4j.isDebugEnabled())
+            log4j.debug("eventStack.pop " + eventStack.pop());
+         else
+            eventStack.pop();
+      }
+
+      collectedCharacters.setLength(0);
+   }
+
+
+   /** 
+    * Process last element start (stored as {@link #lastElement} in
+    * {@link #startElement startElement}) 
+    */
+   private void processLastElement(SAXEvent currentEvent)
+      throws SAXException
+   {
+      log4j.debug(lastElement);
+
+      // check recursion initiated by process-self
+      // execute the following code only once per event
+      if ((((Data)dataStack.peek()).lastProcStatus & ST_SELF) == 0) {
+         // determine if the look-ahead is a text node
+         String s = collectedCharacters.toString();
+         if (s.length() == 0 || 
+             (context.stripSpace && s.trim().length() == 0))
+            context.lookAhead = currentEvent;
+         else
+            context.lookAhead = SAXEvent.newText(s);
+
+         // put last element on the event stack
+         ((SAXEvent)eventStack.peek()).countElement(lastElement.uri, 
+                                                    lastElement.lName);
+         eventStack.push(lastElement);
+         if (log4j.isDebugEnabled())
+            log4j.debug("eventStack.push " + lastElement);
+      }
+
+      TemplateFactory.Instance temp = findMatchingTemplate();
+      if (temp != null) {
+         short procStatus = temp.process(emitter, eventStack, context,
+                                         ST_PROCESSING);
+         if ((procStatus & ST_CHILDREN) != 0) {
+            // processing suspended due to a process-children
+            dataStack.push(
+               new Data(temp, context.position, context.lookAhead,
+                        temp.parent.precedenceCategories,
+                        procStatus));
+            if (log4j.isDebugEnabled())
+               log4j.debug("dataStack.push " + dataStack.peek());
+         }
+         else if ((procStatus & ST_SELF) != 0) {
+            // processing suspended due to a process-self
+            dataStack.push(
+               new Data(temp, context.position, context.lookAhead,
+                        ((Data)dataStack.peek()).precedenceCategories,
+                        procStatus));
+            if (log4j.isDebugEnabled())
+               log4j.debug("dataStack.push " + dataStack.peek());
+            processLastElement(currentEvent); // recurse (process-self)
+         }
+         else {
+            // end of template reached, skip contents
+            skipDepth = 1;
+            collectedCharacters.setLength(0); // clear text
+         }
+      }
+      else { // no matching template found, perform default action
+         if((context.noMatchEvents & COPY_ELEMENT_NO_MATCH) != 0)
+            emitter.startElement(lastElement.uri, lastElement.lName, 
+                                 lastElement.qName, lastElement.attrs);
+         dataStack.push(
+            new Data(((Data)dataStack.peek()).precedenceCategories));
+         if (log4j.isDebugEnabled())
+            log4j.debug("dataStack.push " + dataStack.peek());
+      }
+
+      lastElement = null;
+      context.lookAhead = null; // reset look-ahead
+   }
+
+
+
+
+   //
+   // from interface ContentHandler
+   //
+
+   public void startDocument() throws SAXException
+   {
+      log4j.debug("");
+
+      // perform this only once (in case of a stx:process-self statement)
+      if (eventStack.empty()) {
+         eventStack.push(SAXEvent.newRoot());
+         emitter.startDocument();
+      }
+
+      TemplateFactory.Instance temp = findMatchingTemplate();
+      if (temp != null) {
+         short procStatus = temp.process(emitter, eventStack, context,
+                                         ST_PROCESSING);
+         if ((procStatus & ST_CHILDREN) != 0) {
+            dataStack.push(
+               new Data(temp, context.position, context.lookAhead,
+                        temp.parent.precedenceCategories,
+                        procStatus));
+         }
+         else if ((procStatus & ST_SELF) != 0) {
+            dataStack.push(
+               new Data(temp, context.position, context.lookAhead,
+                        ((Data)dataStack.peek()).precedenceCategories,
+                        procStatus));
+            startDocument(); // recurse (process-self)
+         }
+         else {
+            skipDepth++;
+            return;
+         }
+      }
+      else {
+         dataStack.push(
+            new Data(((Data)dataStack.peek()).precedenceCategories));
+      }
+   }
+
+
+   public void endDocument()
+      throws SAXException
+   {
+      if (collectedCharacters.length() != 0)
+         processCharacters();
+
+      if (skipDepth == 0) {
+         Data data = (Data)dataStack.pop();
+         short prStatus = data.lastProcStatus;
+         if ((prStatus & (ST_CHILDREN | ST_SELF)) != 0) {
+            context.position = data.contextPosition; // restore position
+            context.lookAhead = data.lookAhead;      // restore look ahead
+            data.lastTemplate.process(emitter, eventStack, context,
+                                      prStatus);
+         }
+         else if (prStatus == 0) ;
+         else {
+            log4j.error("encountered 'else'");
+         }
+
+         // look at the next process status on the stack
+         if ((((Data)dataStack.peek()).lastProcStatus & ST_SELF) != 0)
+            endDocument(); // recurse (process-self)
+         else {
+            emitter.endDocument(context,
+                                transformNode.publicId, 
+                                transformNode.systemId,
+                                transformNode.lineNo, transformNode.colNo);
+            if (log4j.isDebugEnabled())
+               log4j.debug("eventStack.pop " + eventStack.pop());
+            else
+               eventStack.pop();
+         }
+      }
+      else {
+         if (skipDepth != 1)
+            log4j.error("skipDepth != 1");
+         emitter.endDocument(context,
+                             transformNode.publicId, 
+                             transformNode.systemId,
+                             transformNode.lineNo, transformNode.colNo);
+         if (log4j.isDebugEnabled())
+            log4j.debug("eventStack.pop " + eventStack.pop());
+         else
+            eventStack.pop();
+      }
+   }
+
+
+   public void startElement(String uri, String lName, String qName,
+                            Attributes attrs)
+      throws SAXException
+   {
+      if (log4j.isDebugEnabled()) {
+         log4j.debug(qName);
+         log4j.debug("eventStack: " + eventStack);
+         log4j.debug("dataStack: " + dataStack);
+//           traceMemory();
+      }
+
+      if (skipDepth > 0) {
+         skipDepth++;
+         return;
+      }
+
+      SAXEvent me = SAXEvent.newElement(uri, lName, qName, attrs);
+      // look-ahead mechanism
+      if (lastElement != null) {
+         processLastElement(me);
+         if (skipDepth == 1) { // after processing lastElement
+            skipDepth = 2;     // increase counter again for this element
+            return;
+         }
+      }
+      lastElement = me;
+
+      if (collectedCharacters.length() != 0)
+         processCharacters();
+   }
+
+
+   public void endElement(String uri, String lName, String qName)
+      throws SAXException
+   {
+      if (log4j.isDebugEnabled()) {
+         log4j.debug(qName + " (skipDepth: " + skipDepth + ")");
+         // log4j.debug("eventStack: " + eventStack.toString());
+         // log4j.debug("dataStack: " + dataStack.toString());
+      }
+
+      if (lastElement != null)
+         processLastElement(null);
+
+      if (collectedCharacters.length() != 0)
+         processCharacters();
+
+      if (skipDepth == 0) {
+         Data data = (Data)dataStack.pop();
+         if (log4j.isDebugEnabled())
+            log4j.debug("dataStack.pop " + data);
+         short prStatus = data.lastProcStatus;
+         if (data.lastTemplate == null) {
+            // perform default action?
+            if ((context.noMatchEvents & COPY_ELEMENT_NO_MATCH) != 0)
+               emitter.endElement(uri, lName, qName,
+                                  context,
+                                  copyLocation.publicId,
+                                  copyLocation.systemId,
+                                  copyLocation.lineNo, copyLocation.colNo);
+         }
+         else if ((prStatus & (ST_CHILDREN | ST_SELF)) != 0) {
+            context.position = data.contextPosition; // restore position
+            context.lookAhead = data.lookAhead;      // restore look ahead
+            data.lastTemplate.process(emitter, eventStack, context,
+                                      prStatus);
+         }
+         else {
+            log4j.error("encountered 'else'");
+         }
+
+         // look at the next processing element
+         if ((((Data)dataStack.peek()).lastProcStatus & ST_SELF) != 0) {
+            endElement(uri, lName, qName); // recurse (process-self)
+         }
+         else {
+            if (log4j.isDebugEnabled())
+               log4j.debug("eventStack.pop " + eventStack.pop());
+            else
+               eventStack.pop();
+         }
+      }
+      else {
+         if (--skipDepth == 0) {
+            if (log4j.isDebugEnabled())
+               log4j.debug("eventStack.pop " + eventStack.pop());
+            else
+               eventStack.pop();
+         }
+      }
+   }
+
+
+   public void characters(char[] ch, int start, int length)
+   {
+      if (skipDepth > 0)
+         return;
+
+      collectedCharacters.append(ch, start, length);
+   }
+
+
+   public void ignorableWhitespace(char[] ch, int start, int length)
+   {
+      characters(ch, start, length);
+   }
+
+
+   public void processingInstruction(String target, String data)
+      throws SAXException
+   {
+//        traceMemory();
+
+      if (skipDepth > 0 || insideDTD)
+         return;
+
+      // do this only once per event (not after process-self)
+      if ((((Data)dataStack.peek()).lastProcStatus & ST_SELF) == 0) {
+         SAXEvent me = SAXEvent.newPI(target, data);
+         if (lastElement != null) {
+            processLastElement(me);
+            if (skipDepth > 0)
+               return;
+         }
+         if (collectedCharacters.length() != 0)
+            processCharacters();
+
+         // don't modify the event stack after process-self
+         ((SAXEvent)eventStack.peek()).countPI(target);
+         eventStack.push(me);
+         if (log4j.isDebugEnabled())
+            log4j.debug("eventStack.push " + me);
+      }
+
+      TemplateFactory.Instance temp = findMatchingTemplate();
+      if (temp != null) {
+         short procStatus = temp.process(emitter, eventStack, context,
+                                         ST_PROCESSING);
+         // simulate end event if there is a process-children statement
+         if ((procStatus & ST_CHILDREN) != 0)
+            temp.process(emitter, eventStack, context, ST_CHILDREN);
+         else if ((procStatus & ST_SELF) != 0) {
+            // marker for findMatchingTemplate()
+            dataStack.push(
+               new Data(null, 0, null,
+                        ((Data)dataStack.peek()).precedenceCategories,
+                        procStatus));
+            processingInstruction(target, data); // recurse (process-self)
+            dataStack.pop();
+            temp.process(emitter, eventStack, context, ST_SELF);
+         }
+      }
+      else if((context.noMatchEvents & COPY_PI_NO_MATCH) != 0)
+         emitter.processingInstruction(target, data);
+
+      // as above: don't modify the event stack after process-self
+      if ((((Data)dataStack.peek()).lastProcStatus & ST_SELF) == 0) {
+         if (log4j.isDebugEnabled())
+            log4j.debug("eventStack.pop " + eventStack.pop());
+         else
+            eventStack.pop();
+      }
+   }
+
+
+//     public void startPrefixMapping(String prefix, String uri)
+//        throws SAXException
+//     {
+//     }
+
+//     public void endPrefixMapping(String prefix)
+//        throws SAXException
+//     {
+//     }
+
+//     public void skippedEntity(String name)
+//     {
+//     }
+
+//     public void setDocumentLocator(Locator locator)
+//     {
+//     }
+
+
+   //
+   // from interface LexicalHandler
+   //
+
+   public void startDTD(String name, String publicId, String systemId)
+   {
+      insideDTD = true;
+   }
+
+   public void endDTD()
+   {
+      insideDTD = false;
+   }
+
+   public void startEntity(java.lang.String name)
+      throws SAXException
+   {
+   }
+
+
+   public void endEntity(java.lang.String name)
+      throws SAXException
+   {
+   }
+
+   public void startCDATA()
+      throws SAXException
+   {
+   }
+
+   public void endCDATA()
+      throws SAXException
+   {
+   }
+
+   public void comment(char[] ch, int start, int length)
+      throws SAXException
+   {
+      if (log4j.isDebugEnabled())
+         log4j.debug(new String(ch,start,length));
+
+      if (skipDepth > 0 || insideDTD)
+         return;
+
+      // do this only once per event (not after process-self)
+      if ((((Data)dataStack.peek()).lastProcStatus & ST_SELF) == 0) {
+         SAXEvent me = SAXEvent.newComment(new String(ch, start, length));
+         if (lastElement != null) {
+            processLastElement(me);
+            if (skipDepth > 0)
+               return;
+         }
+         if (collectedCharacters.length() != 0)
+            processCharacters();
+
+         // don't modify the event stack after process-self
+         ((SAXEvent)eventStack.peek()).countComment();
+         eventStack.push(me);
+         if (log4j.isDebugEnabled())
+            log4j.debug("eventStack.push " + me);
+      }
+      TemplateFactory.Instance temp = findMatchingTemplate();
+      if (temp != null) {
+         short procStatus = temp.process(emitter, eventStack, context,
+                                         ST_PROCESSING);
+         // simulate end event if there is a process-children statement
+         if ((procStatus & ST_CHILDREN) != 0)
+            temp.process(emitter, eventStack, context, ST_CHILDREN);
+         else if ((procStatus & ST_SELF) != 0) {
+            // marker for findMatchingTemplate()
+            dataStack.push(
+               new Data(null, 0, null,
+                        ((Data)dataStack.peek()).precedenceCategories,
+                        procStatus));
+            comment(ch, start, length);  // recurse (process-self)
+            dataStack.pop();
+            temp.process(emitter, eventStack, context, ST_SELF);
+         }
+      }
+      else if((context.noMatchEvents & COPY_COMMENT_NO_MATCH) != 0)
+         emitter.comment(ch, start, length);
+
+      // as above: don't modify the event stack after process-self
+      if ((((Data)dataStack.peek()).lastProcStatus & ST_SELF) == 0) {
+         if (log4j.isDebugEnabled())
+            log4j.debug("eventStack.pop " + eventStack.pop());
+         else
+            eventStack.pop();
+      }
+   }
+
+
+   // **********************************************************************
+
+//     private static long maxUsed = 0;
+//     private static int initWait = 0;
+
+//     private void traceMemory()
+//     {
+//        System.gc();
+//        if (initWait < 20) {
+//           initWait++;
+//           return;
+//        }
+
+//        long total = Runtime.getRuntime().totalMemory();
+//        long free = Runtime.getRuntime().freeMemory();
+//        long used = total-free;
+//        maxUsed = (used>maxUsed) ? used : maxUsed;
+//        log4j.debug((total - free) + " = " + total + " - " + free +
+//                    "  [" + maxUsed + "]");
+
+//        /*
+//        log4j.debug("templateStack: " + templateStack.size());
+//        log4j.debug("templateProcStack: " + templateProcStack.size());
+//        log4j.debug("categoryStack: " + categoryStack.size());
+//        log4j.debug("eventStack: " + eventStack.size());
+//        log4j.debug("newNs: " + newNs.size());
+//        log4j.debug("collectedCharacters: " + collectedCharacters.capacity());
+//        */
+//     }
+}

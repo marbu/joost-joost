@@ -1,0 +1,2 @@
+Main-Class: net.sf.joost.Main
+Class-Path: log4j.jar

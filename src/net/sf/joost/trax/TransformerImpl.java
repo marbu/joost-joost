@@ -1,0 +1,613 @@
+/*
+ * $Id: TransformerImpl.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is: this file
+ *
+ * The Initial Developer of the Original Code is Anatolij Zubow.
+ *
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
+ * All Rights Reserved.
+ *
+ * Contributor(s): ______________________________________.
+ */
+
+
+package net.sf.joost.trax;
+
+//JAXP
+import javax.xml.transform.*;
+import javax.xml.transform.sax.*;
+import javax.xml.transform.dom.*;
+import javax.xml.transform.stream.*;
+
+//JDK
+import java.net.URLConnection;
+import java.net.URL;
+import java.util.*;
+import java.io.*;
+
+//Joost
+import net.sf.joost.stx.Parser;
+import net.sf.joost.stx.Processor;
+import net.sf.joost.stx.Emitter;
+import net.sf.joost.emitter.StxEmitter;
+import net.sf.joost.instruction.TransformFactory;
+import net.sf.joost.emitter.*;
+
+//SAX
+import org.xml.sax.*;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.*;
+
+// Import log4j classes.
+import org.apache.log4j.Logger;
+
+
+/**
+ * This class implements the Transformer-Interface for TraX.
+ * With a Transformer-object you can proceed transformations,
+ * but be careful, because a Transformer-object is not thread-
+ * safe. For threads you should use Templates.
+ * @author Zubow
+ */
+public class TransformerImpl extends Transformer implements TrAXConstants {
+
+    // Define a static logger variable so that it references the
+    // Logger instance named "TransformerImpl".
+    static Logger log = Logger.getLogger(TransformerImpl.class);
+
+    private static Processor processor = null;
+
+    //encoding
+    private String encoding             = null;
+    private ContentHandler handler      = null;
+    private Hashtable paramhash         = new Hashtable();
+    private Properties prophash         = new Properties();
+    private URIResolver uriRes          = null;
+    private ErrorListener errorListener = null;
+
+    /**
+     * Synch object to gaurd against setting values from the TrAX interface
+     * or reentry while the transform is going on.
+     */
+    private Boolean reentryGuard = new Boolean(true);
+
+
+
+    /**
+     * Defaultconstrucor
+     */
+    public TransformerImpl() {}
+
+
+    /**
+     * Constructor
+     * @param processor A <code>Processor</code> object.
+     */
+    public TransformerImpl(Processor processor) {
+
+      this.processor = processor;
+
+    }
+
+
+    /**
+     * Transforms a xml-source : SAXSource, DOMSource, StreamSource to
+     * SAXResult, DOMResult and StreamResult
+     * @param xmlSource A <code>Source</code>
+     * @param result A <code>Result</code>
+     * @throws TransformerException
+     */
+    public void transform(Source xmlSource, Result result)
+        throws TransformerException {
+
+        //should be synchronized
+        synchronized (reentryGuard) {
+
+            log.debug("perform transformation from xml-source(SAXSource, " +
+                "DOMSource, StreamSource) to  SAXResult, DOMResult or " +
+                "StreamResult");
+
+            try {
+
+                //init StxEmitter
+                StxEmitter out = initStxEmitter(result);
+
+                this.processor.setContentHandler(out);
+                this.processor.setLexicalHandler(out);
+
+                //register ErrorListener
+                if (this.errorListener != null) {
+
+                    this.processor.setErrorListener(errorListener);
+
+                }
+
+                SAXSource saxSource = getSAXSource(xmlSource, true);
+                InputSource isource = saxSource.getInputSource();
+
+                if(isource != null) {
+
+                    log.debug("perform transformation");
+
+                    //perform transformation
+                    this.processor.parse(isource);
+
+                } else {
+
+                    log.error("InputSource is null - could not perform " +
+                        "transformation");
+
+                }
+
+                //perform result
+                performResults(result, out);
+
+            }
+            catch (Exception ex) {
+
+                log.error(ex);
+                ex.printStackTrace();
+                throw new TransformerException(ex);
+
+            }
+        }
+    }
+
+
+    /**
+     * Performs the <code>Result</code>.
+     * @param result A <code>Result</code>
+     * @param out <code>StxEmitter</code>.
+     */
+    private void performResults(Result result, StxEmitter out) {
+
+        log.debug("perform result");
+
+        //DOMResult
+        if (result instanceof DOMResult) {
+
+            log.debug("result is a DOMResult");
+            Node nodeResult = ((DOMEmitter)out).getDOMTree();
+            //DOM specific Implementation
+            ((DOMResult)result).setNode(nodeResult);
+
+        }
+
+        //StreamResult
+        if (result instanceof StreamResult) {
+
+            log.debug("result is a StreamResult");
+        }
+
+        //SAXResult
+        if (result instanceof SAXResult) {
+
+            log.debug("result is a SAXResult");
+
+        }
+    }
+
+
+
+    /**
+    * Converts a supplied <code>Source</code> to a <code>SAXSource</code>.
+    * @param source The supplied input source
+    * @param isStyleSheet true if the source is a stylesheet
+    * @return a <code>SAXSource</code>
+    */
+    public SAXSource getSAXSource(Source source, boolean isStyleSheet)
+        throws TransformerConfigurationException {
+
+        log.debug("getting a SAXSource from a Source");
+
+        //SAXSource
+        if (source instanceof SAXSource) {
+
+            log.debug("source is an instance of SAXSource, so simple return");
+
+            return (SAXSource)source;
+
+        }
+
+        //DOMSource
+        if (source instanceof DOMSource) {
+
+            log.debug("source is an instance of DOMSource");
+
+            InputSource is = new InputSource("dummy");
+
+            Node startNode = ((DOMSource)source).getNode();
+
+            Document doc;
+
+            if (startNode instanceof Document) {
+
+                doc = (Document)startNode;
+
+            } else {
+
+                doc = startNode.getOwnerDocument();
+            }
+
+            log.debug("using DOMDriver");
+
+            DOMDriver driver;
+
+            //if (doc instanceof DocumentInfo) {
+
+            //    driver = new TreeDriver();
+
+            //} else {
+
+                driver = new DOMDriver();
+
+            //}
+
+            driver.setDocument(doc);
+
+            is.setSystemId(source.getSystemId());
+
+            driver.setSystemId(source.getSystemId());
+
+            return new SAXSource(driver, is);
+        }
+
+        //StreamSource
+        if (source instanceof StreamSource) {
+
+            log.debug("source is an instance of StreamSource");
+
+            InputSource isource = TrAXHelper.getInputSourceForStreamSources(source);
+
+            return new SAXSource(isource);
+
+        } else {
+
+            log.error("Unknown type of source");
+
+            throw new IllegalArgumentException("Unknown type of source");
+        }
+    }
+
+
+    /**
+     * Setter for OutputProperty (not implemented).
+     * @param name The key of the outputProperty.
+     * @param value The value of the outputProperty.
+     * @throws IllegalArgumentException
+     */
+    public void setOutputProperty(String name, String value) throws java.lang.IllegalArgumentException {
+
+        synchronized (reentryGuard)
+        {
+
+            prophash.put(name, value);
+
+        }
+    }
+
+
+    /**
+     * Setter for OutputProperties (not implemented).
+     * @param oformat A <code>Properties</code> object.
+     * @throws IllegalArgumentException
+     */
+    public void setOutputProperties(Properties oformat) throws java.lang.IllegalArgumentException {
+
+        synchronized (reentryGuard)
+        {
+
+            prophash = oformat;
+
+        }
+    }
+
+
+    /**
+     * Getter for {@link #prophash}
+     * @return <code>Properties</code>
+     */
+    public Properties getOutputProperties() {
+
+        return prophash;
+    }
+
+
+    /**
+     * Getter for {@link #uriRes}
+     * @return <code>URIResolver</code>
+     */
+    public URIResolver getURIResolver() {
+
+        return uriRes;
+    }
+
+
+    /**
+     * Setter for {@link #uriRes}
+     * @param resolver A <code>URIResolver</code> object.
+     */
+    public void setURIResolver(URIResolver resolver) {
+
+        synchronized (reentryGuard) {
+
+            uriRes = resolver;
+        }
+    }
+
+
+    /**
+     * @todo : implement
+     */
+    public void clearParameters() {
+
+        synchronized (reentryGuard) {
+
+
+        }
+    }
+
+
+    /**
+     * Setter for parameter.
+     * @param name The key of the parameter.
+     * @param value The value of the parameter.
+     */
+    public void setParameter(String name, Object value) {
+
+        paramhash.put(name, value);
+
+    }
+
+
+    /**
+     * Getter for parameter.
+     * @param name The key-value of the parameter.
+     * @return An <code>Object</code> according to the key-value.
+     */
+    public Object getParameter(String name) {
+
+        return paramhash.get(name);
+
+    }
+
+
+    /**
+     *
+     * @param listener
+     * @throws IllegalArgumentException
+     */
+    public void setErrorListener(ErrorListener listener)
+        throws IllegalArgumentException {
+
+        synchronized (reentryGuard) {
+
+            errorListener = listener;
+        }
+    }
+
+
+
+    /**
+     * Setter for {@link #errorListener}
+     * @return A <code>ErrorListener</code>
+     */
+    public ErrorListener getErrorListener() {
+
+        return errorListener;
+
+    }
+
+
+    /**
+     * Getter for outputProperties.
+     * @todo : implement.
+     * @param name The key-value of the outputProperties.
+     * @return <code>String</code>
+     * @throws IllegalArgumentException
+     */
+    public String getOutputProperty(String name)
+        throws IllegalArgumentException {
+
+        return null;
+
+    }
+
+
+    /**
+     * HelperMethod for initiating StxEmitter.
+     * @param result A <code>Result</code> object.
+     * @return An <code>StxEmitter</code>.
+     * @throws TransformerException
+     */
+    private StxEmitter initStxEmitter(Result result)
+        throws TransformerException {
+
+        log.debug("init STXEmitter");
+
+    	// Try to get the encoding from the stx-Parser <class>Parser</class>
+
+        //String encFromStx = stx.getEncoding();
+        String encFromStx = processor.getOutputEncoding();
+
+        if (encFromStx != null) {
+
+          encoding = encFromStx;
+
+        } else {
+
+          encoding = DEFAULT_ENCODING; // default output encoding
+
+        }
+
+        // Return the content handler for this Result object
+        try {
+
+            // Result object could be SAXResult, DOMResult, or StreamResult
+
+            if (result instanceof SAXResult) {
+
+                    final SAXResult target = (SAXResult)result;
+
+                    final ContentHandler handler = target.getHandler();
+
+                    if (handler != null) {
+
+                        log.debug("return SAX specific Implementation for " +
+                            "STXEmitter");
+
+                        //SAX specific Implementation
+
+                        return new SAXEmitter(handler);
+                    }
+
+            } else if (result instanceof DOMResult) {
+
+                    log.debug("return DOM specific Implementation for STXEmitter");
+
+                    //DOM specific Implementation
+
+                    return new DOMEmitter();
+
+            } else if (result instanceof StreamResult) {
+
+                log.debug("return StreamRsult specific Implementation for " +
+                    "STXEmitter");
+
+                // Get StreamResult
+
+                final StreamResult target = (StreamResult)result;
+
+                // StreamResult may have been created with a java.io.File,
+                // java.io.Writer, java.io.OutputStream or just a String
+                // systemId.
+
+                // try to get a Writer from Result object
+
+                final Writer writer = target.getWriter();
+
+                if (writer != null) {
+
+                    log.debug("get a Writer object from Result object");
+
+                    return new StreamEmitter(writer);
+
+                }
+
+                // or try to get an OutputStream from Result object
+                final OutputStream ostream = target.getOutputStream();
+
+                if (ostream != null) {
+
+                    log.debug("get an OutputStream from Result object");
+
+                    return new StreamEmitter(ostream, encoding);
+
+                }
+
+
+                // or try to get just a systemId string from Result object
+                String systemId = result.getSystemId();
+
+                log.debug("get a systemId string from Result object");
+
+                if (systemId == null) {
+
+                    log.error("JAXP_NO_RESULT_ERR");
+
+                    throw new TransformerException("JAXP_NO_RESULT_ERR");
+
+                }
+
+
+                // System Id may be in one of several forms, (1) a uri
+                // that starts with 'file:', (2) uri that starts with 'http:'
+                // or (3) just a filename on the local system.
+                OutputStream os = null;
+
+                URL url = null;
+
+                if (systemId.startsWith("file:")) {
+
+                    url = new URL(systemId);
+
+                    os = new FileOutputStream(url.getFile());
+
+                    return new StreamEmitter(os, encoding);
+
+                }
+
+                    else if (systemId.startsWith("http:")) {
+
+                        url = new URL(systemId);
+
+                        URLConnection connection = url.openConnection();
+
+                        os = connection.getOutputStream();
+
+                        return new StreamEmitter(os, encoding);
+
+                    }
+
+                    else {
+
+                        // system id is just a filename
+
+                        File tmp = new File(systemId);
+
+                        url = tmp.toURL();
+
+                        os = new FileOutputStream(url.getFile());
+
+                        return new StreamEmitter(os, encoding);
+
+                    }
+            }
+
+         // If we cannot create the file specified by the SystemId
+        } catch (IOException iE) {
+
+            log.error(iE);
+
+            throw new TransformerException(iE);
+
+        } catch (ParserConfigurationException pE) {
+
+            log.error(pE);
+
+            throw new TransformerException(pE);
+
+        }
+
+        return null;
+    }
+
+
+    /**
+     * Getter for {@link #processor}
+     * @return A <code>Processor</code> object.
+     */
+    public Processor getStxProcessor() {
+
+        //Processor tempProcessor = new Processor(processor);
+
+        return processor;
+
+    }
+}
+

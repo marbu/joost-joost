@@ -1,0 +1,225 @@
+<?xml version="1.0"?>
+<!--
+ | $Id: build.xml,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ |
+ | Ant build file
+ | Author: Oliver Becker
+ +-->
+<project name="joost" default="all" basedir=".">
+
+  <property name="src" value="src" />
+  <property name="classes" value="classes" />
+  <property name="doc" value="doc" />
+  <property name="grammar.dir" value="${src}/net/sf/joost/grammar" />
+  <property name="grammar.package" value="net.sf.joost.grammar" />
+  <property name="genHelper" value="joostGen.jar" />
+  
+  <taskdef name="preprocess" classname="net.sf.joost.helper.ant.Preprocess"
+           classpath="lib/${genHelper}" />
+  
+  <path id="cp">
+    <fileset dir="lib">
+      <include name="*.jar" />
+      <exclude name="${genHelper}" />
+    </fileset>
+  </path>
+
+  <target name="all" depends="compile" />
+  
+  <target name="init">
+    <available file="${classes}" property="classes.available" />
+    <available file="${doc}/api" property="apidoc.available" />
+    <uptodate property="yylex.uptodate"
+              targetfile="${grammar.dir}/Yylex.java">
+      <srcfiles dir="${grammar.dir}" includes="Yylex" />
+    </uptodate>
+    <uptodate property="pattern.uptodate"
+              targetfile="${grammar.dir}/PatternParser.java">
+      <srcfiles dir="${grammar.dir}"
+                includes="Pattern.cup, expr.inc, terminals.inc" />
+    </uptodate>
+    <uptodate property="expr.uptodate"
+              targetfile="${grammar.dir}/ExprParser.java">
+      <srcfiles dir="${grammar.dir}"
+                includes="Expr.cup, expr.inc, terminals.inc" />
+    </uptodate>
+  </target>
+
+  
+  <target name="dep"
+          depends="init, mk.yylex, mk.pattern, mk.expr" />
+
+  
+  <target name="mk.classes" unless="classes.available">
+    <mkdir dir="${classes}" />
+  </target>
+
+  
+  <target name="mk.yylex" unless="yylex.uptodate">
+    <java classname="JLex.Main" classpath="lib/${genHelper}"
+          fork="true" failonerror="true">
+      <arg line="${grammar.dir}/Yylex" />
+    </java>
+  </target>
+
+  <!-- called by mk.pattern and mk.expr -->
+  <target name="mk.grammar">
+    <preprocess infile="${grammar.dir}/${grammar}.cup"
+                outfile="${grammar.dir}/${grammar}Parser.cup" />
+    <java classname="java_cup.Main" classpath="lib/${genHelper}"
+          fork="true" failonerror="true" dir="${grammar.dir}">
+      <arg line="-parser ${grammar}Parser" />
+      <arg line="-symbols Sym" />
+      <arg line="-runtime ${grammar.package}.cup" />
+      <arg value="-interface" />
+      <arg value="-compact_red" />
+      <arg value="-nowarn" />
+      <arg value="${grammar}Parser.cup" />
+    </java>
+  </target>
+
+  
+  <target name="mk.pattern" unless="pattern.uptodate">
+    <antcall target="mk.grammar">
+      <param name="grammar" value="Pattern" />
+    </antcall>
+  </target>
+
+  
+  <target name="mk.expr" unless="expr.uptodate">
+    <antcall target="mk.grammar">
+      <param name="grammar" value="Expr" />
+    </antcall>
+  </target>
+
+  
+  <target name="compile" depends="dep, mk.classes"
+    description="compiles all java sources into the classes subdirectory (with debug information)"> 
+    <javac debug="on" srcdir="${src}" destdir="${classes}"
+           classpathref="cp" />
+    <copy file="conf/log4j.properties" todir="${classes}" />
+  </target>
+
+
+  <property name="main.src" value="${src}/net/sf/joost/Main.java" />
+  <target name="jar" depends="dep, mk.classes"
+          description="creates joost.jar (without test classes and debug information)">
+    <delete dir="${classes}" />
+    <mkdir dir="${classes}" />
+    <tstamp>
+      <format property="date.today" pattern="yyyy-MM-dd" />
+    </tstamp>
+    <!-- save ${main.src} -->
+    <copy file="${main.src}" tofile="main${DSTAMP}.tmp" />
+    <replace file="${main.src}" token="@@@@" value="${date.today}" />
+    <javac srcdir="${src}" destdir="${classes}" classpathref="cp" />
+    <!-- restore ${main.src} -->
+    <move file="main${DSTAMP}.tmp" tofile="${main.src}" />
+    <copy file="conf/log4j.properties" todir="${classes}" />
+    <jar jarfile="${ant.project.name}.jar"
+         basedir="${classes}" excludes="test/**"
+         manifest="conf/manifest.mf" />
+  </target>
+
+  
+  <target name="mk.apidoc" unless="apidoc.available">
+    <mkdir dir="${doc}/api" />
+  </target>
+
+  
+  <target name="doc" depends="dep, mk.apidoc"
+    description="creates the API documentation in the doc/api subdirectory">
+    <javadoc sourcepath="${src}" destdir="${doc}/api" classpathref="$cp"
+             packagenames="net.sf.joost, net.sf.joost.stx,
+                           net.sf.joost.instruction, net.sf.joost.emitter,
+                           net.sf.joost.grammar, net.sf.joost.grammar.cup,
+                           net.sf.joost.trax"
+             windowtitle="Joost API documentation" private="true" />
+  </target>
+  
+
+  <target name="clean" description="removes the classes subdirectory">
+    <delete dir="${classes}" />
+  </target>
+
+  
+  <target name="realclean" depends="clean"
+    description="removes the classes and api-doc subdirectory as well as the jar file and the packed source distribution">
+    <delete dir="${doc}/api" />
+    <delete file="${ant.project.name}.jar" />
+    <delete>
+      <fileset dir="." includes="${ant.project.name}-*.tar.gz" />
+      <fileset dir="${grammar.dir}">
+        <include name="*Parser.*" />
+        <include name="Sym.java" />
+        <include name="Yylex.java" />
+      </fileset>
+    </delete>
+  </target>
+  
+  
+  <property name="dist" value="dist" />
+  <target name="dist"
+    description="creates a packed source distribution in .tar.gz format">
+    <mkdir dir="${dist}" />
+    <cvs cvsRoot="/vol/marvin0-vol6/obecker/cvs" command="export"
+         dest="${dist}" package="${ant.project.name}" date="today" />
+    <tar tarfile="${dist}.tar">
+      <tarfileset dir="${dist}">
+        <include name="${ant.project.name}/**" />
+        <!-- included with a different mode -->
+        <exclude name="${ant.project.name}/run.sh" />
+        <exclude name="${ant.project.name}/rundb.sh" />
+        <exclude name="${ant.project.name}/runjar.sh" />
+        <exclude name="${ant.project.name}/runfop.sh" />
+        <exclude name="${ant.project.name}/runtraxtest.sh" />
+        <!-- don't distribute these at all -->
+        <exclude name="${ant.project.name}/misc/**" />
+        <!-- distribute as a different package -->
+        <exclude name="${ant.project.name}/lib/**" />
+        <exclude name="${ant.project.name}/helper/**" />
+        <exclude name="${ant.project.name}/test/**" />
+        <exclude name="${ant.project.name}/runtest.sh" />
+        <exclude name="${ant.project.name}/runerrortest.sh" />
+      </tarfileset>
+      <!-- set execute permissions -->
+      <tarfileset dir="${dist}" mode="755">
+        <include name="${ant.project.name}/run.sh" />
+        <include name="${ant.project.name}/rundb.sh" />
+        <include name="${ant.project.name}/runjar.sh" />
+        <include name="${ant.project.name}/runfop.sh" />
+        <include name="${ant.project.name}/runtraxtest.sh" />
+      </tarfileset>
+    </tar>
+    <tar tarfile="test.tar">
+      <tarfileset dir="${dist}">
+        <include name="${ant.project.name}/test/**" />
+      </tarfileset>
+      <tarfileset dir="${dist}" mode="755">
+        <include name="${ant.project.name}/run.sh" />
+        <include name="${ant.project.name}/runtest.sh" />
+        <include name="${ant.project.name}/runerrortest.sh" />
+      </tarfileset>
+    </tar>
+    <tar tarfile="helper.tar">
+      <tarfileset dir="${dist}">
+        <include name="${ant.project.name}/helper/**" />
+      </tarfileset>
+    </tar>
+    <tar tarfile="lib.tar">
+      <tarfileset dir="${dist}">
+        <include name="${ant.project.name}/lib/**" />
+      </tarfileset>
+    </tar>
+    <gzip src="${dist}.tar" zipfile="${ant.project.name}-src.tar.gz" />
+    <gzip src="test.tar" zipfile="${ant.project.name}-test.tar.gz" />
+    <gzip src="helper.tar" zipfile="${ant.project.name}-helper.tar.gz" />
+    <gzip src="lib.tar" zipfile="${ant.project.name}-lib.tar.gz" />
+    <delete dir="${dist}" />
+    <delete file="${dist}.tar" />
+    <delete file="test.tar" />
+    <delete file="helper.tar" />
+    <delete file="lib.tar" />
+  </target>
+
+</project>
