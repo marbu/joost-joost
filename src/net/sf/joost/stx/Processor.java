@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.11 2003/05/28 13:22:26 obecker Exp $
+ * $Id: Processor.java,v 2.12 2003/06/02 11:28:07 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -54,6 +54,8 @@ import java.io.IOException;
 
 import net.sf.joost.Constants;
 import net.sf.joost.TransformerHandlerResolver;
+import net.sf.joost.trace.DebugEmitter;
+import net.sf.joost.trace.DebugProcessor;
 import net.sf.joost.instruction.AbstractInstruction;
 import net.sf.joost.instruction.GroupBase;
 import net.sf.joost.instruction.GroupFactory;
@@ -66,7 +68,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.11 $ $Date: 2003/05/28 13:22:26 $
+ * @version $Revision: 2.12 $ $Date: 2003/06/02 11:28:07 $
  * @author Oliver Becker
  */
 
@@ -261,7 +263,7 @@ public class Processor extends XMLFilterImpl
     * type casts for the Data objects. However, I've noticed no notable
     * performance gain.
     */
-   private final class DataStack
+   public final class DataStack
    {
       private Data[] stack = new Data[32];
       private int objCount = 0;
@@ -457,7 +459,14 @@ public class Processor extends XMLFilterImpl
       throws SAXException
    {
       context = new Context();
-      emitter = context.emitter = new Emitter(context.errorHandler);
+
+      if (this instanceof DebugProcessor) {
+         emitter = context.emitter = new DebugEmitter(context.errorHandler);
+      } else {
+         emitter = context.emitter = new Emitter(context.errorHandler);
+      }
+      //
+      //emitter = context.emitter = new Emitter(context.errorHandler);
       eventStack = context.ancestorStack;
 
       setErrorHandler(context.errorHandler); // register error handler
@@ -1722,6 +1731,51 @@ public class Processor extends XMLFilterImpl
       eventStack.pop();
       me.removeRef();
    }
+
+
+    //
+    //----------------------------new methods-----------------------------
+    //
+
+    /**
+     * Returns a reference to the event stack.
+     * @return the event stack
+     */
+    protected Stack getEventStack() {
+        return this.eventStack;
+    }
+
+    /**
+     * Returns a reference to the data stack.
+     * @return the data stack
+     */
+    protected DataStack getDataStack() {
+        return this.dataStack;
+    }
+
+    /**
+     * Returns a ref to the inner processing (buffers, documents) stack.
+     * @return the inner processing stack
+     */
+    protected Stack getInnerProcessStack() {
+        return this.innerProcStack;
+    }
+
+    /**
+     * Returns a ref to the current context of the processing.
+     * @return the current context
+     */
+    protected Context getContext() {
+        return this.context;
+    }
+
+    /**
+     * Returns a ref to the registered emitter
+     * @return the emitter
+     */
+    public Emitter getEmitter() {
+        return this.emitter;
+    }
 
 
    // **********************************************************************
