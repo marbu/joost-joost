@@ -1,5 +1,5 @@
 /*
- * $Id: TraceManager.java,v 1.3 2003/07/27 10:54:27 zubow Exp $
+ * $Id: TraceManager.java,v 1.4 2003/11/01 14:49:12 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -41,7 +41,7 @@ import net.sf.joost.instruction.AbstractInstruction;
 /**
  * This class manages a collection of {@link TraceListener}, and acts as an
  * interface for the tracing functionality in Joost.
- * @version $Revision: 1.3 $ $Date: 2003/07/27 10:54:27 $
+ * @version $Revision: 1.4 $ $Date: 2003/11/01 14:49:12 $
  * @author Zubow
  */
 public class TraceManager {
@@ -100,8 +100,10 @@ public class TraceManager {
         }
     }
 
-    // *****************************************************************
+
+    // ----------------------------------------------------------------------
     // Callback methods
+    // ----------------------------------------------------------------------
 
     /**
      * Fire a start processing event (open).
@@ -135,26 +137,10 @@ public class TraceManager {
         }
     }
 
-    /**
-     * Fire a top level element event.
-     */
-/*
-    public void fireTopLevelElement(NodeBase node) {
-        if (hasTraceListeners()) {
-            // count of registered tracelisteners
-            int countListener = traceListeners.size();
-            for (int i = 0; i < countListener; i++) {
-                TraceListener currentListener =
-                        (TraceListener) traceListeners.elementAt(i);
-                // call the according method on tracelistener
-                currentListener.toplevel(node);
-            }
-        }
-    }
-*/
 
-    // *************************************************************************
+    // ----------------------------------------------------------------------
     // Information about source nodes
+    // ----------------------------------------------------------------------
 
     /**
      * Fire if a startelement event of the source gets processed.
@@ -286,8 +272,9 @@ public class TraceManager {
         }
     }
 
-    // *************************************************************************
+    // ----------------------------------------------------------------------
     // Information about stylesheet nodes
+    // ----------------------------------------------------------------------
 
     /**
      * Fire when an element of the stylesheet gets processed.
@@ -321,8 +308,9 @@ public class TraceManager {
         }
     }
 
-    // *************************************************************************
+    // ----------------------------------------------------------------------
     // Information about emitter events
+    // ----------------------------------------------------------------------
 
     /**
      * Indicates the begin of the result document.
@@ -354,7 +342,8 @@ public class TraceManager {
                 TraceListener currentListener =
                         (TraceListener) traceListeners.elementAt(i);
                 // call the according method on tracelistener
-                currentListener.endDocumentEmitterEvent(publicId, systemId, lineNo, colNo);
+                currentListener.endDocumentEmitterEvent(publicId, systemId,
+                        lineNo, colNo);
             }
         }
     }
@@ -373,7 +362,8 @@ public class TraceManager {
                 TraceListener currentListener =
                         (TraceListener) traceListeners.elementAt(i);
                 // call the according method on tracelistener
-                currentListener.startElementEmitterEvent(uri, lName, qName, attrs, namespaces, publicId, systemId, lineNo, colNo);
+                currentListener.startElementEmitterEvent(uri, lName, qName,
+                        attrs, namespaces, publicId, systemId, lineNo, colNo);
             }
         }
     }
@@ -391,7 +381,8 @@ public class TraceManager {
                 TraceListener currentListener =
                         (TraceListener) traceListeners.elementAt(i);
                 // call the according method on tracelistener
-                currentListener.endElementEmitterEvent(uri, lName, qName, publicId, systemId, lineNo, colNo);
+                currentListener.endElementEmitterEvent(uri, lName, qName,
+                        publicId, systemId, lineNo, colNo);
             }
         }
     }
@@ -425,7 +416,8 @@ public class TraceManager {
                 TraceListener currentListener =
                         (TraceListener) traceListeners.elementAt(i);
                 // call the according method on tracelistener
-                currentListener.PIEmitterEvent(target, data, publicId, systemId, lineNo, colNo);
+                currentListener.PIEmitterEvent(target, data, publicId,
+                        systemId, lineNo, colNo);
             }
         }
     }
@@ -442,7 +434,8 @@ public class TraceManager {
                 TraceListener currentListener =
                         (TraceListener) traceListeners.elementAt(i);
                 // call the according method on tracelistener
-                currentListener.commentEmitterEvent(value, publicId, systemId, lineNo, colNo);
+                currentListener.commentEmitterEvent(value, publicId, systemId,
+                        lineNo, colNo);
             }
         }
     }
@@ -450,7 +443,8 @@ public class TraceManager {
     /**
      * Indicates the start CDATA event of the result document.
      */
-    public void fireStartCDATAEmitterEvent(String publicId, String systemId, int lineNo, int colNo) {
+    public void fireStartCDATAEmitterEvent(String publicId, String systemId,
+                                           int lineNo, int colNo) {
         if (hasTraceListeners()) {
             // count of registered tracelisteners
             int countListener = traceListeners.size();

@@ -1,5 +1,5 @@
 /*
- * $Id: DebugEmitter.java,v 1.1 2003/06/02 11:29:07 zubow Exp $
+ * $Id: DebugEmitter.java,v 1.2 2003/11/01 14:49:12 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -33,7 +33,7 @@ import java.util.Hashtable;
 
 /**
  * Extends the {@link net.sf.joost.stx.Emitter} with debug features.
- * @version $Revision: 1.1 $ $Date: 2003/06/02 11:29:07 $
+ * @version $Revision: 1.2 $ $Date: 2003/11/01 14:49:12 $
  * @author Zubow
  */
 public class DebugEmitter extends Emitter {
@@ -41,22 +41,30 @@ public class DebugEmitter extends Emitter {
     // tracing
     private TraceManager tmgr;
 
+    /**
+     * constructor
+     * See {@link Emitter#Emitter(ErrorHandlerImpl)}
+     */
     public DebugEmitter(ErrorHandlerImpl errorHandler) {
         super(errorHandler);
     }
 
-    // setter
+    /**
+     * setter for {@link #tmgr} property
+     */
     public void setTraceManager(TraceManager tmgr) {
         this.tmgr = tmgr;
     }
 
-    // getter
+    /**
+     * getter for {@link #tmgr} property
+     */
     public TraceManager getTraceManager() {
         return this.tmgr;
     }
 
     /**
-     * overloaded method for debug information
+     * overloaded method for debug purpose
      */
     public void addAttribute(String uri, String qName, String lName,
                              String value,
@@ -64,6 +72,10 @@ public class DebugEmitter extends Emitter {
                              int lineNo, int colNo) throws SAXException {
         super.addAttribute(uri, qName, lName, value, publicId, systemId, lineNo, colNo);
     }
+
+    // ------------------------------------------------------------------
+    // Sax-callback methods
+    // ------------------------------------------------------------------
 
     /**
      * overloaded method for debug information

@@ -1,5 +1,5 @@
 /*
- * $Id: DebugProcessor.java,v 1.4 2003/09/03 15:03:36 obecker Exp $
+ * $Id: DebugProcessor.java,v 1.5 2003/11/01 14:49:12 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,9 +25,10 @@
 package net.sf.joost.trace;
 
 import net.sf.joost.trace.TraceManager;
-import net.sf.joost.stx.Processor;
-import net.sf.joost.stx.Parser;
-import net.sf.joost.stx.SAXEvent;
+import net.sf.joost.stx.*;
+import net.sf.joost.instruction.TemplateFactory;
+import net.sf.joost.instruction.AbstractInstruction;
+import net.sf.joost.instruction.NodeBase;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.Attributes;
@@ -36,10 +37,12 @@ import org.xml.sax.XMLReader;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.URIResolver;
 import java.io.IOException;
+import java.util.Vector;
+import java.util.Arrays;
 
 /**
  * Extends the {@link net.sf.joost.stx.Processor} with debug features.
- * @version $Revision: 1.4 $ $Date: 2003/09/03 15:03:36 $
+ * @version $Revision: 1.5 $ $Date: 2003/11/01 14:49:12 $
  * @author Zubow
  */
 public class DebugProcessor extends Processor {
@@ -47,18 +50,21 @@ public class DebugProcessor extends Processor {
     // for tracing
     private TraceManager tmgr;
 
-    // testing
     public Parser stxparser;
+
+    private static org.apache.commons.logging.Log log =
+       org.apache.commons.logging.LogFactory.getLog(DebugProcessor.class);
 
     /**
      * See {@link net.sf.joost.stx.Processor#Processor(XMLReader, InputSource, ErrorListener, URIResolver)}
      */
-    public DebugProcessor(XMLReader reader, InputSource src, 
+    public DebugProcessor(XMLReader reader, InputSource src,
                           ErrorListener errorListener,
                           URIResolver uriResolver)
             throws IOException, SAXException {
-        super(reader, src, errorListener, uriResolver);
+        super(src, errorListener, uriResolver);
     }
+
 
     /**
      * See {@link net.sf.joost.stx.Processor#Processor(InputSource, ErrorListener, URIResolver)}
@@ -92,19 +98,84 @@ public class DebugProcessor extends Processor {
         super(proc);
     }
 
-    // setter
+
+    /**
+     * AZu - overriden method for debug purpose
+     */
+    protected Emitter initializeEmitter(Context ctx, Parser parser) {
+        log.info("init debug-processor");
+        // save reference to stx-parser for nssupport, ...
+        this.stxparser = parser;
+        return new DebugEmitter(ctx.errorHandler);
+    }
+
+    /**
+     * Overriden method for debug purpose
+     */
+    protected int processInstruction(AbstractInstruction inst, SAXEvent event)
+            throws SAXException {
+
+        TraceManager tmgr = null;
+        int ret = -1;
+        boolean atomicnode = false;
+
+        // propagate current executed instruction to debugger
+        tmgr = this.getTraceManager();
+
+        TraceMetaInfo meta = new TraceMetaInfo();
+        meta.inst = inst;
+        meta.eventStack = getEventStack();
+        meta.dataStack = getDataStack();
+        meta.context = getContext();
+        // think about this ?
+        meta.saxEvent = event;
+
+        // found end element
+        if ( inst instanceof NodeBase.End ) {
+            tmgr.fireLeaveStylesheetNode(meta);
+        } else {
+            // no corresponding endElement
+            if ( inst.getNode().getNodeEnd() == null ) {
+                // remind this
+                atomicnode = true;
+            }
+            tmgr.fireEnterStylesheetNode(meta);
+        }
+        // process instruction
+        ret = inst.process(getContext());
+
+        if (atomicnode && tmgr != null ) {
+            meta = new TraceMetaInfo();
+            meta.inst = inst;
+            meta.eventStack = getEventStack();
+            meta.dataStack = getDataStack();
+            meta.context = getContext();
+            // think about this ?
+            meta.saxEvent = event;
+
+            tmgr.fireLeaveStylesheetNode(meta);
+            atomicnode = false;
+        }
+        return ret;
+    }
+
+    /**
+     * setter for property {@link #tmgr}
+     */
     public void setTraceManager(TraceManager tmgr) {
         this.tmgr = tmgr;
     }
 
-    // getter
+    /**
+     * getter for property {@link #tmgr}
+     */
     public TraceManager getTraceManager() {
         return this.tmgr;
     }
 
-    //
     //--------------------------------------------------------------
-    //
+    // Sax-callback methods
+    //--------------------------------------------------------------
 
     /**
      * overloaded method of ContentHandler for debug information

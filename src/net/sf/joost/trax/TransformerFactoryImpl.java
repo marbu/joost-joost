@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.13 2003/09/08 09:22:24 obecker Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.14 2003/11/01 14:51:07 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -317,7 +317,6 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
             return(transformer);
         }
     }
-
 
 
     //*************************************************************************
