@@ -1,5 +1,5 @@
 /*
- * $Id: GroupFactory.java,v 2.2 2003/04/30 14:47:17 obecker Exp $
+ * $Id: GroupFactory.java,v 2.3 2003/04/30 15:20:10 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.stx.Processor;
 /** 
  * Factory for <code>group</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2003/04/30 14:47:17 $
+ * @version $Revision: 2.3 $ $Date: 2003/04/30 15:20:10 $
  * @author Oliver Becker
  */
 
@@ -113,7 +113,7 @@ final public class GroupFactory extends FactoryBase
       default:
          // mustn't happen 
          throw new SAXParseException(
-            "Unexpected return value from getEnumAttValue", locator);
+            "FATAL: Unexpected return value from getEnumAttValue", locator);
       }
 
       boolean stripSpace = false;
@@ -122,11 +122,11 @@ final public class GroupFactory extends FactoryBase
       case YES_VALUE: stripSpace = true;            break;
       case NO_VALUE:  stripSpace = false;           break;
       case -1:
-      case 3:         stripSpace = pg.stripSpace;   break;
+      case 2:         stripSpace = pg.stripSpace;   break;
       default:
          // mustn't happen 
          throw new SAXParseException(
-            "Unexpected return value from getEnumAttValue", locator);
+            "FATAL: Unexpected return value from getEnumAttValue", locator);
       }
 
       boolean recognizeCdata = false;
@@ -135,11 +135,11 @@ final public class GroupFactory extends FactoryBase
       case YES_VALUE: recognizeCdata = true;                break;
       case NO_VALUE:  recognizeCdata = false;               break;
       case -1:
-      case 3:         recognizeCdata = pg.recognizeCdata;   break;
+      case 2:         recognizeCdata = pg.recognizeCdata;   break;
       default:
          // mustn't happen 
          throw new SAXParseException(
-            "Unexpected return value from getEnumAttValue", locator);
+            "FATAL: Unexpected return value from getEnumAttValue", locator);
       }
 
 
