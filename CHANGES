@@ -1,3 +1,6 @@
+Changes since 20030502
+- added 'separator' attribute to stx:value-of
+
 Changes since 20030320
 - increased performance by switching to a new processing model
 - changed stx:for-each to stx:for-each-item; removed current-item();

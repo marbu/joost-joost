@@ -1,5 +1,5 @@
 /*
- * $Id: ValueOfFactory.java,v 2.1 2003/04/30 15:08:17 obecker Exp $
+ * $Id: ValueOfFactory.java,v 2.2 2003/05/14 14:43:10 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>value-of</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.1 $ $Date: 2003/04/30 15:08:17 $
+ * @version $Revision: 2.2 $ $Date: 2003/05/14 14:43:10 $
  * @author Oliver Becker
  */
 
@@ -54,6 +54,7 @@ final public class ValueOfFactory extends FactoryBase
    {
       attrNames = new HashSet();
       attrNames.add("select");
+      attrNames.add("separator");
    }
 
    /** @return <code>"value-of"</code> */
@@ -69,8 +70,11 @@ final public class ValueOfFactory extends FactoryBase
    {
       String selectAtt = getAttribute(qName, attrs, "select", locator);
       Tree selectExpr = parseExpr(selectAtt, nsSet, parent, locator);
+
+      String separatorAtt = attrs.getValue("separator");
+
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, selectExpr);
+      return new Instance(qName, parent, locator, selectExpr, separatorAtt);
    }
 
 
@@ -78,12 +82,14 @@ final public class ValueOfFactory extends FactoryBase
    final public class Instance extends NodeBase
    {
       private Tree select;
+      private String separator;
 
       protected Instance(String qName, NodeBase parent, Locator locator, 
-                         Tree select)
+                         Tree select, String separator)
       {
          super(qName, parent, locator, false);
          this.select = select;
+         this.separator = separator;
       }
       
 
@@ -94,7 +100,26 @@ final public class ValueOfFactory extends FactoryBase
       public short process(Context context)
          throws SAXException
       {
-         String s = select.evaluate(context, this).convertToString().string;
+         Value v = select.evaluate(context, this);
+         String s;
+         if (separator == null)
+            // output first item
+            s = v.convertToString().string;
+         else {
+            // separator present, output all sequence items
+            StringBuffer sb = new StringBuffer();
+            Value next = v.next;
+            v.next = null;
+            sb.append(v.convertToString().string);
+            while (next != null) {
+               sb.append(separator);
+               v = next;
+               next = v.next;
+               v.next = null;
+               sb.append(v.convertToString().string);
+            }
+            s = sb.toString();
+         }
          context.emitter.characters(s.toCharArray(), 0, s.length());
          return PR_CONTINUE;
       }
