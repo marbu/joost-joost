@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.13 2002/11/05 13:09:30 obecker Exp $
+ * $Id: Processor.java,v 1.14 2002/11/06 14:26:29 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -61,7 +61,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.13 $ $Date: 2002/11/05 13:09:30 $
+ * @version $Revision: 1.14 $ $Date: 2002/11/06 14:26:29 $
  * @author Oliver Becker
  */
 
@@ -667,6 +667,16 @@ public class Processor extends XMLFilterImpl
       if (temp != null) {
          boolean attributeLoop;
          short procStatus = ST_PROCESSING;
+
+         // I have to reset the lastElement variable, because process-buffer
+         // may initiate a recursion, which would lead to an infinite loop
+         // here.
+         // On the other hand this lastElement will be needed in the event 
+         // of a process-self or process-attributes instruction, thus I have
+         // to save it in another variable.
+         SAXEvent lastElementBackup = lastElement;
+         lastElement = null;
+
          do {
             attributeLoop = false;
             procStatus = temp.process(emitter, eventStack, context,
@@ -688,10 +698,11 @@ public class Processor extends XMLFilterImpl
                            procStatus));
                if (log4j.isDebugEnabled())
                   log4j.debug("dataStack.push " + dataStack.peek());
+               lastElement = lastElementBackup; // restore
                processLastElement(currentEvent); // recurse (process-self)
             }
             else if ((procStatus & ST_ATTRIBUTES) != 0) {
-               processAttributes(lastElement.attrs);
+               processAttributes(lastElementBackup.attrs);
                attributeLoop = true;
             }
             else {
@@ -706,13 +717,13 @@ public class Processor extends XMLFilterImpl
             emitter.startElement(lastElement.uri, lastElement.lName, 
                                  lastElement.qName, lastElement.attrs,
                                  lastElement.nsSupport);
+         lastElement = null;
          dataStack.push(
             new Data(((Data)dataStack.peek()).precedenceCategories));
          if (log4j.isDebugEnabled())
             log4j.debug("dataStack.push " + dataStack.peek());
       }
 
-      lastElement = null;
       context.lookAhead = null; // reset look-ahead
    }
 
