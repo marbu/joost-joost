@@ -1,5 +1,5 @@
 /*
- * $Id: NSAliasFactory.java,v 2.3 2004/01/23 09:51:48 obecker Exp $
+ * $Id: NSAliasFactory.java,v 2.4 2004/11/06 22:46:46 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.stx.ParseContext;
 
 /** 
  * Factory for <code>namespace-alias</code> elements
- * @version $Revision: 2.3 $ $Date: 2004/01/23 09:51:48 $
+ * @version $Revision: 2.4 $ $Date: 2004/11/06 22:46:46 $
  * @author Oliver Becker
  */
 
@@ -50,7 +50,7 @@ final public class NSAliasFactory extends FactoryBase
    public NSAliasFactory()
    {
       attrNames = new HashSet();
-      attrNames.add("stylesheet-prefix");
+      attrNames.add("sheet-prefix");
       attrNames.add("result-prefix");
    }
 
@@ -71,13 +71,13 @@ final public class NSAliasFactory extends FactoryBase
                                      "' not allowed as child of `" +
                                      parent.qName + "'", context.locator);
 
-      String fromPrefix = getAttribute(qName, attrs, "stylesheet-prefix", 
+      String fromPrefix = getAttribute(qName, attrs, "sheet-prefix", 
                                        context);
       // check value syntax
       if ((fromPrefix.indexOf('#') != -1 && !fromPrefix.equals("#default")) ||
           fromPrefix.indexOf(':') != -1)
          throw new SAXParseException(
-            "The value of `stylesheet-prefix' must be either a NCName or " +
+            "The value of `sheet-prefix' must be either a NCName or " +
             "the string `#default'. Found `" + fromPrefix + "'",
             context.locator);
       // "#default" used?
@@ -89,7 +89,7 @@ final public class NSAliasFactory extends FactoryBase
          if (fromPrefix != "")
             throw new SAXParseException(
                "Undeclared namespace prefix `" + fromPrefix + 
-               "' found in the `stylesheet-prefix' attribute",
+               "' found in the `sheet-prefix' attribute",
                context.locator);
          else
             fromURI = "";
