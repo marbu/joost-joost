@@ -1,5 +1,5 @@
 /*
- * $Id: CopyFactory.java,v 1.6 2002/10/24 12:57:35 obecker Exp $
+ * $Id: CopyFactory.java,v 1.7 2002/10/29 19:09:10 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,7 +46,7 @@ import net.sf.joost.grammar.PatternParser;
 /** 
  * Factory for <code>copy</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.6 $ $Date: 2002/10/24 12:57:35 $
+ * @version $Revision: 1.7 $ $Date: 2002/10/29 19:09:10 $
  * @author Oliver Becker
  */
 
@@ -176,6 +176,12 @@ final public class CopyFactory extends FactoryBase
             case SAXEvent.TEXT:
                emitter.characters(event.value.toCharArray(), 
                                   0, event.value.length());
+               break;
+            case SAXEvent.CDATA:
+               emitter.startCDATA();
+               emitter.characters(event.value.toCharArray(), 
+                                  0, event.value.length());
+               emitter.endCDATA();
                break;
             case SAXEvent.PI:
                emitter.processingInstruction(event.qName, event.value);

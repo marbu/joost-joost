@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 1.3 2002/10/21 15:54:18 obecker Exp $
+ * $Id: Tree.java,v 1.4 2002/10/29 19:09:08 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 1.3 $ $Date: 2002/10/21 15:54:18 $
+ * @version $Revision: 1.4 $ $Date: 2002/10/29 19:09:08 $
  * @author Oliver Becker
  */
 public class Tree
@@ -57,6 +57,7 @@ public class Tree
       LOCAL_WILDCARD      = 8,   // "prefix:*"
       NODE_TEST           = 9,   // "node()"
       TEXT_TEST           = 10,  // "text()"
+      CDATA_TEST          = 100, // "cdata()"
       COMMENT_TEST        = 11,  // "comment()"
       PI_TEST             = 12,  // "pi()", "pi(...)"
       FUNCTION            = 13,  // a function call
@@ -344,9 +345,20 @@ public class Tree
          case TEXT_TEST:
             if (top < 2)
                return false;
-            if (((SAXEvent)events.elementAt(top-1)).type == SAXEvent.TEXT) {
+            int nodeType = ((SAXEvent)events.elementAt(top-1)).type;
+            if (nodeType == SAXEvent.TEXT || nodeType == SAXEvent.CDATA) {
                context.position = ((SAXEvent)events.elementAt(top-2))
                                                    .getPositionOfText();
+               return true;
+            }
+            return false;
+
+         case CDATA_TEST:
+            if (top < 2)
+               return false;
+            if (((SAXEvent)events.elementAt(top-1)).type == SAXEvent.CDATA) {
+               context.position = ((SAXEvent)events.elementAt(top-2))
+                                                   .getPositionOfCDATA();
                return true;
             }
             return false;

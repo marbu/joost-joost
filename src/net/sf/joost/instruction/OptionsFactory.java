@@ -1,5 +1,5 @@
 /*
- * $Id: OptionsFactory.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: OptionsFactory.java,v 1.2 2002/10/29 19:09:10 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,19 +33,19 @@ import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.Stack;
 
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Processor;
 
 
 /**
  * Factory for <code>options</code> elements, which are represented by 
  * the inner Instance class.
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2002/10/29 19:09:10 $
  * @author Oliver Becker
  */
 
-public class OptionsFactory extends FactoryBase
+final public class OptionsFactory extends FactoryBase
 {
    /** The local element name. */
    private static final String name = "options";
@@ -62,9 +62,10 @@ public class OptionsFactory extends FactoryBase
    public OptionsFactory()
    {
       attrNames = new HashSet();
-      attrNames.add("output-encoding");
       attrNames.add("default-stxpath-namespace");
       attrNames.add("no-match-events");
+      attrNames.add("output-encoding");
+      attrNames.add("recognize-cdata");
       attrNames.add("strip-space");
    }
 
@@ -103,7 +104,7 @@ public class OptionsFactory extends FactoryBase
                                      locator);
 
       String stripSpaceAtt = attrs.getValue("strip-space");
-      boolean stripSpace = false;
+      boolean stripSpace = false; // default
       if (stripSpaceAtt != null) {
          if ("yes".equals(stripSpaceAtt))
             stripSpace = true;
@@ -116,9 +117,23 @@ public class OptionsFactory extends FactoryBase
                                         locator);
       }
 
+      String recognizeCdataAtt = attrs.getValue("recognize-cdata");
+      boolean recognizeCdata = true; // default
+      if (recognizeCdataAtt != null) {
+         if ("no".equals(recognizeCdataAtt))
+            recognizeCdata = false;
+         else if ("yes".equals(recognizeCdataAtt))
+            recognizeCdata = true;
+         else
+            throw new SAXParseException("Value of attribute `recognize-cdata'"
+                                        + "must be either `yes' or `no' " + 
+                                        "(found `" + recognizeCdataAtt + "')",
+                                        locator);
+      }
+
       checkAttributes(qName, attrs, attrNames, locator);
       return new Instance(qName, locator, encodingAtt, defStxpNsAtt,
-                          noMatchEvents, stripSpace);
+                          noMatchEvents, stripSpace, recognizeCdata);
    }
 
 
@@ -129,16 +144,19 @@ public class OptionsFactory extends FactoryBase
       public String defaultSTXPathNamespace;
       public byte noMatchEvents;
       public boolean stripSpace;
+      public boolean recognizeCdata;
 
       public Instance(String qName, Locator locator, String outputEncoding,
                       String defaultSTXPathNamespace,
-                      byte noMatchEvents, boolean stripSpace)
+                      byte noMatchEvents, boolean stripSpace,
+                      boolean recognizeCdata)
       {
          super(qName, locator, true);
          this.outputEncoding = outputEncoding;
          this.defaultSTXPathNamespace = defaultSTXPathNamespace;
          this.noMatchEvents = noMatchEvents;
          this.stripSpace = stripSpace;
+         this.recognizeCdata = recognizeCdata;
       }
 
       // Shouldn't be called

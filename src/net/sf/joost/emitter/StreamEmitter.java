@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.2 2002/10/15 19:02:46 zubow Exp $
+ * $Id: StreamEmitter.java,v 1.3 2002/10/29 19:09:08 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -58,6 +58,7 @@ public class StreamEmitter implements StxEmitter {
     private String uri, qName;
     private Attributes attrs;
 
+    private boolean insideCDATA = false;
 
     // Log4J initialization
     private static org.apache.log4j.Logger log4j =
@@ -316,17 +317,21 @@ public class StreamEmitter implements StxEmitter {
         processLastElement(false);
         StringBuffer out = new StringBuffer(length);
 
-        // output escaping
-        for (int i=0; i<length; i++)
-            switch (ch[start+i]) {
-                case '&': out.append("&amp;"); break;
-                case '<': out.append("&lt;"); break;
-                case '>': out.append("&gt;"); break;
-                default: out.append(ch[start+i]);
-            }
-
         try {
 
+            if (insideCDATA) {
+                outwriter.write(ch, start, length);
+            } else {
+                // output escaping
+                for (int i=0; i<length; i++)
+                    switch (ch[start+i]) {
+                        case '&': out.append("&amp;"); break;
+                        case '<': out.append("&lt;"); break;
+                        case '>': out.append("&gt;"); break;
+                        default: out.append(ch[start+i]);
+                    }
+            }
+            
             outwriter.write(out.toString());
 
         } catch (IOException ex) {
@@ -430,15 +435,45 @@ public class StreamEmitter implements StxEmitter {
 
 
     /**
-     * SAX2-Callback - Is empty
+     * SAX2-Callback - Notify the start of a CDATA section
      */
-    public void startCDATA() throws SAXException { }
+    public void startCDATA() 
+        throws SAXException { 
+
+        processLastElement(false);
+        try {
+
+            outwriter.write("<![CDATA[");
+
+        } catch (IOException ex) {
+
+            log4j.error(ex);
+            throw new SAXException(ex);
+
+        }
+
+        insideCDATA = true;
+    }
 
 
     /**
-     * SAX2-Callback - Is empty
+     * SAX2-Callback - Notify the end of a CDATA section
      */
-    public void endCDATA() throws SAXException { }
+    public void endCDATA() 
+        throws SAXException { 
+
+        insideCDATA = false;
+        try {
+
+            outwriter.write("]]>");
+
+        } catch (IOException ex) {
+
+            log4j.error(ex);
+            throw new SAXException(ex);
+
+        }
+    }
 
 
     /**

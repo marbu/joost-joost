@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateFactory.java,v 1.2 2002/09/20 12:52:02 obecker Exp $
+ * $Id: TemplateFactory.java,v 1.3 2002/10/29 19:09:10 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,22 +30,22 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import java.io.StringReader;
-import java.util.Stack;
 import java.util.Hashtable;
 import java.util.HashSet;
+import java.util.Stack;
 
-import net.sf.joost.grammar.Yylex;
 import net.sf.joost.grammar.PatternParser;
 import net.sf.joost.grammar.Tree;
-import net.sf.joost.stx.Emitter;
+import net.sf.joost.grammar.Yylex;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.SAXEvent;
 
 
 /**
  * Factory for <code>template</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 1.2 $ $Date: 2002/09/20 12:52:02 $
+ * @version $Revision: 1.3 $ $Date: 2002/10/29 19:09:10 $
  * @author Oliver Becker
  */
 
@@ -181,6 +181,7 @@ public final class TemplateFactory extends FactoryBase
 
       if (match.type == Tree.NAME_TEST ||
                match.type == Tree.ATTR || 
+               match.type == Tree.CDATA_TEST ||
               (match.type == Tree.PI_TEST && match.value != ""))
          return 0;
       else if (match.type == Tree.URI_WILDCARD ||

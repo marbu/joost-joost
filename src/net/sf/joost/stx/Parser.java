@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 1.4 2002/10/22 13:05:26 obecker Exp $
+ * $Id: Parser.java,v 1.5 2002/10/29 19:09:10 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,18 +24,18 @@
 
 package net.sf.joost.stx;
 
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
-import java.util.Stack;
 import java.util.EmptyStackException;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.Enumeration;
+import java.util.Stack;
 
 import net.sf.joost.Constants;
 import net.sf.joost.instruction.*;
@@ -44,7 +44,7 @@ import net.sf.joost.instruction.*;
 /** 
  * Creates the tree representation of an STX stylesheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 1.4 $ $Date: 2002/10/22 13:05:26 $
+ * @version $Revision: 1.5 $ $Date: 2002/10/29 19:09:10 $
  * @author Oliver Becker
  */
 
@@ -98,6 +98,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
          new PAttributesFactory(),
          new CopyFactory(),
          new TextFactory(),
+         new CdataFactory(),
          new ValueOfFactory(),
          new AttributeFactory(),
          new ElementStartFactory(),

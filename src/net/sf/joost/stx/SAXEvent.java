@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEvent.java,v 1.3 2002/10/24 12:57:37 obecker Exp $
+ * $Id: SAXEvent.java,v 1.4 2002/10/29 19:09:11 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,7 +33,7 @@ import java.util.Hashtable;
 
 /** 
  * SAXEvent stores all information attached to an incoming SAX event 
- * @version $Revision: 1.3 $ $Date: 2002/10/24 12:57:37 $
+ * @version $Revision: 1.4 $ $Date: 2002/10/29 19:09:11 $
  * @author Oliver Becker
  */
 final public class SAXEvent
@@ -41,9 +41,10 @@ final public class SAXEvent
    public static final int ROOT = 0;
    public static final int ELEMENT = 1;
    public static final int TEXT = 2;
-   public static final int PI = 3;
-   public static final int COMMENT = 4;
-   public static final int ATTRIBUTE = 5;
+   public static final int CDATA = 3;
+   public static final int PI = 4;
+   public static final int COMMENT = 5;
+   public static final int ATTRIBUTE = 6;
 
    public int type;
    public String uri;
@@ -118,6 +119,11 @@ final public class SAXEvent
       return new SAXEvent(TEXT, value);
    }
 
+   public static SAXEvent newCDATA(String value)
+   {
+      return new SAXEvent(CDATA, value);
+   }
+
    public static SAXEvent newRoot()
    {
       return new SAXEvent(ROOT);
@@ -173,6 +179,15 @@ final public class SAXEvent
    public void countText()
    {
       String[] keys = { "node()", "text()" };
+      _countPosition(keys);
+   }
+
+   /**
+    * Increments the associated counters for a text CDATA node.
+    */
+   public void countCDATA()
+   {
+      String[] keys = { "node()", "text()", "cdata()" };
       _countPosition(keys);
    }
 
@@ -257,6 +272,17 @@ final public class SAXEvent
       return c.value;
    }
 
+   public long getPositionOfCDATA()
+   {
+      Counter c = (Counter)posHash.get("cdata()");
+      if (c == null) {
+         // Shouldn't happen
+         log4j.fatal("No position found");
+         throw new NullPointerException();
+      }
+      return c.value;
+   }
+
    public long getPositionOfComment()
    {
       Counter c = (Counter)posHash.get("comment()");
@@ -293,6 +319,8 @@ final public class SAXEvent
          return ret + "<" + qName + ">";
       case TEXT:
          return ret + "`" + value + "'";
+      case CDATA:
+         return ret + "<![CDATA[" + value + "]]>";
       case COMMENT:
          return ret + "<!--" + value + "-->";
       case PI:

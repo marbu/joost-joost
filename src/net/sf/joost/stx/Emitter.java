@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.2 2002/10/24 12:57:37 obecker Exp $
+ * $Id: Emitter.java,v 1.3 2002/10/29 19:09:10 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,9 +32,9 @@ import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.NamespaceSupport;
 
-import java.util.Hashtable;
 import java.util.EmptyStackException;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Stack;
 
 
@@ -43,7 +43,7 @@ import java.util.Stack;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.2 $ $Date: 2002/10/24 12:57:37 $
+ * @version $Revision: 1.3 $ $Date: 2002/10/29 19:09:10 $
  * @author Oliver Becker
  */
 
@@ -320,6 +320,24 @@ public final class Emitter
          processStartElement();
       if (lexH != null)
          lexH.comment(ch, start, length);
+   }
+
+
+   public void startCDATA()
+      throws SAXException
+   {
+      if (contH != null && lastAttrs != null)
+         processStartElement();
+      if (lexH != null)
+         lexH.startCDATA();
+   }
+
+
+   public void endCDATA()
+      throws SAXException
+   {
+      if (lexH != null)
+         lexH.endCDATA();
    }
 
 

@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: Context.java,v 1.2 2002/10/29 19:09:10 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,8 +24,8 @@
 
 package net.sf.joost.stx;
 
-import net.sf.joost.instruction.NodeBase;
 import net.sf.joost.instruction.GroupBase;
+import net.sf.joost.instruction.NodeBase;
 
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
@@ -39,7 +39,7 @@ import java.util.Hashtable;
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2002/10/29 19:09:10 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
@@ -70,6 +70,10 @@ public final class Context implements Cloneable
    /** Should white-space only text nodes be stripped 
        (from <code>stx:options' strip-space</code>)? */
    public boolean stripSpace = false;
+
+   /** Should CDATA section be recognized
+       (from <code>stx:options' recognize-cdata</code>)? */
+   public boolean recognizeCdata = true;
 
    /** An ErrorHandler for reporting errors and warnings */
    public ErrorHandlerImpl errorHandler = new ErrorHandlerImpl();

@@ -63,6 +63,10 @@ name = [a-zA-Z_][a-zA-Z_.0-9-]*
    last = new Symbol(TEXT,yychar,yychar+yytext().length(),yytext()); 
    return last; }
 
+"cdata()" { 
+   last = new Symbol(CDATA,yychar,yychar+yytext().length(),yytext()); 
+   return last; }
+
 "processing-instruction(" { 
    last = new Symbol(PI_START,yychar,yychar+yytext().length(),yytext()); 
    return last; }

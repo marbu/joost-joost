@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.7 2002/10/24 12:57:37 obecker Exp $
+ * $Id: Processor.java,v 1.8 2002/10/29 19:09:10 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -62,7 +62,7 @@ import net.sf.joost.instruction.VariableFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.7 $ $Date: 2002/10/24 12:57:37 $
+ * @version $Revision: 1.8 $ $Date: 2002/10/29 19:09:10 $
  * @author Oliver Becker
  */
 
@@ -117,6 +117,12 @@ public class Processor extends XMLFilterImpl
     * and decreased by endElement.
     */
    private int skipDepth = 0;
+
+   /** 
+    * Set to true between {@link #startCDATA} and {@link #endCDATA}, 
+    * needed for CDATA processing
+    */
+   private boolean insideCDATA = false;
 
    /** 
     * Set to true between {@link #startDTD} and {@link #endDTD}, 
@@ -373,6 +379,7 @@ public class Processor extends XMLFilterImpl
                optionsNode.defaultSTXPathNamespace;
          context.noMatchEvents = optionsNode.noMatchEvents;
          context.stripSpace = optionsNode.stripSpace;
+         context.recognizeCdata = optionsNode.recognizeCdata;
          copyLocation = optionsNode;
       }
       else
@@ -572,16 +579,22 @@ public class Processor extends XMLFilterImpl
 //           collectedCharacters.setLength(0);
 //           return; // white-space only characters found, do nothing
 //        }
-      if (context.stripSpace && s.trim().length() == 0) {
+
+      if (!insideCDATA && context.stripSpace && s.trim().length() == 0) {
          collectedCharacters.setLength(0);
          return; // white-space only characters found, do nothing
       }
 
-
       // don't modify the event stack after process-self
       if ((((Data)dataStack.peek()).lastProcStatus & ST_SELF) == 0) {
-         ((SAXEvent)eventStack.peek()).countText();
-         eventStack.push(SAXEvent.newText(s));
+         if (insideCDATA) {
+            ((SAXEvent)eventStack.peek()).countCDATA();
+            eventStack.push(SAXEvent.newCDATA(s));
+         }
+         else {
+            ((SAXEvent)eventStack.peek()).countText();
+            eventStack.push(SAXEvent.newText(s));
+         }
          if (log4j.isDebugEnabled())
             log4j.debug("eventStack.push " + eventStack.peek());
          context.lookAhead = null;
@@ -602,8 +615,15 @@ public class Processor extends XMLFilterImpl
             temp.process(emitter, eventStack, context, ST_SELF);
          }
       }
-      else if((context.noMatchEvents & COPY_TEXT_NO_MATCH) != 0)
-         emitter.characters(s.toCharArray(), 0, s.length());
+      else if((context.noMatchEvents & COPY_TEXT_NO_MATCH) != 0) {
+         if (insideCDATA) {
+            emitter.startCDATA();
+            emitter.characters(s.toCharArray(), 0, s.length());
+            emitter.endCDATA();
+         }
+         else
+            emitter.characters(s.toCharArray(), 0, s.length());
+      }
 
       // as above: don't modify the event stack after process-self
       if ((((Data)dataStack.peek()).lastProcStatus & ST_SELF) == 0) {
@@ -635,7 +655,8 @@ public class Processor extends XMLFilterImpl
              (context.stripSpace && s.trim().length() == 0))
             context.lookAhead = currentEvent;
          else
-            context.lookAhead = SAXEvent.newText(s);
+            context.lookAhead = insideCDATA ? SAXEvent.newCDATA(s) 
+                                            : SAXEvent.newText(s);
 
          // put last element on the event stack
          ((SAXEvent)eventStack.peek()).countElement(lastElement.uri, 
@@ -1083,15 +1104,41 @@ public class Processor extends XMLFilterImpl
    {
    }
 
+
    public void startCDATA()
       throws SAXException
    {
+      if (skipDepth > 0 || !context.recognizeCdata)
+         return;
+
+      log4j.debug("");
+
+      if (collectedCharacters.length() != 0) {
+         if (lastElement != null) {
+            processLastElement(dummyNode); // the dummy won't be used because
+                                           // there are characters waiting
+         if (skipDepth > 0)
+            return;
+         }
+         processCharacters();
+      }
+         
+      insideCDATA = true;
    }
+
 
    public void endCDATA()
       throws SAXException
    {
+      if (lastElement != null)
+         processLastElement(dummyNode); // dito, see startCDATA above
+      processCharacters(); // even if this CDATA section was empty
+
+      log4j.debug("after processing");
+
+      insideCDATA = false;
    }
+
 
    public void comment(char[] ch, int start, int length)
       throws SAXException
