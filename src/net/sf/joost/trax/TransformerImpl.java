@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.6 2002/10/19 23:53:33 zubow Exp $
+ * $Id: TransformerImpl.java,v 1.7 2002/10/21 13:35:29 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -194,9 +194,9 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
                              */
                             if (xmlReader != null) {
                                 // set the required "http://xml.org/sax/features/namespaces" Feature
-                                this.processor.setFeature(NSURI, xmlReader.getFeature(NSURI));
+                                xmlReader.setFeature(FEAT_NS, true);
                                 // set the required "http://xml.org/sax/features/namespace-prefixes" Feature
-                                this.processor.setFeature(NSURIPREFIX, xmlReader.getFeature(NSURIPREFIX));
+                                xmlReader.setFeature(FEAT_NSPREFIX, false);
                                 // maybe there would be other features
                             }
                             // set the the SAXSource as the parent of the STX-Processor
