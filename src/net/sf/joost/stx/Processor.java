@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.8 2002/10/29 19:09:10 obecker Exp $
+ * $Id: Processor.java,v 1.9 2002/10/30 09:30:24 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -62,7 +62,7 @@ import net.sf.joost.instruction.VariableFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.8 $ $Date: 2002/10/29 19:09:10 $
+ * @version $Revision: 1.9 $ $Date: 2002/10/30 09:30:24 $
  * @author Oliver Becker
  */
 
@@ -1130,6 +1130,9 @@ public class Processor extends XMLFilterImpl
    public void endCDATA()
       throws SAXException
    {
+      if (!context.recognizeCdata)
+         return;
+
       if (lastElement != null)
          processLastElement(dummyNode); // dito, see startCDATA above
       processCharacters(); // even if this CDATA section was empty
