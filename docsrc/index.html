@@ -103,10 +103,10 @@
       Supported stx elements (and their attributes) in the namespace
        <code>http://stx.sourceforge.net/2002/ns</code>
       <ul>
-      <li>stx:transform (version, strict-mode?)</li>
+      <li>stx:transform (version)</li>
       <li>stx:options (default-stxpath-namespace?, output-encoding?,
           no-match-events?, strip-space?)</li>
-      <li>stx:group (strict-mode?)</li>
+      <li>stx:group</li>
       <li>stx:template (match, priority?, visibility?,
           recursion-entry-point?)</li>
       <li>stx:copy (attributes?)</li>
@@ -120,6 +120,7 @@
       <li>stx:process-buffer (name)</li>
       <li>stx:value-of (select)</li>
       <li>stx:if (test)</li>
+      <li>stx:element (name, namespace?)</li>
       <li>stx:element-start (name, namespace?)</li>
       <li>stx:element-end (name, namespace?)</li>
       <li>stx:attribute (name, namespace?, select)</li>
@@ -133,12 +134,13 @@
       <code>attribute</code>, as well as all attributes of literal
       result elements may contain attribute value templates.
       <p>
-      Supported XPath functions
+      Supported STXPath functions
       <ul>
       <li>position()</li>
       <li>name(node?)</li>
       <li>local-name(node?)</li>
       <li>namespace-uri(node?)</li>
+      <li>prefix(node?)</li>
       <li>not(boolean)</li>
       <li>true()</li>
       <li>false()</li>
@@ -150,23 +152,9 @@
       <li>substring(string, string, string?)</li>
       <li>substring-before(string, string)</li>
       <li>substring-after(string, string)</li>
-      </ul>
-      Miscellaneous functions
-      <ul>
-      <li>level()<br>
-          returns the current level in the ancestor stack,
-          i.e. as XPath expression: <code>count(ancestor::node())</code>,
-          the document root (<code>/</code>) is at level 0, the
-          document element at level 1 and so on
-          </li>
-      <li>get-node(number)<br>
-          returns the node (event) at the requested level on the
-          ancestor stack, i.e.
-          <code>get-node(level())=.</code> and
-          <code>get-node(0)=/</code></li>
-      <li>has-child-nodes()<br>
-          returns <code>true</code> if the current node has at least one
-          child node, otherwise it returns <code>false</code></li>
+      <li>level()</li>
+      <li>get-node(number)</li>
+      <li>has-child-nodes()</li>
       </ul>
 
       <h4>Limitations</h4>
@@ -174,7 +162,6 @@
          <li>no datatype list</li>
          <li>only "backwards" parent paths in expressions for accessing nodes
              (i.e. <code>..</code> and <code>../..</code> etc.)</li>
-         <li>no detection of the input encoding</li>
          <li>all STX elements and functions not explicitely mentioned
              on this page wait for an implementation</li>
          <li>...</li>
