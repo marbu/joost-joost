@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.17 2004/02/12 09:10:45 zubow Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.18 2004/10/03 19:05:38 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -240,6 +240,15 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         }
     }
 
+    /**
+     * see {@link javax.xml.transform.TransformerFactory#setFeature(java.lang.String, boolean)}
+     */
+    public void setFeature(String name, boolean value)
+            throws TransformerConfigurationException {
+        // TODO compare with xalan/saxon
+        throw new IllegalArgumentException("Not yet implemented");
+    }
+    
     /**
      * Supplied features.
      * @param name Name of the feature.
