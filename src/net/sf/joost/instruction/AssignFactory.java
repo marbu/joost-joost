@@ -1,5 +1,5 @@
 /*
- * $Id: AssignFactory.java,v 2.4 2003/06/16 13:24:37 obecker Exp $
+ * $Id: AssignFactory.java,v 2.5 2003/10/23 14:53:35 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>assign</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.4 $ $Date: 2003/06/16 13:24:37 $
+ * @version $Revision: 2.5 $ $Date: 2003/10/23 14:53:35 $
  * @author Oliver Becker
  */
 
@@ -167,7 +167,7 @@ final public class AssignFactory extends FactoryBase
                group = group.parentGroup;
             }
          }
-         if (vars == null) {
+         if (obj == null) {
             context.errorHandler.error(
                "Can't assign to undeclared variable `" + varName + "'",
                publicId, systemId, lineNo, colNo);
