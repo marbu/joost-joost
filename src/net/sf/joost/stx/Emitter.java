@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.30 2004/10/30 11:23:52 obecker Exp $
+ * $Id: Emitter.java,v 1.31 2005/03/11 18:13:20 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,6 +28,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Stack;
@@ -50,7 +52,7 @@ import org.xml.sax.helpers.NamespaceSupport;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.30 $ $Date: 2004/10/30 11:23:52 $
+ * @version $Revision: 1.31 $ $Date: 2005/03/11 18:13:20 $
  * @author Oliver Becker
  */
 
@@ -498,7 +500,7 @@ public class Emitter implements Constants
    public Writer getResultWriter(String href, String encoding,
                                  String publicId, String systemId, 
                                  int lineNo, int colNo)
-      throws java.io.IOException, SAXException
+      throws java.io.IOException, SAXException, URISyntaxException
    {
       // Variant 1:
       int sepPos = href.lastIndexOf('/');
@@ -510,7 +512,7 @@ public class Emitter implements Constants
 
       // Note: currently we don't check if a file is already open.
       // Opening a file twice may lead to unexpected results.
-      FileOutputStream fos = new FileOutputStream(href);
+      FileOutputStream fos = new FileOutputStream(new File(new URI(href)));
 
 //              // Variant 2:
 //              FileOutputStream fos;

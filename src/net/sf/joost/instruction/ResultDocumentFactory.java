@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 2.16 2004/11/06 13:03:05 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 2.17 2005/03/11 18:13:13 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,6 +25,7 @@
 package net.sf.joost.instruction;
 
 import java.io.Writer;
+import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Properties;
 
@@ -43,7 +44,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.16 $ $Date: 2004/11/06 13:03:05 $
+ * @version $Revision: 2.17 $ $Date: 2005/03/11 18:13:13 $
  * @author Oliver Becker
  */
 
@@ -144,6 +145,12 @@ final public class ResultDocumentFactory extends FactoryBase
                                        publicId, systemId, lineNo, colNo);
             return PR_CONTINUE; // if the errorHandler returns
          }
+         catch (URISyntaxException ex) {
+            context.errorHandler.error(ex.toString(), 
+                                       publicId, systemId, lineNo, colNo);
+            return PR_CONTINUE; // if the errorHandler returns
+         }
+         
 
          context.pushEmitter(se);
          context.emitter.startDocument();
