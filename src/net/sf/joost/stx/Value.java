@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.15 2003/06/10 13:03:09 obecker Exp $
+ * $Id: Value.java,v 1.16 2003/06/11 08:15:56 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -26,10 +26,13 @@ package net.sf.joost.stx;
 
 import net.sf.joost.grammar.EvalException;
 
+import java.util.List;
+import java.util.ArrayList;
+
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.15 $ $Date: 2003/06/10 13:03:09 $
+ * @version $Revision: 1.16 $ $Date: 2003/06/11 08:15:56 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -355,11 +358,14 @@ public class Value implements Cloneable
    {
       if (type == OBJECT) {
          if (target == object.getClass())                return 0; 
+         if (target == Object.class)                     return 2;
          if (target.isAssignableFrom(object.getClass())) return 1;
-         if (target == String.class)                     return 50;
+         if (target == String.class)                     return 100;
       }
+      if (target == List.class)
+         return 90;
       if (target == Object.class)
-         return 50;
+         return 100;
       switch (type) {
       case EMPTY:
          if (!target.isPrimitive())
@@ -440,7 +446,7 @@ public class Value implements Cloneable
       if (target == Object.class) {
          switch (type) {
          case EMPTY:   return null;
-         case NODE:    return event;
+         case NODE:    return event.value;
          case BOOLEAN: return new Boolean(bool);
          case NUMBER:  return new Double(number);
          case STRING:  return string;
@@ -452,6 +458,14 @@ public class Value implements Cloneable
       else if (type == OBJECT && target.isAssignableFrom(object.getClass())) {
          // target is a superclass of object's class (or they are the same)
          return object;
+      }
+      else if (target == List.class) {
+         if (type == EMPTY)
+            return new ArrayList(0);
+         ArrayList list = new ArrayList();
+         for (Value it=this; it!=null; it=it.next)
+            list.add(it.toJavaObject(Object.class));
+         return list;
       }
       else if (type == EMPTY && !target.isPrimitive()) {
          // target is a reference type
@@ -516,6 +530,7 @@ public class Value implements Cloneable
       case BOOLEAN: ret = "boolean " + bool; break;
       case STRING:  ret = "string '" + string + "'"; break;
       case NODE:    ret = "node " + event; break;
+      case OBJECT:  ret = "object " + object; break;
       default: ret = ("unknown type in Value object");
       }
       if (next != null)

@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.43 2003/06/10 13:00:30 obecker Exp $ -->
+<!-- $Id: index.html,v 1.44 2003/06/11 08:17:51 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -307,10 +307,10 @@
       </ul>
       <p><strong>Conversion rules</strong><br>
       Depending on the type of the values supplied to the function call,
-      <em>Joost</em> tries to find a method that have an argument with one
-      of the following types (more specific types appear first in the list;
-      if the argument in the function call is a non-empty sequence, only
-      the first item will be considered):
+      <em>Joost</em> tries to find a method that has an argument with one
+      of the following types (Java types with a higher conversion preference
+      appear first in the list; if the argument in the function call is a
+      non-empty sequence, only the first item will be considered):
       </p>
       <table border="1" cellpadding="4" cellspacing="0">
         <tr>
@@ -319,31 +319,80 @@
         </tr>
         <tr>
           <td>empty sequence</td>
-          <td><code>Object</code>
+          <td><code>java.util.List</code>, <code>java.lang.Object</code>
               (or a derived type, i.e. a reference type)</td>
         </tr>
         <tr>
           <td><code>boolean</code></td>
           <td><code>boolean</code>, <code>byte</code>, <code>short</code>,
               <code>int</code>, <code>long</code>, <code>char</code>,
-              <code>String</code>, <code>float</code>, <code>double</code>,
-              <code>Object</code></td>
+              <code>java.lang.String</code>, <code>float</code>,
+              <code>double</code>, <code>java.util.List</code>,
+              <code>java.lang.Object</code></td>
         </tr>
         <tr>
           <td><code>number</code></td>
           <td><code>double</code>, <code>float</code>, <code>long</code>,
               <code>int</code>, <code>short</code>, <code>byte</code>,
-              <code>String</code>, <code>char</code>, <code>boolean</code>,
-              <code>Object</code></td>
+              <code>java.lang.String</code>, <code>char</code>,
+              <code>boolean</code>, <code>java.util.List</code>,
+              <code>java.lang.Object</code></td>
         </tr>
         <tr>
           <td><code>node</code>, <code>string</code></td>
-          <td><code>String</code>, <code>char</code>, <code>double</code>,
-              <code>float</code>, <code>int</code>, <code>long</code>,
-              <code>short</code>, <code>byte</code>, <code>boolean</code>,
-              <code>Object</code></td>
+          <td><code>java.lang.String</code>, <code>char</code>,
+              <code>double</code>, <code>float</code>, <code>int</code>,
+              <code>long</code>, <code>short</code>, <code>byte</code>,
+              <code>boolean</code>, <code>java.util.List</code>,
+              <code>java.lang.Object</code></td>
+        </tr>
+        <tr>
+          <td>wrapped Java Object</td>
+          <td>same type, base type, <code>java.lang.Object</code>,
+              <code>java.util.List</code>, <code>java.lang.String</code></td>
         </tr>
       </table>
+      <p>
+      If the target type is <code>java.lang.Object</code> then a conversion
+      according to the following table will be performed. If the target type
+      is <code>java.util.List</code> then a <code>java.util.ArrayList</code>
+      will be constructed containing a list of <code>java.lang.Object</code>s
+      (see table) for each of the items. An empty sequence will be
+      represented as an empty list (not as a list with a <code>null</code>
+      member).
+      </p>
+      <table border="1" cellpadding="4" cellspacing="0">
+        <tr>
+          <th>supplied STXPath type</th>
+          <th>target type <code>java.lang.Object</code></th>
+        </tr>
+        <tr>
+          <td>empty sequence</td>
+          <td><code>null</code></td>
+        </tr>
+        <tr>
+          <td><code>boolean</code></td>
+          <td><code>java.lang.Boolean</code> containing the boolean value</td>
+        </tr>
+        <tr>
+          <td><code>number</code></td>
+          <td><code>java.lang.Double</code> containing the number</td>
+        </tr>
+        <tr>
+          <td><code>string</code></td>
+          <td><code>java.lang.String</code></td>
+        </tr>
+        <tr>
+          <td><code>node</code></td>
+          <td><code>java.lang.String</code> containing the node value</td>
+        </tr>
+        <tr>
+          <td>wrapped Java Object</td>
+          <td>the object itself</td>
+        </tr>
+      </table>
+              
+                
       <p>
       The result of a function call will be converted as follows:
       </p>
@@ -357,7 +406,7 @@
           <td>empty sequence</td>
         </tr>
         <tr>
-          <td><code>String</code>, <code>char</code></td>
+          <td><code>java.lang.String</code>, <code>char</code></td>
           <td><code>string</code></td>
         </tr>
         <tr>
@@ -407,11 +456,12 @@
       </table>
 
       <p>
-        A wrapped Java Object of type <code>Object[]</code> or
+        A wrapped Java Object of type <code>java.lang.Object[]</code> or
         <code>java.util.List</code> may be converted to a sequence using
         the <em>Joost</em> extension function <code>sequence</code>.
-        If the supplied parameter is neither an array nor a <code>List</code>
-        object, this function returns its parameter.
+        If the supplied parameter is neither an array nor a
+        <code>java.util.List</code> object, this function returns its
+        parameter.
       </p>
 
         
