@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 1.7 2002/12/17 16:46:35 obecker Exp $
+ * $Id: Tree.java,v 1.8 2002/12/19 15:04:25 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 1.7 $ $Date: 2002/12/17 16:46:35 $
+ * @version $Revision: 1.8 $ $Date: 2002/12/19 15:04:25 $
  * @author Oliver Becker
  */
 public class Tree
@@ -265,8 +265,9 @@ public class Tree
          case CHILD:
             if (top < 2)
                return false;
-            return right.matches(context, events, top) &&
-                   left.matches(context, events, top-1);
+            // right.matches() sets the resulting position
+            return left.matches(context, events, top-1) &&
+                   right.matches(context, events, top);
 
          case DESC:
             // need at least 3 events (document, node1, node2), because
@@ -274,10 +275,14 @@ public class Tree
             if (top < 3)
                return false;
             if (right.matches(context, events, top)) {
+               // store position
+               long pos = context.position;
                // look for a matching sub path on the left
                while (top > 1) {
-                  if (left.matches(context, events, top-1))
+                  if (left.matches(context, events, top-1)) {
+                     context.position = pos;
                      return true;
+                  }
                   else
                      top--;
                }
