@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 1.9 2002/11/28 10:27:16 obecker Exp $
+ * $Id: FunctionTable.java,v 1.10 2003/01/12 16:44:47 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 1.9 $ $Date: 2002/11/28 10:27:16 $
+ * @version $Revision: 1.10 $ $Date: 2003/01/12 16:44:47 $
  * @author Oliver Becker
  */
 public final class FunctionTable
@@ -73,7 +73,8 @@ public final class FunctionTable
          new Substring(),
          new SubstringBefore(),
          new SubstringAfter(),
-         new Translate()
+         new Translate(),
+         new Sum()
       };
       functionHash = new Hashtable(functions.length);
       for (int i=0; i<functions.length; i++)
@@ -827,6 +828,35 @@ public final class FunctionTable
                result.append(index < 0 ? c : s3.charAt(index));
          }
          return new Value(result.toString());
+      }
+   }
+
+
+   /**
+    * The <code>sum</code> function.
+    * Returns the sum of all items in the sequence.
+    */
+   public class Sum implements Instance
+   {
+      /** @return 1 */
+      public int getMinParCount() { return 1; }
+      /** @return 1 */
+      public int getMaxParCount() { return 1; }
+      /** @return "sum" */
+      public String getName() { return "{}sum"; }
+
+      public Value evaluate(Context context, Stack events, int top, Tree args)
+         throws SAXException, EvalException
+      {
+         Value v = args.evaluate(context, events, top);
+         if (v.type == Value.NODE && v.event == null) // empty sequence
+            return v;
+         double sum = 0;
+         while (v != null) {
+            sum += v.convertToNumber().number;
+            v = v.next;
+         }
+         return new Value(sum);
       }
    }
 }
