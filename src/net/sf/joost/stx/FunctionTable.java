@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.11 2003/06/10 13:02:04 obecker Exp $
+ * $Id: FunctionTable.java,v 2.12 2003/06/13 15:16:08 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,7 +46,7 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.11 $ $Date: 2003/06/10 13:02:04 $
+ * @version $Revision: 2.12 $ $Date: 2003/06/13 15:16:08 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -1366,7 +1366,8 @@ final public class FunctionTable implements Constants
          while (v != null) {
             Value next = v.next;
             v.next = null;
-            sum += v.convertToNumber().number;
+            if (!Double.isNaN(v.convertToNumber().number))
+               sum += v.number;
             v = next;
          }
          return new Value(sum);
