@@ -1,5 +1,7 @@
 Changes since 20030502
-- added 'separator' attribute to stx:value-of
+- added 'separator' attribute to stx:value-of; 
+  since @separator defaults to " ", the default behaviour changed if 
+  @select evaluates to a sequence
 - added 'filter' and 'src' attributes to stx:process-buffer, 
   stx:process-children, and stx:process-self;
   enabled built-in passing of SAX events to a (JAXP conformant) XSLT engine
