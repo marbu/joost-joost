@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEmitter.java,v 1.7 2004/10/25 20:39:33 obecker Exp $
+ * $Id: SAXEmitter.java,v 1.8 2005/03/13 17:12:49 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -40,7 +40,7 @@ import org.xml.sax.SAXException;
  *  {@link #saxSourceHandler} (e.g. the registered ContentHandler).
  *  @author Zubow
  */
-public class SAXEmitter implements StxEmitter {
+public class SAXEmitter extends StxEmitterBase {
 
     // Define a static logger variable so that it references the
     // Logger instance named "SAXEmitter".

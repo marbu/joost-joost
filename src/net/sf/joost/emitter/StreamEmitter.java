@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.25 2004/11/07 12:18:43 zubow Exp $
+ * $Id: StreamEmitter.java,v 1.26 2005/03/13 17:12:49 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -47,11 +47,10 @@ import org.xml.sax.SAXException;
 
 /**
  * Base class for emitter classes that produce a character stream.
- * @version $Revision: 1.25 $ $Date: 2004/11/07 12:18:43 $
+ * @version $Revision: 1.26 $ $Date: 2005/03/13 17:12:49 $
  * @author Oliver Becker
  */
-public abstract class StreamEmitter
-   implements Constants, StxEmitter
+public abstract class StreamEmitter extends StxEmitterBase implements Constants
 {
    // Log initialization
    private static Log log = OptionalLog.getLog(StreamEmitter.class);

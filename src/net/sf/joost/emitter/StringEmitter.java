@@ -1,5 +1,5 @@
 /*
- * $Id: StringEmitter.java,v 1.7 2004/09/19 13:49:39 obecker Exp $
+ * $Id: StringEmitter.java,v 1.8 2005/03/13 17:12:49 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -31,11 +31,11 @@ import org.xml.sax.SAXException;
 
 /**
  * This class implements an emitter that collects characters events
- * @version $Revision: 1.7 $ $Date: 2004/09/19 13:49:39 $
+ * @version $Revision: 1.8 $ $Date: 2005/03/13 17:12:49 $
  * @author Oliver Becker
  */
 
-final public class StringEmitter implements StxEmitter
+final public class StringEmitter extends StxEmitterBase
 {
    /** the string buffer */
    private StringBuffer buffer;

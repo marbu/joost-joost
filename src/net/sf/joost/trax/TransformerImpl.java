@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.24 2004/11/07 12:18:43 zubow Exp $
+ * $Id: TransformerImpl.java,v 1.25 2005/03/13 17:13:01 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -168,6 +168,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
 
                 //init StxEmitter
                 out = TrAXHelper.initStxEmitter(result, processor);
+                out.setSystemId(result.getSystemId());
 
                 this.processor.setContentHandler(out);
                 this.processor.setLexicalHandler(out);

@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerImpl.java,v 1.12 2005/01/23 19:47:30 obecker Exp $
+ * $Id: TransformerHandlerImpl.java,v 1.13 2005/03/13 17:13:01 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -178,6 +178,7 @@ public class TransformerHandlerImpl implements TransformerHandler, Constants {
 
             // initialize Emitter --> DOM-, SAX- or StreamEmitter
             stxEmitter = TrAXHelper.initStxEmitter(result, processor);
+            stxEmitter.setSystemId(result.getSystemId());
             // setting Handler
             this.processor.setContentHandler(stxEmitter);
             this.processor.setLexicalHandler(stxEmitter);

@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.28 2005/02/28 08:28:10 obecker Exp $
+ * $Id: Main.java,v 1.29 2005/03/13 17:13:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,6 +25,7 @@
 package net.sf.joost;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -47,7 +48,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.28 $ $Date: 2005/02/28 08:28:10 $
+ * @version $Revision: 1.29 $ $Date: 2005/03/13 17:13:03 $
  * @author Oliver Becker
  */
 public class Main implements Constants
@@ -392,9 +393,11 @@ public class Main implements Constants
          }
          else {
             // Create XML output
-            if (outFile != null)
+            if (outFile != null) {
                emitter = StreamEmitter.newEmitter(outFile,
                                                   processor.outputProperties);
+               emitter.setSystemId(new File(outFile).toURI().toString());
+            }
             else
                emitter = StreamEmitter.newEmitter(System.out, 
                                                   processor.outputProperties);

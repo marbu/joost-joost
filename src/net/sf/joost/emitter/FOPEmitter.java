@@ -1,5 +1,5 @@
 /*
- * $Id: FOPEmitter.java,v 1.2 2002/10/15 19:02:46 zubow Exp $
+ * $Id: FOPEmitter.java,v 1.3 2005/03/13 17:12:48 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -36,12 +36,15 @@ import java.io.OutputStream;
 /**
  * Wrapper class which passes SAX events to
  * <a href="http://xml.apache.org/fop">FOP</a>
- * @version $Revision: 1.2 $ $Date: 2002/10/15 19:02:46 $,
+ * @version $Revision: 1.3 $ $Date: 2005/03/13 17:12:48 $,
  * tested with FOP 0.20.4
  * @author Oliver Becker
  */
 public class FOPEmitter extends XMLFilterImpl implements StxEmitter
 {
+   /** The system identifier required by {@link StxEmitter} */
+   private String systemId;
+   
    /**
     * Constructs a new FOPEmitter wrapper object.
     * @param os the stream to which the PDF output will be written by FOP
@@ -108,5 +111,21 @@ public class FOPEmitter extends XMLFilterImpl implements StxEmitter
 
    public void comment(char[] ch, int start, int length)
    {
+   }
+   
+   /* (non-Javadoc)
+    * @see net.sf.joost.emitter.StxEmitter#getSystemId()
+    */
+   public String getSystemId()
+   {
+      return systemId;
+   }
+   
+   /* (non-Javadoc)
+    * @see net.sf.joost.emitter.StxEmitter#setSystemId(java.lang.String)
+    */
+   public void setSystemId(String systemId)
+   {
+      this.systemId = systemId;
    }
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: StxEmitter.java,v 1.4 2002/11/03 11:32:50 obecker Exp $
+ * $Id: StxEmitter.java,v 1.5 2005/03/13 17:12:49 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -19,7 +19,7 @@
  * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________.
+ * Contributor(s): Oliver Becker.
  */
 
 
@@ -33,9 +33,23 @@ import org.xml.sax.ext.LexicalHandler;
 /**
  * Common interface - All emitter implementations have to implement this
  * interface.
- * @version $Revision: 1.4 $ $Date: 2002/11/03 11:32:50 $
+ * @version $Revision: 1.5 $ $Date: 2005/03/13 17:12:49 $
  * @author Zubow
  */
 public interface StxEmitter
     extends ContentHandler, LexicalHandler, Constants {
+   
+    /**
+     * Set the system identifier for this emitter. This is optional - the
+     * system identifier may be used to resolve relative output identifiers.
+     * @param systemId the system identifier as a URI string
+     */
+    public void setSystemId(String systemId);
+    
+    /**
+     * Get the system identifier that was set with {@link #setSystemId(String)}.
+     * @return the system identifier or <code>null</code> if
+     * {@link #setSystemId(String)} was not called.
+     */
+    public String getSystemId();
 }

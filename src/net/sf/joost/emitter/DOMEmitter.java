@@ -1,5 +1,5 @@
 /*
- * $Id: DOMEmitter.java,v 1.6 2005/01/22 21:50:14 obecker Exp $
+ * $Id: DOMEmitter.java,v 1.7 2005/03/13 17:12:49 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -48,7 +48,7 @@ import org.xml.sax.SAXException;
  *  {@link #getDOMTree()}.
  *  @author Zubow
  */
-public class DOMEmitter implements StxEmitter {
+public class DOMEmitter extends StxEmitterBase {
 
 
     // Define a static logger variable so that it references the

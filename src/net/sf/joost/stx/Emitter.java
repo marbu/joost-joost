@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.31 2005/03/11 18:13:20 obecker Exp $
+ * $Id: Emitter.java,v 1.32 2005/03/13 17:13:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -52,7 +52,7 @@ import org.xml.sax.helpers.NamespaceSupport;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.31 $ $Date: 2005/03/11 18:13:20 $
+ * @version $Revision: 1.32 $ $Date: 2005/03/13 17:13:03 $
  * @author Oliver Becker
  */
 
@@ -111,6 +111,11 @@ public class Emitter implements Constants
     */
    public Emitter pushEmitter(StxEmitter handler)
    {
+      if (handler.getSystemId() == null && contH instanceof StxEmitter) {
+         // if the new handler doesn't have its own system identifier set
+         // then use the system identifier of the parent
+         handler.setSystemId(((StxEmitter) contH).getSystemId());
+      }
       return new Emitter(this, handler);
    }
 
@@ -502,39 +507,40 @@ public class Emitter implements Constants
                                  int lineNo, int colNo)
       throws java.io.IOException, SAXException, URISyntaxException
    {
-      // Variant 1:
-      int sepPos = href.lastIndexOf('/');
-      if (sepPos != -1) {
-         // filename contains directory parts, try to create it
-         File dir = new File(href.substring(0, sepPos));
-         dir.mkdirs();
-      }
-
       // Note: currently we don't check if a file is already open.
       // Opening a file twice may lead to unexpected results.
-      FileOutputStream fos = new FileOutputStream(new File(new URI(href)));
 
-//              // Variant 2:
-//              FileOutputStream fos;
-//              try {
-//                 fos = new FileOutputStream(href);
-//              }
-//              catch (java.io.FileNotFoundException fnfe) {
-//                 int sepPos = href.lastIndexOf('/');
-//                 if (sepPos == -1)
-//                    throw fnfe;
-//                 // else: filename contains directory parts,
-//                 // possibly this directoty doesn't exist yet
-//                 File dir = new File(href.substring(0, sepPos));
-//                 // create it
-//                 dir.mkdirs();
-//                 // try again
-//                 fos = new FileOutputStream(href);
-//              }
-
-      // Note: both variants have the same average performance,
-      // no matter whether directories have to be created or not.
+      File hrefFile = null; // the file object representing href
       
+      if (href.indexOf(':') != -1) { // href is a URI
+         hrefFile = new File(new URI(href));
+      }
+      else { // href is a path without protocol
+         if (contH instanceof StxEmitter) {
+            String base = ((StxEmitter) contH).getSystemId();
+            if (base != null) {
+               int slashPos = base.lastIndexOf('/');
+               // check if there is a path with several path components
+               if (slashPos != -1)
+                  base = base.substring(0, slashPos); // remove last component
+               // construct file relative to base
+               hrefFile = new File(new File(new URI(base)), href);
+            }
+            else // no base identifier
+               hrefFile = new File(href);
+         }
+         else // no base available at all
+            hrefFile = new File(href);
+      }
+      
+      // create missing directories 
+      // (say: simply create them, don't check if there are really missing)
+      String absFilename = hrefFile.getAbsolutePath();
+      int dirPos = absFilename.lastIndexOf(File.separator);
+      if (dirPos != -1)
+         new File(absFilename.substring(0, dirPos)).mkdirs();
+
+      FileOutputStream fos = new FileOutputStream(hrefFile);
       OutputStreamWriter osw;
       try {
          osw = new OutputStreamWriter(fos, encoding);
