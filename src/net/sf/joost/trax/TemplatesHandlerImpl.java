@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesHandlerImpl.java,v 1.11 2004/12/17 18:25:47 obecker Exp $
+ * $Id: TemplatesHandlerImpl.java,v 1.12 2004/12/27 18:52:46 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -30,6 +30,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.TemplatesHandler;
 
 import net.sf.joost.Constants;
+import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Parser;
 
 import org.apache.commons.logging.Log;
@@ -72,7 +73,9 @@ public class TemplatesHandlerImpl implements TemplatesHandler, Constants {
             log.debug("calling constructor");
         this.tfactory = tfactory;
         // construct a tree representation of an STX stylesheet
-        stxparser = new Parser(tfactory.allowExternalFunctions);
+        ParseContext pContext = new ParseContext();
+        pContext.allowExternalFunctions = tfactory.allowExternalFunctions;
+        stxparser = new Parser(pContext);
     }
 
 
