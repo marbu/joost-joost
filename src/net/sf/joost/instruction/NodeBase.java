@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 2.5 2003/08/28 16:08:28 obecker Exp $
+ * $Id: NodeBase.java,v 2.6 2003/11/01 14:42:18 zubow Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Abstract base class for all instances of nodes in the STX transformation 
  * sheet
- * @version $Revision: 2.5 $ $Date: 2003/08/28 16:08:28 $
+ * @version $Revision: 2.6 $ $Date: 2003/11/01 14:42:18 $
  * @author Oliver Becker
  */
 public abstract class NodeBase 
@@ -54,7 +54,7 @@ public abstract class NodeBase
     * simply calls {@link #processEnd} in the appropriate {@link NodeBase}
     * object.
     */
-   private final class End extends AbstractInstruction
+   public final class End extends AbstractInstruction
    {
       /** 
        * The appropriate start tag.
@@ -104,7 +104,7 @@ public abstract class NodeBase
    public String qName;
 
    /** The parent of this node */
-   protected NodeBase parent;
+   public NodeBase parent;
 
    /**
     * The reference to the last child, needed for inserting additional
@@ -297,6 +297,13 @@ public abstract class NodeBase
       return PR_CONTINUE;
    }
 
+   /**
+    * Getter for {@link #nodeEnd} used by {@link net.sf.joost.stx.Processor#processEvent}.
+    * @return a final ref on <code>AbstractInstruction</code>
+    */
+   public final AbstractInstruction getNodeEnd() {
+       return this.nodeEnd;
+   }
 
    // for debugging
    public String toString()
