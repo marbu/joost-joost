@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.27 2004/10/06 07:46:25 obecker Exp $
+ * $Id: Emitter.java,v 1.28 2004/10/29 17:08:56 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -48,7 +48,7 @@ import org.xml.sax.helpers.NamespaceSupport;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.27 $ $Date: 2004/10/06 07:46:25 $
+ * @version $Revision: 1.28 $ $Date: 2004/10/29 17:08:56 $
  * @author Oliver Becker
  */
 
@@ -93,17 +93,11 @@ public class Emitter implements Constants
    /** Called from {@link #pushEmitter(StxEmitter)} */
    protected Emitter(Emitter prev, StxEmitter handler)
    {
+      this(prev.errorHandler);
+
       this.prev = prev;
       this.contH = handler;
       this.lexH = handler;
-      
-      nsSupport = prev.nsSupport; // new NamespaceSupport();
-//       nsSupport.pushContext();
-      nsDefault = "";
-      nsStack = new Stack();
-
-      openedElements = new Stack();
-      this.errorHandler = prev.errorHandler;
    }
    
    
