@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.31 2003/01/21 10:21:37 obecker Exp $
+ * $Id: Processor.java,v 1.32 2003/01/27 18:15:28 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -54,6 +54,7 @@ import net.sf.joost.Constants;
 import net.sf.joost.instruction.GroupFactory;
 import net.sf.joost.instruction.NodeBase;
 import net.sf.joost.instruction.OptionsFactory;
+import net.sf.joost.instruction.PSiblingsFactory;
 import net.sf.joost.instruction.TemplateFactory;
 import net.sf.joost.instruction.TransformFactory;
 
@@ -61,7 +62,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.31 $ $Date: 2003/01/21 10:21:37 $
+ * @version $Revision: 1.32 $ $Date: 2003/01/27 18:15:28 $
  * @author Oliver Becker
  */
 
@@ -167,7 +168,6 @@ public class Processor extends XMLFilterImpl
    /** Stack for {@link Data} objects */
    private Stack dataStack = new Stack();
 
-
    // **********************************************************************
    /**
     * Inner class for data which is processing/template specific.
@@ -177,7 +177,7 @@ public class Processor extends XMLFilterImpl
    private final class Data
    {
       /** The last instantiated template */
-      TemplateFactory.Instance lastTemplate;
+      TemplateFactory.Instance template;
 
       /** The context position of the current node (from {@link Context}) */
       long contextPosition;
@@ -199,11 +199,42 @@ public class Processor extends XMLFilterImpl
        */
       short lastProcStatus;
 
-      /** Constructor for the initialization of all fields */
-      Data(TemplateFactory.Instance lt, long cp, SAXEvent la,
+      /** 
+       * <code>stx:process-siblings</code> instruction 
+       * (for stx:process-siblings) 
+       */
+      PSiblingsFactory.Instance psiblings;
+
+      /** current event (for stx:process-siblings) */
+      SAXEvent sibEvent;
+
+      /** current table of local variables (for stx:process-siblings) */
+      Hashtable localVars;
+
+
+      /** 
+       * Constructor for the initialization of all fields, needed for
+       * <code>stx:process-siblings</code>
+       */
+      Data(TemplateFactory.Instance t, long cp, SAXEvent la,
+           TemplateFactory.Instance[] vt, short lps,
+           PSiblingsFactory.Instance ps, Hashtable lv, SAXEvent se)
+      {
+         template = t;
+         contextPosition = cp;
+         lookAhead = la;
+         visibleTemplates = vt;
+         lastProcStatus = lps;
+         psiblings = ps;
+         localVars = (Hashtable)lv.clone();
+         sibEvent = se;
+      }
+
+      /** Constructor for "descendant or self" processing */
+      Data(TemplateFactory.Instance t, long cp, SAXEvent la,
            TemplateFactory.Instance[] vt, short lps)
       {
-         lastTemplate = lt;
+         template = t;
          contextPosition = cp;
          lookAhead = la;
          visibleTemplates = vt;
@@ -223,9 +254,10 @@ public class Processor extends XMLFilterImpl
       /** just for debugging */
       public String toString()
       {
-         return "Data{" + lastTemplate + "," + contextPosition + "," +
+         return "Data{" + template + "," + contextPosition + "," +
                 lookAhead + "," +
-                visibleTemplates + "," + lastProcStatus + "}";
+                java.util.Arrays.asList(visibleTemplates) + "," + 
+                lastProcStatus + "}";
       }
    } // inner class Data
 
@@ -557,15 +589,19 @@ public class Processor extends XMLFilterImpl
    public void endInnerProcessing()
       throws SAXException
    {
-      dataStack.pop();
+      // Clean up dataStack: terminate pending stx:process-siblings
+      clearProcessSiblings();
+
+      // remove Data object from startInnerProcessing()
+      dataStack.pop(); 
       collectedCharacters.append(bufferStack.pop());
    }
 
 
-   /*
+   /**
     * Check for the next best matching template after 
     * <code>stx:process-self</code>
-    * @param a template matching the current node
+    * @param temp a template matching the current node
     * @return <code>true</code> if this template hasn't been processed before
     */
    private boolean foundUnprocessedTemplate(TemplateFactory.Instance temp)
@@ -573,7 +609,7 @@ public class Processor extends XMLFilterImpl
       for (int top=dataStack.size()-1; top >= 0; top--) {
          Data d = (Data)dataStack.elementAt(top);
          if ((d.lastProcStatus & ST_SELF) != 0) { // stx:process-self
-            if (d.lastTemplate == temp)
+            if (d.template == temp)
                return false; // no, this template was already in use
             // else continue
          }
@@ -656,6 +692,10 @@ public class Processor extends XMLFilterImpl
    {
       SAXEvent event = (SAXEvent)eventStack.peek();
       log4j.debug(event);
+
+      if ((((Data)dataStack.peek()).lastProcStatus & ST_SIBLINGS) != 0)
+         processSiblings();
+
       TemplateFactory.Instance temp = findMatchingTemplate();
       if (temp != null) {
          boolean attributeLoop;
@@ -663,7 +703,6 @@ public class Processor extends XMLFilterImpl
          do {
             log4j.debug("status: " + procStatus);
             attributeLoop = false;
-            context.nextProcessGroup = null;
             procStatus = temp.process(emitter, eventStack, context,
                                       procStatus);
             if ((procStatus & ST_CHILDREN) != 0) {
@@ -694,7 +733,7 @@ public class Processor extends XMLFilterImpl
                               ? (TemplateFactory.Instance[])
                                 transformNode.namedGroups.get(
                                    context.nextProcessGroup) 
-                              :((Data)dataStack.peek()).visibleTemplates,
+                              : ((Data)dataStack.peek()).visibleTemplates,
                            procStatus));
                processEvent(); // recurse
                if (event.type == SAXEvent.TEXT || 
@@ -706,6 +745,24 @@ public class Processor extends XMLFilterImpl
                   dataStack.pop();
                   temp.process(emitter, eventStack, context, ST_SELF);
                }
+            }
+            else if ((procStatus & ST_SIBLINGS) != 0) {
+               // no stx:process-children before, skip contents
+               if (event.type == SAXEvent.ELEMENT || 
+                   event.type == SAXEvent.ROOT) {
+                  // end of template reached, skip contents
+                  skipDepth = 1;
+                  collectedCharacters.setLength(0); // clear text
+               }
+               dataStack.push(
+                  new Data(temp, context.position, context.lookAhead,
+                           context.nextProcessGroup != null 
+                              ? (TemplateFactory.Instance[])
+                                transformNode.namedGroups.get(
+                                   context.nextProcessGroup) 
+                              : temp.parentGroup.visibleTemplates,
+                           procStatus, context.psiblings,
+                           context.localVars, event));
             }
             else if ((procStatus & ST_ATTRIBUTES) != 0) {
                // stx:process-attributes, just for elements
@@ -886,8 +943,6 @@ public class Processor extends XMLFilterImpl
    {
       for (int i=0; i<attrs.getLength(); i++) {
          log4j.debug(attrs.getQName(i));
-//           ((SAXEvent)eventStack.peek()).countAttribute(attrs.getURI(i), 
-//                                                        attrs.getLocalName(i));
          eventStack.push(SAXEvent.newAttribute(attrs, i));
          processEvent();
          eventStack.pop();
@@ -895,6 +950,100 @@ public class Processor extends XMLFilterImpl
       }
    }
 
+
+   /**
+    * Check and process pending templates whose processing was suspended
+    * by an stx:process-siblings instruction
+    */
+   private void processSiblings()
+      throws SAXException
+   {
+      // check, if one of the last consecutive stx:process-siblings terminates
+      int stackPos = dataStack.size()-1;
+      Data data = (Data)dataStack.peek();
+      Data stopData = null;
+      Hashtable storedVars = context.localVars;
+      do {
+         context.localVars = data.localVars;
+         if (!data.psiblings.matches(context, eventStack))
+            stopData = data;
+         data = (Data)dataStack.elementAt(--stackPos);
+      } while ((data.lastProcStatus & ST_SIBLINGS) != 0);
+      context.localVars = storedVars;
+      if (stopData != null) // the first of the non-matching templates
+         clearProcessSiblings(stopData, false);
+   }
+
+
+   /**
+    * Clear all consecutive pending <code>stx:process-siblings</code> 
+    * instructions on the top of {@link #dataStack}. Does nothing
+    * if there's no <code>stx:process-siblings</code> pending.
+    */
+   private void clearProcessSiblings()
+      throws SAXException
+   {
+      // find last of these consecutive stx:process-siblings instructions
+      Data data, stopData = null;;
+      for (int i=dataStack.size()-1; 
+           ((data = (Data)dataStack.elementAt(i))
+                                   .lastProcStatus & ST_SIBLINGS) != 0;
+           i-- ) {
+         stopData = data;
+      }
+      if (stopData != null) // yep, found at least one
+         clearProcessSiblings(stopData, true);
+   }
+
+
+   /**
+    * Clear consecutive pending <code>stx:process-siblings</code>
+    * instructions on the top of {@link #dataStack} until
+    * the passed object is encountered.
+    * @param stopData data for the last <code>stx:process-siblings</code>
+    *                 instruction
+    * @param clearLast <code>true</code> if the template in
+    *                 <code>stopData</code> itself must be cleared
+    */
+   private void clearProcessSiblings(Data stopData, boolean clearLast)
+      throws SAXException
+   {
+      // replace top-most event
+      Object event = eventStack.pop();
+      Data data;
+      do {
+         data = (Data)dataStack.pop();
+         // put back stored event
+         eventStack.push(data.sibEvent);
+         context.position = data.contextPosition; // restore position
+         context.lookAhead = data.lookAhead;      // restore look ahead
+         short prStatus = ST_SIBLINGS;
+         do {
+            // ignore further stx:process-siblings instructions in this
+            // template if the processing was stopped by another
+            // stx:process-siblings or clearLast==true
+            prStatus = data.template.process(emitter, eventStack, 
+                                             context, prStatus);
+            if ((prStatus & ST_ATTRIBUTES) != 0)
+               processAttributes(data.sibEvent.attrs);
+         } while ((prStatus & ST_PROCESSING) == 0 && 
+                  (clearLast || data != stopData));
+         if (!clearLast && (prStatus & ST_PROCESSING) == 0) {
+            // put back the last stx:process-siblings instruction
+            // there might have been a group attribute
+            stopData.visibleTemplates = context.nextProcessGroup != null 
+               ? (TemplateFactory.Instance[])
+                 transformNode.namedGroups.get(context.nextProcessGroup) 
+               : data.template.parentGroup.visibleTemplates;
+            stopData.psiblings = context.psiblings;
+            dataStack.push(stopData);
+         }
+         // remove this event
+         eventStack.pop();
+      } while (data != stopData); // last object
+      // restore old event stack
+      eventStack.push(event);
+   }
 
 
    // **********************************************************************
@@ -932,16 +1081,18 @@ public class Processor extends XMLFilterImpl
          processCharacters();
 
       if (skipDepth == 0) {
+         clearProcessSiblings();
          Data data = (Data)dataStack.pop();
          log4j.debug("dataStack.pop: " + data);
          short prStatus = data.lastProcStatus;
-         if ((prStatus & (ST_CHILDREN | ST_SELF)) != 0) {
+         if (data.template == null) {
+            // default action: nothing to do
+         }
+         else if ((prStatus & (ST_CHILDREN | ST_SELF)) != 0) {
             context.position = data.contextPosition; // restore position
             context.lookAhead = data.lookAhead;      // restore look ahead
-            data.lastTemplate.process(emitter, eventStack, context,
-                                      prStatus);
+            data.template.process(emitter, eventStack, context, prStatus);
          }
-         else if (prStatus == 0 || prStatus == ST_BUFFER ) ;
          else {
             log4j.error("encountered 'else' " + prStatus);
          }
@@ -1025,11 +1176,14 @@ public class Processor extends XMLFilterImpl
          processCharacters();
 
       if (skipDepth == 0) {
+
+         clearProcessSiblings();
+
          Data data = (Data)dataStack.pop();
          if (log4j.isDebugEnabled())
             log4j.debug("dataStack.pop " + data);
          short prStatus = data.lastProcStatus;
-         if (data.lastTemplate == null) {
+         if (data.template == null) {
             // perform default action?
             if ((context.passThrough & PASS_THROUGH_ELEMENT) != 0)
                emitter.endElement(uri, lName, qName,
@@ -1040,16 +1194,25 @@ public class Processor extends XMLFilterImpl
          else if ((prStatus & (ST_CHILDREN | ST_SELF)) != 0) {
             context.position = data.contextPosition; // restore position
             context.lookAhead = data.lookAhead;      // restore look ahead
-            boolean attributeLoop;
+            Object topData = dataStack.peek();
+            // as long as we encounter stx:process-attributes ...
             do {
-               attributeLoop = false;
-               prStatus = data.lastTemplate.process(emitter, eventStack, 
-                                                    context, prStatus);
-               if ((prStatus & ST_ATTRIBUTES) != 0) {
+               prStatus = data.template.process(emitter, eventStack, 
+                                                context, prStatus);
+               if ((prStatus & ST_ATTRIBUTES) != 0)
                   processAttributes(((SAXEvent)eventStack.peek()).attrs);
-                  attributeLoop = true;
-               }
-            } while (attributeLoop);
+            } while ((prStatus & ST_ATTRIBUTES) != 0);
+            if ((prStatus & ST_SIBLINGS) != 0) {
+               dataStack.push(
+                  new Data(data.template, context.position, context.lookAhead,
+                           context.nextProcessGroup != null 
+                              ? (TemplateFactory.Instance[])
+                                transformNode.namedGroups.get(
+                                   context.nextProcessGroup) 
+                              : data.template.parentGroup.visibleTemplates,
+                           prStatus, context.psiblings, context.localVars,
+                           (SAXEvent)eventStack.peek()));
+            }
          }
          else {
             log4j.error("encountered 'else'");

@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 1.8 2003/01/15 14:28:58 obecker Exp $
+ * $Id: Context.java,v 1.9 2003/01/27 18:15:27 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -26,6 +26,7 @@ package net.sf.joost.stx;
 
 import net.sf.joost.instruction.GroupBase;
 import net.sf.joost.instruction.NodeBase;
+import net.sf.joost.instruction.PSiblingsFactory;
 
 import org.xml.sax.Locator;
 
@@ -35,7 +36,7 @@ import java.util.Hashtable;
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 1.8 $ $Date: 2003/01/15 14:28:58 $
+ * @version $Revision: 1.9 $ $Date: 2003/01/27 18:15:27 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
@@ -58,6 +59,9 @@ public final class Context implements Cloneable
    /** Name of the next group, set by <code>process-...</code> instructions,
        <code>null</code> if not used */
    public String nextProcessGroup;
+
+   /** Encountered <code>process-siblings</code> instruction */
+   public PSiblingsFactory.Instance psiblings;
 
    /** The next event to be processed */
    public SAXEvent lookAhead = null;

@@ -1,5 +1,6 @@
 Changes since 20030121
 - added floor(), ceiling(), round()
+- added stx:process-siblings
 
 Changes since 20021223
 - added 'required' attribute to stx:param
