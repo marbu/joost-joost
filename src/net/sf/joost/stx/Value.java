@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.2 2002/11/28 09:55:37 obecker Exp $
+ * $Id: Value.java,v 1.3 2003/01/12 16:45:27 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,7 +29,7 @@ import net.sf.joost.grammar.EvalException;
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.2 $ $Date: 2002/11/28 09:55:37 $
+ * @version $Revision: 1.3 $ $Date: 2003/01/12 16:45:27 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -63,6 +63,22 @@ public class Value implements Cloneable
        position on the stack */
    public int level;
 
+   /** 
+    * The next value of the sequence. A sequence is simply a chained list
+    * of Value objects. The empty sequence is represented by a 
+    * {@link #type} set to {@link #NODE} and {@link #event} set to 
+    * <code>null</code> (<code>next</code> must be <code>null</code> in
+    * this case, too).
+    */
+   public Value next;
+
+   /** The empty sequence */
+   static public final Value EMPTY_SEQ = new Value(null, 0);
+
+
+   //
+   // Constructors
+   //
 
    public Value(double d)
    {
@@ -94,6 +110,10 @@ public class Value implements Cloneable
       level = l;
    }
 
+
+   //
+   // Methods
+   //
 
    public Value convertToNumber()
       throws EvalException
@@ -203,17 +223,11 @@ public class Value implements Cloneable
     */
    public Value copy()
    {
-//        switch (type) {
-//        case BOOLEAN: return new Value(bool);
-//        case NUMBER:  return new Value(number);
-//        case NODE:    return new Value(event, level);
-//        case STRING:  return new Value(string);
-//        default:      log4j.fatal("Unknown type " + type);
-//                      return new Value("");
-//        }
-
       try {
-         return (Value)clone();
+         Value ret = (Value)clone();
+         if (next != null)
+            ret.next = next.copy();
+         return ret;
       }
       catch(CloneNotSupportedException e) {
          log4j.fatal(e);
@@ -221,17 +235,22 @@ public class Value implements Cloneable
       }
    }
 
+
    //
    // for debugging
    //
    public String toString()
    {
+      String ret;
       switch(type) {
-      case NUMBER:  return "number " + number;
-      case BOOLEAN: return "boolean " + bool; 
-      case STRING:  return "string '" + string + "'";
-      case NODE:    return "node " + event;
-      default: return ("unknown type in Value object");
+      case NUMBER:  ret = "number " + number; break;
+      case BOOLEAN: ret = "boolean " + bool; break;
+      case STRING:  ret = "string '" + string + "'"; break;
+      case NODE:    ret = "node " + event; break;
+      default: ret = ("unknown type in Value object");
       }
+      if (next != null)
+         ret += ", " + next.toString();
+      return ret;
    }
 }
