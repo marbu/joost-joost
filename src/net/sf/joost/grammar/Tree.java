@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 1.19 2003/02/21 14:09:51 obecker Exp $
+ * $Id: Tree.java,v 1.20 2003/02/24 13:31:35 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 1.19 $ $Date: 2003/02/21 14:09:51 $
+ * @version $Revision: 1.20 $ $Date: 2003/02/24 13:31:35 $
  * @author Oliver Becker
  */
 final public class Tree
@@ -254,209 +254,199 @@ final public class Tree
                           boolean setPosition)
       throws SAXException
    {
-      try {
-         switch (type) {
-         case UNION:
-            // Note: templates with a pattern containing a UNION will be split
-            // This branch should be encountered only for patterns at other 
-            // places (for example in <stx:copy attributes="pattern">)
-            if (left.matches(context, events, top, false))
-               return true;
-            return right.matches(context, events, top, false);
+      switch (type) {
+      case UNION:
+         // Note: templates with a pattern containing a UNION will be split.
+         // This branch should be encountered only for patterns at other 
+         // places (for example in <stx:copy attributes="pattern" /> or
+         // <stx:process-siblings while="pattern" />
+         if (left.matches(context, events, top, false))
+            return true;
+         return right.matches(context, events, top, false);
 
-         case ROOT:
-            if (top != 1)
+      case ROOT:
+         if (top != 1)
+            return false;
+         if (setPosition)
+            context.position = 1;
+         return true;
+
+      case CHILD:
+         if (top < 2)
+            return false;
+         return left.matches(context, events, top-1, false) &&
+                right.matches(context, events, top, setPosition);
+
+      case DESC:
+         // need at least 3 events (document, node1, node2), because
+         // DESC may appear only between two nodes but not at the root
+         if (top < 3)
+            return false;
+         if (right.matches(context, events, top, setPosition)) {
+            // look for a matching sub path on the left
+            while (top > 1) {
+               if (left.matches(context, events, top-1, false))
+                  return true;
+               else
+                  top--;
+            }
+         }
+         return false;
+
+      case NAME_TEST:
+      case WILDCARD:
+      case LOCAL_WILDCARD:
+      case URI_WILDCARD: {
+         if (top < 2)
+            return false;
+         SAXEvent e = (SAXEvent)events.elementAt(top-1);
+         if (e.type != SAXEvent.ELEMENT)
+            return false;
+         SAXEvent parent = (SAXEvent)events.elementAt(top-2);
+         switch (type) {
+         case NAME_TEST:
+            // reset namespace during the first access
+            if (uri == null)
+               uri = context.defaultSTXPathNamespace;
+            if (!(uri.equals(e.uri) && lName.equals(e.lName)))
                return false;
             if (setPosition)
-               context.position = 1;
-            return true;
-
-         case CHILD:
-            if (top < 2)
-               return false;
-            return left.matches(context, events, top-1, false) &&
-                   right.matches(context, events, top, setPosition);
-
-         case DESC:
-            // need at least 3 events (document, node1, node2), because
-            // DESC may appear only between two nodes but not at the root
-            if (top < 3)
-               return false;
-            if (right.matches(context, events, top, setPosition)) {
-               // look for a matching sub path on the left
-               while (top > 1) {
-                  if (left.matches(context, events, top-1, false))
-                     return true;
-                  else
-                     top--;
-               }
-            }
-            return false;
-
-         case NAME_TEST:
+               context.position = 
+                  parent.getPositionOf("{" + uri + "}" + lName);
+            break;
          case WILDCARD:
+            if (setPosition)
+               context.position = parent.getPositionOf("{*}*");
+            break;
          case LOCAL_WILDCARD:
-         case URI_WILDCARD: {
-            if (top < 2)
+            if (!uri.equals(e.uri))
                return false;
-            SAXEvent e = (SAXEvent)events.elementAt(top-1);
-            if (e.type != SAXEvent.ELEMENT)
+            if (setPosition)
+               context.position = parent.getPositionOf("{" + uri + "}*");
+            break;
+         case URI_WILDCARD:
+            if (!lName.equals(e.lName))
                return false;
-            SAXEvent parent = (SAXEvent)events.elementAt(top-2);
-            switch (type) {
-            case NAME_TEST:
-               // reset namespace during the first access
-               if (uri == null)
-                  uri = context.defaultSTXPathNamespace;
-               if (!(uri.equals(e.uri) && lName.equals(e.lName)))
-                  return false;
-               if (setPosition)
-                  context.position = 
-                     parent.getPositionOf("{" + uri + "}" + lName);
-               break;
-            case WILDCARD:
-               if (setPosition)
-                  context.position = parent.getPositionOf("{*}*");
-               break;
-            case LOCAL_WILDCARD:
-               if (!uri.equals(e.uri))
-                  return false;
-               if (setPosition)
-                  context.position = parent.getPositionOf("{" + uri + "}*");
-               break;
-            case URI_WILDCARD:
-               if (!lName.equals(e.lName))
-                  return false;
-               if (setPosition)
-                  context.position = parent.getPositionOf("{*}" + lName);
-               break;
-            }
-            return true;
+            if (setPosition)
+               context.position = parent.getPositionOf("{*}" + lName);
+            break;
          }
+         return true;
+      }
 
-         case PREDICATE:
-            // save position in case it mustn't change
-            long pos = context.position;
-            boolean retValue = false;
-            if (top > 1 && 
-                // allow set position for evaluating the predicate
-                left.matches(context, events, top, true)) {
-               Value v = right.evaluate(context, events, top);
-               if (v.type == Value.NUMBER)
-                  retValue = (context.position == Math.round(v.number));
-               else
-                  retValue = v.convertToBoolean().bool;
-            }
-            if (!setPosition)
-               // restore old position
-               context.position = pos;
-            return retValue;
+      case PREDICATE:
+         // save position in case it mustn't change
+         long pos = context.position;
+         boolean retValue = false;
+         if (top > 1 && 
+             // allow set position for evaluating the predicate
+             left.matches(context, events, top, true)) {
+            Value v = right.evaluate(context, events, top);
+            if (v.type == Value.NUMBER)
+               retValue = (context.position == Math.round(v.number));
+            else
+               retValue = v.convertToBoolean().bool;
+         }
+         if (!setPosition)
+            // restore old position
+            context.position = pos;
+         return retValue;
 
-         case NODE_TEST:
-            // the node must be a child of another node,
-            // i.e. we need at least two events and it is no attribute node
-            if (top < 2 ||
-                ((SAXEvent)events.elementAt(top-1)).type == 
-                                                         SAXEvent.ATTRIBUTE)
-               return false;
+      case NODE_TEST:
+         // the node must be a child of another node,
+         // i.e. we need at least two events and it is no attribute node
+         if (top < 2 ||
+             ((SAXEvent)events.elementAt(top-1)).type == SAXEvent.ATTRIBUTE)
+            return false;
+         if (setPosition)
+            context.position = ((SAXEvent)events.elementAt(top-2))
+                                                .getPositionOfNode();
+         return true; 
+
+      case TEXT_TEST:
+         if (top < 2)
+            return false;
+         int nodeType = ((SAXEvent)events.elementAt(top-1)).type;
+         if (nodeType == SAXEvent.TEXT || nodeType == SAXEvent.CDATA) {
             if (setPosition)
                context.position = ((SAXEvent)events.elementAt(top-2))
-                                                   .getPositionOfNode();
-            return true; 
-
-         case TEXT_TEST:
-            if (top < 2)
-               return false;
-            int nodeType = ((SAXEvent)events.elementAt(top-1)).type;
-            if (nodeType == SAXEvent.TEXT || nodeType == SAXEvent.CDATA) {
-               if (setPosition)
-                  context.position = ((SAXEvent)events.elementAt(top-2))
-                                                      .getPositionOfText();
-               return true;
-            }
-            return false;
-
-         case CDATA_TEST:
-            if (top < 2)
-               return false;
-            if (((SAXEvent)events.elementAt(top-1)).type == SAXEvent.CDATA) {
-               if (setPosition)
-                  context.position = ((SAXEvent)events.elementAt(top-2))
-                                                      .getPositionOfCDATA();
-               return true;
-            }
-            return false;
-
-         case COMMENT_TEST:
-            if (top < 2)
-               return false;
-            if (((SAXEvent)events.elementAt(top-1)).type == SAXEvent.COMMENT) {
-               if (setPosition)
-                  context.position = ((SAXEvent)events.elementAt(top-2))
-                                                      .getPositionOfComment();
-               return true;
-            }
-            return false;
-
-         case PI_TEST: {
-            if (top < 2)
-               return false;
-            SAXEvent e = (SAXEvent)events.elementAt(top-1);
-            if (e.type == SAXEvent.PI) {
-               if (value != "" && !value.equals(e.qName)) 
-                  return false;
-               if (setPosition)
-                  context.position = 
-                     ((SAXEvent)events.elementAt(top-2))
-                                      .getPositionOfPI((String)value);
-               return true;
-            }
-            return false;
+                                                   .getPositionOfText();
+            return true;
          }
+         return false;
 
-         case ATTR:
-         case ATTR_WILDCARD:
-         case ATTR_URI_WILDCARD:
-         case ATTR_LOCAL_WILDCARD:
-            // an attribute requires at least two ancestors
-            if (top < 3)
-               return false;
-            SAXEvent e = (SAXEvent)events.elementAt(top-1);
-            if (e.type != SAXEvent.ATTRIBUTE) 
+      case CDATA_TEST:
+         if (top < 2)
+            return false;
+         if (((SAXEvent)events.elementAt(top-1)).type == SAXEvent.CDATA) {
+            if (setPosition)
+               context.position = ((SAXEvent)events.elementAt(top-2))
+                                                   .getPositionOfCDATA();
+            return true;
+         }
+         return false;
+
+      case COMMENT_TEST:
+         if (top < 2)
+            return false;
+         if (((SAXEvent)events.elementAt(top-1)).type == SAXEvent.COMMENT) {
+            if (setPosition)
+               context.position = ((SAXEvent)events.elementAt(top-2))
+                                                   .getPositionOfComment();
+            return true;
+         }
+         return false;
+
+      case PI_TEST: {
+         if (top < 2)
+            return false;
+         SAXEvent e = (SAXEvent)events.elementAt(top-1);
+         if (e.type == SAXEvent.PI) {
+            if (value != "" && !value.equals(e.qName)) 
                return false;
             if (setPosition)
-               context.position = 1; // position for attributes is undefined
-            switch (type) {
-            case ATTR_WILDCARD:
-               return true;
-            case ATTR:
-               if (uri.equals(e.uri) && lName.equals(e.lName))
-                  return true;
-               break;
-            case ATTR_URI_WILDCARD:
-               if (lName.equals(e.lName))
-                  return true;
-               break;
-            case ATTR_LOCAL_WILDCARD:
-               if (uri.equals(e.uri))
-                  return true;
-               break;
-            }
-            return false;
+               context.position = 
+                  ((SAXEvent)events.elementAt(top-2))
+                                   .getPositionOfPI((String)value);
+            return true;
+         }
+         return false;
+      }
 
-         default:
-            log4j.warn("unprocessed type: " + this);
+      case ATTR:
+      case ATTR_WILDCARD:
+      case ATTR_URI_WILDCARD:
+      case ATTR_LOCAL_WILDCARD:
+         // an attribute requires at least two ancestors
+         if (top < 3)
             return false;
-         } // switch
-      }
-      catch (EvalException e) {
-         context.errorHandler.error(e.getMessage(),
-                                     context.currentInstruction.publicId,
-                                     context.currentInstruction.systemId,
-                                     context.currentInstruction.lineNo,
-                                     context.currentInstruction.colNo);
-         return false; // if the errorHandler decides to continue ...
-      }
+         SAXEvent e = (SAXEvent)events.elementAt(top-1);
+         if (e.type != SAXEvent.ATTRIBUTE) 
+            return false;
+         if (setPosition)
+            context.position = 1; // position for attributes is undefined
+         switch (type) {
+         case ATTR_WILDCARD:
+            return true;
+         case ATTR:
+            if (uri.equals(e.uri) && lName.equals(e.lName))
+               return true;
+            break;
+         case ATTR_URI_WILDCARD:
+            if (lName.equals(e.lName))
+               return true;
+            break;
+         case ATTR_LOCAL_WILDCARD:
+            if (uri.equals(e.uri))
+               return true;
+            break;
+         }
+         return false;
+
+      default:
+         log4j.warn("unprocessed type: " + this);
+         return false;
+      } // switch
    }
 
 
@@ -817,9 +807,12 @@ final public class Tree
                return context.currentItem.copy();
             // else: return current node
             if (top > 0) {
-               if (right != null)
+               if (right != null) {
                   // path continues, evaluate recursively
+                  log4j.warn("`.' as part of location paths is deprecated. " +
+                             "Simply remove this step.");
                   return right.evaluate(context, events, top);
+               }
                else
                   return new Value((SAXEvent)events.elementAt(top-1), top);
             }
