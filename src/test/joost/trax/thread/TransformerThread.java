@@ -1,11 +1,12 @@
 package test.joost.trax.thread;
 
 
-import net.sf.joost.trax.*;
 import javax.xml.transform.*;
-import javax.xml.transform.stream.*;
-
-import java.io.*;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
 /**
  *  Transformationthread
  * @author Zubow

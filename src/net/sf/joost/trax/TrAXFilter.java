@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXFilter.java,v 1.2 2002/10/08 19:19:42 zubow Exp $
+ * $Id: TrAXFilter.java,v 1.3 2002/10/15 19:02:14 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,23 +26,19 @@
 package net.sf.joost.trax;
 
 //SAX
-import org.xml.sax.XMLFilter;
+import net.sf.joost.emitter.SAXEmitter;
+import net.sf.joost.emitter.StxEmitter;
+import net.sf.joost.stx.Processor;
+import org.apache.log4j.Logger;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 import org.xml.sax.helpers.XMLReaderFactory;
-import org.xml.sax.*;
 
-//JAXP
 import javax.xml.transform.*;
-
-//JDK
 import java.io.IOException;
-
-//Joost
-import net.sf.joost.stx.*;
-import net.sf.joost.emitter.*;
-
-// Import log4j classes.
-import org.apache.log4j.Logger;
 
 
 /**
@@ -144,7 +140,6 @@ public class TrAXFilter extends XMLFilterImpl {
                          this.processor);
         //parent.setEntityResolver(this);
         //parent.setDTDHandler(this);
-        //parent.setContentHandler(this);
         //parent.setErrorHandler(this);
         parent.parse(input);
     }

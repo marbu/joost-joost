@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.2 2002/10/15 19:02:46 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,14 +26,13 @@
 package net.sf.joost.emitter;
 
 //SAX2
-import org.xml.sax.SAXException;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
 
-//JDK
-import java.util.Hashtable;
-import java.util.Enumeration;
 import java.io.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 
 /**

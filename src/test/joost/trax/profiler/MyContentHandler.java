@@ -3,16 +3,16 @@
  *
  *	Example for a sax-contenthandler for TraX-Transformer
  *
- *	$Id: MyContentHandler.java,v 1.1 2002/10/08 19:22:17 zubow Exp $
+ *	$Id: MyContentHandler.java,v 1.2 2002/10/15 19:03:47 zubow Exp $
  *
  */
 
 package test.joost.trax.profiler;
 
-import org.xml.sax.ContentHandler;
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
 
 
 /**

@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXHelper.java,v 1.2 2002/10/08 19:19:42 zubow Exp $
+ * $Id: TrAXHelper.java,v 1.3 2002/10/15 19:02:15 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,21 +26,16 @@
 package net.sf.joost.trax;
 
 //JAXP
-import javax.xml.transform.Source;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.ErrorListener;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.stream.StreamSource;
-
-//SAX
+import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
 
-//JDK
-import java.io.Reader;
+import javax.xml.transform.ErrorListener;
+import javax.xml.transform.Source;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.stream.StreamSource;
 import java.io.InputStream;
-
-// Import log4j classes.
-import org.apache.log4j.Logger;
+import java.io.Reader;
 
 
 /**

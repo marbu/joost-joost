@@ -1,5 +1,5 @@
 /*
- * $Id: FOPEmitter.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: FOPEmitter.java,v 1.2 2002/10/15 19:02:46 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,24 +24,19 @@
 
 package net.sf.joost.emitter;
 
-import java.io.OutputStream;
-
-// SAX
+import org.apache.avalon.framework.logger.ConsoleLogger;
+import org.apache.fop.apps.Driver;
+import org.apache.fop.messaging.MessageHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.XMLFilterImpl;
 
-// FOP
-import org.apache.fop.apps.Driver;
-import org.apache.fop.messaging.MessageHandler;
-
-// Avalon
-import org.apache.avalon.framework.logger.ConsoleLogger;
+import java.io.OutputStream;
 
 
 /**
  * Wrapper class which passes SAX events to
  * <a href="http://xml.apache.org/fop">FOP</a>
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $,
+ * @version $Revision: 1.2 $ $Date: 2002/10/15 19:02:46 $,
  * tested with FOP 0.20.4
  * @author Oliver Becker
  */

@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.2 2002/10/08 19:19:27 zubow Exp $
+ * $Id: TemplatesImpl.java,v 1.3 2002/10/15 19:01:01 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,24 +26,13 @@
 package net.sf.joost.trax;
 
 //import JAXP
-import javax.xml.transform.*;
-
-//import JDK
-import java.util.Properties;
-import java.io.IOException;
-
-//import SAX
-import org.xml.sax.XMLReader;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.XMLReaderFactory;
-import org.xml.sax.InputSource;
-
-//import Joost
 import net.sf.joost.stx.Parser;
 import net.sf.joost.stx.Processor;
-
-//import log4j classes.
 import org.apache.log4j.Logger;
+import org.xml.sax.InputSource;
+
+import javax.xml.transform.*;
+import java.util.Properties;
 
 
 /**
@@ -201,7 +190,6 @@ public class TemplatesImpl implements Templates, TrAXConstants {
 
     /**
      * Gets the static properties for stx:output.
-     * @todo : Implementation.
      * @return Properties according to JAXP-Spec or null if an error
      *  is occured.
      */

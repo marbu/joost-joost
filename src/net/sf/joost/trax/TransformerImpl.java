@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.4 2002/10/08 19:32:10 zubow Exp $
+ * $Id: TransformerImpl.java,v 1.5 2002/10/15 19:02:14 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,35 +26,31 @@
 package net.sf.joost.trax;
 
 //JAXP
-import javax.xml.transform.*;
-import javax.xml.transform.sax.*;
-import javax.xml.transform.dom.*;
-import javax.xml.transform.stream.*;
-
-//JDK
-import java.net.URLConnection;
-import java.net.URL;
-import java.util.*;
-import java.io.*;
-
-//Joost
-import net.sf.joost.stx.Parser;
-import net.sf.joost.stx.Processor;
-import net.sf.joost.stx.Emitter;
+import net.sf.joost.emitter.DOMEmitter;
+import net.sf.joost.emitter.SAXEmitter;
+import net.sf.joost.emitter.StreamEmitter;
 import net.sf.joost.emitter.StxEmitter;
-import net.sf.joost.instruction.TransformFactory;
-import net.sf.joost.emitter.*;
-
-//SAX
-import org.xml.sax.*;
+import net.sf.joost.stx.Processor;
+import org.apache.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
 import javax.xml.parsers.ParserConfigurationException;
-
-import org.w3c.dom.*;
-
-// Import log4j classes.
-import org.apache.log4j.Logger;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Hashtable;
+import java.util.Properties;
 
 
 /**
@@ -74,9 +70,8 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
 
     //encoding
     private String encoding             = null;
-    private ContentHandler handler      = null;
     private Hashtable paramhash         = new Hashtable();
-    private Properties prophash         = new Properties();
+
     private URIResolver uriRes          = null;
     private ErrorListener errorListener = null;
 
@@ -296,34 +291,49 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
     }
 
     /**
+     * Getter for outputProperties.
+     * Not yet supported.
+     * @param name The key-value of the outputProperties.
+     * @return <code>String</code>
+     * @throws IllegalArgumentException
+     */
+    public String getOutputProperty(String name)
+        throws IllegalArgumentException {
+
+        throw new IllegalArgumentException("OutputProperties not supported");
+    }
+
+    /**
      * Setter for OutputProperty (not implemented).
+     * Not yet supported.
      * @param name The key of the outputProperty.
      * @param value The value of the outputProperty.
      * @throws IllegalArgumentException
      */
-    public void setOutputProperty(String name, String value) throws java.lang.IllegalArgumentException {
-        synchronized (reentryGuard) {
-            prophash.put(name, value);
-        }
+    public void setOutputProperty(String name, String value)
+            throws IllegalArgumentException {
+
+        throw new IllegalArgumentException("OutputProperties not supported");
+    }
+
+    /**
+     * Not yet supported.
+     * @return <code>Properties</code>
+     */
+    public Properties getOutputProperties() {
+        return null;
     }
 
     /**
      * Setter for OutputProperties (not implemented).
+     * Not yet supported.
      * @param oformat A <code>Properties</code> object.
      * @throws IllegalArgumentException
      */
-    public void setOutputProperties(Properties oformat) throws java.lang.IllegalArgumentException {
-        synchronized (reentryGuard) {
-            prophash = oformat;
-        }
-    }
+    public void setOutputProperties(Properties oformat)
+            throws IllegalArgumentException {
 
-    /**
-     * Getter for {@link #prophash}
-     * @return <code>Properties</code>
-     */
-    public Properties getOutputProperties() {
-        return prophash;
+        throw new IllegalArgumentException("OutputProperties not supported");
     }
 
     /**
@@ -345,29 +355,31 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
     }
 
     /**
-     * @todo : implement
+     * Feature is not supported.
+     *
      */
     public void clearParameters() {
-        synchronized (reentryGuard) {
-        }
+        // not supported
     }
 
     /**
      * Setter for parameter.
+     * Feature is not supported.
      * @param name The key of the parameter.
      * @param value The value of the parameter.
      */
     public void setParameter(String name, Object value) {
-        paramhash.put(name, value);
+        // not supported
     }
 
     /**
      * Getter for parameter.
+     * Feature is not supported.
      * @param name The key-value of the parameter.
-     * @return An <code>Object</code> according to the key-value.
+     * @return An <code>Object</code> according to the key-value or null.
      */
     public Object getParameter(String name) {
-        return paramhash.get(name);
+        return null;
     }
 
     /**
@@ -389,19 +401,6 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
      */
     public ErrorListener getErrorListener() {
         return errorListener;
-    }
-
-    /**
-     * Getter for outputProperties.
-     * @todo : implement.
-     * @param name The key-value of the outputProperties.
-     * @return <code>String</code>
-     * @throws IllegalArgumentException
-     */
-    public String getOutputProperty(String name)
-        throws IllegalArgumentException {
-
-        return null;
     }
 
     /**

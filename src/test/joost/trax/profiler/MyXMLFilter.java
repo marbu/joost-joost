@@ -8,11 +8,11 @@
  */
 package test.joost.trax.profiler;
 
-import org.xml.sax.helpers.XMLFilterImpl;
-import org.xml.sax.helpers.AttributesImpl;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.ContentHandler;
+import org.xml.sax.helpers.AttributesImpl;
+import org.xml.sax.helpers.XMLFilterImpl;
 
 public class MyXMLFilter extends XMLFilterImpl {
 

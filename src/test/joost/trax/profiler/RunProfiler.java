@@ -8,10 +8,10 @@
  */
 package test.joost.trax.profiler;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 public class RunProfiler extends TestSuite{
 

@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerImpl.java,v 1.2 2002/10/08 19:19:42 zubow Exp $
+ * $Id: TransformerHandlerImpl.java,v 1.3 2002/10/15 19:02:14 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,21 +26,18 @@
 package net.sf.joost.trax;
 
 //SAX
-import org.xml.sax.*;
-import org.xml.sax.ext.LexicalHandler;
-
-//JAXP
-import javax.xml.transform.*;
-import javax.xml.transform.sax.*;
-
-//Joost
-import net.sf.joost.stx.Parser;
+import net.sf.joost.emitter.SAXEmitter;
+import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.stx.Processor;
-import net.sf.joost.stx.Emitter;
-import net.sf.joost.emitter.*;
-
-// Import log4j classes.
 import org.apache.log4j.Logger;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+
+import javax.xml.transform.*;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.TransformerHandler;
 
 
 /**

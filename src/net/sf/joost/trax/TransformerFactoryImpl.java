@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.2 2002/10/08 19:19:41 zubow Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.3 2002/10/15 19:02:13 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,34 +26,23 @@
 package net.sf.joost.trax;
 
 //JAXP
-import javax.xml.transform.*;
-import javax.xml.transform.sax.*;
-import javax.xml.transform.dom.*;
-import javax.xml.transform.stream.*;
-
-//JDK
-import java.io.OutputStream;
-import java.io.Writer;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.*;
-import java.util.Hashtable;
-
-//SAX
-import org.xml.sax.XMLReader;
-import org.xml.sax.ext.DeclHandler;
-import org.xml.sax.ext.LexicalHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLFilter;
-import org.xml.sax.helpers.XMLReaderFactory;
-import org.xml.sax.SAXException;
-
-import org.w3c.dom.*;
-
-
-// Import log4j classes.
-import org.apache.log4j.Logger;
 import net.sf.joost.stx.Processor;
+import org.apache.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLFilter;
+import org.xml.sax.XMLReader;
+
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.*;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.StringReader;
+import java.util.Hashtable;
 
 
 /**
@@ -95,7 +84,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     /**
      * Returns the <code>Source</code> of the stylesheet associated with
      *  the xml-document.
-     * @todo : Implementation.
+     * Feature is not supported.
      * @param source The <code>Source</code> of the xml-document.
      * @param media Matching media-type.
      * @param title Matching title-type.
@@ -127,15 +116,31 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     /**
      * Allows the user to retrieve specific attributes of the underlying
      * implementation.
-     * @todo : Implementation.
+     * Feature not supported.
      * @param name The attribute name.
      * @return An object according to the attribute-name
      * @throws IllegalArgumentException When such a attribute does not exists.
      */
-    public Object getAttribute(String name) throws IllegalArgumentException {
-        return attHash.get(name);
+    public Object getAttribute(String name)
+        throws IllegalArgumentException {
+
+        throw new IllegalArgumentException("Feature not supported");
     }
 
+    /**
+     * Allows the user to set specific attributes on the underlying
+     * implementation. An attribute in this context is defined to
+     * be an option that the implementation provides.
+     * Feature not supported.
+     * @param name Name of the attribute (key)
+     * @param value Value of the attribute.
+     * @throws IllegalArgumentException
+     */
+    public void setAttribute(String name, Object value)
+        throws IllegalArgumentException {
+
+        throw new IllegalArgumentException("Feature not supported");
+    }
 
     /**
      * Getter for {@link #errorListener}
@@ -145,6 +150,41 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         return errorListener;
     }
 
+    /**
+     * Setter for {@link #errorListener}
+     * @param errorListener The <code>ErrorListener</code> object.
+     * @throws IllegalArgumentException
+     */
+    public void setErrorListener(ErrorListener errorListener)
+        throws IllegalArgumentException {
+
+        synchronized (reentryGuard) {
+            log.debug("setting ErrorListener");
+            if (errorListener == null) {
+                throw new IllegalArgumentException("ErrorListener is null");
+            }
+            this.errorListener = errorListener;
+        }
+    }
+
+    /**
+     * Getter for {@link #resolver}
+     * @return The registered <code>URIResolver</code>
+     */
+    public URIResolver getURIResolver() {
+        return resolver;
+    }
+
+    /**
+     * Setter for {@link #resolver}
+     * @param resolver The <code>URIResolver</code> object.
+     */
+    public void setURIResolver(URIResolver resolver) {
+
+        synchronized (reentryGuard) {
+            this.resolver = resolver;
+        }
+    }
 
     /**
      * Supplied features.
@@ -188,15 +228,6 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         } else {
             throw new IllegalArgumentException("Unknown feature " + name);
         }
-    }
-
-
-    /**
-     * Getter for {@link #resolver}
-     * @return The registered <code>URIResolver</code>
-     */
-    public URIResolver getURIResolver() {
-        return resolver;
     }
 
 
@@ -273,51 +304,6 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
                 transformer.setURIResolver(resolver);
             }
             return(transformer);
-        }
-    }
-
-
-    /**
-     * Allows the user to set specific attributes on the underlying
-     * implementation. An attribute in this context is defined to
-     * be an option that the implementation provides.
-     * @param name Name of the attribute (key)
-     * @param value Value of the attribute.
-     * @throws IllegalArgumentException
-     */
-    public void setAttribute(String name, Object value)
-        throws IllegalArgumentException {
-
-        attHash.put(name, value);
-    }
-
-
-    /**
-     * Setter for {@link #errorListener}
-     * @param errorListener The <code>ErrorListener</code> object.
-     * @throws IllegalArgumentException
-     */
-    public void setErrorListener(ErrorListener errorListener)
-        throws IllegalArgumentException {
-
-        synchronized (reentryGuard) {
-            log.debug("setting ErrorListener");
-            if (errorListener == null) {
-                throw new IllegalArgumentException("ErrorListener is null");
-            }
-            this.errorListener = errorListener;
-        }
-    }
-
-
-    /**
-     * Setter for {@link #resolver}
-     * @param resolver The <code>URIResolver</code> object.
-     */
-    public void setURIResolver(URIResolver resolver) {
-
-        synchronized (reentryGuard) {
-            this.resolver = resolver;
         }
     }
 
@@ -515,7 +501,6 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     /**
      * Creates an XMLFilter, based on the Templates argument.
      * Implementation of the {@link SAXTransformerFactory}
-     * @todo : Implementation
      * @param templates - The compiled transformation instructions.
      * @return An {@link XMLFilter} object, or null if this feature is not
      *  supported.
