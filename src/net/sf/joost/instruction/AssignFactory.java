@@ -1,5 +1,5 @@
 /*
- * $Id: AssignFactory.java,v 2.6 2004/01/10 16:34:18 zubow Exp $
+ * $Id: AssignFactory.java,v 2.7 2004/09/29 06:22:46 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -19,30 +19,30 @@
  * are Copyright (C) ______ _______________________. 
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): Thomas Behrends.
  */
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
-import java.util.Hashtable;
 import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Stack;
 
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
-import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.stx.Value;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 
 /** 
  * Factory for <code>assign</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.6 $ $Date: 2004/01/10 16:34:18 $
+ * @version $Revision: 2.7 $ $Date: 2004/09/29 06:22:46 $
  * @author Oliver Becker
  */
 
@@ -90,6 +90,7 @@ final public class AssignFactory extends FactoryBase
    {
       public String varName, expName;
       private Tree select;
+      private String errorMessage;
 
       protected Instance(String qName, NodeBase parent, ParseContext context,
                          String varName, String expName, Tree select)
@@ -100,6 +101,7 @@ final public class AssignFactory extends FactoryBase
          this.varName = varName;
          this.expName = expName;
          this.select = select;
+         this.errorMessage = "(`" + qName + "' started in line " + lineNo + ")";
       }
       
 
@@ -119,10 +121,8 @@ final public class AssignFactory extends FactoryBase
             super.process(context);
             // create a new StringEmitter for this instance and put it
             // on the emitter stack
-            context.emitter.pushEmitter(
-               new StringEmitter(new StringBuffer(),
-                                 "(`" + qName + "' started in line " +
-                                 lineNo + ")"));
+            context.pushEmitter(new StringEmitter(new StringBuffer(), 
+                                                  errorMessage));
          }
          return PR_CONTINUE;
       }
@@ -136,7 +136,7 @@ final public class AssignFactory extends FactoryBase
          throws SAXException
       {
          // use contents
-         Value v = new Value(((StringEmitter)context.emitter.popEmitter())
+         Value v = new Value(((StringEmitter)context.popEmitter())
                                                  .getBuffer().toString());
 
          processVar(v, context);
@@ -162,16 +162,17 @@ final public class AssignFactory extends FactoryBase
          else {
             GroupBase group = context.currentGroup;
             while (obj == null && group != null) {
-               vars = (Hashtable)group.groupVars.peek();
+               vars = (Hashtable)((Stack)context.groupVars.get(group)).peek();
                obj = vars.get(expName);
                group = group.parentGroup;
             }
-         }
-         if (obj == null) {
-            context.errorHandler.error(
-               "Can't assign to undeclared variable `" + varName + "'",
-               publicId, systemId, lineNo, colNo);
-            return; // if the errorHandler returns
+
+            if (obj == null) {
+                context.errorHandler.error(
+                   "Can't assign to undeclared variable `" + varName + "'",
+                   publicId, systemId, lineNo, colNo);
+                return; // if the errorHandler returns
+             }
          }
 
          // assign new value
