@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesHandlerImpl.java,v 1.4 2002/11/11 18:41:50 zubow Exp $
+ * $Id: TemplatesHandlerImpl.java,v 1.5 2003/04/29 15:09:09 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,9 +25,9 @@
 
 package net.sf.joost.trax;
 
-//import JAXP
 import net.sf.joost.stx.Parser;
-import org.apache.log4j.Logger;
+
+//import JAXP
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 
@@ -50,7 +50,9 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
 
     // Define a static logger variable so that it references the
     // Logger instance named "TemplatesHandlerImpl".
-    static Logger log = Logger.getLogger(TemplatesHandlerImpl.class);
+    private static org.apache.commons.logging.Log log = 
+        org.apache.commons.logging.
+        LogFactory.getLog(TemplatesHandlerImpl.class);
 
     // member fields
     private Parser stxparser                = null;

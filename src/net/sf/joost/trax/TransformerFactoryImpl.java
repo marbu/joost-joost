@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.4 2002/11/11 18:46:19 zubow Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.5 2003/04/29 15:09:11 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,9 +25,9 @@
 
 package net.sf.joost.trax;
 
-//JAXP
 import net.sf.joost.stx.Processor;
-import org.apache.log4j.Logger;
+
+//JAXP
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -59,7 +59,9 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
 
     // Define a static logger variable so that it references the
     // Logger instance named "TransformerFactoryImpl".
-    static Logger log = Logger.getLogger(TransformerFactoryImpl.class);
+    private static org.apache.commons.logging.Log log = 
+        org.apache.commons.logging.
+        LogFactory.getLog(TransformerFactoryImpl.class);
 
     //Member
     private URIResolver resolver        = null;
@@ -241,8 +243,9 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         throws TransformerConfigurationException {
 
         synchronized (reentryGuard) {
-            log.debug("get a Templates-instance from Source " +
-                source.getSystemId());
+            if (log.isDebugEnabled())
+                log.debug("get a Templates-instance from Source " +
+                          source.getSystemId());
             try {
                 SAXSource saxSource = getSAXSource(source, true);
                 InputSource isource = saxSource.getInputSource();
@@ -395,7 +398,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         throws TransformerConfigurationException {
 
         synchronized (reentryGuard) {
-            log.info("create a TemplatesHandler-instance");
+            log.debug("create a TemplatesHandler-instance");
             TemplatesHandlerImpl thandler = new TemplatesHandlerImpl(this);
             return thandler;
         }
@@ -437,8 +440,9 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         throws TransformerConfigurationException {
 
         synchronized (reentryGuard) {
-            log.debug("get a TransformerHandler-instance from Source " +
-                src.getSystemId());
+            if (log.isDebugEnabled())
+                log.debug("get a TransformerHandler-instance from Source " +
+                          src.getSystemId());
             Templates templates = newTemplates(src);
             return newTransformerHandler(templates);
         }
@@ -477,8 +481,9 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     public XMLFilter newXMLFilter(Source src)
         throws TransformerConfigurationException {
 
-        log.debug("getting SAXTransformerFactory.FEATURE_XMLFILTER from Source "
-            + src.getSystemId());
+        if (log.isDebugEnabled())
+            log.debug("getting SAXTransformerFactory.FEATURE_XMLFILTER " +
+                      "from Source " + src.getSystemId());
         XMLFilter xFilter = null;
         try {
             Templates templates = newTemplates(src);

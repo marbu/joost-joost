@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.4 2002/11/11 18:46:34 zubow Exp $
+ * $Id: TemplatesImpl.java,v 1.5 2003/04/29 15:09:10 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,10 +25,10 @@
 
 package net.sf.joost.trax;
 
-//import JAXP
 import net.sf.joost.stx.Parser;
 import net.sf.joost.stx.Processor;
-import org.apache.log4j.Logger;
+
+//import JAXP
 import org.xml.sax.InputSource;
 
 import javax.xml.transform.*;
@@ -47,7 +47,8 @@ public class TemplatesImpl implements Templates, TrAXConstants {
 
     // Define a static logger variable so that it references the
     // Logger instance named "TemplatesImpl".
-    static Logger log = Logger.getLogger(TemplatesImpl.class);
+    private static org.apache.commons.logging.Log log = 
+        org.apache.commons.logging.LogFactory.getLog(TemplatesImpl.class);
 
     /**
      * Holding a reference on a <code>TransformerFactoryImpl</code>

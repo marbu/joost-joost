@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXFilter.java,v 1.4 2002/11/11 18:44:49 zubow Exp $
+ * $Id: TrAXFilter.java,v 1.5 2003/04/29 15:09:10 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,11 +25,11 @@
 
 package net.sf.joost.trax;
 
-//SAX
 import net.sf.joost.emitter.SAXEmitter;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.stx.Processor;
-import org.apache.log4j.Logger;
+
+//SAX
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -51,7 +51,8 @@ public class TrAXFilter extends XMLFilterImpl {
 
     // Define a static logger variable so that it references the
     // Logger instance named "TransformerImpl".
-    static Logger log = Logger.getLogger(TrAXFilter.class);
+    private static org.apache.commons.logging.Log log = 
+        org.apache.commons.logging.LogFactory.getLog(TrAXFilter.class);
 
     private Templates templates = null;
     private Processor processor = null;
@@ -77,7 +78,8 @@ public class TrAXFilter extends XMLFilterImpl {
     public void parse (InputSource input)
     	throws SAXException, IOException {
 
-        log.debug("parsing InputSource " + input.getSystemId());
+        if (log.isDebugEnabled())
+            log.debug("parsing InputSource " + input.getSystemId());
         Transformer transformer = null;
         try {
             // get a new Transformer

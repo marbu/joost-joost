@@ -1,5 +1,5 @@
 /*
- * $Id: DOMEmitter.java,v 1.2 2002/10/15 19:02:46 zubow Exp $
+ * $Id: DOMEmitter.java,v 1.3 2003/04/29 15:10:56 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,7 +25,6 @@
 package net.sf.joost.emitter;
 
 //jaxp-classes
-import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -52,7 +51,8 @@ public class DOMEmitter implements StxEmitter {
 
     // Define a static logger variable so that it references the
     // Logger instance named "DOMEmitter".
-    static Logger log = Logger.getLogger(DOMEmitter.class);
+    private static org.apache.commons.logging.Log log = 
+        org.apache.commons.logging.LogFactory.getLog(DOMEmitter.class);
 
     private boolean rootElement         = false;
     private DocumentBuilder docBuilder  = null;

@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 2.1 2003/04/29 11:58:06 obecker Exp $
+ * $Id: Tree.java,v 2.2 2003/04/29 15:11:16 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.stx.Value;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 2.1 $ $Date: 2003/04/29 11:58:06 $
+ * @version $Revision: 2.2 $ $Date: 2003/04/29 15:11:16 $
  * @author Oliver Becker
  */
 final public class Tree
@@ -113,8 +113,8 @@ final public class Tree
    private FunctionTable.Instance func;
 
    // Log4J initialization
-   private static org.apache.log4j.Logger log4j = 
-      org.apache.log4j.Logger.getLogger(Tree.class);
+   private static org.apache.commons.logging.Log log = 
+      org.apache.commons.logging.LogFactory.getLog(Tree.class);
 
 
    //
@@ -160,7 +160,7 @@ final public class Tree
       // System.err.println("Tree-Constructor 4: " + this);
       if (type != NAME_TEST && type != ATTR && type != FUNCTION &&
           type != VAR) {
-         log4j.fatal("Wrong Tree type; " + this);
+         log.fatal("Wrong Tree type; " + this);
          return;
       }
 
@@ -204,7 +204,7 @@ final public class Tree
       this(type, null, null, prefix + ":" + lName);
       if (type != URI_WILDCARD && type != LOCAL_WILDCARD &&
           type != ATTR_URI_WILDCARD && type != ATTR_LOCAL_WILDCARD) {
-         log4j.fatal("Unexpected type " + type);
+         log.fatal("Unexpected type " + type);
          throw new SAXParseException(
                       "FATAL: Tree constructor: Unexpected type " + type, 
                       locator);
@@ -447,7 +447,7 @@ final public class Tree
          return false;
 
       default:
-         log4j.fatal("unprocessed type: " + this);
+         log.fatal("unprocessed type: " + this);
          return false;
       } // switch
    }
@@ -533,7 +533,7 @@ final public class Tree
                v1.number %= v2.number;
                return v1;
             }
-            log4j.fatal("Mustn't reach this line");
+            log.fatal("Mustn't reach this line");
             return new Value();
 
          // Comparison expressions
@@ -815,7 +815,7 @@ final public class Tree
          }
 
          case LIST:
-            log4j.fatal("LIST: this mustn't happen");
+            log.fatal("LIST: this mustn't happen");
             return new Value();
 
          case SEQ: {
@@ -841,7 +841,7 @@ final public class Tree
          }
 
          default:
-            log4j.fatal("type " + this + " is not implemented");
+            log.fatal("type " + this + " is not implemented");
             return null;
          }
       }

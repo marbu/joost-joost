@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.7 2003/04/25 16:53:16 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.8 2003/04/29 15:10:58 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -40,7 +40,7 @@ import java.util.Hashtable;
  *  Is is designed for using <code>StreamResult</code>.
  *  So this class outputs a StreamResult to the output target -
  *  {@link #outwriter} (e.g. a registered <code>FileWriter</code>).
- *  @version $Revision: 1.7 $ $Date: 2003/04/25 16:53:16 $
+ *  @version $Revision: 1.8 $ $Date: 2003/04/29 15:10:58 $
  *  @author Oliver Becker, Anatolij Zubow
  */
 public class StreamEmitter implements StxEmitter {
@@ -65,9 +65,9 @@ public class StreamEmitter implements StxEmitter {
 
     private boolean insideCDATA = false;
 
-    // Log4J initialization
-    private static org.apache.log4j.Logger log4j =
-        org.apache.log4j.Logger.getLogger(StreamEmitter.class);
+    // Log initialization
+    private static org.apache.commons.logging.Log log = 
+        org.apache.commons.logging.LogFactory.getLog(StreamEmitter.class);
 
 
    /**
@@ -81,7 +81,7 @@ public class StreamEmitter implements StxEmitter {
         throws IOException {
 
         if (DEBUG) 
-            log4j.debug("init StreamEmitter");
+            log.debug("init StreamEmitter");
 
         outwriter = writer;
         encodingformat = encoding;
@@ -99,7 +99,7 @@ public class StreamEmitter implements StxEmitter {
         throws IOException {
 
         if (DEBUG)
-            log4j.debug("init StreamEmitter");
+            log.debug("init StreamEmitter");
 
         OutputStreamWriter writer;
 
@@ -113,7 +113,7 @@ public class StreamEmitter implements StxEmitter {
 
         } catch (java.io.UnsupportedEncodingException e) {
 
-            log4j.warn("Unsupported encoding " + encoding + ", using " +
+            log.warn("Unsupported encoding " + encoding + ", using " +
                     DEFAULT_ENCODING);
             writer = new OutputStreamWriter(out,
                 encodingformat = DEFAULT_ENCODING);
@@ -233,11 +233,11 @@ public class StreamEmitter implements StxEmitter {
                 //stream string to writer
                 outwriter.write(out.toString());
                 if (DEBUG)
-                    log4j.debug(out);
+                    log.debug(out);
 
             } catch (IOException ex) {
 
-                log4j.error(ex);
+                log.error(ex);
                 throw new SAXException(ex);
 
             }
@@ -266,7 +266,7 @@ public class StreamEmitter implements StxEmitter {
 
         } catch (IOException ex) {
 
-            log4j.error(ex);
+            log.error(ex);
             throw new SAXException(ex);
 
         }
@@ -287,7 +287,7 @@ public class StreamEmitter implements StxEmitter {
 
         } catch (IOException ex) {
 
-            log4j.error(ex);
+            log.error(ex);
             throw new SAXException(ex);
 
         }
@@ -325,7 +325,7 @@ public class StreamEmitter implements StxEmitter {
 
             } catch (IOException ex) {
 
-                log4j.error(ex);
+                log.error(ex);
                 throw new SAXException(ex);
 
             }
@@ -358,12 +358,12 @@ public class StreamEmitter implements StxEmitter {
                 outwriter.write(out.toString());
             }
             if (DEBUG)
-               log4j.debug("`" + new String(ch, start, length) + "'");
+               log.debug("`" + new String(ch, start, length) + "'");
             
 
         } catch (IOException ex) {
 
-            log4j.error(ex);
+            log.error(ex);
             throw new SAXException(ex);
 
         }
@@ -410,7 +410,7 @@ public class StreamEmitter implements StxEmitter {
 
         } catch (IOException ex) {
 
-            log4j.error(ex);
+            log.error(ex);
             throw new SAXException(ex);
 
         }
@@ -474,7 +474,7 @@ public class StreamEmitter implements StxEmitter {
 
         } catch (IOException ex) {
 
-            log4j.error(ex);
+            log.error(ex);
             throw new SAXException(ex);
 
         }
@@ -496,7 +496,7 @@ public class StreamEmitter implements StxEmitter {
 
         } catch (IOException ex) {
 
-            log4j.error(ex);
+            log.error(ex);
             throw new SAXException(ex);
 
         }
@@ -519,7 +519,7 @@ public class StreamEmitter implements StxEmitter {
 
         } catch (IOException ex) {
 
-            log4j.error(ex);
+            log.error(ex);
             throw new SAXException(ex);
 
         }

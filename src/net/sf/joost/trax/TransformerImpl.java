@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.10 2002/11/24 19:08:52 zubow Exp $
+ * $Id: TransformerImpl.java,v 1.11 2003/04/29 15:09:13 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,12 +25,12 @@
 
 package net.sf.joost.trax;
 
-//JAXP
 import net.sf.joost.emitter.DOMEmitter;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.stx.Processor;
 import net.sf.joost.trace.TraceManager;
-import org.apache.log4j.Logger;
+
+//JAXP
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -61,7 +61,8 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
 
     // Define a static logger variable so that it references the
     // Logger instance named "TransformerImpl".
-    static Logger log = Logger.getLogger(TransformerImpl.class);
+    private static org.apache.commons.logging.Log log = 
+        org.apache.commons.logging.LogFactory.getLog(TransformerImpl.class);
 
     private static Processor processor = null;
 
@@ -129,9 +130,10 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
 
         //should be synchronized
         synchronized (reentryGuard) {
-            log.debug("perform transformation from xml-source(SAXSource, " +
-                "DOMSource, StreamSource) to  SAXResult, DOMResult or " +
-                "StreamResult");
+            if (DEBUG)
+                log.debug("perform transformation from " +
+                          "xml-source(SAXSource, DOMSource, StreamSource) " +
+                          "to  SAXResult, DOMResult or StreamResult");
             try {
 
                 //init StxEmitter
@@ -151,7 +153,8 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
                 InputSource isource = saxSource.getInputSource();
 
                 if(isource != null) {
-                    log.debug("perform transformation");
+                    if (DEBUG)
+                        log.debug("perform transformation");
 
                     if (saxSource.getXMLReader() != null) {
                         // should not be an DOMSource
@@ -232,10 +235,12 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
      */
     private void performResults(Result result, StxEmitter out) {
 
-        log.debug("perform result");
+        if (DEBUG)
+            log.debug("perform result");
         //DOMResult
         if (result instanceof DOMResult) {
-            log.debug("result is a DOMResult");
+            if (DEBUG)
+                log.debug("result is a DOMResult");
             Node nodeResult = ((DOMEmitter)out).getDOMTree();
             //DOM specific Implementation
             ((DOMResult)result).setNode(nodeResult);
@@ -243,12 +248,14 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
         }
         //StreamResult
         if (result instanceof StreamResult) {
-            log.debug("result is a StreamResult");
+            if (DEBUG)
+                log.debug("result is a StreamResult");
             return;
         }
         //SAXResult
         if (result instanceof SAXResult) {
-            log.debug("result is a SAXResult");
+            if (DEBUG)
+                log.debug("result is a SAXResult");
             return;
         }
     }
@@ -262,15 +269,18 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
     private SAXSource getSAXSource(Source source, boolean isStyleSheet)
         throws TransformerConfigurationException {
 
-        log.debug("getting a SAXSource from a Source");
+        if (DEBUG)
+            log.debug("getting a SAXSource from a Source");
         //SAXSource
         if (source instanceof SAXSource) {
-            log.debug("source is an instance of SAXSource, so simple return");
+            if (DEBUG)
+                log.debug("source is an instance of SAXSource, so simple return");
             return (SAXSource)source;
         }
         //DOMSource
         if (source instanceof DOMSource) {
-            log.debug("source is an instance of DOMSource");
+            if (DEBUG)
+                log.debug("source is an instance of DOMSource");
             InputSource is = new InputSource("dummy");
             Node startNode = ((DOMSource)source).getNode();
             Document doc;
@@ -279,7 +289,8 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
             } else {
                 doc = startNode.getOwnerDocument();
             }
-            log.debug("using DOMDriver");
+            if (DEBUG)
+                log.debug("using DOMDriver");
             DOMDriver driver = new DOMDriver();
             driver.setDocument(doc);
             is.setSystemId(source.getSystemId());
@@ -288,7 +299,8 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
         }
         //StreamSource
         if (source instanceof StreamSource) {
-            log.debug("source is an instance of StreamSource");
+            if (DEBUG)
+                log.debug("source is an instance of StreamSource");
             InputSource isource =
                     TrAXHelper.getInputSourceForStreamSources(source, errorListener);
             return new SAXSource(isource);

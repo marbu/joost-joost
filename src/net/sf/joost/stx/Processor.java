@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.2 2003/04/29 11:38:15 obecker Exp $
+ * $Id: Processor.java,v 2.3 2003/04/29 15:07:20 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -64,7 +64,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.2 $ $Date: 2003/04/29 11:38:15 $
+ * @version $Revision: 2.3 $ $Date: 2003/04/29 15:07:20 $
  * @author Oliver Becker
  */
 
@@ -278,10 +278,8 @@ public class Processor extends XMLFilterImpl
 
    // **********************************************************************
 
-
-   // Log4J initialization
-   private static org.apache.log4j.Logger log =
-      org.apache.log4j.Logger.getLogger(Processor.class);
+   private static org.apache.commons.logging.Log log = 
+      org.apache.commons.logging.LogFactory.getLog(Processor.class);
 
 
    //
@@ -411,7 +409,8 @@ public class Processor extends XMLFilterImpl
          }
       }
 
-      log.info("Using " + reader.getClass().getName());
+      if (DEBUG)
+         log.debug("Using " + reader.getClass().getName());
       return reader;
    }
 

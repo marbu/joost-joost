@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXHelper.java,v 1.4 2002/11/11 18:43:42 zubow Exp $
+ * $Id: TrAXHelper.java,v 1.5 2003/04/29 15:09:11 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,7 +26,6 @@
 package net.sf.joost.trax;
 
 //JAXP
-import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
 import org.xml.sax.ContentHandler;
 
@@ -58,7 +57,8 @@ public class TrAXHelper {
 
     // Define a static logger variable so that it references the
     // Logger instance named "TrAXHelper".
-    static Logger log = Logger.getLogger(TrAXHelper.class);
+    private static org.apache.commons.logging.Log log = 
+       org.apache.commons.logging.LogFactory.getLog(TrAXHelper.class);
 
     /**
      * Defaultconstructor
