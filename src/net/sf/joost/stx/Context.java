@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 2.10 2004/01/25 17:34:44 obecker Exp $
+ * $Id: Context.java,v 2.11 2004/02/10 12:12:50 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,6 +25,7 @@
 package net.sf.joost.stx;
 
 import net.sf.joost.TransformerHandlerResolver;
+import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.instruction.GroupBase;
 import net.sf.joost.instruction.NodeBase;
 import net.sf.joost.instruction.PSiblingsFactory;
@@ -40,7 +41,7 @@ import javax.xml.transform.sax.TransformerHandler;
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 2.10 $ $Date: 2004/01/25 17:34:44 $
+ * @version $Revision: 2.11 $ $Date: 2004/02/10 12:12:50 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
@@ -92,6 +93,9 @@ public final class Context implements Cloneable
 
    /** The URIResolver for <code>stx:process-document</code> */
    public URIResolver uriResolver;
+
+   /** An optional message emitter for <code>stx:message</code> */
+   public StxEmitter messageEmitter;
 
    /**
     * @return a copy of this object.

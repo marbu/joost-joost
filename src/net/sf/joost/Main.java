@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.17 2004/01/16 13:23:46 obecker Exp $
+ * $Id: Main.java,v 1.18 2004/02/10 12:12:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,6 +33,7 @@ import javax.xml.transform.TransformerException;
 import net.sf.joost.stx.Processor;
 import net.sf.joost.emitter.FOPEmitter;
 import net.sf.joost.emitter.StreamEmitter;
+import net.sf.joost.emitter.StxEmitter;
 
 // log4j classes
 import org.apache.log4j.Level;
@@ -41,7 +42,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.17 $ $Date: 2004/01/16 13:23:46 $
+ * @version $Revision: 1.18 $ $Date: 2004/02/10 12:12:37 $
  * @author Oliver Becker
  */
 public class Main implements Constants
@@ -68,6 +69,9 @@ public class Main implements Constants
 
       // output filename (optional)
       String outFile = null;
+
+      // custom message emitter class name (optional)
+      String meClassname = null;
 
       // log4j properties filename (optional)
       String log4jProperties = null;
@@ -126,11 +130,43 @@ public class Main implements Constants
                else if ("-o".equals(args[i])) {
                   // this option needs a parameter
                   if (++i < args.length && args[i].charAt(0) != '-') {
-                     outFile = args[i];
+                     if (outFile != null) {
+                        System.err.println("Option -o already specified with "
+                                           + outFile);
+                        wrongParameter = true;
+                     }
+                     else
+                        outFile = args[i];
                      continue;
                   }
                   else {
-                     System.err.println("option -o requires a filename");
+                     if (outFile != null)
+                        System.err.println("Option -o already specified with "
+                                           + outFile);
+                     else
+                        System.err.println("Option -o requires a filename");
+                     i--;
+                     wrongParameter = true;
+                  }
+               }
+               else if ("-m".equals(args[i])) {
+                  // this option needs a parameter
+                  if (++i < args.length && args[i].charAt(0) != '-') {
+                     if (meClassname != null) {
+                        System.err.println("Option -m already specified with "
+                                           + meClassname);
+                        wrongParameter = true;
+                     }
+                     else
+                        meClassname = args[i];
+                     continue;
+                  }
+                  else {
+                     if (meClassname != null)
+                        System.err.println("Option -m already specified with "
+                                           + meClassname);
+                     else
+                        System.err.println("Option -m requires a classname");
                      i--;
                      wrongParameter = true;
                   }
@@ -142,7 +178,7 @@ public class Main implements Constants
                      continue;
                   }
                   else {
-                     System.err.println("option -log-properties requires " + 
+                     System.err.println("Option -log-properties requires " +
                                         "a filename");
                      wrongParameter = true;
                   }
@@ -186,7 +222,7 @@ public class Main implements Constants
                      }
                   }
                   else {
-                     System.err.println("option -log-level requires a " + 
+                     System.err.println("Option -log-level requires a " +
                                         "parameter");
                      wrongParameter = true;
                   }
@@ -223,6 +259,7 @@ public class Main implements Constants
                   System.err.println("Parsing " + args[i] + ": " +
                                      (timeEnd - timeStart) + " ms");
                }
+
                if (processor != null)
                   proc.setParent(processor); // XMLFilter chain
                processor = proc;
@@ -246,6 +283,49 @@ public class Main implements Constants
             wrongParameter = true;
          }
 
+         if (meClassname != null && !wrongParameter) {
+            // create object
+            StxEmitter messageEmitter = null;
+            try {
+               messageEmitter = 
+                  (StxEmitter)Class.forName(meClassname).newInstance();
+            }
+            catch (ClassNotFoundException ex) {
+               System.err.println("Class not found: " + 
+                                  ex.getMessage());
+               wrongParameter = true;
+            }
+            catch (InstantiationException ex) {
+               System.err.println("Instantiation failed: " +
+                                  ex.getMessage());
+               wrongParameter = true;
+            }
+            catch (IllegalAccessException ex) {
+               System.err.println("Illegal access: " + 
+                                  ex.getMessage());
+               wrongParameter = true;
+            }
+            catch (ClassCastException ex) {
+               System.err.println("Wrong message emitter: " +
+                                  meClassname + " doesn't implement the " +
+                                  StxEmitter.class);
+               wrongParameter = true;
+            }
+            if (messageEmitter != null) { // i.e. no exception occurred
+               // set message emitter for all processors in the filter chain
+               Processor p = processor;
+               do {
+                  p.setMessageEmitter(messageEmitter);
+                  Object o = p.getParent();
+                  if (o instanceof Processor)
+                     p = (Processor)o;
+                  else
+                     p = null;
+               } while (p != null);
+            }
+         }
+
+
          if (printHelp) {
             usage(
   "Usage:\n"
@@ -255,6 +335,8 @@ public class Main implements Constants
 + "  -version   print the version information and exit\n"
 + "  -o <filename>\n"
 + "             write result to the file <filename>\n"
++ "  -m <classname>\n"
++ "             use a <classname> object for stx:message output\n"
 + "  -time      print timing information on standard error output\n"
 + "  -pdf       pass the result to FOP for PDF generation (requires -o)\n"
 + (DEBUG ?
@@ -285,7 +367,9 @@ public class Main implements Constants
                log4j.getRootLogger().setLevel(log4jLevel);
          }
 
-         // This processor re-uses its XMLReader for parsing the input xmlFile.
+
+         // The first processor re-uses its XMLReader for parsing the input 
+         // xmlFile.
          // For a real XMLFilter usage you have to call 
          // processor.setParent(yourXMLReader)
 

@@ -1,5 +1,5 @@
 /*
- * $Id: MessageFactory.java,v 2.2 2003/06/03 14:30:23 obecker Exp $
+ * $Id: MessageFactory.java,v 2.3 2004/02/10 12:12:50 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Factory for <code>message</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2003/06/03 14:30:23 $
+ * @version $Revision: 2.3 $ $Date: 2004/02/10 12:12:50 $
  * @author Oliver Becker
  */
 
@@ -74,21 +74,24 @@ final public class MessageFactory extends FactoryBase
       public short process(Context context)
          throws SAXException
       {
-         StreamEmitter se = null;
-         try {
-            se = new StreamEmitter(
-               System.err, context.currentProcessor.outputProperties);
-            se.setOmitXmlDeclaration(true);
-         }
-         catch (java.io.IOException ex) {
-            context.errorHandler.error(ex.toString(), 
-                                       publicId, systemId, lineNo, colNo);
-            return PR_CONTINUE; // if the errorHandler returns
+         if (context.messageEmitter == null) {
+            // create StreamEmitter for stderr (only once)
+            try {
+               StreamEmitter se = new StreamEmitter(
+                  System.err, context.currentProcessor.outputProperties);
+               se.setOmitXmlDeclaration(true);
+               context.messageEmitter = se;
+            }
+            catch (java.io.IOException ex) {
+               context.errorHandler.error(ex.toString(), 
+                                          publicId, systemId, lineNo, colNo);
+               return PR_CONTINUE; // if the errorHandler returns
+            }
          }
 
          super.process(context);
-         se.startDocument();
-         context.emitter.pushEmitter(se);
+         context.messageEmitter.startDocument();
+         context.emitter.pushEmitter(context.messageEmitter);
          return PR_CONTINUE;
       }
 

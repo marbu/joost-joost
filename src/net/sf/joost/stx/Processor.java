@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.37 2004/02/07 12:29:35 obecker Exp $
+ * $Id: Processor.java,v 2.38 2004/02/10 12:12:50 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -52,6 +52,7 @@ import javax.xml.transform.URIResolver;
 
 import net.sf.joost.Constants;
 import net.sf.joost.TransformerHandlerResolver;
+import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.grammar.EvalException;
 import net.sf.joost.instruction.AbstractInstruction;
 import net.sf.joost.instruction.GroupBase;
@@ -66,7 +67,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.37 $ $Date: 2004/02/07 12:29:35 $
+ * @version $Revision: 2.38 $ $Date: 2004/02/10 12:12:50 $
  * @author Oliver Becker
  */
 
@@ -754,6 +755,16 @@ public class Processor extends XMLFilterImpl
    public void setURIResolver(URIResolver resolver)
    {
       context.uriResolver = resolver;
+   }
+
+
+   /**
+    * Registers a message emitter for <code>stx:message</code>
+    * @param emitter the emitter object to be registered
+    */
+   public void setMessageEmitter(StxEmitter emitter)
+   {
+      context.messageEmitter = emitter;
    }
 
 
