@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.14 2003/06/16 13:24:37 obecker Exp $
+ * $Id: Processor.java,v 2.15 2003/06/19 15:40:55 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -69,7 +69,7 @@ import net.sf.joost.trace.DebugProcessor;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.14 $ $Date: 2003/06/16 13:24:37 $
+ * @version $Revision: 2.15 $ $Date: 2003/06/19 15:40:55 $
  * @author Oliver Becker
  */
 
@@ -1260,17 +1260,29 @@ public class Processor extends XMLFilterImpl
    private void startExternDocument()
       throws SAXException
    {
-      context.targetHandler.startDocument();
-      for (java.util.Enumeration e = nsSupport.getPrefixes();
-           e.hasMoreElements(); ) {
-         String prefix = (String)e.nextElement();
-         if (!prefix.equals("xml"))
-            context.targetHandler.startPrefixMapping(
-               prefix, nsSupport.getURI(prefix));
+      try {
+         context.targetHandler.startDocument();
+         for (java.util.Enumeration e = nsSupport.getPrefixes();
+              e.hasMoreElements(); ) {
+            String prefix = (String)e.nextElement();
+            if (!prefix.equals("xml"))
+               context.targetHandler.startPrefixMapping(
+                  prefix, nsSupport.getURI(prefix));
+         }
+         String defNs = nsSupport.getURI("");
+         if (defNs != null)
+            context.targetHandler.startPrefixMapping("", defNs);
       }
-      String defNs = nsSupport.getURI("");
-      if (defNs != null)
-         context.targetHandler.startPrefixMapping("", defNs);
+      catch (RuntimeException e) {
+         // wrap exception
+         java.io.StringWriter sw = null;
+         sw = new java.io.StringWriter();
+         e.printStackTrace(new java.io.PrintWriter(sw));
+         NodeBase nb = context.currentInstruction;
+         context.errorHandler.fatalError(
+           "External processing failed: " + sw,
+           nb.publicId, nb.systemId, nb.lineNo, nb.colNo);
+      }
    }
 
 
@@ -1282,15 +1294,27 @@ public class Processor extends XMLFilterImpl
    private void endExternDocument()
       throws SAXException
    {
-      for (java.util.Enumeration e = nsSupport.getPrefixes();
-           e.hasMoreElements(); ) {
-         String prefix = (String)e.nextElement();
-         if (!prefix.equals("xml"))
-            context.targetHandler.endPrefixMapping(prefix);
+      try {
+         for (java.util.Enumeration e = nsSupport.getPrefixes();
+              e.hasMoreElements(); ) {
+            String prefix = (String)e.nextElement();
+            if (!prefix.equals("xml"))
+               context.targetHandler.endPrefixMapping(prefix);
+         }
+         if (nsSupport.getURI("") != null)
+            context.targetHandler.endPrefixMapping("");
+         context.targetHandler.endDocument();
       }
-      if (nsSupport.getURI("") != null)
-         context.targetHandler.endPrefixMapping("");
-      context.targetHandler.endDocument();
+      catch (RuntimeException e) {
+         // wrap exception
+         java.io.StringWriter sw = null;
+         sw = new java.io.StringWriter();
+         e.printStackTrace(new java.io.PrintWriter(sw));
+         NodeBase nb = context.currentInstruction;
+         context.errorHandler.fatalError(
+           "External processing failed: " + sw,
+           nb.publicId, nb.systemId, nb.lineNo, nb.colNo);
+      }
    }
 
    // **********************************************************************
