@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 2.7 2003/09/03 15:03:06 obecker Exp $
+ * $Id: Parser.java,v 2.8 2003/11/01 14:44:16 zubow Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -47,7 +47,7 @@ import net.sf.joost.instruction.*;
 /** 
  * Creates the tree representation of an STX transformation sheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 2.7 $ $Date: 2003/09/03 15:03:06 $
+ * @version $Revision: 2.8 $ $Date: 2003/11/01 14:44:16 $
  * @author Oliver Becker
  */
 
@@ -422,7 +422,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
     * Constructs a hashtable containing a mapping from all namespace
     * prefixes in scope to their URIs.
     */ 
-   private Hashtable getInScopeNamespaces()
+   public Hashtable getInScopeNamespaces()
    {
       Hashtable ret = new Hashtable();
       for (Enumeration e = inScopeNamespaces.keys(); e.hasMoreElements(); ) {
