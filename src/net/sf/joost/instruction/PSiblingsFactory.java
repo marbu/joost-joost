@@ -1,5 +1,5 @@
 /*
- * $Id: PSiblingsFactory.java,v 1.2 2003/02/02 15:16:29 obecker Exp $
+ * $Id: PSiblingsFactory.java,v 1.3 2003/02/03 11:07:52 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import net.sf.joost.stx.SAXEvent;
 /** 
  * Factory for <code>process-siblings</code> elements, which are represented 
  * by the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2003/02/02 15:16:29 $
+ * @version $Revision: 1.3 $ $Date: 2003/02/03 11:07:52 $
  * @author Oliver Becker
  */
 
@@ -116,6 +116,7 @@ public class PSiblingsFactory extends FactoryBase
    public class Instance extends ProcessBase
    {
       Tree whilePattern, untilPattern;
+      GroupBase parentGroup;
 
       public Instance(String qName, NodeBase parent, Locator locator,
                       String groupQName, String groupExpName,
@@ -124,6 +125,12 @@ public class PSiblingsFactory extends FactoryBase
          super(qName, parent, locator, groupQName, groupExpName);
          this.whilePattern = whilePattern;
          this.untilPattern = untilPattern;
+
+         // determine parent group (needed for matches())
+         do // parent itself is not a group
+            parent = parent.parent;
+         while (!(parent instanceof GroupBase));
+         parentGroup = (GroupBase)parent;
       }
 
 
@@ -184,6 +191,7 @@ public class PSiblingsFactory extends FactoryBase
          throws SAXException
       {
          context.currentInstruction = this;
+         context.currentGroup = parentGroup;
          // Note: matches() sets context.currentPosition
          // but that is no problem here ...
          return 

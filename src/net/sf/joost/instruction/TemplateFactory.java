@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateFactory.java,v 1.12 2003/02/02 15:11:26 obecker Exp $
+ * $Id: TemplateFactory.java,v 1.13 2003/02/03 11:07:52 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.Context;
 /**
  * Factory for <code>template</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 1.12 $ $Date: 2003/02/02 15:11:26 $
+ * @version $Revision: 1.13 $ $Date: 2003/02/03 11:07:52 $
  * @author Oliver Becker
  */
 
@@ -192,6 +192,7 @@ public final class TemplateFactory extends FactoryBase
          throws SAXException
       {
          context.currentInstruction = this;
+         context.currentGroup = parentGroup;
          return match.matches(context, eventStack, eventStack.size());
       }
       
