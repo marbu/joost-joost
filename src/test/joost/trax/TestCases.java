@@ -3,7 +3,7 @@
  *
  *	TestCases for TraX-Transformer
  *
- *	$Id: TestCases.java,v 1.4 2002/11/11 19:56:49 zubow Exp $
+ *	$Id: TestCases.java,v 1.5 2003/03/06 17:46:55 zubow Exp $
  *
  */
 
@@ -2135,7 +2135,7 @@ public class TestCases {
      */
     public static String serializeDOM2String(Node node) throws IOException {
 
-        DOMWriter domWriter = new DOMWriterImpl(true);
+        DOMWriter domWriter = new DOMWriterImpl();
 
         return domWriter.writeToString(node);
     }
