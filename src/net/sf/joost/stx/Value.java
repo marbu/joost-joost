@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.3 2003/01/12 16:45:27 obecker Exp $
+ * $Id: Value.java,v 1.4 2003/01/16 16:08:13 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,7 +29,7 @@ import net.sf.joost.grammar.EvalException;
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.3 $ $Date: 2003/01/12 16:45:27 $
+ * @version $Revision: 1.4 $ $Date: 2003/01/16 16:08:13 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -39,10 +39,13 @@ public class Value implements Cloneable
       org.apache.log4j.Logger.getLogger(Value.class);
 
 
-   public static final int NUMBER = 0;
-   public static final int BOOLEAN = 1;
-   public static final int STRING = 2;
-   public static final int NODE = 3;
+   /** type constant */
+   public static final int 
+      EMPTY   = 0,
+      NODE    = 1,
+      BOOLEAN = 2,
+      NUMBER  = 3,
+      STRING  = 4;
 
    /** type of this value */
    public int type;
@@ -72,26 +75,31 @@ public class Value implements Cloneable
     */
    public Value next;
 
-   /** The empty sequence */
-   static public final Value EMPTY_SEQ = new Value(null, 0);
-
-
    //
    // Constructors
    //
 
+   /** Constructs an empty sequence */
+   public Value()
+   {
+      type = EMPTY;
+   }
+
+   /** Constructs a <code>Value</code> containing a number */
    public Value(double d)
    {
       type = NUMBER;
       number = d;
    }
 
+   /** Constructs a <code>Value</code> containing a boolean */
    public Value(boolean b)
    {
       type = BOOLEAN;
       bool = b;
    }
 
+   /** Constructs a <code>Value</code> containing a string */
    public Value(String s)
    {
       type = STRING;
@@ -99,7 +107,8 @@ public class Value implements Cloneable
    }
 
    /**
-    * Stores a node (<code>{@link SAXEvent}</code>).
+    * Constructs a <code>Value</code> containing a node 
+    * (<code>{@link SAXEvent}</code>).
     * @param e the event
     * @param l the level (position on the event stack)
     */
@@ -119,6 +128,9 @@ public class Value implements Cloneable
       throws EvalException
    {
       switch (type) {
+      case EMPTY:
+         number = Double.NaN;
+         break;
       case BOOLEAN:
          number = (bool ? 1.0 : 0.0);
          break;
@@ -148,6 +160,9 @@ public class Value implements Cloneable
       throws EvalException
    {
       switch (type) {
+      case EMPTY:
+         string = "";
+         break;
       case BOOLEAN:
          string = bool ? "true" : "false";
          break;
@@ -159,10 +174,6 @@ public class Value implements Cloneable
       case STRING:
          break;
       case NODE:
-         if (event == null) {
-            string = "";
-            break;
-         }
          if (event.type == SAXEvent.ELEMENT)
             throw new EvalException("Undefined node value for elements");
          if (event.type == SAXEvent.ROOT)
@@ -183,6 +194,9 @@ public class Value implements Cloneable
       throws EvalException
    {
       switch (type) {
+      case EMPTY:
+         bool = false;
+         break;
       case BOOLEAN:
          break;
       case NUMBER:
@@ -243,6 +257,7 @@ public class Value implements Cloneable
    {
       String ret;
       switch(type) {
+      case EMPTY:   ret = "()"; break;
       case NUMBER:  ret = "number " + number; break;
       case BOOLEAN: ret = "boolean " + bool; break;
       case STRING:  ret = "string '" + string + "'"; break;
