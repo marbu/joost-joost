@@ -11,6 +11,7 @@ indent*
 java*
 join.*
 magic*
+nested-el2att.*
 order*
 play*
 rename.*
