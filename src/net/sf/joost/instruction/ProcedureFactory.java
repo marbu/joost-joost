@@ -1,5 +1,5 @@
 /*
- * $Id: ProcedureFactory.java,v 1.1 2003/01/30 17:19:25 obecker Exp $
+ * $Id: ProcedureFactory.java,v 1.2 2003/02/02 15:13:24 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,12 +29,10 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import java.io.StringReader;
 import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.Stack;
 
-import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.SAXEvent;
@@ -43,7 +41,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>procedure</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 1.1 $ $Date: 2003/01/30 17:19:25 $
+ * @version $Revision: 1.2 $ $Date: 2003/02/02 15:13:24 $
  * @author Oliver Becker
  */
 
@@ -119,10 +117,8 @@ public final class ProcedureFactory extends FactoryBase
       /** The qualified name of this procedure */
       protected String procName;
 
-      //
+
       // Constructor
-      //
-      
       protected Instance(String qName, NodeBase parent, Locator locator,
                          String procName, String expName, 
                          int visibility, boolean newScope)
@@ -133,11 +129,31 @@ public final class ProcedureFactory extends FactoryBase
          this.procName = procName;
       }
 
+      public short process(Emitter emitter, Stack eventStack,
+                           Context context, short processStatus)
+         throws SAXException
+      {
+         /* 
+            Saving and restoring the current group is necessary if this
+            procedure was entered as a public procedure from a parent group
+            (otherwise a following process-xxx instruction would use the
+            wrong group).
+         */
+
+         // store current group
+         GroupBase prevGroup = context.currentGroup;      
+         processStatus = super.process(emitter, eventStack, context, 
+                                       processStatus);
+         // reset current group
+         context.currentGroup = prevGroup;
+         return processStatus;
+      }
+
 
       // for debugging
       public String toString()
       {
-         return "procedure:" + lineNo;
+         return "procedure:" + procName + "(" + lineNo + ")";
       }
    }
 }
