@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.14 2003/05/28 13:22:23 obecker Exp $
+ * $Id: TransformerImpl.java,v 1.15 2003/06/02 11:41:51 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -50,6 +50,9 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Properties;
 
+import net.sf.joost.trace.DebugProcessor;
+import net.sf.joost.trace.DebugEmitter;
+import net.sf.joost.stx.Emitter;
 
 /**
  * This class implements the Transformer-Interface for TraX.
@@ -62,7 +65,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
 
     // Define a static logger variable so that it references the
     // Logger instance named "TransformerImpl".
-    private static org.apache.commons.logging.Log log = 
+    private static org.apache.commons.logging.Log log =
         org.apache.commons.logging.LogFactory.getLog(TransformerImpl.class);
 
     private static Processor processor = null;
@@ -98,6 +101,15 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
      */
     protected TransformerImpl(Processor processor) {
         this.processor = processor;
+
+        // set tracing manager on processor object
+        if (processor instanceof DebugProcessor) {
+            ((DebugProcessor)processor).setTraceManager(traceManager);
+            Emitter emitter = processor.getEmitter();
+            if (emitter instanceof DebugEmitter) {
+                ((DebugEmitter)emitter).setTraceManager(traceManager);
+            }
+        }
         supportedProperties.add(OutputKeys.ENCODING);
         supportedProperties.add(OutputKeys.MEDIA_TYPE);
         supportedProperties.add(OutputKeys.METHOD);
@@ -218,7 +230,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
                     new TransformerException(ex.getMessage(), ex);
                 log.fatal(tE);
                 throw tE;
-            } catch (IOException ex) { 
+            } catch (IOException ex) {
                 // will this ever happen?
                 throw new TransformerException(ex.getMessage(), ex);
             }
@@ -337,7 +349,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
             processor.outputProperties.setProperty(name, value);
         }
         else
-            throw new IllegalArgumentException("Unsupported property " + 
+            throw new IllegalArgumentException("Unsupported property " +
                                                name);
     }
 
@@ -363,13 +375,13 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
             // check properties in oformat
             for (Enumeration e = oformat.keys(); e.hasMoreElements(); ) {
                 Object prop = e.nextElement();
-                if (!supportedProperties.contains(prop)) 
+                if (!supportedProperties.contains(prop))
                     throw new IllegalArgumentException(
                                   "Unsupported property " + prop);
-                if (OutputKeys.METHOD.equals(prop) && 
+                if (OutputKeys.METHOD.equals(prop) &&
                     !"xml".equals(oformat.getProperty((String)prop)))
                     throw new IllegalArgumentException(
-                                  "Unsupported output method " + 
+                                  "Unsupported output method " +
                                   oformat.getProperty((String)prop));
             }
             processor.outputProperties = (Properties)oformat.clone();
