@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: runtest.sh,v 1.4 2003/04/17 15:47:57 obecker Exp $
+# $Id: runtest.sh,v 1.5 2003/04/25 16:55:32 obecker Exp $
 # Performs a chosen set of transformations and compares the output with
 # an expected result
 
@@ -8,7 +8,7 @@ testdir=../test
 
 # Temporary file for the transformation result
 tmp=res$$.tmp
-rm -r res[0-9]*.tmp
+rm -f res[0-9]*.tmp
 
 # Is there a command line argument which denotes the test case?
 if [ -n "$1" ]; then
@@ -41,8 +41,7 @@ for i in ${files}; do
     fi
     # run and compare
     if [ -f "${source}" ]; then
-        run.sh ${source} ${bn}.stx -o ${tmp} ${para}
-        diff ${tmp} ${bn}.res
+        run.sh ${source} ${bn}.stx -o ${tmp} ${para} && diff ${tmp} ${bn}.res
         rm -f ${tmp}
     else
         echo No XML source found for `basename ${bn}`
