@@ -1,5 +1,5 @@
 /*
- * $Id: GroupFactory.java,v 1.5 2002/12/13 17:47:25 obecker Exp $
+ * $Id: GroupFactory.java,v 1.6 2002/12/15 17:09:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.stx.Emitter;
 /** 
  * Factory for <code>group</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.5 $ $Date: 2002/12/13 17:47:25 $
+ * @version $Revision: 1.6 $ $Date: 2002/12/15 17:09:01 $
  * @author Oliver Becker
  */
 
@@ -56,6 +56,7 @@ final public class GroupFactory extends FactoryBase
    public GroupFactory()
    {
       attrNames = new HashSet();
+      attrNames.add("name");
    }
 
    /** @return <code>"group"</code> */
@@ -75,8 +76,24 @@ final public class GroupFactory extends FactoryBase
                                      "' not allowed as child of `" +
                                      parent.qName + "'", locator);
 
+      String groupName = null;
+      String nameAtt = attrs.getValue("name");
+      if (nameAtt != null) {
+         groupName = getExpandedName(nameAtt, nsSet, locator);
+         
+         Hashtable namedGroups = ((GroupBase)parent).namedGroups;
+         if (namedGroups.get(groupName) != null) 
+            throw new SAXParseException(
+               "Group name `" + nameAtt + "' already used", 
+               locator);
+         else
+            namedGroups.put(groupName, groupName); 
+            // value groupName (second parameter) is just a marker,
+            // it will be replaced in GroupBase.parsed()
+      }
+
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator);
+      return new Instance(qName, parent, locator, groupName);
    }
 
 
@@ -87,9 +104,11 @@ final public class GroupFactory extends FactoryBase
    final public class Instance extends GroupBase
    {
       // Constructor
-      protected Instance(String qName, NodeBase parent, Locator locator)
+      protected Instance(String qName, NodeBase parent, Locator locator, 
+                         String groupName)
       {
          super(qName, parent, locator);
+         this.groupName = groupName;
       }
 
       
