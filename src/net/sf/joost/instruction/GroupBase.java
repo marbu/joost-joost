@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 2.2 2003/04/30 14:47:16 obecker Exp $
+ * $Id: GroupBase.java,v 2.3 2003/05/02 06:04:02 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import net.sf.joost.stx.Value;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 2.2 $ $Date: 2003/04/30 14:47:16 $
+ * @version $Revision: 2.3 $ $Date: 2003/05/02 06:04:02 $
  * @author Oliver Becker
  */
 
@@ -67,9 +67,12 @@ abstract public class GroupBase extends NodeBase
 
 
 
-   /** Vector of all contained public and global templates in this group */
+   /** Vector of all contained public templates in this group */
    public Vector containedPublicTemplates;
 
+   /** Vector of all contained group templates in this group */
+   private Vector containedGroupTemplates;
+   
    /** Vector of all contained global templates in this group */
    private Vector containedGlobalTemplates;
    
@@ -128,6 +131,7 @@ abstract public class GroupBase extends NodeBase
       this.stripSpace = stripSpace;
       this.recognizeCdata = recognizeCdata;
       containedPublicTemplates = new Vector();
+      containedGroupTemplates = new Vector();
       containedGlobalTemplates = new Vector();
       visibleProcedures = new Hashtable();
       containedPublicProcedures = new Hashtable();
@@ -164,28 +168,20 @@ abstract public class GroupBase extends NodeBase
       for (int i=0; i<length; i++) {
          if (objs[i] instanceof TemplateFactory.Instance) {
             TemplateFactory.Instance t = (TemplateFactory.Instance)objs[i];
-            tvec.addElement(t);
-            boolean isPublic = false, 
-                    isGlobal = false;
-            if (t.visibility >= TemplateBase.PUBLIC_VISIBLE) {
-               // >= means also GLOBAL_VISIBLE, see TemplateBase
-               containedPublicTemplates.addElement(t);
-               isPublic = true;
+            do {
+               tvec.addElement(t);
+               if (t.isPublic) {
+                  containedPublicTemplates.addElement(t);
+               }
+               if (t.visibility == TemplateBase.GROUP_VISIBLE) {
+                  containedGroupTemplates.addElement(t);
+               }
                if (t.visibility == TemplateBase.GLOBAL_VISIBLE) {
                   containedGlobalTemplates.addElement(t);
-                  isGlobal = true;
                }
-            }
-            // split templates with unions (|) in their match pattern
-            TemplateFactory.Instance s;
-            while((s = t.split()) != null) {
-               tvec.addElement(s);
-               if (isPublic) {
-                  containedPublicTemplates.addElement(s);
-                  if (isGlobal)
-                     containedGlobalTemplates.addElement(s);
-               }
-            }
+
+               // split templates with unions (|) in their match pattern
+            } while((t = t.split()) != null);
          }
          else if (objs[i] instanceof ProcedureFactory.Instance) {
             ProcedureFactory.Instance p = (ProcedureFactory.Instance)objs[i];
@@ -198,19 +194,18 @@ abstract public class GroupBase extends NodeBase
             }
             else
                visibleProcedures.put(p.expName, p);
-            if (p.visibility >= TemplateBase.PUBLIC_VISIBLE) {
+            if (p.isPublic) 
                containedPublicProcedures.put(p.expName, p);
-               if (p.visibility == TemplateBase.GLOBAL_VISIBLE) {
-                  node = (NodeBase)globalProcedures.get(p.expName);
-                  if (node != null) {
-                     throw new SAXParseException(
-                        "Global procedure `" + p.procName + 
-                        "' already defined in line " + node.lineNo,
-                        p.publicId, p.systemId, p.lineNo, p.colNo);
-                  }
-                  else
-                     globalProcedures.put(p.expName, p);
+            if (p.visibility == TemplateBase.GLOBAL_VISIBLE) {
+               node = (NodeBase)globalProcedures.get(p.expName);
+               if (node != null) {
+                  throw new SAXParseException(
+                     "Global procedure `" + p.procName + 
+                     "' already defined in line " + node.lineNo,
+                     p.publicId, p.systemId, p.lineNo, p.colNo);
                }
+               else
+                  globalProcedures.put(p.expName, p);
             }
          }
          else if (objs[i] instanceof GroupFactory.Instance) 
@@ -228,8 +223,7 @@ abstract public class GroupBase extends NodeBase
       for (int i=0; i<containedGroups.length; i++) {
          tvec.addAll(containedGroups[i].containedPublicTemplates);
          Hashtable pubProc = containedGroups[i].containedPublicProcedures;
-         for (Enumeration e=pubProc.keys();
-              e.hasMoreElements(); ) {
+         for (Enumeration e=pubProc.keys(); e.hasMoreElements(); ) {
             Object o;
             if (visibleProcedures.containsKey(o = e.nextElement())) {
                ProcedureFactory.Instance p1 = 
@@ -257,9 +251,15 @@ abstract public class GroupBase extends NodeBase
          namedGroups.put(groupName, this);
       }
 
+      // add group and global templates to all sub-groups (group scope)
       for (int i=0; i<containedGroups.length; i++) {
-         // add global templates of all sub-groups 
-         // (this removes the global templates in these groups)
+         containedGroups[i].addGroupTemplates(containedGroupTemplates);
+         containedGroups[i].addGroupTemplates(containedGlobalTemplates);
+      }
+
+      // add global templates from all sub-groups (global scope)
+      // (this removes the global templates in these groups)
+      for (int i=0; i<containedGroups.length; i++) {
          containedGlobalTemplates.addAll(
             containedGroups[i].getGlobalTemplates());
       }
@@ -325,6 +325,13 @@ abstract public class GroupBase extends NodeBase
       groupVars.pop();
    }
 
+
+   protected void addGroupTemplates(Vector tVec)
+   {
+      containedGroupTemplates.addAll(tVec);
+      for (int i=0; i<containedGroups.length; i++)
+         containedGroups[i].addGroupTemplates(tVec);
+   }
 
    /**
     * Returns the globally visible templates in this group (and all
