@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 1.1 2002/12/30 17:13:48 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 1.2 2003/01/18 15:52:07 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import net.sf.joost.stx.Emitter;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.1 $ $Date: 2002/12/30 17:13:48 $
+ * @version $Revision: 1.2 $ $Date: 2003/01/18 15:52:07 $
  * @author Oliver Becker
  */
 
@@ -72,23 +72,23 @@ final public class ResultDocumentFactory extends FactoryBase
       throws SAXParseException
    {
       String hrefAtt = getAttribute(qName, attrs, "href", locator);
-      Tree hrefAVT = parseAVT(hrefAtt, nsSet, locator);
+      Tree href = parseExpr(hrefAtt, nsSet, locator);
 
       checkAttributes(qName, attrs, attrNames, locator);
-      return new Instance(qName, parent, locator, hrefAVT);
+      return new Instance(qName, parent, locator, href);
    }
 
 
    /** Represents an instance of the <code>result-document</code> element. */
    final public class Instance extends NodeBase
    {
-      private Tree hrefAVT;
+      private Tree href;
 
       protected Instance(String qName, NodeBase parent, Locator locator, 
-                         Tree hrefAVT)
+                         Tree href)
       {
          super(qName, parent, locator, false);
-         this.hrefAVT = hrefAVT;
+         this.href = href;
       }
       
       /**
@@ -107,15 +107,15 @@ final public class ResultDocumentFactory extends FactoryBase
          if ((processStatus & ST_PROCESSING) != 0) {
 
             context.currentInstruction = this;
-            String href = 
-               hrefAVT.evaluate(context, eventStack, eventStack.size()).string;
+            String filename = 
+               href.evaluate(context, eventStack, eventStack.size()).string;
 
             // Note: currently we don't check if a file is already open.
             // Opening a file twice may lead to unexpected results.
             StreamEmitter se = null;
             try {
                se = new StreamEmitter(
-                  href, context.currentProcessor.getOutputEncoding());
+                  filename, context.currentProcessor.getOutputEncoding());
             }
             catch (java.io.IOException ex) {
                context.errorHandler.error(ex.toString(), 
