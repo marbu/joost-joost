@@ -1,5 +1,5 @@
 /*
- * $Id: DebugProcessor.java,v 1.10 2004/02/03 18:22:27 zubow Exp $
+ * $Id: DebugProcessor.java,v 1.11 2004/02/12 09:10:43 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -33,6 +33,7 @@ import net.sf.joost.instruction.NodeBase;
 import net.sf.joost.instruction.AssignFactory;
 import net.sf.joost.trax.TransformerImpl;
 import net.sf.joost.Constants;
+import net.sf.joost.emitter.StxEmitter;
 import org.xml.sax.*;
 
 import javax.xml.transform.ErrorListener;
@@ -44,7 +45,7 @@ import java.util.Hashtable;
 
 /**
  * Extends the {@link net.sf.joost.stx.Processor} with debug features.
- * @version $Revision: 1.10 $ $Date: 2004/02/03 18:22:27 $
+ * @version $Revision: 1.11 $ $Date: 2004/02/12 09:10:43 $
  * @author Zubow
  */
 public class DebugProcessor extends Processor {
@@ -97,14 +98,16 @@ public class DebugProcessor extends Processor {
     }
 
     /**
-     * See {@link net.sf.joost.stx.Processor#Processor(XMLReader, InputSource, ErrorListener, URIResolver, ParserListener)}
+     * See {@link net.sf.joost.stx.Processor#Processor(XMLReader, InputSource, ErrorListener, URIResolver, ParserListener, StxEmitter)}
      */
     public DebugProcessor(XMLReader reader, InputSource src,
                           ErrorListener errorListener,
                           URIResolver uriResolver,
-                          ParserListener parserListener)
+                          ParserListener parserListener,
+                          StxEmitter messageEmitter)
             throws IOException, SAXException {
         super(reader, src, errorListener, uriResolver, parserListener);
+        setMessageEmitter(messageEmitter);
     }
 
     /**

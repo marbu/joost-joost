@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.16 2004/01/23 16:18:38 zubow Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.17 2004/02/12 09:10:45 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,6 +26,8 @@
 package net.sf.joost.trax;
 
 import net.sf.joost.TransformerHandlerResolver;
+import net.sf.joost.emitter.StxEmitter;
+import net.sf.joost.emitter.StreamEmitter;
 import net.sf.joost.trace.ParserListenerMgr;
 import net.sf.joost.stx.Processor;
 
@@ -51,6 +53,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.StringReader;
+import java.io.IOException;
 
 
 /**
@@ -84,7 +87,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     private boolean debugmode                       = false;
 
     // indicates which Emitter class for stx:message output should be used
-    private String msgEmitterClass = "";
+    private StxEmitter msgEmitter;
 
     // Synch object to guard against setting values from the TrAX interface
     // or reentry while the transform is going on.
@@ -99,7 +102,11 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     /**
      * The default constructor.
      */
-    public TransformerFactoryImpl() {}
+    public TransformerFactoryImpl() throws IOException {
+        // initialize default messageEmitter
+        msgEmitter = new StreamEmitter(System.err, null);
+        ((StreamEmitter)msgEmitter).setOmitXmlDeclaration(true);
+    }
 
 
     //*************************************************************************
@@ -144,7 +151,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         } else if (name.equals(DEBUG_FEATURE)) {
             return new Boolean(debugmode);
         } else if (name.equals(MESSAGE_EMITTER_CLASS)) {
-        	return msgEmitterClass;
+        	return msgEmitter;
         } else {
             log.warn("Feature not supported: " + name);
             throw new IllegalArgumentException("Feature not supported: " + name);
@@ -167,10 +174,20 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         } else if (name.equals(DEBUG_FEATURE)) {
             this.debugmode = ((Boolean)value).booleanValue();
         } else if (name.equals(MESSAGE_EMITTER_CLASS)) {
-        	if (!(value instanceof String)) {
-        		throw new IllegalArgumentException("Message Emitter class must be a String");
-        	}
-        	msgEmitterClass = (String)value;
+            // object is of type string, so use reflection
+        	if (value instanceof String) {
+                try {
+                    msgEmitter = buildMessageEmitter((String)value);
+                } catch (TransformerConfigurationException e) {
+                    log.fatal(e.getMessage(), e);
+                    throw new IllegalArgumentException(e.getMessage());
+                }
+            } else if (value instanceof StxEmitter) { // already instantiated
+                msgEmitter = (StxEmitter)value;
+            } else {
+                throw new IllegalArgumentException("Emitter is of wrong type,"
+                        + "should be either a String or a StxEmitter");
+            }
         } else {
             log.warn("Feature not supported: " + name);
             throw new IllegalArgumentException("Feature not supported: " + name);
@@ -486,5 +503,52 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     /** returns the value of {@link #parserListenerMgr} */
     public ParserListenerMgr getParserListenerMgr() {
         return parserListenerMgr;
+    }
+
+    /** returns the value of {@link #msgEmitter} */
+    public StxEmitter getMessageEmitter() {
+        return msgEmitter;
+    }
+
+    /**
+     * Method creates a new Emitter for stx:message output
+     * @param emitterClass the name of the emitter class
+     * @return a <code>StxEmitter</code>
+     * @throws TransformerConfigurationException in case of errors
+     */
+    public StxEmitter buildMessageEmitter(String emitterClass) throws TransformerConfigurationException {
+
+        Object emitter = null;
+        try {
+            emitter = loadClass(emitterClass).newInstance();
+            if (!(emitter instanceof StxEmitter)) {
+                throw new TransformerConfigurationException(emitterClass + " is not an StxEmitter");
+            }
+        } catch (InstantiationException ie) {
+            throw new TransformerConfigurationException(ie.getMessage(), ie);
+        } catch (IllegalAccessException ile) {
+            throw new TransformerConfigurationException(ile.getMessage(), ile);
+        }
+
+        return (StxEmitter)emitter;
+    }
+
+    // classloader helper
+    private Class loadClass(String className) throws TransformerConfigurationException {
+        try {
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            if (loader!=null) {
+                try {
+                    return loader.loadClass(className);
+                } catch (Exception ex) {
+                    return Class.forName(className);
+                }
+            } else {
+                return Class.forName(className);
+            }
+        }
+        catch (Exception e) {
+            throw new TransformerConfigurationException("Failed to load " + className, e);
+        }
     }
 }

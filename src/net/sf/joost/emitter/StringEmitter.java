@@ -1,5 +1,5 @@
 /*
- * $Id: StringEmitter.java,v 1.5 2002/11/27 09:49:16 obecker Exp $
+ * $Id: StringEmitter.java,v 1.6 2004/02/12 09:10:45 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -35,11 +35,11 @@ import net.sf.joost.stx.SAXEvent;
 
 /**
  * This class implements an emitter that collects characters events
- * @version $Revision: 1.5 $ $Date: 2002/11/27 09:49:16 $
+ * @version $Revision: 1.6 $ $Date: 2004/02/12 09:10:45 $
  * @author Oliver Becker
  */
 
-final public class StringEmitter implements StxEmitter 
+final public class StringEmitter implements StxEmitter
 {
    /** the string buffer */
    private StringBuffer buffer;
@@ -50,6 +50,11 @@ final public class StringEmitter implements StxEmitter
     */
    private String errorInfo;
 
+
+   //
+   // Default constructor
+   //
+   public StringEmitter() {}
 
    //
    // Constructor

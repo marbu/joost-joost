@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.13 2003/12/03 07:32:13 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.14 2004/02/12 09:10:45 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -40,7 +40,7 @@ import javax.xml.transform.OutputKeys;
  *  Is is designed for using <code>StreamResult</code>.
  *  So this class outputs a StreamResult to the output target -
  *  {@link #outwriter} (e.g. a registered <code>FileWriter</code>).
- *  @version $Revision: 1.13 $ $Date: 2003/12/03 07:32:13 $
+ *  @version $Revision: 1.14 $ $Date: 2004/02/12 09:10:45 $
  *  @author Oliver Becker, Anatolij Zubow
  */
 public class StreamEmitter implements StxEmitter {
@@ -207,6 +207,13 @@ public class StreamEmitter implements StxEmitter {
         propOmitXmlDeclaration = flag;
     }
 
+    /**
+     * Defines which Writer should be used for the output.
+     * @param outwriter a <code>Writer</code> receives the output.
+     */
+    public void setOutWriter(Writer outwriter) {
+        this.outwriter = outwriter;
+    }
 
     /**
     * Outputs a start or empty element tag if there is one stored.

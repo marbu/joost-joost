@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.15 2004/01/23 16:18:05 zubow Exp $
+ * $Id: TemplatesImpl.java,v 1.16 2004/02/12 09:10:45 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -180,7 +180,8 @@ public class TemplatesImpl implements Templates, TrAXConstants {
                 processor = new DebugProcessor(reader, isource,
                                                factory.getErrorListener(),
                                                factory.getURIResolver(),
-                                               factory.getParserListenerMgr());
+                                               factory.getParserListenerMgr(),
+                                               factory.getMessageEmitter());
             } else {
                 processor = new Processor(reader, isource, 
                                           factory.getErrorListener(),
@@ -241,42 +242,6 @@ public class TemplatesImpl implements Templates, TrAXConstants {
                 factory.defaultErrorListener.fatalError(tE);
             } catch (TransformerConfigurationException e) {}
             return null;
-        }
-    }
-
-    /**
-     * Method creates a new Emitter for stx:message output
-     * @return a <code>StxEmitter</code>
-     * @throws TransformerConfigurationException in case of errors
-     */
-    public StxEmitter buildMessageEmitter() throws TransformerConfigurationException {
-        String emitterClass =
-                (String)factory.getAttribute(TrAXConstants.MESSAGE_EMITTER_CLASS);
-
-        Object emitter = loadClass(emitterClass);
-        if (!(emitter instanceof StxEmitter)) {
-            throw new TransformerConfigurationException(emitterClass + " is not an Emitter");
-        }
-        return (StxEmitter)emitter;
-    }
-
-
-    // classloader helper
-    private Class loadClass(String className) throws TransformerConfigurationException {
-        try {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            if (loader!=null) {
-                try {
-                    return loader.loadClass(className);
-                } catch (Exception ex) {
-                    return Class.forName(className);
-                }
-            } else {
-                return Class.forName(className);
-            }
-        }
-        catch (Exception e) {
-            throw new TransformerConfigurationException("Failed to load " + className, e);
         }
     }
 }
