@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXConstants.java,v 1.8 2003/05/19 14:46:50 obecker Exp $
+ * $Id: TrAXConstants.java,v 1.9 2003/05/26 11:55:55 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -27,7 +27,11 @@ package net.sf.joost.trax;
 
 import net.sf.joost.Constants;
 
-
+/**
+ * Common interface for TrAX related constants.
+ * @version $Revision: 1.9 $ $Date: 2003/05/26 11:55:55 $
+ * @author Anatolij Zubow
+ */
 public interface TrAXConstants extends Constants {
 
     /**
