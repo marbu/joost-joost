@@ -1,5 +1,5 @@
 /*
- * $Id: AttributeFactory.java,v 1.4 2002/11/27 10:03:09 obecker Exp $
+ * $Id: AttributeFactory.java,v 1.5 2002/11/27 15:36:24 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,25 +28,24 @@ import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.ext.LexicalHandler;
 
 import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.Stack;
-import java.util.Enumeration;
 
-import net.sf.joost.stx.SAXEvent;
-import net.sf.joost.stx.Emitter;
-import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Value;
-import net.sf.joost.grammar.Tree;
+import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.EvalException;
+import net.sf.joost.grammar.Tree;
+import net.sf.joost.stx.Context;
+import net.sf.joost.stx.Emitter;
+import net.sf.joost.stx.SAXEvent;
+import net.sf.joost.stx.Value;
 
 
 /** 
  * Factory for <code>attribute</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.4 $ $Date: 2002/11/27 10:03:09 $
+ * @version $Revision: 1.5 $ $Date: 2002/11/27 15:36:24 $
  * @author Oliver Becker
  */
 
@@ -75,8 +74,12 @@ final public class AttributeFactory extends FactoryBase
                               Hashtable nsSet, Locator locator)
       throws SAXParseException
    {
-      String selectAtt = getAttribute(qName, attrs, "select", locator);
-      Tree selectExpr = parseExpr(selectAtt, nsSet, locator);
+      String selectAtt = attrs.getValue("select");
+      Tree selectExpr;
+      if (selectAtt != null)
+         selectExpr = parseExpr(selectAtt, nsSet, locator);
+      else
+         selectExpr = null;
 
       String nameAtt = getAttribute(qName, attrs, "name", locator);
       Tree nameAVT = parseAVT(nameAtt, nsSet, locator);
@@ -100,16 +103,23 @@ final public class AttributeFactory extends FactoryBase
    {
       private Tree name, namespace, select;
       private Hashtable nsSet;
+      private StringEmitter strEmitter;
+      private String attName, attUri, attLocal;
 
       protected Instance(String elementName, NodeBase parent, Locator locator,
                          Hashtable nsSet,
                          Tree name, Tree namespace, Tree select)
       {
-         super(elementName, parent, locator, true);
+         super(elementName, parent, locator,
+               // this element must be empty if there is a select attribute
+               select != null);
          this.nsSet = (Hashtable)nsSet.clone();
          this.name = name;
          this.namespace = namespace;
          this.select = select;
+         strEmitter = new StringEmitter(new StringBuffer(), 
+                                        "(`" + qName + "' started in line " +
+                                        locator.getLineNumber() + ")");
       }
       
       /**
@@ -120,74 +130,102 @@ final public class AttributeFactory extends FactoryBase
        * @param eventStack the ancestor event stack
        * @param context the Context object
        * @param processStatus the current processing status
-       * @return <code>processStatus</code>, value doesn't change
+       * @return the new <code>processStatus</code>
        */    
       protected short process(Emitter emitter, Stack eventStack,
                               Context context, short processStatus)
          throws SAXException
       {
-         context.stylesheetNode = this;
-         Value v = select.evaluate(context, eventStack, eventStack.size());
-         String s;
-         try {
-            s = v.convertToString().string;
-         }
-         catch (EvalException e) {
-            context.errorHandler.error(e.getMessage(),
-                                       publicId, systemId, lineNo, colNo);
-            s = ""; // if the errorHandler returns
-         }
-         v = name.evaluate(context, eventStack, eventStack.size());
+         if ((processStatus & ST_PROCESSING) != 0) {
+            // check for nesting of this stx:attribute
+            if (emitter.isEmitterActive(strEmitter)) {
+               context.errorHandler.error(
+                  "Can't create nested attribute",
+                  publicId, systemId, lineNo, colNo);
+               return processStatus; // if the errorHandler returns
+            }
+            if (children != null) {
+               strEmitter.getBuffer().setLength(0);
+               emitter.pushEmitter(strEmitter);
+            }
 
-         String attName, attUri, attLocal;
-         attName = v.string;
-         int colon = attName.indexOf(':');
-         if (colon != -1) { // prefixed name
-            String prefix = attName.substring(0, colon);
-            attLocal = attName.substring(colon+1);
-            if (namespace != null) { // namespace attribute present
-               attUri = namespace.evaluate(context, eventStack, 
-                                           eventStack.size()).string;
-               if (attUri.equals("")) {
-                  context.errorHandler.error(
-                     "Can't put attribute `" + attName +
-                     "' into the null namespace",
-                     publicId, systemId, lineNo, colNo);
-                  return processStatus; // if the errorHandler returns
+            // determine attribute name
+            Value v = name.evaluate(context, eventStack, eventStack.size());
+            attName = v.string;
+            int colon = attName.indexOf(':');
+            if (colon != -1) { // prefixed name
+               String prefix = attName.substring(0, colon);
+               attLocal = attName.substring(colon+1);
+               if (namespace != null) { // namespace attribute present
+                  attUri = namespace.evaluate(context, eventStack, 
+                                              eventStack.size()).string;
+                  if (attUri.equals("")) {
+                     context.errorHandler.error(
+                        "Can't put attribute `" + attName +
+                        "' into the null namespace",
+                        publicId, systemId, lineNo, colNo);
+                     return processStatus; // if the errorHandler returns
+                  }
+               }
+               else { // no namespace attribute
+                  // look into the set of in-scope namespaces
+                  // (of the stylesheet)
+                  attUri = (String)nsSet.get(prefix);
+                  if (attUri == null) {
+                     context.errorHandler.error(
+                        "Attempt to create attribute `" + attName + 
+                        "' with undeclared prefix `" + prefix + "'",
+                        publicId, systemId, lineNo, colNo);
+                     return processStatus; // if the errorHandler returns
+                  }
                }
             }
-            else { // no namespace attribute
-               // look into the set of in-scope namespaces
-               // (of the stylesheet)
-               attUri = (String)nsSet.get(prefix);
-               if (attUri == null) {
-                  context.errorHandler.error(
-                     "Attempt to create attribute `" + attName + 
-                     "' with undeclared prefix `" + prefix + "'",
-                     publicId, systemId, lineNo, colNo);
-                  return processStatus; // if the errorHandler returns
-               }
-            }
-         }
-         else { // unprefixed name
-            attLocal = attName;
-            attUri = "";
-            if (namespace != null) { // namespace attribute present
-               attUri = namespace.evaluate(context, eventStack, 
-                                           eventStack.size()).string;
-               if (!attUri.equals("")) {
-                  context.errorHandler.error(
-                     "Can't put attribute `" + attName + 
-                     "' into the non-null namespace `" + attUri + "'",
-                     publicId, systemId, lineNo, colNo);
-                  return processStatus; // if the errorHandler returns
+            else { // unprefixed name
+               attLocal = attName;
+               attUri = "";
+               if (namespace != null) { // namespace attribute present
+                  attUri = namespace.evaluate(context, eventStack, 
+                                              eventStack.size()).string;
+                  if (!attUri.equals("")) {
+                     context.errorHandler.error(
+                        "Can't put attribute `" + attName + 
+                        "' into the non-null namespace `" + attUri + "'",
+                        publicId, systemId, lineNo, colNo);
+                     return processStatus; // if the errorHandler returns
+                  }
                }
             }
          }
 
-         emitter.addAttribute(attUri, attName, attLocal, s, 
-                              publicId, systemId, lineNo, colNo); 
+         processStatus = super.process(emitter, eventStack, context,
+                                       processStatus);
 
+         if ((processStatus & ST_PROCESSING) != 0) {
+            Value v;
+            if (children != null) {
+               emitter.popEmitter();
+               v = new Value(strEmitter.getBuffer().toString());
+            }
+            else if (select != null) {
+               context.stylesheetNode = this;
+               v = select.evaluate(context, eventStack, eventStack.size());
+            }
+            else
+               v = new Value("");
+
+            String s;
+            try {
+               s = v.convertToString().string;
+            }
+            catch (EvalException e) {
+               context.errorHandler.error(e.getMessage(),
+                                          publicId, systemId, lineNo, colNo);
+               s = ""; // if the errorHandler returns
+            }
+
+            emitter.addAttribute(attUri, attName, attLocal, s, 
+                                 publicId, systemId, lineNo, colNo); 
+         }
          return processStatus;
       }
    }
