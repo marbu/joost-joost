@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.11 2003/05/28 13:20:04 obecker Exp $
+ * $Id: Main.java,v 1.12 2003/06/19 10:48:45 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -26,7 +26,6 @@ package net.sf.joost;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.TransformerException;
@@ -42,14 +41,17 @@ import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.11 $ $Date: 2003/05/28 13:20:04 $
+ * @version $Revision: 1.12 $ $Date: 2003/06/19 10:48:45 $
  * @author Oliver Becker
  */
 public class Main implements Constants
 {
    // Joost must be able to run without Log4j
    private static Logger log4j;
-
+   static {
+      if (DEBUG)
+         log4j = Logger.getLogger(Main.class);
+   }
 
    /** 
     * Entry point 
@@ -81,9 +83,6 @@ public class Main implements Constants
 
       // debugging
       boolean dontexit = false;
-
-      if (DEBUG)
-         log4j = Logger.getLogger(Main.class);
 
       // parse command line argument list
       for (int i=0; i<args.length; i++) {
@@ -314,14 +313,6 @@ printHelp ? 0 : 1);
          System.err.println(ex.toString());
          System.exit(1);
       }
-      /*
-      catch (SAXParseException ex) {
-         log4j.warn("This shouldn't happen: " + ex);
-         if (log4j.isDebugEnabled())
-            ex.printStackTrace(System.err);
-         System.exit(1);
-      }
-      */
       catch (SAXException ex) {
          Exception embedded = ex.getException();
          if (embedded != null) {
@@ -341,9 +332,8 @@ printHelp ? 0 : 1);
                                   te.getMessage());
             }
             else {
-               System.err.println(embedded.toString());
-               if (log4jLevel != null)
-                  embedded.printStackTrace(System.err);
+               // Fatal: this mustn't happen
+               embedded.printStackTrace(System.err);
             }
          }
          else
