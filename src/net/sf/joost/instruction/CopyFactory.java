@@ -1,5 +1,5 @@
 /*
- * $Id: CopyFactory.java,v 1.4 2002/10/22 10:33:03 obecker Exp $
+ * $Id: CopyFactory.java,v 1.5 2002/10/22 12:36:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,7 +46,7 @@ import net.sf.joost.grammar.PatternParser;
 /** 
  * Factory for <code>copy</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.4 $ $Date: 2002/10/22 10:33:03 $
+ * @version $Revision: 1.5 $ $Date: 2002/10/22 12:36:33 $
  * @author Oliver Becker
  */
 
@@ -148,29 +148,29 @@ final public class CopyFactory extends FactoryBase
             case SAXEvent.ROOT:
                break;
             case SAXEvent.ELEMENT: {
-               Attributes attrs;
-               if (attPattern == null) { // copy element with all attributes
-                  emitter.startElement(event.uri, event.lName, event.qName,
-                                       event.attrs);
-               }
-               else { // copy element with matching attributes only
-                  emitter.startElement(event.uri, event.lName, event.qName,
-                                       emptyAttList);
-                  for (int i=0; i<event.attrs.getLength(); i++) {
-                     // put attributes on the event stack for matching
-                     eventStack.push(SAXEvent.newAttribute(event.attrs, i));
-                     if (attPattern.matches(context, eventStack,
-                                            eventStack.size())) {
-                        SAXEvent attrEvent = (SAXEvent)eventStack.peek();
-                        emitter.addAttribute(attrEvent.uri, attrEvent.qName,
-                                             attrEvent.lName,
-                                             attrEvent.value, context,
-                                             publicId, systemId, 
-                                             lineNo, colNo);
-                     }
-                     eventStack.pop();
+               emitter.startElement(event.uri, event.lName, event.qName,
+                                    emptyAttList);
+               // store element position, will change while matching
+               long elPos = context.position;
+
+               int attrNum = (attPattern == null ? 0 
+                                                 :event.attrs.getLength());
+               for (int i=0; i<attrNum; i++) {
+                  // put attributes on the event stack for matching
+                  eventStack.push(SAXEvent.newAttribute(event.attrs, i));
+                  if (attPattern.matches(context, eventStack,
+                                         eventStack.size())) {
+                     SAXEvent attrEvent = (SAXEvent)eventStack.peek();
+                     emitter.addAttribute(attrEvent.uri, attrEvent.qName,
+                                          attrEvent.lName,
+                                          attrEvent.value, context,
+                                          publicId, systemId, lineNo, colNo);
                   }
+                  // remove attribute
+                  eventStack.pop();
                }
+               // restore element position
+               context.position = elPos;
                break;
             }
             case SAXEvent.TEXT:
