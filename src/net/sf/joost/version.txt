@@ -1,0 +1,4 @@
+Joost alpha build @@@DATE@@@ by Oliver Becker
+(Joost is Oli's original streaming transformer)
+@@@START DEBUG ONLY@@@
+Built with debug info included.

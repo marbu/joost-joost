@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.26 2004/12/27 18:55:23 obecker Exp $
+ * $Id: Main.java,v 1.27 2005/02/27 21:08:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -19,10 +19,15 @@
  * are Copyright (C) ______ _______________________. 
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): Nikolai Fiikov
  */
 
 package net.sf.joost;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.TransformerException;
@@ -33,6 +38,7 @@ import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Processor;
 
+import org.apache.commons.logging.Log;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -41,11 +47,14 @@ import org.xml.sax.SAXException;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.26 $ $Date: 2004/12/27 18:55:23 $
+ * @version $Revision: 1.27 $ $Date: 2005/02/27 21:08:32 $
  * @author Oliver Becker
  */
 public class Main implements Constants
 {
+   // the logger object if available
+   private static Log log = OptionalLog.getLog(Main.class);
+
    /** 
     * Entry point 
     * @param args array of strings containing the parameter for Joost and
@@ -99,6 +108,9 @@ public class Main implements Constants
       // serializer SAX -> XML text
       StreamEmitter emitter = null;
 
+      // filenames for the usage and version info
+      final String USAGE = "usage.txt", VERSION = "version.txt";
+
       try {
 
          // parse command line argument list
@@ -113,8 +125,8 @@ public class Main implements Constants
                   continue;
                }
                else if ("-version".equals(args[i])) {
-                  usage(""); // exits immediately
-                  continue;
+                  printResource(VERSION);
+                  logInfoAndExit();
                }
                else if ("-pdf".equals(args[i])) {
                   doFOP = true;
@@ -337,31 +349,10 @@ public class Main implements Constants
             }
          }
 
-
          if (printHelp) {
-            usage(
-  "Usage:\n"
-+ "java net.sf.joost.Main [options] xml-src stx-src [params] {stx-src [params]}\n\n"
-+ "Options:\n"
-+ "  -help            print this message\n"
-+ "  -version         print the version information and exit\n"
-+ "  -o <filename>    write the result to the file <filename>\n"
-+ "  -m <classname>   use a <classname> object for stx:message output\n"
-+ "  -nodecl          omit XML declaration in the result\n"
-+ "  -noext           prevent calls on Java extension functions\n"
-+ "  -time            print timing information on standard error output\n"
-+ "  -pdf             pass the result to FOP for PDF generation (requires -o)\n"
-+ (DEBUG ?
-  "  -log-properties <properties-file>\n"
-+ "                   use the file <properties-file> for log4j initialization\n"
-+ "                   (default is the embedded file log4j.properties)\n"
-+ "  -log-level all|debug|info|warn|error|fatal|all\n"
-+ "                   set the log level for the root logger object\n"
-+ "                   (default is specified in the properties file being used)\n\n"
-: "\n")
-+ "The '-' for the xml-src parameter denotes the standard input\n"
-+ "Parameters for the transformation (e.g. <stx:param name=\"par\"/>) must be"
-+ "\nspecified as par=value\n\n");
+            printResource(VERSION);
+            printResource(USAGE);
+            logInfoAndExit();
          }
 
          if (wrongParameter) {
@@ -429,7 +420,9 @@ public class Main implements Constants
          // Ready for take-off
          if (measureTime)
             timeStart = System.currentTimeMillis();
+
          processor.parse(is);
+
          if (measureTime) {
             timeEnd = System.currentTimeMillis();
             System.err.println("Processing " + xmlFile + ": " + 
@@ -504,18 +497,49 @@ public class Main implements Constants
 
 
    /**
-    * Output a message and exit when something failed during startup.
-    * @param msg the message to be printed
+    * Outputs the contents of a resource info file.
+    * @param filename the name of the file containing the info to output
     */
-   private static void usage(String msg)
+   private static void printResource(String filename)
    {
-      System.err.print(
-         "\nJoost alpha build @@@DATE@@@ by Oliver Becker\n" + 
-         "(Joost is Oli's original streaming transformer)\n\n" + msg);
-      Object l = OptionalLog.getLog(Main.class);
+      try {
+         // find the file resource
+         InputStream is = Main.class.getResourceAsStream(filename);
+         if (is == null)
+            throw new java.io.FileNotFoundException(filename);
+         BufferedReader br = new BufferedReader(new InputStreamReader(is));
+         boolean doOutput = true;
+         String line;
+         while ((line = br.readLine()) != null) {
+            if (line.startsWith("@@@START DEBUG")) {
+               doOutput = DEBUG;
+               continue;
+            }
+            if (line.startsWith("@@@END DEBUG")) {
+               doOutput = true;
+               continue;
+            }
+            if (doOutput)
+               System.err.println(line);
+         }
+         System.err.println("");
+      }
+      catch (IOException ex) {
+         if (log != null)
+            log.error(ex);
+         else
+            System.err.println(ex);
+      }
+   }
+
+
+   /**
+    * Output logging availability info and exit Joost
+    */
+   private static void logInfoAndExit() {
       System.err.println("Logging is " 
-                         + ((l != null) 
-                               ? "enabled using " + l.getClass().getName() 
+                         + ((log != null) 
+                               ? "enabled using " + log.getClass().getName() 
                                : "disabled"));
       System.exit(0);
    }
