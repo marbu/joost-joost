@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.5 2002/11/14 13:15:42 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.6 2003/02/03 12:20:17 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -40,7 +40,7 @@ import java.util.Hashtable;
  *  Is is designed for using <code>StreamResult</code>.
  *  So this class outputs a StreamResult to the output target -
  *  {@link #outwriter} (e.g. a registered <code>FileWriter</code>).
- *  @version $Revision: 1.5 $ $Date: 2002/11/14 13:15:42 $
+ *  @version $Revision: 1.6 $ $Date: 2003/02/03 12:20:17 $
  *  @author Oliver Becker, Anatolij Zubow
  */
 public class StreamEmitter implements StxEmitter {
@@ -55,6 +55,10 @@ public class StreamEmitter implements StxEmitter {
      * The encoding for the output (e.g. UTF-8).
      */
     private String encodingformat;
+
+
+    private boolean omitXmlDeclaration = false;
+
     private Hashtable newNamespaces = new Hashtable();
     private String uri, qName;
     private Attributes attrs;
@@ -157,6 +161,19 @@ public class StreamEmitter implements StxEmitter {
     }
 
 
+
+    /**
+     * Defines whether the XML declaration should be omitted, default is
+     * <code>false</code>.
+     * @param flag <code>true</code>: the XML declaration will be omitted;
+     *             <code>false</code>: the XML declaration will be output
+     */
+    public void setOmitXmlDeclaration(boolean flag)
+    {
+        omitXmlDeclaration = flag;
+    }
+
+
     /**
     * Outputs a start or empty element tag if there is one stored.
     * @param end true if this method was called due to an endElement event,
@@ -235,6 +252,9 @@ public class StreamEmitter implements StxEmitter {
      * SAX2-Callback - Outputs XML-Deklaration with encoding.
      */
     public void startDocument() throws SAXException {
+
+        if (omitXmlDeclaration)
+            return;
 
         try {
 
