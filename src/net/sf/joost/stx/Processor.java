@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.34 2004/01/23 10:00:39 obecker Exp $
+ * $Id: Processor.java,v 2.35 2004/01/23 16:16:54 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -56,7 +56,7 @@ import net.sf.joost.trace.DebugProcessor;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.34 $ $Date: 2004/01/23 10:00:39 $
+ * @version $Revision: 2.35 $ $Date: 2004/01/23 16:16:54 $
  * @author Oliver Becker
  */
 
@@ -540,7 +540,7 @@ public class Processor extends XMLFilterImpl
     * @throws SAXException if global variables of the STX transformation
     * sheet couldn't be initialized
     */
-   private void init(Parser stxParser)
+   protected void init(Parser stxParser)
       throws SAXException
    {
       context = new Context();

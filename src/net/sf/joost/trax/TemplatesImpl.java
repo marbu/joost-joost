@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.14 2003/12/28 12:33:38 zubow Exp $
+ * $Id: TemplatesImpl.java,v 1.15 2004/01/23 16:18:05 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -37,6 +37,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import java.util.Properties;
 
 import net.sf.joost.trace.DebugProcessor;
+import net.sf.joost.trace.ParserListenerMgr;
 import net.sf.joost.emitter.StxEmitter;
 
 /**
@@ -176,9 +177,10 @@ public class TemplatesImpl implements Templates, TrAXConstants {
             if (debugmode) {
                 if (DEBUG)
                     log.info("init transformer in debug mode");
-                processor = new DebugProcessor(reader, isource, 
+                processor = new DebugProcessor(reader, isource,
                                                factory.getErrorListener(),
-                                               factory.getURIResolver());
+                                               factory.getURIResolver(),
+                                               factory.getParserListenerMgr());
             } else {
                 processor = new Processor(reader, isource, 
                                           factory.getErrorListener(),

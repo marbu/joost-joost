@@ -1,5 +1,5 @@
 /*
- * $Id: DebugProcessor.java,v 1.8 2004/01/10 16:34:20 zubow Exp $
+ * $Id: DebugProcessor.java,v 1.9 2004/01/23 16:13:30 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -45,10 +45,12 @@ import java.util.Arrays;
 
 /**
  * Extends the {@link net.sf.joost.stx.Processor} with debug features.
- * @version $Revision: 1.8 $ $Date: 2004/01/10 16:34:20 $
+ * @version $Revision: 1.9 $ $Date: 2004/01/23 16:13:30 $
  * @author Zubow
  */
 public class DebugProcessor extends Processor {
+
+    private ParserListener parserListener;
 
     // for tracing
     private TraceManager tmgr;
@@ -57,7 +59,18 @@ public class DebugProcessor extends Processor {
     public Parser stxparser;
 
     private static org.apache.commons.logging.Log log =
-       org.apache.commons.logging.LogFactory.getLog(DebugProcessor.class);
+            org.apache.commons.logging.LogFactory.getLog(DebugProcessor.class);
+
+    /**
+     * See {@link net.sf.joost.stx.Processor#Processor(XMLReader, InputSource, ErrorListener, URIResolver, ParserListener)}
+     */
+    public DebugProcessor(XMLReader reader, InputSource src,
+                          ErrorListener errorListener,
+                          URIResolver uriResolver,
+                          ParserListener parserListener)
+            throws IOException, SAXException {
+        super(reader, src, errorListener, uriResolver, parserListener);
+    }
 
     /**
      * See {@link net.sf.joost.stx.Processor#Processor(XMLReader, InputSource, ErrorListener, URIResolver)}
@@ -68,7 +81,6 @@ public class DebugProcessor extends Processor {
             throws IOException, SAXException {
         super(src, errorListener, uriResolver);
     }
-
 
     /**
      * See {@link net.sf.joost.stx.Processor#Processor(InputSource, ErrorListener, URIResolver)}
@@ -101,7 +113,6 @@ public class DebugProcessor extends Processor {
     public DebugProcessor(Processor proc) {
         super(proc);
     }
-
 
     /**
      * Overriden method for debug purpose
@@ -140,6 +151,7 @@ public class DebugProcessor extends Processor {
 
         // found end element
         if (inst instanceof NodeBase.End) {
+            // end node
             tmgr.fireLeaveStylesheetNode(meta);
         } else {
             // no corresponding endElement
@@ -167,6 +179,10 @@ public class DebugProcessor extends Processor {
             atomicnode = false;
         }
         return ret;
+    }
+
+    public ParserListener getParserListener() {
+        return parserListener;
     }
 
     /**

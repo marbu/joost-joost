@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.15 2003/12/28 12:33:38 zubow Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.16 2004/01/23 16:18:38 zubow Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,6 +26,7 @@
 package net.sf.joost.trax;
 
 import net.sf.joost.TransformerHandlerResolver;
+import net.sf.joost.trace.ParserListenerMgr;
 import net.sf.joost.stx.Processor;
 
 //JAXP
@@ -88,6 +89,12 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     // Synch object to guard against setting values from the TrAX interface
     // or reentry while the transform is going on.
     private Boolean reentryGuard = new Boolean(true);
+
+    /**
+    * The parserlistener manager for tracing purpose.
+    */
+    private ParserListenerMgr parserListenerMgr = new ParserListenerMgr();
+
 
     /**
      * The default constructor.
@@ -474,5 +481,10 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
             defaultErrorListener.fatalError(tE);
             return null;
     	}
+    }
+
+    /** returns the value of {@link #parserListenerMgr} */
+    public ParserListenerMgr getParserListenerMgr() {
+        return parserListenerMgr;
     }
 }

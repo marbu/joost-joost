@@ -1,5 +1,5 @@
 /*
- * $Id: ParserListener.java,v 2.2 2004/01/23 09:58:36 obecker Exp $
+ * $Id: ParserListener.java,v 2.3 2004/01/23 16:16:46 zubow Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,7 +30,7 @@ import net.sf.joost.instruction.NodeBase;
 /**
  * Callback interface that can be used to receive information about the
  * STX instructions created by a {@link Parser} object.
- * @version $Revision: 2.2 $ $Date: 2004/01/23 09:58:36 $
+ * @version $Revision: 2.3 $ $Date: 2004/01/23 16:16:46 $
  * @author Oliver Becker
  */
 public interface ParserListener
@@ -38,7 +38,7 @@ public interface ParserListener
    /**
     * Send a notification that the parser has created an internal 
     * representation of an STX instruction
-    * @param inst the instruction
+    * @param node the instruction
     */ 
    public void nodeCreated(NodeBase node);
 
