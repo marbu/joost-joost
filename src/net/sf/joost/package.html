@@ -3,7 +3,7 @@
 <head>
 <!--
 
- $Id: package.html,v 1.3 2003/05/16 15:05:46 obecker Exp $
+ $Id: package.html,v 1.4 2004/10/21 18:20:02 obecker Exp $
  
  The contents of this file are subject to the Mozilla Public License 
  Version 1.1 (the "License"); you may not use this file except in 
@@ -29,9 +29,11 @@
 </head>
 <body bgcolor="white">
 
-Provides as its only classes {@link net.sf.joost.Main} which implements
+Provides as its only classes {@link net.sf.joost.Main} that implements
 a command line interface for Joost, {@link net.sf.joost.Constants}
-which contains constant values shared between different classes, and
+that contains constant values shared between different classes, 
+{@link net.sf.joost.OptionalLog} that wraps the initialization of the
+Commons Logging component, and
 {@link net.sf.joost.TransformerHandlerResolver} for resolving custom
 TransformerHandler objects.
 
