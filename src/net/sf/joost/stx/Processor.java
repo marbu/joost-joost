@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.7 2003/05/14 11:55:30 obecker Exp $
+ * $Id: Processor.java,v 2.8 2003/05/14 13:08:44 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -63,7 +63,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.7 $ $Date: 2003/05/14 11:55:30 $
+ * @version $Revision: 2.8 $ $Date: 2003/05/14 13:08:44 $
  * @author Oliver Becker
  */
 
@@ -246,11 +246,12 @@ public class Processor extends XMLFilterImpl
 
    // **********************************************************************
 
-   /** Stack for {@link Data} objects */
+   /** Stack for {@link Processor.Data} objects */
    private DataStack dataStack = new DataStack();
 
    /**
-    * Inner class that implements a stack for {@link Data} objects.
+    * Inner class that implements a stack for {@link Processor.Data} objects.
+    * <p>
     * I've implemented my own (typed) stack to circumvent the costs of
     * type casts for the Data objects. However, I've noticed no notable
     * performance gain.
