@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesHandlerImpl.java,v 1.5 2003/04/29 15:09:09 obecker Exp $
+ * $Id: TemplatesHandlerImpl.java,v 1.6 2003/05/19 14:46:13 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -100,7 +100,7 @@ public class TemplatesHandlerImpl implements TemplatesHandler {
         Templates templates = null;
         try {
             // construct TrAX-representation of an compiled STX stylesheet
-            templates = new TemplatesImpl(stxparser);
+            templates = new TemplatesImpl(stxparser, tfactory);
         } catch (TransformerConfigurationException tE) {
             ErrorListener eListener = tfactory.getErrorListener();
 
