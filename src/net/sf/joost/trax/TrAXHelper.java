@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXHelper.java,v 1.12 2004/10/25 20:36:50 obecker Exp $
+ * $Id: TrAXHelper.java,v 1.13 2004/12/16 19:17:36 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -212,7 +212,8 @@ public class TrAXHelper implements TrAXConstants {
                 if (writer != null) {
                     if (DEBUG)
                         log.debug("get a Writer object from Result object");
-                    return StreamEmitter.newXMLEmitter(writer);
+                    return StreamEmitter.newEmitter(writer, DEFAULT_ENCODING, 
+                                                    processor.outputProperties);
                 }
                 // or try to get an OutputStream from Result object
                 final OutputStream ostream = target.getOutputStream();
