@@ -1,5 +1,11 @@
-Changes since 20020828
+Changes since 20021018
+- implemented the "attributes" attribute of stx:copy
+- new function: starts-with
+- Bugfix: mappings will be reported for all namespaces currently declared,
+  not only for those used in element and attribute names
+  (see bug 625480)
 
+Changes since 20020828
 - added stx:process-attributes, 
   implemented attribute patterns (<stx:template match="foo/@bar"> etc.)
 - changed STX namespace to "http://stx.sourceforge.net/2002/ns"
