@@ -1,5 +1,5 @@
 /*
- * $Id: AssignFactory.java,v 1.6 2003/02/20 09:25:29 obecker Exp $
+ * $Id: AssignFactory.java,v 2.0 2003/04/25 16:46:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,12 +31,10 @@ import org.xml.sax.SAXParseException;
 
 import java.util.Hashtable;
 import java.util.HashSet;
-import java.util.Stack;
 
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.stx.Value;
 
@@ -44,7 +42,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>assign</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.6 $ $Date: 2003/02/20 09:25:29 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:29 $
  * @author Oliver Becker
  */
 
@@ -99,83 +97,85 @@ final public class AssignFactory extends FactoryBase
       {
          super(qName, parent, locator, 
                // this element must be empty if there is a select attribute
-               select != null);
+               select == null);
          this.varName = varName;
          this.expName = expName;
          this.select = select;
       }
       
+
       /**
-       * Evaluates the expression given in the select attribute or
-       * processes its contents respectively, and
-       * assigns the computed value to the associated variable.
-       *
-       * @param emitter the Emitter
-       * @param eventStack the ancestor event stack
-       * @param context the Context object
-       * @param processStatus the current processing status
-       * @return the new <code>processStatus</code>
-       */    
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
+       * Evaluate the <code>select</code> attribute if present.
+       */
+      public short process(Context context)
          throws SAXException
       {
-         // pre process-...
-         if ((processStatus & ST_PROCESSING) !=0 ) {
-
-            // does this variable has contents?
-            if (children != null) {
-               // create a new StringEmitter for this instance and put it
-               // on the emitter stack
-               emitter.pushEmitter(
-                  new StringEmitter(new StringBuffer(),
-                                    "(`" + qName + "' started in line " +
-                                    lineNo + ")"));
-            }
+         // does this variable have a select attribute?
+         if (select != null) {
+            Value v = select.evaluate(context, this);
+            processVar(v, context);
          }
+         else {
+            // endInstruction present
+            super.process(context);
+            // create a new StringEmitter for this instance and put it
+            // on the emitter stack
+            context.emitter.pushEmitter(
+               new StringEmitter(new StringBuffer(),
+                                 "(`" + qName + "' started in line " +
+                                 lineNo + ")"));
+         }
+         return PR_CONTINUE;
+      }
 
-         processStatus = super.process(emitter, eventStack, context, 
-                                       processStatus);
 
-         // post process-...
-         if ((processStatus & ST_PROCESSING) != 0) {
-            Value v;
-            if (children != null) {
-               // contents present
-               v = new Value(((StringEmitter)emitter.popEmitter())
-                                                    .getBuffer().toString());
-            }
-            else if (select != null) {
-               // select attribute present
-               v = select.evaluate(context, eventStack, this);
-            }
-            else
-               v = new Value("");
+      /**
+       * Called only if this instruction has no <code>select</code>
+       * attribute. Evaluates its contents.
+       */
+      public short processEnd(Context context)
+         throws SAXException
+      {
+         // use contents
+         Value v = new Value(((StringEmitter)context.emitter.popEmitter())
+                                                 .getBuffer().toString());
 
-            // find variable
-            Hashtable vars = null;
-            if (context.localVars.get(expName) != null)
-               vars = context.localVars;
-            else {
-               GroupBase group = context.currentGroup;
-               while (vars == null && group != null) {
-                  vars = (Hashtable)group.groupVars.peek();
-                  if (vars.get(expName) == null) {
-                     vars = null;
-                     group = group.parentGroup;
-                  }
+         processVar(v, context);
+
+         return super.processEnd(context);
+      }
+
+
+      /**
+       * Assigns a value to a variable.
+       * @param v the value
+       * @param context the current context
+       */
+      private void processVar(Value v, Context context)
+         throws SAXException
+      {
+         // find variable
+         Hashtable vars = null;
+         if (context.localVars.get(expName) != null)
+            vars = context.localVars;
+         else {
+            GroupBase group = context.currentGroup;
+            while (vars == null && group != null) {
+               vars = (Hashtable)group.groupVars.peek();
+               if (vars.get(expName) == null) {
+                  vars = null;
+                  group = group.parentGroup;
                }
             }
-            if (vars == null) {
-               context.errorHandler.error(
-                  "Can't assign to undeclared variable `" + varName + "'",
-                  publicId, systemId, lineNo, colNo);
-               return processStatus; // if the errorHandler returns
-            }
-
-            vars.put(expName, v);
          }
-         return processStatus;
+         if (vars == null) {
+            context.errorHandler.error(
+               "Can't assign to undeclared variable `" + varName + "'",
+               publicId, systemId, lineNo, colNo);
+            return; // if the errorHandler returns
+         }
+
+         vars.put(expName, v);
       }
    }
 }

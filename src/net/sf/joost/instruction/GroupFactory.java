@@ -1,5 +1,5 @@
 /*
- * $Id: GroupFactory.java,v 1.7 2003/01/30 17:14:44 obecker Exp $
+ * $Id: GroupFactory.java,v 2.0 2003/04/25 16:46:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,21 +32,22 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.HashSet;
 
-import net.sf.joost.stx.Emitter;
-
 
 /** 
  * Factory for <code>group</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.7 $ $Date: 2003/01/30 17:14:44 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:32 $
  * @author Oliver Becker
  */
 
 final public class GroupFactory extends FactoryBase
 {
    // Log4J initialization
-   private static org.apache.log4j.Logger log4j =
-      org.apache.log4j.Logger.getLogger(TransformFactory.class);
+   private static org.apache.log4j.Logger log;
+   static {
+      if (DEBUG)
+         log = org.apache.log4j.Logger.getLogger(GroupFactory.class);
+   }
 
 
    /** allowed attributes for this element */
@@ -89,7 +90,7 @@ final public class GroupFactory extends FactoryBase
          else
             namedGroups.put(groupName, groupName); 
             // value groupName (second parameter) is just a marker,
-            // it will be replaced in GroupBase.parsed()
+            // it will be replaced in GroupBase.compile()
       }
 
       checkAttributes(qName, attrs, attrNames, locator);
@@ -113,25 +114,28 @@ final public class GroupFactory extends FactoryBase
 
       
       /** 
-       * Checks for allowed children.
-       * Will be called for every child node while constructing the tree 
-       * representation of the stylesheet.
+       * Checks for allowed children before inserting them.
        * @param node the child to adopt
        */
-      public void append(NodeBase node)
+      public void insert(NodeBase node)
          throws SAXParseException
       {
          if (node instanceof TemplateBase || // template, procedure
              node instanceof GroupFactory.Instance ||
              node instanceof BufferFactory.Instance ||
              node instanceof VariableFactory.Instance)
-            super.append(node);
+            super.insert(node);
          else
-            throw new SAXParseException("`" + node.qName + 
-                                        "' not allowed as child of `" + 
-                                        qName + "'", 
-                                        node.publicId, node.systemId, 
-                                        node.lineNo, node.colNo);
+            throw new SAXParseException(
+              "`" + node.qName + "' not allowed as child of `" + qName + "'", 
+              node.publicId, node.systemId, node.lineNo, node.colNo);
+      }
+
+      // for debugging
+      public String toString()
+      {
+         return "group " + (groupName != null ? (groupName + " (") : "(") + 
+                lineNo + ") ";
       }
    }
 }

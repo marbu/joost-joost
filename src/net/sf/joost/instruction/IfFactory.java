@@ -1,5 +1,5 @@
 /*
- * $Id: IfFactory.java,v 1.8 2003/02/24 13:32:52 obecker Exp $
+ * $Id: IfFactory.java,v 2.0 2003/04/25 16:46:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,17 +31,15 @@ import org.xml.sax.SAXParseException;
 
 import java.util.Hashtable;
 import java.util.HashSet;
-import java.util.Stack;
 
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.grammar.Tree;
 
 
 /** 
  * Factory for <code>if</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.8 $ $Date: 2003/02/24 13:32:52 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:32 $
  * @author Oliver Becker
  */
 
@@ -78,43 +76,59 @@ final public class IfFactory extends FactoryBase
    /** Represents an instance of the <code>if</code> element. */
    final public class Instance extends NodeBase
    {
-      protected Tree test;
+      /** the parsed <code>select</code> expression */
+      private Tree test;
+
+      /** next instruction if the test evaluates to true */
+      private AbstractInstruction trueNext;
+
+      /** next instruction if the test evaluates to false */
+      private AbstractInstruction falseNext;
 
       protected Instance(String qName, NodeBase parent, Locator locator, 
                          Tree test)
       {
-         super(qName, parent, locator, false);
+         super(qName, parent, locator, true);
          this.test = test;
       }
       
+
       /**
-       * Evaluates the expression given in the test attribute and
-       * processes its children if this test evaluates to true.
-       *
-       * @param emitter the Emitter
-       * @param eventStack the ancestor event stack
-       * @param processStatus the current processing status
-       * @return the new processing status, influenced by contained
-       *         <code>stx:process-...</code> elements.
-       */    
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
+       * Assign {@link #trueNext} and {@link #falseNext}
+       */
+      public boolean compile(int pass)
          throws SAXException
       {
-         boolean testResult = false;
-         if ((processStatus & ST_PROCESSING) != 0) {
-            testResult = test.evaluate(context, eventStack, this)
-                             .convertToBoolean().bool;
+         if (pass == 0) // nodeEnd.next not available yet
+            return true;
+
+         // adjust true and false branches
+         trueNext = next;
+         falseNext = nodeEnd.next;
+         if (falseNext instanceof ElseFactory.Instance)
+            nodeEnd.next = 
+               ((ElseFactory.Instance)falseNext).nodeEnd.next;
+
+         return false; // done
+      }
+
+
+      /**
+       * Evaluates the expression given in the test attribute and
+       * change the value of the <code>next</code> instruction.
+       */
+      public short process(Context context)
+         throws SAXException
+      {
+         if (test.evaluate(context, this).convertToBoolean().bool) {
+            super.process(context);
+            next = trueNext;
          }
          else {
-            // we must have been here before ...
-            testResult = true;
+            // skip if instruction
+            next = falseNext;
          }
-
-         if (testResult)
-            processStatus = super.process(emitter, eventStack, context,
-                                          processStatus);
-         return processStatus;
+         return PR_CONTINUE;
       }
 
 

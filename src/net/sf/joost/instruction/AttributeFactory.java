@@ -1,5 +1,5 @@
 /*
- * $Id: AttributeFactory.java,v 1.8 2003/02/24 13:32:52 obecker Exp $
+ * $Id: AttributeFactory.java,v 2.0 2003/04/25 16:46:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,12 +31,10 @@ import org.xml.sax.SAXParseException;
 
 import java.util.Hashtable;
 import java.util.HashSet;
-import java.util.Stack;
 
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.stx.Value;
 
@@ -44,7 +42,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>attribute</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.8 $ $Date: 2003/02/24 13:32:52 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:29 $
  * @author Oliver Becker
  */
 
@@ -103,7 +101,6 @@ final public class AttributeFactory extends FactoryBase
       private Tree name, namespace, select;
       private Hashtable nsSet;
       private StringEmitter strEmitter;
-      private String attName, attUri, attLocal;
 
       protected Instance(String elementName, NodeBase parent, Locator locator,
                          Hashtable nsSet,
@@ -111,7 +108,7 @@ final public class AttributeFactory extends FactoryBase
       {
          super(elementName, parent, locator,
                // this element must be empty if there is a select attribute
-               select != null);
+               select == null);
          this.nsSet = (Hashtable)nsSet.clone();
          this.name = name;
          this.namespace = namespace;
@@ -121,99 +118,106 @@ final public class AttributeFactory extends FactoryBase
                                         locator.getLineNumber() + ")");
       }
       
+
       /**
-       * Evaluates the expression given in the select attribute and
-       * calls <code>addAttribute</code> in the emitter.
-       *
-       * @param emitter the Emitter
-       * @param eventStack the ancestor event stack
-       * @param context the Context object
-       * @param processStatus the current processing status
-       * @return the new <code>processStatus</code>
-       */    
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
+       * Evaluate the <code>name</code> attribute; if the <code>select</code>
+       * attribute is present, evaluate this attribute too and create an
+       * result attribute.
+       */
+      public short process(Context context)
          throws SAXException
       {
-         if ((processStatus & ST_PROCESSING) != 0) {
-            // check for nesting of this stx:attribute
-            if (emitter.isEmitterActive(strEmitter)) {
-               context.errorHandler.error(
-                  "Can't create nested attribute",
-                  publicId, systemId, lineNo, colNo);
-               return processStatus; // if the errorHandler returns
-            }
-            if (children != null) {
-               strEmitter.getBuffer().setLength(0);
-               emitter.pushEmitter(strEmitter);
-            }
+         // check for nesting of this stx:attribute
+         if (context.emitter.isEmitterActive(strEmitter)) {
+            context.errorHandler.error(
+               "Can't create nested attribute",
+               publicId, systemId, lineNo, colNo);
+            return 0; // if the errorHandler returns
+         }
+         if (select == null) {
+            // contents and end instruction present
+            super.process(context);
+            strEmitter.getBuffer().setLength(0);
+            context.emitter.pushEmitter(strEmitter);
+         }
 
-            // determine attribute name
-            attName = name.evaluate(context, eventStack, this).string;
-            int colon = attName.indexOf(':');
-            if (colon != -1) { // prefixed name
-               String prefix = attName.substring(0, colon);
-               attLocal = attName.substring(colon+1);
-               if (namespace != null) { // namespace attribute present
-                  attUri = namespace.evaluate(context, eventStack, this)
-                                    .string;
-                  if (attUri.equals("")) {
-                     context.errorHandler.error(
-                        "Can't put attribute `" + attName +
-                        "' into the null namespace",
-                        publicId, systemId, lineNo, colNo);
-                     return processStatus; // if the errorHandler returns
-                  }
-               }
-               else { // no namespace attribute
-                  // look into the set of in-scope namespaces
-                  // (of the stylesheet)
-                  attUri = (String)nsSet.get(prefix);
-                  if (attUri == null) {
-                     context.errorHandler.error(
-                        "Attempt to create attribute `" + attName + 
-                        "' with undeclared prefix `" + prefix + "'",
-                        publicId, systemId, lineNo, colNo);
-                     return processStatus; // if the errorHandler returns
-                  }
+         String attName, attUri, attLocal;
+         // determine attribute name
+         attName = name.evaluate(context, this).string;
+         int colon = attName.indexOf(':');
+         if (colon != -1) { // prefixed name
+            String prefix = attName.substring(0, colon);
+            attLocal = attName.substring(colon+1);
+            if (namespace != null) { // namespace attribute present
+               attUri = namespace.evaluate(context, this)
+                                 .string;
+               if (attUri.equals("")) {
+                  context.errorHandler.error(
+                     "Can't put attribute `" + attName +
+                     "' into the null namespace",
+                     publicId, systemId, lineNo, colNo);
+                  return PR_CONTINUE; // if the errorHandler returns
                }
             }
-            else { // unprefixed name
-               attLocal = attName;
-               attUri = "";
-               if (namespace != null) { // namespace attribute present
-                  attUri = namespace.evaluate(context, eventStack, this)
-                                    .string;
-                  if (!attUri.equals("")) {
-                     context.errorHandler.error(
-                        "Can't put attribute `" + attName + 
-                        "' into the non-null namespace `" + attUri + "'",
-                        publicId, systemId, lineNo, colNo);
-                     return processStatus; // if the errorHandler returns
-                  }
+            else { // no namespace attribute
+               // look into the set of in-scope namespaces
+               // (of the transformation sheet)
+               attUri = (String)nsSet.get(prefix);
+               if (attUri == null) {
+                  context.errorHandler.error(
+                     "Attempt to create attribute `" + attName + 
+                     "' with undeclared prefix `" + prefix + "'",
+                     publicId, systemId, lineNo, colNo);
+                  return PR_CONTINUE; // if the errorHandler returns
+               }
+            }
+         }
+         else { // unprefixed name
+            attLocal = attName;
+            attUri = "";
+            if (namespace != null) { // namespace attribute present
+               attUri = namespace.evaluate(context, this).string;
+               if (!attUri.equals("")) {
+                  context.errorHandler.error(
+                     "Can't put attribute `" + attName + 
+                     "' into the non-null namespace `" + attUri + "'",
+                     publicId, systemId, lineNo, colNo);
+                  return PR_CONTINUE; // if the errorHandler returns
                }
             }
          }
 
-         processStatus = super.process(emitter, eventStack, context,
-                                       processStatus);
-
-         if ((processStatus & ST_PROCESSING) != 0) {
-            Value v;
-            if (children != null) {
-               emitter.popEmitter();
-               v = new Value(strEmitter.getBuffer().toString());
-            }
-            else if (select != null)
-               v = select.evaluate(context, eventStack, this);
-            else
-               v = new Value("");
-
-            String s = v.convertToString().string;
-            emitter.addAttribute(attUri, attName, attLocal, s, 
-                                 publicId, systemId, lineNo, colNo); 
+         if (select != null) {
+            context.emitter.addAttribute(
+               attUri, attName, attLocal, 
+               select.evaluate(context, this).convertToString().string, 
+               publicId, systemId, lineNo, colNo);
          }
-         return processStatus;
+         else {
+            localFieldStack.push(attUri);
+            localFieldStack.push(attLocal);
+            localFieldStack.push(attName);
+         }
+
+         return PR_CONTINUE;
+      }
+
+
+      /**
+       * Called only if there's no <code>select</code> attribute;
+       * create a result attribute from the contents of the element.
+       */
+      public short processEnd(Context context)
+         throws SAXException
+      {
+         String attName = (String)localFieldStack.pop();
+         String attLocal = (String)localFieldStack.pop();
+         String attUri = (String)localFieldStack.pop();
+         context.emitter.popEmitter();
+         context.emitter.addAttribute(attUri, attName, attLocal, 
+                                      strEmitter.getBuffer().toString(), 
+                                      publicId, systemId, lineNo, colNo);
+         return super.processEnd(context);
       }
    }
 }

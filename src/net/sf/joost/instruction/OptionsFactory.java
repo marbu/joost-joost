@@ -1,5 +1,5 @@
 /*
- * $Id: OptionsFactory.java,v 1.7 2003/03/13 10:52:54 obecker Exp $
+ * $Id: OptionsFactory.java,v 2.0 2003/04/25 16:46:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.stx.Processor;
 /**
  * Factory for <code>options</code> elements, which are represented by 
  * the inner Instance class.
- * @version $Revision: 1.7 $ $Date: 2003/03/13 10:52:54 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:33 $
  * @author Oliver Becker
  */
 
@@ -130,7 +130,7 @@ final public class OptionsFactory extends FactoryBase
                       byte passThrough, boolean stripSpace,
                       boolean recognizeCdata)
       {
-         super(qName, parent, locator, true);
+         super(qName, parent, locator, false);
          if (outputEncoding != null)
             this.outputEncoding = outputEncoding;
          this.defaultSTXPathNamespace = defaultSTXPathNamespace;
@@ -139,13 +139,13 @@ final public class OptionsFactory extends FactoryBase
          this.recognizeCdata = recognizeCdata;
       }
 
+
       // Shouldn't be called
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short status)
+      public short process(Context c)
          throws SAXException
       {
-         log4j.fatal("process called for " + qName);
-         throw new SAXException("process called for " + qName);
+         throw new SAXParseException("process called for " + qName,
+                                     publicId, systemId, lineNo, colNo);
       }
    }
 }

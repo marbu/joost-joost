@@ -1,5 +1,5 @@
 /*
- * $Id: TextFactory.java,v 1.6 2002/12/22 18:38:18 obecker Exp $
+ * $Id: TextFactory.java,v 2.0 2003/04/25 16:46:34 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,19 +33,17 @@ import org.xml.sax.SAXParseException;
 import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Stack;
 
 import net.sf.joost.emitter.StreamEmitter;
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 
 
 /** 
  * Factory for <code>text</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.6 $ $Date: 2002/12/22 18:38:18 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:34 $
  * @author Oliver Becker
  */
 
@@ -103,7 +101,7 @@ public class TextFactory extends FactoryBase
                       int markup)
          throws SAXParseException
       {
-         super(qName, parent, locator, false);
+         super(qName, parent, locator, true);
          if (markup == SERIALIZE_MARKUP) {
             // use our StreamEmitter with a StringWriter
             StringWriter w = new StringWriter();
@@ -129,42 +127,28 @@ public class TextFactory extends FactoryBase
       }
 
 
-      /**
-       * Collect the contents of this element and emit a text
-       * event to the emitter.
-       *
-       * @param emitter the Emitter
-       * @param eventStack the ancestor event stack
-       * @param context the Context object
-       * @param processStatus the current processing status
-       * @return the new <code>processStatus</code>
-       */    
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
+
+      public short process(Context context)
          throws SAXException
       {
-         // pre stx:process-...
-         if ((processStatus & ST_PROCESSING) != 0) {
-            if (recursionLevel++ == 0) { // outermost invocation
-               buffer.setLength(0);
-               emitter.pushEmitter(stxEmitter);
-            }
-            // else: nothing to do
+         super.process(context);
+         if (recursionLevel++ == 0) { // outermost invocation
+            buffer.setLength(0);
+            context.emitter.pushEmitter(stxEmitter);
          }
+         return PR_CONTINUE;
+      }
 
-         processStatus = super.process(emitter, eventStack, context,
-                                       processStatus);
 
-         if ((processStatus & ST_PROCESSING) != 0) {
-            if (--recursionLevel == 0) { // outermost invocation
-               emitter.popEmitter();
-               emitter.characters(buffer.toString().toCharArray(), 
-                                  0, buffer.length());
-            }
-            // else: nothing to do
+      public short processEnd(Context context)
+         throws SAXException
+      {
+         if (--recursionLevel == 0) { // outermost invocation
+            context.emitter.popEmitter();
+            context.emitter.characters(buffer.toString().toCharArray(), 
+                                       0, buffer.length());
          }
-
-         return processStatus;
+         return super.processEnd(context);
       }
    }
 }

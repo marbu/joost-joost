@@ -1,5 +1,5 @@
 /*
- * $Id: PChildrenFactory.java,v 1.12 2003/02/08 16:23:54 obecker Exp $
+ * $Id: PChildrenFactory.java,v 2.0 2003/04/25 16:46:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,9 +31,7 @@ import org.xml.sax.SAXParseException;
 
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Stack;
 
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.SAXEvent;
 
@@ -41,7 +39,7 @@ import net.sf.joost.stx.SAXEvent;
 /** 
  * Factory for <code>process-children</code> elements, which are represented 
  * by the inner Instance class. 
- * @version $Revision: 1.12 $ $Date: 2003/02/08 16:23:54 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:33 $
  * @author Oliver Becker
  */
 
@@ -92,60 +90,20 @@ public class PChildrenFactory extends FactoryBase
       }
 
 
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
-         throws SAXException
+      /**
+       * @return {@link #PR_CHILDREN} if the context node is an element
+       *         or the root
+       */
+      public short processEnd(Context context)
       {
-         /* 
-            stx:process-children breaks the processing flow.
-            The current status is controlled by the processStatus parameter.
-            For a startElement event the matching template starts the
-            processing with ST_PROCESSING set and all other bits unset.
-            This method toggles the bits (clear ST_PROCESSING, set
-            ST_CHILDREN) to signal the Processor object to suspend the
-            execution.
-            On the matching endElement event the processing continues
-            by switching the bits back.
-            This method enables the detection of multiple calls of
-            stx:process-children, which must be regarded as an error.
-         */
-
-         // process stx:with-param
-         super.process(emitter, eventStack, context, processStatus);
-
-         // ST_PROCESSING off: search mode
-         if ((processStatus & ST_PROCESSING) == 0) {
-            // toggle ST_PROCESSING
-            return (short)(processStatus ^ ST_PROCESSING);
-         }
-         // ST_PROCESSING on, other bits off
-         else if (processStatus == ST_PROCESSING) {
-            SAXEvent event = (SAXEvent)eventStack.peek();
-            if (event.type == SAXEvent.ELEMENT || 
-                event.type == SAXEvent.ROOT) {
-               // suspend the processing
-               // suspending: ST_PROCESSING off, ST_CHILDREN on
-               return ST_CHILDREN;
-            }
-            else {
-               // These nodes don't have children, keep processing.
-               // That means the parameter stack (stx:with-param) must be
-               // cleaned up, because this stx:process-children won't be 
-               // called a second time.
-               super.process(emitter, eventStack, context, ST_CHILDREN);
-               // stay in processing mode, ST_CHILDREN on
-               return (short)(processStatus | ST_CHILDREN);
-            }
-         }
-         // else: ST_PROCESSING on, any other bits on
+         // no need to call super.processEnd(), there are no local
+         // variable declarations
+         SAXEvent event = (SAXEvent)context.ancestorStack.peek();
+         if (event.type == SAXEvent.ELEMENT || 
+             event.type == SAXEvent.ROOT)
+            return PR_CHILDREN;
          else
-            context.errorHandler.error("Encountered `" + qName + "' after " +
-              (((processStatus & ST_CHILDREN) != 0) ? "stx:process-children" : 
-               ((processStatus & ST_SELF)     != 0) ? "stx:process-self" : 
-               ((processStatus & ST_SIBLINGS) != 0) ? "stx:process-siblings" : 
-                                      "????"),
-                                       publicId, systemId, lineNo, colNo);
-         return processStatus; // if errorHandler returned
+            return PR_CONTINUE;
       }
    }
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateBase.java,v 1.1 2003/01/30 17:15:50 obecker Exp $
+ * $Id: TemplateBase.java,v 2.0 2003/04/25 16:46:34 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,7 +32,6 @@ import java.util.Hashtable;
 import java.util.Stack;
 
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 
 
 /**
@@ -52,9 +51,14 @@ public abstract class TemplateBase extends NodeBase
    protected static final String[] VISIBILITY_VALUES = 
    { "private", "public", "global" }; // note: same order required!
 
-   // Log4J initialization
-   private static org.apache.log4j.Logger log4j = 
-      org.apache.log4j.Logger.getLogger(TemplateBase.class);
+
+   private static org.apache.log4j.Logger log;
+   static {
+      if (DEBUG)
+         // Log4J initialization
+         log = org.apache.log4j.Logger.getLogger(TemplateBase.class);
+   }
+
 
    /** The visibility of this template */
    public int visibility;
@@ -76,48 +80,35 @@ public abstract class TemplateBase extends NodeBase
                           int visibility, boolean newScope)
       throws SAXParseException
    {
-      super(qName, parent, locator, false);
+      super(qName, parent, locator, true);
       parentGroup = (GroupBase)parent;
       this.visibility = visibility;
       this.newScope = newScope;
    }
 
 
-   public short process(Emitter emitter, Stack eventStack,
-                        Context context, short processStatus)
+   public short process(Context context)
       throws SAXException
    {
-      if (log4j.isDebugEnabled())
-         log4j.debug(this + " status: " + processStatus);
-      
       context.currentGroup = parentGroup;
-      if ((processStatus & ST_PROCESSING) != 0) {
-         // template entered, remove existing local variables
-         context.localVars.clear();
-         if (newScope) {
-            // initialize group variables
-            parentGroup.enterRecursionLevel(emitter, eventStack, context);
-         }
+      // store previous set of local variables
+      localFieldStack.push(context.localVars.clone());
+      context.localVars.clear();
+      if (newScope) {
+         // initialize group variables
+         parentGroup.enterRecursionLevel(context);
       }
-      else {
-         // template re-entered, restore local variables 
-         context.localVars = (Hashtable)localVarStack.pop();
-      }
+      return PR_CONTINUE;
+   }
 
-      // do processing (implemented in NodeBase)
-      short newStatus = super.process(emitter, eventStack, context, 
-                                      processStatus);
-
-      if ((newStatus & ST_PROCESSING) == 0) {
-         // processing was interrupted, store local variables
-         localVarStack.push(context.localVars.clone());
-      }
-      else {
-         // end of template encountered
-         if (newScope)
-            parentGroup.exitRecursionLevel();
-      }
-
-      return newStatus;
+   public short processEnd(Context context)
+      throws SAXException
+   {
+      // restore previous set of local variables
+      context.localVars = (Hashtable)localFieldStack.pop();
+      if (newScope)
+         parentGroup.exitRecursionLevel();
+      return PR_CONTINUE;
    }
 }
+

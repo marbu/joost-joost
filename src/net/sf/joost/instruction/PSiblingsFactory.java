@@ -1,5 +1,5 @@
 /*
- * $Id: PSiblingsFactory.java,v 1.5 2003/02/18 17:13:28 obecker Exp $
+ * $Id: PSiblingsFactory.java,v 2.0 2003/04/25 16:46:34 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,10 +31,8 @@ import org.xml.sax.SAXParseException;
 
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Stack;
 
 import net.sf.joost.grammar.Tree;
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.SAXEvent;
 
@@ -42,7 +40,7 @@ import net.sf.joost.stx.SAXEvent;
 /** 
  * Factory for <code>process-siblings</code> elements, which are represented 
  * by the inner Instance class. 
- * @version $Revision: 1.5 $ $Date: 2003/02/18 17:13:28 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:34 $
  * @author Oliver Becker
  */
 
@@ -117,46 +115,24 @@ public class PSiblingsFactory extends FactoryBase
       }
 
 
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
+      /** 
+       * @return {@link #PR_SELF} if the context node can have siblings
+       */
+      public short processEnd(Context context)
          throws SAXException
       {
-         /* 
-            stx:process-siblings breaks the processing flow in a similar
-            manner like stx:process-children. The main difference is
-            that this object (this instruction) must be stored by the
-            Processor object to detect the last of the siblings to be 
-            processed (by means of the matches function). 
-            This instruction will be passed via the Context object.
-         */
-
-         // process stx:with-param
-         super.process(emitter, eventStack, context, processStatus);
-
-         // ST_PROCESSING off: search mode
-         if ((processStatus & ST_PROCESSING) == 0) {
-            // toggle ST_PROCESSING
-            return (short)(processStatus ^ ST_PROCESSING);
+         // no need to call super.processEnd(), there are no local
+         // variable declarations
+         SAXEvent event = (SAXEvent)context.ancestorStack.peek();
+         if (event.type == SAXEvent.ATTRIBUTE || 
+             event.type == SAXEvent.ROOT) {
+            // These nodes don't have siblings, keep processing.
+            return PR_CONTINUE;
          }
-         // ST_PROCESSING on, other bits off
          else {
-            SAXEvent event = (SAXEvent)eventStack.peek();
-            if (event.type == SAXEvent.ATTRIBUTE || 
-                event.type == SAXEvent.ROOT) {
-               // These nodes don't have siblings, keep processing.
-               // That means the parameter stack (stx:with-param) must be
-               // cleaned up, because this stx:process-siblings won't be 
-               // called a second time.
-               super.process(emitter, eventStack, context, ST_SIBLINGS);
-               // stay in processing mode, ST_SIBLINGS on
-               return (short)(processStatus | ST_SIBLINGS);
-            }
-            else {
-               // store this instruction (the Processor object will store it)
-               context.psiblings = this;
-               // suspend the processing: ST_PROCESSING off, ST_SIBLINGS on
-               return ST_SIBLINGS;
-            }
+            // store this instruction (the Processor object will store it)
+            context.psiblings = this;
+            return PR_SIBLINGS;
          }
       }
 
@@ -170,17 +146,17 @@ public class PSiblingsFactory extends FactoryBase
        *         pattern in the <code>until</code> attribute;
        *         and <code>false</code> otherwise
        */
-      public boolean matches(Context context, Stack eventStack)
+      public boolean matches(Context context)
          throws SAXException
       {
          context.currentInstruction = this;
          context.currentGroup = parentGroup;
          return 
             (whilePattern == null || 
-             whilePattern.matches(context, eventStack, eventStack.size(),
+             whilePattern.matches(context, context.ancestorStack.size(),
                                   false)) &&
             (untilPattern == null || 
-             !untilPattern.matches(context, eventStack, eventStack.size(),
+             !untilPattern.matches(context, context.ancestorStack.size(),
                                    false));
       }
    }

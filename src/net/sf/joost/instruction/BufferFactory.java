@@ -1,5 +1,5 @@
 /*
- * $Id: BufferFactory.java,v 1.7 2003/03/18 14:51:08 obecker Exp $
+ * $Id: BufferFactory.java,v 2.0 2003/04/25 16:46:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,25 +31,27 @@ import org.xml.sax.SAXParseException;
 
 import java.util.Hashtable;
 import java.util.HashSet;
-import java.util.Stack;
 
 import net.sf.joost.emitter.BufferEmitter;
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
 
 
 /** 
  * Factory for <code>buffer</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.7 $ $Date: 2003/03/18 14:51:08 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:29 $
  * @author Oliver Becker
  */
 
 final public class BufferFactory extends FactoryBase
 {
-   // Log4J initialization
-   private static org.apache.log4j.Logger log4j = 
-      org.apache.log4j.Logger.getLogger(BufferFactory.class);
+   private static org.apache.log4j.Logger log;
+
+   static {
+      if (DEBUG)
+         // Log4J initialization
+         log = org.apache.log4j.Logger.getLogger(BufferFactory.class);
+   }
 
 
    /** allowed attributes for this element */
@@ -93,56 +95,47 @@ final public class BufferFactory extends FactoryBase
       protected Instance(String qName, NodeBase parent, Locator locator, 
                          String varName, String expName)
       {
-         super(qName, parent, locator, expName, false, false);
+         super(qName, parent, locator, expName, false, true);
          this.varName = varName;
       }
       
+
       /**
-       * Declares a buffer.
-       *
-       * @param emitter the Emitter
-       * @param eventStack the ancestor event stack
-       * @param context the Context object
-       * @param processStatus the current processing status
-       * @return <code>processStatus</code>, value doesn't change
-       */    
-      public short process(Emitter emitter, Stack eventStack,
-                           Context context, short processStatus)
+       * Declares a buffer
+       */
+      public short process(Context context)
          throws SAXException
       {
-         if ((processStatus & ST_PROCESSING) !=0 ) {
-            Hashtable varTable;
-            if (parent instanceof GroupBase) // group scope
-               varTable = (Hashtable)((GroupBase)parent).groupVars.peek();
-            else
-               varTable = context.localVars;
+         super.process(context);
+         Hashtable varTable;
+         if (parent instanceof GroupBase) // group scope
+            varTable = (Hashtable)((GroupBase)parent).groupVars.peek();
+         else
+            varTable = context.localVars;
 
-            if (varTable.get(expName) != null) {
-               context.errorHandler.error(
-                  "Buffer `" + varName + "' already declared",
-                  publicId, systemId, lineNo, colNo);
-               return processStatus;// if the errorHandler returns
-            }
-
-            BufferEmitter buffer = new BufferEmitter();
-            varTable.put(expName, buffer);
-
-            if (varTable == context.localVars)
-               parent.declareVariable(expName);
-
-            if (children != null)
-               emitter.pushEmitter(buffer);
+         if (varTable.get(expName) != null) {
+            context.errorHandler.error(
+               "Buffer `" + varName + "' already declared",
+               publicId, systemId, lineNo, colNo);
+            return PR_CONTINUE;// if the errorHandler returns
          }
 
-         if (children != null) {
-            processStatus = super.process(emitter, eventStack, context,
-                                          processStatus);
+         BufferEmitter buffer = new BufferEmitter();
+         varTable.put(expName, buffer);
 
-            if ((processStatus & ST_PROCESSING) != 0)
-               ((BufferEmitter)emitter.popEmitter()).filled();
-         }
+         if (varTable == context.localVars)
+            parent.declareVariable(expName);
 
-         return processStatus;
+         context.emitter.pushEmitter(buffer);
+         return PR_CONTINUE;
+      }
+
+
+      public short processEnd(Context context)
+         throws SAXException
+      {
+         ((BufferEmitter)context.emitter.popEmitter()).filled();
+         return super.processEnd(context);
       }
    }
 }

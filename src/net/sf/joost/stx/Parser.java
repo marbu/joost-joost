@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 1.22 2003/03/17 15:56:40 obecker Exp $
+ * $Id: Parser.java,v 2.0 2003/04/25 16:47:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,15 +37,16 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Stack;
+import java.util.Vector;
 
 import net.sf.joost.Constants;
 import net.sf.joost.instruction.*;
 
 
 /** 
- * Creates the tree representation of an STX stylesheet.
+ * Creates the tree representation of an STX transformation sheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 1.22 $ $Date: 2003/03/17 15:56:40 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:47:18 $
  * @author Oliver Becker
  */
 
@@ -57,7 +58,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
    /** SAX ErrorHandler, needed for logical errors */
    private ErrorHandlerImpl errorHandler;
 
-   /** The stylesheet instance constructed by this Parser. */
+   /** The instance of the transformation sheet constructed by this Parser. */
    private TransformFactory.Instance transformNode;
 
    /** Stack for opened elements, contains Node instances. */
@@ -75,10 +76,18 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
    /** Hashtable: keys = prefixes, values = URI stacks */
    private Hashtable inScopeNamespaces;
 
-   // Log4J initialization
-   private static org.apache.log4j.Logger log4j = 
-      org.apache.log4j.Logger.getLogger(Parser.class);
+   /** List of nodes that need another call to {@link NodeBase#compile} */
+   private Vector compilableNodes = new Vector();
 
+
+   private static org.apache.log4j.Logger log;
+
+
+   static {
+      // Log initialization
+      if (DEBUG) 
+         log = org.apache.log4j.Logger.getLogger(Parser.class);
+   }
 
    //
    // Constructor
@@ -126,7 +135,6 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
          new OtherwiseFactory(),
          new MessageFactory()
       };
-
       stxFactories = new Hashtable(facs.length);
       for (int i=0; i<facs.length; i++)
          stxFactories.put(facs[i].getName(), facs[i]);
@@ -140,7 +148,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
    /** 
     * Constructs a new Parser instance.
     * @param errorHandler a handler object for reporting errors while
-    *        parsing the stylesheet.
+    *        parsing the transformation sheet.
     */
    public Parser(ErrorHandlerImpl errorHandler)
    {
@@ -182,7 +190,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
 
          }
          else
-            currentNode.append(new TextNode(s, currentNode, locator));
+            currentNode.insert(new TextNode(s, currentNode, locator));
       }
       collectedCharacters.setLength(0);
    }
@@ -205,7 +213,29 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
 
 
    public void endDocument()
+      throws SAXException
    {
+      try {
+         // call compile() method for those nodes that have requested to
+         int pass = 0;
+         int size;
+         while ((size = compilableNodes.size()) != 0) {
+            pass++;
+            NodeBase nodes[] = new NodeBase[size];
+            compilableNodes.toArray(nodes);
+            compilableNodes.clear(); // for the next pass
+            for (int i=0; i<size; i++)
+               if (nodes[i].compile(pass)) // still need another invocation
+                  compilableNodes.addElement(nodes[i]);
+         }
+         compilableNodes = null; // for garbage collection
+      }
+      catch (SAXParseException ex) {
+         if (errorHandler != null)
+            errorHandler.error(ex);
+         else
+            throw ex;
+      }
    }
 
 
@@ -213,8 +243,6 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
                             Attributes attrs)
       throws SAXException
    {
-//        log4j.debug("startElement: " + qName);
-
       try {
          if (collectedCharacters.length() != 0)
             processCharacters();
@@ -235,7 +263,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
                catch (ClassCastException cce) {
                   throw new SAXParseException(
                      "Found `" + qName + "' as root element, " + 
-                     "file is not an STX stylesheet",
+                     "file is not an STX transformation sheet",
                      locator);
                }
          }
@@ -264,6 +292,8 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
             // inherit from parent
             newNode.preserveSpace = currentNode.preserveSpace;
 
+         if (currentNode != null)
+            currentNode.insert(newNode);
          openedElements.push(currentNode);
          currentNode = newNode;
       }
@@ -279,18 +309,14 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
    public void endElement(String uri, String lName, String qName)
       throws SAXException
    {
-//        log4j.debug("endElement: " + qName);
-
       try {
          if (collectedCharacters.length() != 0)
             processCharacters();
 
-         NodeBase previousNode = null;
-         previousNode = (NodeBase)openedElements.pop();
-         if (previousNode != null)
-            previousNode.append(currentNode);
-         currentNode.parsed();
-         currentNode = previousNode;
+         if ((currentNode).compile(0))
+            // need another invocation
+            compilableNodes.addElement(currentNode); 
+         currentNode = (NodeBase)openedElements.pop();
       }
       catch (SAXParseException ex) {
          if (errorHandler != null)
@@ -331,7 +357,6 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
 
    public void startPrefixMapping(String prefix, String uri)
    {
-//        log4j.debug("startPrefixMapping: " + prefix + " -> " + uri);
       Stack nsStack = (Stack)inScopeNamespaces.get(prefix);
       if (nsStack == null) {
          nsStack = new Stack();
@@ -343,7 +368,6 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
 
    public void endPrefixMapping(String prefix)
    {
-//        log4j.debug("endPrefixMapping: " + prefix);
       Stack nsStack = (Stack)inScopeNamespaces.get(prefix);
       nsStack.pop();
    }
@@ -375,7 +399,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
 //     public void warning(SAXParseException e)
 //        throws SAXException
 //     {
-//        log4j.warn(e.getMessage());
+//        log.warn(e.getMessage());
 //     }
 
 

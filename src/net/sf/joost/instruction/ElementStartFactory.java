@@ -1,5 +1,5 @@
 /*
- * $Id: ElementStartFactory.java,v 1.7 2003/02/20 09:25:29 obecker Exp $
+ * $Id: ElementStartFactory.java,v 2.0 2003/04/25 16:46:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,9 +32,7 @@ import org.xml.sax.helpers.AttributesImpl;
 
 import java.util.Hashtable;
 import java.util.HashSet;
-import java.util.Stack;
 
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Value;
 import net.sf.joost.grammar.Tree;
@@ -43,7 +41,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>start-element</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.7 $ $Date: 2003/02/20 09:25:29 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:32 $
  * @author Oliver Becker
  */
 
@@ -98,7 +96,7 @@ final public class ElementStartFactory extends FactoryBase
                          Hashtable nsSet,
                          Tree name, Tree namespace)
       {
-         super(qName, parent, locator, true);
+         super(qName, parent, locator, false);
          this.nsSet = (Hashtable)nsSet.clone();
          this.name = name;
          this.namespace = namespace;
@@ -106,50 +104,43 @@ final public class ElementStartFactory extends FactoryBase
       
       /**
        * Emits a startElement event to the emitter.
-       *
-       * @param emitter the Emitter
-       * @param eventStack the ancestor event stack
-       * @param context the Context object
-       * @param processStatus the current processing status
-       * @return <code>processStatus</code>, value doesn't change
        */    
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
+      public short process(Context context)
          throws SAXException
       {
          String elName, elUri, elLocal;
-         elName = name.evaluate(context, eventStack, this).string;
+         elName = name.evaluate(context, this).string;
          int colon = elName.indexOf(':');
          if (colon != -1) { // prefixed name
             String prefix = elName.substring(0, colon);
             elLocal = elName.substring(colon+1);
             if (namespace != null) { // namespace attribute present
-               elUri = namespace.evaluate(context, eventStack, this).string;
+               elUri = namespace.evaluate(context, this).string;
                if (elUri.equals("")) {
                   context.errorHandler.fatalError(
                      "Can't create element `" + elName + 
                      "' in the null namespace",
                      publicId, systemId, lineNo, colNo);
-                  return processStatus; // if the errorHandler returns
+                  return PR_CONTINUE; // if the errorHandler returns
                }
             }
             else { 
                // look into the set of in-scope namespaces
-               // (of the stylesheet)
+               // (of the transformation sheet)
                elUri = (String)nsSet.get(prefix);
                if (elUri == null) {
                   context.errorHandler.fatalError(
                      "Attempt to create element `" + elName + 
                      "' with undeclared prefix `" + prefix + "'",
                      publicId, systemId, lineNo, colNo);
-                  return processStatus; // if the errorHandler returns
+                  return PR_CONTINUE; // if the errorHandler returns
                }
             }
          }
          else { // unprefixed name
             elLocal = elName;
             if (namespace != null) // namespace attribute present
-               elUri = namespace.evaluate(context, eventStack, this).string;
+               elUri = namespace.evaluate(context, this).string;
             else {
                // no namespace attribute, see above
                elUri = (String)nsSet.get("");
@@ -158,11 +149,11 @@ final public class ElementStartFactory extends FactoryBase
             }
          }
 
-         emitter.startElement(elUri, elLocal, elName, 
-                              new AttributesImpl(), null,
-                              publicId, systemId, lineNo, colNo);
+         context.emitter.startElement(elUri, elLocal, elName, 
+                                      new AttributesImpl(), null,
+                                      publicId, systemId, lineNo, colNo);
 
-         return processStatus;
+         return PR_CONTINUE;
       }
    }
 }

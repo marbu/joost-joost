@@ -1,5 +1,5 @@
 /*
- * $Id: FactoryBase.java,v 1.7 2003/02/03 15:52:05 obecker Exp $
+ * $Id: FactoryBase.java,v 2.0 2003/04/25 16:46:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,6 +32,7 @@ import java.util.Hashtable;
 import java.util.HashSet;
 import java.io.StringReader;
 
+import net.sf.joost.Constants;
 import net.sf.joost.grammar.Sym;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.grammar.Yylex;
@@ -41,12 +42,13 @@ import net.sf.joost.grammar.PatternParser;
 
 /**
  * Abstract base class for all factory classes which produce nodes
- * ({@link NodeBase}) for the tree representation of an STX stylesheet.
- * @version $Revision: 1.7 $ $Date: 2003/02/03 15:52:05 $
+ * ({@link NodeBase}) for the tree representation of an STX transformation
+ * sheet.
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:32 $
  * @author Oliver Becker
  */
 
-public abstract class FactoryBase
+public abstract class FactoryBase implements Constants
 {
    /** @return the local name of this STX element */
    public abstract String getName();
@@ -288,7 +290,7 @@ public abstract class FactoryBase
 
 
    /** state for the finite state machine implemented in
-       {@link #parseAVT(java.lang.String, java.util.Hashtable, org.xml.sax.Locator) parseAVT} */
+       {@link #parseAVT parseAVT} */
    private static final int 
       ATT_STATE = 0,
       LBRACE_STATE = 1,

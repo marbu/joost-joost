@@ -1,5 +1,5 @@
 /*
- * $Id: CallProcedureFactory.java,v 1.4 2003/02/16 14:42:41 obecker Exp $
+ * $Id: CallProcedureFactory.java,v 2.0 2003/04/25 16:46:30 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,16 +31,14 @@ import org.xml.sax.SAXParseException;
 
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Stack;
 
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 
 
 /**
  * Factory for <code>call-procedure</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.4 $ $Date: 2003/02/16 14:42:41 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:30 $
  * @author Oliver Becker
  */
 
@@ -49,9 +47,12 @@ public class CallProcedureFactory extends FactoryBase
    /** allowed attributes for this element */
    private HashSet attrNames;
 
-   // Log4J initialization
-   private static org.apache.log4j.Logger log4j = 
-      org.apache.log4j.Logger.getLogger(CallProcedureFactory.class);
+   private static org.apache.log4j.Logger log;
+   static {
+      if (DEBUG)
+         // Log4J initialization
+         log = org.apache.log4j.Logger.getLogger(CallProcedureFactory.class);
+   }
 
 
    // 
@@ -107,50 +108,57 @@ public class CallProcedureFactory extends FactoryBase
       }
 
 
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
+      /**
+       * Determine statically the target procedure.
+       */
+      public boolean compile(int pass)
          throws SAXException
       {
+         if (pass == 0)
+            return true; // groups not parsed completely
 
-         if ((processStatus & ST_PROCESSING) != 0) {
-            // process stx:with-param
-            super.process(emitter, eventStack, context, processStatus);
-
-            if (procedure == null) { // very first call, determine object
-               // nextProcessGroup stems from ProcessBase
-               procedure = (ProcedureFactory.Instance)
-                  nextProcessGroup.visibleProcedures.get(procExpName);
-               if (procedure == null) {
-                  // not found, search global templates
-                  procedure = (ProcedureFactory.Instance)
-                     nextProcessGroup.globalProcedures.get(procExpName);
-               }
-
-               if (procedure == null) {
-                  context.errorHandler.error(
-                     "Unknown procedure `" + procQName + "' called with `" +
-                     qName + "'",
-                     publicId, systemId, lineNo, colNo);
-                  // recover: ignore this instruction
-               }
-            }
+         // determine procedure object
+         // nextProcessGroup stems from compile in ProcessBase
+         super.compile(pass);
+         procedure = (ProcedureFactory.Instance)
+            nextProcessGroup.visibleProcedures.get(procExpName);
+         if (procedure == null) {
+            // not found, search global templates
+            procedure = (ProcedureFactory.Instance)
+               nextProcessGroup.globalProcedures.get(procExpName);
          }
 
-         if (procedure != null) {
-            // save current table of local variables
-            Hashtable localVars = (Hashtable)context.localVars.clone();
-            processStatus = procedure.process(emitter, eventStack, context, 
-                                              processStatus);
-            // restore local variables
-            context.localVars = localVars;
+         if (procedure == null) {
+            throw new SAXParseException(
+               "Unknown procedure `" + procQName + "' called with `" +
+               qName + "'",
+               publicId, systemId, lineNo, colNo);
          }
+         lastChild.next = procedure;
 
-         if ((processStatus & ST_PROCESSING) != 0)
-            // process stx:with-param after processing; clean up the
-            // parameter stack
-            super.process(emitter, eventStack, context, (short)0);
+         return false; // done
+      }
 
-         return processStatus;
+
+      /**
+       * Adjust the return address of the procedure.
+       */
+      public short process(Context context)
+         throws SAXException
+      {
+         super.process(context);
+
+         localFieldStack.push(procedure.nodeEnd.next);
+         procedure.nodeEnd.next = nodeEnd;
+         return PR_CONTINUE;
+      }
+
+      public short processEnd(Context context)
+         throws SAXException
+      {
+         procedure.nodeEnd.next =
+            (AbstractInstruction)localFieldStack.pop();
+         return super.processEnd(context);
       }
    }
 }

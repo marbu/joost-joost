@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 1.7 2003/03/18 17:11:32 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 2.0 2003/04/25 16:46:34 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -35,28 +35,30 @@ import java.io.OutputStreamWriter;
 
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Stack;
 
 import net.sf.joost.Constants;
 import net.sf.joost.emitter.StreamEmitter;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 
 
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.7 $ $Date: 2003/03/18 17:11:32 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:34 $
  * @author Oliver Becker
  */
 
 final public class ResultDocumentFactory extends FactoryBase
 {
    // Log4J initialization
-   private static org.apache.log4j.Logger log4j =
-      org.apache.log4j.Logger.getLogger(ResultDocumentFactory.class);
+   private static org.apache.log4j.Logger log;
+   static {
+      if (DEBUG)
+         log = org.apache.log4j.Logger.getLogger(ResultDocumentFactory.class);
+   }
+
 
    /** allowed attributes for this element */
    private HashSet attrNames;
@@ -92,7 +94,7 @@ final public class ResultDocumentFactory extends FactoryBase
 
 
    /** Represents an instance of the <code>result-document</code> element. */
-   final public class Instance extends NodeBase implements Constants
+   final public class Instance extends NodeBase
    {
       private Tree href;
       private String encoding;
@@ -100,107 +102,99 @@ final public class ResultDocumentFactory extends FactoryBase
       protected Instance(String qName, NodeBase parent, Locator locator, 
                          Tree href, String encoding)
       {
-         super(qName, parent, locator, false);
+         super(qName, parent, locator, true);
          this.href = href;
          this.encoding = encoding;
       }
       
+
       /**
        * Redirects the output stream to the specified URI
-       *
-       * @param emitter the Emitter
-       * @param eventStack the ancestor event stack
-       * @param context the Context object
-       * @param processStatus the current processing status
-       * @return <code>processStatus</code>
-       */    
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
+       */
+      public short process(Context context)
          throws SAXException
       {
-         if ((processStatus & ST_PROCESSING) != 0) {
+         super.process(context);
+         if (encoding == null) // no encoding attribute specified
+            // use global encoding att
+            encoding = context.currentProcessor.getOutputEncoding();
 
-            if (encoding == null) // no encoding attribute specified
-               // use global encoding att
-               encoding = context.currentProcessor.getOutputEncoding();
-
-            String filename = 
-               href.evaluate(context, eventStack, this).string;
+         String filename = 
+            href.evaluate(context, this).string;
             
-            // Note: currently we don't check if a file is already open.
-            // Opening a file twice may lead to unexpected results.
-            StreamEmitter se = null;
+         // Note: currently we don't check if a file is already open.
+         // Opening a file twice may lead to unexpected results.
+         StreamEmitter se = null;
+         try {
+            // Variant 1:
+            int sepPos = filename.lastIndexOf('/');
+            if (sepPos != -1) {
+               // filename contains directory parts, try to create it
+               File dir = new File(filename.substring(0, sepPos));
+               dir.mkdirs();
+            }
+            FileOutputStream fos = new FileOutputStream(filename);
+
+//              // Variant 2:
+//              FileOutputStream fos;
+//              try {
+//                 fos = new FileOutputStream(filename);
+//              }
+//              catch (java.io.FileNotFoundException fnfe) {
+//                 int sepPos = filename.lastIndexOf('/');
+//                 if (sepPos == -1)
+//                    throw fnfe;
+//                 // else: filename contains directory parts,
+//                 // possibly this directoty doesn't exist yet
+//                 File dir = new File(filename.substring(0, sepPos));
+//                 // create it
+//                 dir.mkdirs();
+//                 // try again
+//                 fos = new FileOutputStream(filename);
+//              }
+
+            // Note: both variants have the same average performance,
+            // no matter whether directories have to be created or not.
+
+            OutputStreamWriter osw;
             try {
-               // Variant 1:
-               int sepPos = filename.lastIndexOf('/');
-               if (sepPos != -1) {
-                  // filename contains directory parts, try to create it
-                  File dir = new File(filename.substring(0, sepPos));
-                  dir.mkdirs();
-               }
-               FileOutputStream fos = new FileOutputStream(filename);
-
-//                 // Variant 2:
-//                 FileOutputStream fos;
-//                 try {
-//                    fos = new FileOutputStream(filename);
-//                 }
-//                 catch (java.io.FileNotFoundException fnfe) {
-//                    int sepPos = filename.lastIndexOf('/');
-//                    if (sepPos == -1)
-//                       throw fnfe;
-//                    // else: filename contains directory parts,
-//                    // possibly this directoty doesn't exist yet
-//                    File dir = new File(filename.substring(0, sepPos));
-//                    // create it
-//                    dir.mkdirs();
-//                    // try again
-//                    fos = new FileOutputStream(filename);
-//                 }
-
-               // Note: both variants have the same average performance,
-               // no matter whether directories have to be created or not.
-
-               OutputStreamWriter osw;
-               try {
-                  osw = new OutputStreamWriter(fos, encoding);
-               }
-               catch (java.io.UnsupportedEncodingException e) {
-                  String msg = 
-                     "Unsupported encoding `" + encoding + "', using " + 
-                     DEFAULT_ENCODING;
-                  context.errorHandler.warning(
-                     msg, publicId, systemId, lineNo, colNo);
-                  log4j.warn(msg);
-                  osw = new OutputStreamWriter(fos, 
-                                               encoding = DEFAULT_ENCODING);
-               }
-               se = new StreamEmitter(osw, encoding);
+               osw = new OutputStreamWriter(fos, encoding);
             }
-            catch (java.io.IOException ex) {
-               context.errorHandler.error(ex.toString(), 
-                                          publicId, systemId, lineNo, colNo);
-               return processStatus; // if the errorHandler returns
+            catch (java.io.UnsupportedEncodingException e) {
+               String msg = 
+                  "Unsupported encoding `" + encoding + "', using " + 
+                  DEFAULT_ENCODING;
+               context.errorHandler.warning(
+                  msg, publicId, systemId, lineNo, colNo);
+               if (log != null)
+                  log.warn(msg);
+               osw = new OutputStreamWriter(fos, 
+                                            encoding = DEFAULT_ENCODING);
             }
-
-            se.startDocument();
-            emitter.pushEmitter(se);
+            se = new StreamEmitter(osw, encoding);
+         }
+         catch (java.io.IOException ex) {
+            context.errorHandler.error(ex.toString(), 
+                                       publicId, systemId, lineNo, colNo);
+            return PR_CONTINUE; // if the errorHandler returns
          }
 
-         processStatus = super.process(emitter, eventStack, context,
-                                       processStatus);
+         se.startDocument();
+         context.emitter.pushEmitter(se);
+         return PR_CONTINUE;
+      }
 
-         if ((processStatus & ST_PROCESSING) != 0) {
-            StxEmitter se = emitter.popEmitter();
-            se.endDocument();
-            // se was constructed with a filename, that means it had
-            // created a FileOutputStream object in its constructor.
-            // According to the API docs, the finalize() method of 
-            // FileOutputStream will call close(), so we simply
-            // omit here the effort to manage this ourselves.
-         }
 
-         return processStatus;
+      public short processEnd(Context context)
+         throws SAXException
+      {
+         context.emitter.popEmitter().endDocument();
+         // The StreamEmitter was constructed with a filename, that means
+         // it had created a FileOutputStream object in its constructor.
+         // According to the API docs, the finalize() method of 
+         // FileOutputStream will call close(), so we simply
+         // omit here the effort to manage this ourselves.
+         return super.processEnd(context);
       }
    }
 }

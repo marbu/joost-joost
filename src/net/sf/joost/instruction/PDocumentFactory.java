@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 1.9 2003/02/24 13:32:52 obecker Exp $
+ * $Id: PDocumentFactory.java,v 2.0 2003/04/25 16:46:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,11 +33,9 @@ import org.xml.sax.XMLReader;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Stack;
 
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Processor;
 import net.sf.joost.stx.Value;
 
@@ -45,7 +43,7 @@ import net.sf.joost.stx.Value;
 /**
  * Factory for <code>process-document</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.9 $ $Date: 2003/02/24 13:32:52 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:33 $
  * @author Oliver Becker
  */
 
@@ -54,9 +52,12 @@ public class PDocumentFactory extends FactoryBase
    /** allowed attributes for this element */
    private HashSet attrNames;
 
-   // Log4J initialization
-   private static org.apache.log4j.Logger log4j = 
-      org.apache.log4j.Logger.getLogger(PDocumentFactory.class);
+   private static org.apache.log4j.Logger log;
+   static {
+      if (DEBUG) 
+         // Log4J initialization
+         log = org.apache.log4j.Logger.getLogger(PDocumentFactory.class);
+   }
 
 
    // 
@@ -115,8 +116,10 @@ public class PDocumentFactory extends FactoryBase
       }
 
 
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
+      /**
+       * Processes an external document.
+       */
+      public short processEnd(Context context)
          throws SAXException
       {
          Processor proc = context.currentProcessor;
@@ -128,10 +131,13 @@ public class PDocumentFactory extends FactoryBase
                "http://xml.org/sax/properties/lexical-handler", proc);
          }
          catch (SAXException ex) {
-            log4j.warn("Accessing " + reader + ": " + ex);
+            if (log != null)
+               log.warn("Accessing " + reader + ": " + ex);
+            context.errorHandler.warning("Accessing " + reader + ": " + ex,
+                                         publicId, systemId, lineNo, colNo);
          }
 
-         Value v = href.evaluate(context, eventStack, this);
+         Value v = href.evaluate(context, this);
 
          String base;
          if (baseUri == null) { // determine default base URI
@@ -152,9 +158,6 @@ public class PDocumentFactory extends FactoryBase
                base = baseUri;
          }
 
-         // process stx:with-param
-         super.process(emitter, eventStack, context, processStatus);
-
          Locator prevLoc = context.locator;
          context.locator = null;
          proc.startInnerProcessing();
@@ -172,12 +175,7 @@ public class PDocumentFactory extends FactoryBase
          }
          proc.endInnerProcessing();
          context.locator = prevLoc;
-
-         // process stx:with-param after processing; clean up the
-         // parameter stack
-         super.process(emitter, eventStack, context, (short)0);
-
-         return processStatus;
+         return PR_CONTINUE;
       }
    }
 }

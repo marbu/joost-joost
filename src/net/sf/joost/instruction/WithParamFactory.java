@@ -1,5 +1,5 @@
 /*
- * $Id: WithParamFactory.java,v 1.5 2003/02/21 14:20:34 obecker Exp $
+ * $Id: WithParamFactory.java,v 2.0 2003/04/25 16:46:35 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,13 +31,11 @@ import org.xml.sax.SAXParseException;
 
 import java.util.Hashtable;
 import java.util.HashSet;
-import java.util.Stack;
 import java.util.Vector;
 
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.stx.Value;
 
@@ -45,15 +43,18 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>with-param</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.5 $ $Date: 2003/02/21 14:20:34 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:35 $
  * @author Oliver Becker
  */
 
 final public class WithParamFactory extends FactoryBase
 {
-   // Log4J initialization
-   private static org.apache.log4j.Logger log4j =
-      org.apache.log4j.Logger.getLogger(WithParamFactory.class);
+   private static org.apache.log4j.Logger log;
+   static {
+      if (DEBUG)
+         // Log4J initialization
+         log = org.apache.log4j.Logger.getLogger(WithParamFactory.class);
+   }
 
 
    /** allowed attributes for this element */
@@ -89,7 +90,7 @@ final public class WithParamFactory extends FactoryBase
       String expName = getExpandedName(nameAtt, nsSet, locator);
 
       // Check for uniqueness
-      Vector siblings = parent.children;
+      Vector siblings = ((ProcessBase)parent).children;
       if (siblings != null)
          for (int i=0; i<siblings.size(); i++)
             if (((Instance)siblings.elementAt(i)).expName.equals(expName))
@@ -122,65 +123,44 @@ final public class WithParamFactory extends FactoryBase
                          String paraName, String expName, Tree select)
       {
          super(qName, parent, locator,
-               // this element must be empty if there is a select attribute
-               select != null);
+               // this element may have children if there is no select attr
+               select == null);
          this.paraName = paraName;
          this.expName = expName;
          this.select = select;
       }
 
-      
-      /**
-       * Passes a parameter.
-       *
-       * @param emitter the Emitter
-       * @param eventStack the ancestor event stack
-       * @param context the Context object
-       * @param processStatus the current processing status
-       * @return the new <code>processStatus</code>
-       */    
-      public short process(Emitter emitter, Stack eventStack,
-                           Context context, short processStatus)
+
+      public short process(Context context)
          throws SAXException
       {
-         // pre process-...
-         if ((processStatus & ST_PROCESSING) !=0 ) {
-
-            // does this variable has contents?
-            if (children != null) {
-               // create a new StringEmitter for this instance and put it
-               // on the emitter stack
-               emitter.pushEmitter(
-                  new StringEmitter(new StringBuffer(),
-                                    "(`" + qName + "' started in line " +
-                                    lineNo + ")"));
-            }
+         if (select == null) {
+            super.process(context);
+            // create a new StringEmitter for this instance and put it
+            // on the emitter stack
+            context.emitter.pushEmitter(
+               new StringEmitter(new StringBuffer(),
+                                 "(`" + qName + "' started in line " +
+                                 lineNo + ")"));
          }
+         else
+            context.passedParameters.put(
+               expName,
+               select.evaluate(context, this));
 
-         processStatus = super.process(emitter, eventStack, context, 
-                                       processStatus);
+         return PR_CONTINUE;
+      }
 
-         // post process-...
-         if ((processStatus & ST_PROCESSING) != 0) {
-            Value v;
-            if (children != null) {
-               // contents present
-               v = new Value(((StringEmitter)emitter.popEmitter())
-                                                    .getBuffer().toString());
-            }
-            else if (select != null) {
-               // select attribute present
-               v = select.evaluate(context, eventStack, this);
-            }
-            else {
-               // initialize with the empty string
-               v = new Value("");
-            }
 
-            context.passedParameters.put(expName, v);
-         }
+      public short processEnd(Context context)
+         throws SAXException
+      {
+         context.passedParameters.put(
+            expName, 
+            new Value(((StringEmitter)context.emitter.popEmitter())
+                                             .getBuffer().toString()));
 
-         return processStatus;
+         return super.processEnd(context);
       }
    }
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: ChooseFactory.java,v 1.7 2003/02/18 17:20:27 obecker Exp $
+ * $Id: ChooseFactory.java,v 2.0 2003/04/25 16:46:30 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,38 +30,27 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import java.util.Hashtable;
-import java.util.Stack;
 
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
 
 
 /** 
  * Factory for <code>choose</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.7 $ $Date: 2003/02/18 17:20:27 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:30 $
  * @author Oliver Becker
  */
 
 final public class ChooseFactory extends FactoryBase
 {
-   // Log4J initialization
-   private static org.apache.log4j.Logger log4j = 
-      org.apache.log4j.Logger.getLogger(PAttributesFactory.class);
+   private static org.apache.log4j.Logger log;
 
-   /** 
-    * The single instance of this factory, created in the Constructor
-    */
-   public static ChooseFactory singleton;
-
-
-   //
-   // Constructor
-   //
-   public ChooseFactory()
-   {
-      singleton = this;
+   static {
+      if (DEBUG)
+         // Log4J initialization
+         log = org.apache.log4j.Logger.getLogger(ChooseFactory.class);
    }
+
 
 
    /** @return <code>"choose"</code> */
@@ -80,21 +69,6 @@ final public class ChooseFactory extends FactoryBase
    }
 
 
-   /**
-    * Creates an <code>stx:choose</code> from an <code>stx:if</code> /
-    * <code>stx:else</code> pair.
-    */
-   protected Instance cloneIfElse(Object ifObj, Object elseObj)
-      throws SAXParseException
-   {
-      IfFactory.Instance ifNode = (IfFactory.Instance)ifObj;
-      Instance choose = new Instance (ifNode);
-      choose.append(WhenFactory.singleton.cloneFromIf(ifNode));
-      choose.append(OtherwiseFactory.singleton
-                                    .cloneFromElse((NodeBase)elseObj));
-      return choose;
-   }
-
 
    /** Represents an instance of the <code>choose</code> element. */
    final public class Instance extends NodeBase
@@ -103,18 +77,16 @@ final public class ChooseFactory extends FactoryBase
 
       protected Instance(String qName, NodeBase parent, Locator locator)
       {
-         super(qName, parent, locator, false);
+         super(qName, parent, locator, true);
          otherwisePresent = false;
       }
 
 
-      protected Instance(IfFactory.Instance ifObj)
-      {
-         super(ifObj);
-      }
-
-
-      public void append(NodeBase node)
+      /**
+       * Ensures that only <code>stx:when</code> and 
+       * <code>stx:otherwise</code> children will be inserted.
+       */
+      public void insert(NodeBase node)
          throws SAXParseException
       {
          if (node instanceof TextNode) {
@@ -143,7 +115,7 @@ final public class ChooseFactory extends FactoryBase
                node.publicId, node.systemId, node.lineNo, node.colNo);
 
          if (node instanceof OtherwiseFactory.Instance) {
-            if (children == null) {
+            if (lastChild == this) {
                throw new SAXParseException(
                   "`" + qName + "' must have at least one stx:when child " +
                   "before stx:otherwise",
@@ -152,51 +124,25 @@ final public class ChooseFactory extends FactoryBase
             otherwisePresent = true;
          }
 
-         super.append(node);
+         super.insert(node);
       }
 
 
-      public void parsed()
+      /**
+       * Check if there is at least one child.
+       */
+      public boolean compile(int pass)
          throws SAXParseException
       {
-         if (children == null)
+         if (lastChild == this)
             throw new SAXParseException(
                "`" + qName + "' must have at least one stx:when child", 
                publicId, systemId, lineNo, colNo);
+         return false;
       }
 
-      
-      /**
-       * Processes the first <code>when</code> child whose test expression
-       * evaluates to true or the <code>otherwise</code> child otherwise
-       *
-       * @param emitter the Emitter
-       * @param eventStack the ancestor event stack
-       * @param processStatus the current processing status
-       * @return the new processing status, influenced by contained
-       *         <code>stx:process-...</code> elements.
-       */
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
-         throws SAXException
-      {
-         log4j.debug("Old status: " + processStatus);
-         short newStatus = super.process(emitter, eventStack, context,
-                                         processStatus);
-         log4j.debug("New status: " +  newStatus);
 
-         // The trick here is that newStatus will be set to 0 if one of the
-         // when/otherwise branches has been processed completely. This
-         // stops the processing in the superclass NodeBase.
-         // But now (after choose) we want to continue, of course.
-         if (newStatus == 0) 
-            // in case processing was enabled at the beginning, this line
-            // doesn't change anything; if processing was off, it will
-            // be now switched on again.
-            // The attributes flag must be cleared in any case.
-            return (short)((processStatus | ST_PROCESSING) & ~ST_ATTRIBUTES);
-         else
-            return newStatus;
-      }
+      // No specific process and processEnd methods necessary.
+      // The magic of stx:choose is completely in WhenFactory.Instance.compile
    }
 }

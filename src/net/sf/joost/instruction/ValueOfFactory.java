@@ -1,5 +1,5 @@
 /*
- * $Id: ValueOfFactory.java,v 1.7 2003/02/24 13:32:52 obecker Exp $
+ * $Id: ValueOfFactory.java,v 2.0 2003/04/25 16:46:35 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,11 +29,9 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import java.util.Hashtable;
 import java.util.HashSet;
-import java.util.Stack;
+import java.util.Hashtable;
 
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Value;
 import net.sf.joost.grammar.Tree;
@@ -42,7 +40,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>value-of</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.7 $ $Date: 2003/02/24 13:32:52 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:35 $
  * @author Oliver Becker
  */
 
@@ -84,28 +82,21 @@ final public class ValueOfFactory extends FactoryBase
       protected Instance(String qName, NodeBase parent, Locator locator, 
                          Tree select)
       {
-         super(qName, parent, locator, true);
+         super(qName, parent, locator, false);
          this.select = select;
       }
       
+
       /**
        * Evaluates the expression given in the select attribute and
        * outputs its value to emitter.
-       *
-       * @param emitter the Emitter
-       * @param eventStack the ancestor event stack
-       * @param context the Context object
-       * @param processStatus the current processing status
-       * @return <code>processStatus</code>, value doesn't change
-       */    
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
+       */
+      public short process(Context context)
          throws SAXException
       {
-         String s = select.evaluate(context, eventStack, this)
-                          .convertToString().string;
-         emitter.characters(s.toCharArray(), 0, s.length());
-         return processStatus;
+         String s = select.evaluate(context, this).convertToString().string;
+         context.emitter.characters(s.toCharArray(), 0, s.length());
+         return PR_CONTINUE;
       }
    }
 }

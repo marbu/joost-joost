@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 1.15 2003/03/18 14:53:15 obecker Exp $
+ * $Id: PBufferFactory.java,v 2.0 2003/04/25 16:46:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,11 +31,9 @@ import org.xml.sax.SAXParseException;
 
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Stack;
 
 import net.sf.joost.emitter.BufferEmitter;
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Processor;
 import net.sf.joost.stx.SAXEvent;
 
@@ -43,7 +41,7 @@ import net.sf.joost.stx.SAXEvent;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.15 $ $Date: 2003/03/18 14:53:15 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:33 $
  * @author Oliver Becker
  */
 
@@ -52,9 +50,12 @@ public class PBufferFactory extends FactoryBase
    /** allowed attributes for this element */
    private HashSet attrNames;
 
-   // Log4J initialization
-   private static org.apache.log4j.Logger log4j = 
-      org.apache.log4j.Logger.getLogger(PBufferFactory.class);
+   private static org.apache.log4j.Logger log;
+   static {
+      if (DEBUG)
+         // Log4J initialization
+         log = org.apache.log4j.Logger.getLogger(PBufferFactory.class);
+   }
 
 
    // 
@@ -110,8 +111,10 @@ public class PBufferFactory extends FactoryBase
       }
 
 
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
+      /**
+       * Processes a buffer.
+       */
+      public short processEnd(Context context)
          throws SAXException
       {
          // find buffer
@@ -128,21 +131,19 @@ public class PBufferFactory extends FactoryBase
             context.errorHandler.error(
                "Can't process an undeclared buffer `" + bufName + "'",
                publicId, systemId, lineNo, colNo);
-            return processStatus; // if the errorHandler returns
+            return PR_CONTINUE; // if the errorHandler returns
          }
 
          // store current group
          GroupBase prevGroup = context.currentGroup;
-
-         // process stx:with-param
-         super.process(emitter, eventStack, context, processStatus);
 
          // walk through the buffer and emit events to the Processor object
          SAXEvent[] events = ((BufferEmitter)buffer).getEvents();
          Processor proc = context.currentProcessor;
          proc.startInnerProcessing();
          for (int i=0; i<events.length; i++) {
-            log4j.debug("Buffer Processing " + events[i]);
+            if (DEBUG)
+               log.debug(events[i]);
             switch (events[i].type) {
             case SAXEvent.ELEMENT:
                proc.startElement(events[i].uri, events[i].lName, 
@@ -176,20 +177,19 @@ public class PBufferFactory extends FactoryBase
                proc.endPrefixMapping(events[i].qName);
                break;
             default:
-               log4j.error("Unexpected type: " + events[i].type + 
-                           " (" + events[i] + ")");
+               // Mustn't happen
+               throw new SAXParseException(
+                  "Unexpected type in `" + qName + "': " + 
+                  events[i].type + " (" + events[i] + ")",
+                  publicId, systemId, lineNo, colNo);
             }
          }
          proc.endInnerProcessing();
 
-         // process stx:with-param after processing; clean up the
-         // parameter stack
-         super.process(emitter, eventStack, context, (short)0);
-
          // restore current group
          context.currentGroup = prevGroup;
 
-         return processStatus;
+         return super.processEnd(context);
       }
    }
 }

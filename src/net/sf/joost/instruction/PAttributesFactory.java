@@ -1,5 +1,5 @@
 /*
- * $Id: PAttributesFactory.java,v 1.9 2003/02/08 16:23:54 obecker Exp $
+ * $Id: PAttributesFactory.java,v 2.0 2003/04/25 16:46:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,25 +31,27 @@ import org.xml.sax.SAXParseException;
 
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Stack;
 
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.SAXEvent;
 
 
 /**
  * Factory for <code>process-attributes</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 1.9 $ $Date: 2003/02/08 16:23:54 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:33 $
  * @author Oliver Becker
  */
 
 public class PAttributesFactory extends FactoryBase
 {
-   // Log4J initialization
-   private static org.apache.log4j.Logger log4j = 
-      org.apache.log4j.Logger.getLogger(PAttributesFactory.class);
+   private static org.apache.log4j.Logger log;
+   static {
+      if (DEBUG)
+         // Log4J initialization
+         log = org.apache.log4j.Logger.getLogger(PAttributesFactory.class);
+   }
+
 
    /** allowed attributes for this element */
    private HashSet attrNames;
@@ -96,37 +98,25 @@ public class PAttributesFactory extends FactoryBase
       }
 
 
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
+      // process does nothing
+
+
+      /** 
+       * @return {@link #PR_ATTRIBUTES} if the context node is an element
+       *         and has attributes.
+       */
+      public short processEnd(Context context)
          throws SAXException
       {
-         // process stx:with-param
-         super.process(emitter, eventStack, context, processStatus);
+         // no need to call super.processEnd(), there are no local
+         // variable declarations
 
-         SAXEvent event = (SAXEvent)eventStack.peek();
+         SAXEvent event = (SAXEvent)context.ancestorStack.peek();
 
-         if (event.type != SAXEvent.ELEMENT || event.attrs.getLength() == 0) {
-            // current event is not an element, or it has no attributes:
-            // nothing to do (keep processing)
-            // almost: first clean up the parameter stack
-            super.process(emitter, eventStack, context, ST_ATTRIBUTES);
-            return processStatus;
-         }
-
-         log4j.debug("Status: " + processStatus);
-
-         // otherwise
-         // ST_PROCESSING on: toggle processing bit, set attributes bit
-         if ((processStatus & ST_PROCESSING) != 0)
-            return (short) ((processStatus ^ ST_PROCESSING) | ST_ATTRIBUTES);
-
-         // ST_PROCESSING off, ST_ATTRIBUTES on: 
-         // toggle processing and attributes bit
-         else if ((processStatus & ST_ATTRIBUTES) != 0)
-            return (short) (processStatus ^ (ST_PROCESSING | ST_ATTRIBUTES));
+         if (event.type != SAXEvent.ELEMENT || event.attrs.getLength() == 0)
+            return PR_CONTINUE;
          else
-            log4j.error("PROCESSING off, ATTRIBUTES off: " + processStatus);
-         return processStatus;
+            return PR_ATTRIBUTES;
       }
    }
 }

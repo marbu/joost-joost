@@ -1,5 +1,5 @@
 /*
- * $Id: MessageFactory.java,v 1.1 2003/02/03 12:21:40 obecker Exp $
+ * $Id: MessageFactory.java,v 2.0 2003/04/25 16:46:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,18 +30,16 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import java.util.Hashtable;
-import java.util.Stack;
 
 import net.sf.joost.emitter.StreamEmitter;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 
 
 /** 
  * Factory for <code>message</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.1 $ $Date: 2003/02/03 12:21:40 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:33 $
  * @author Oliver Becker
  */
 
@@ -69,48 +67,44 @@ final public class MessageFactory extends FactoryBase
    {
       protected Instance(String qName, NodeBase parent, Locator locator)
       {
-         super(qName, parent, locator, false);
+         super(qName, parent, locator, true);
       }
       
+
       /**
-       * Redirects the output stream to stderr
-       *
-       * @param emitter the Emitter
-       * @param eventStack the ancestor event stack
-       * @param context the Context object
-       * @param processStatus the current processing status
-       * @return <code>processStatus</code>
-       */    
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
+       * Create and activate a new StreamEmitter that outputs to stderr.
+       */
+      public short process(Context context)
          throws SAXException
       {
-         if ((processStatus & ST_PROCESSING) != 0) {
-            StreamEmitter se = null;
-            try {
-               se = new StreamEmitter(
-                  System.err, context.currentProcessor.getOutputEncoding());
-               se.setOmitXmlDeclaration(true);
-            }
-            catch (java.io.IOException ex) {
-               context.errorHandler.error(ex.toString(), 
-                                          publicId, systemId, lineNo, colNo);
-               return processStatus; // if the errorHandler returns
-            }
-
-            se.startDocument();
-            emitter.pushEmitter(se);
+         StreamEmitter se = null;
+         try {
+            se = new StreamEmitter(
+               System.err, context.currentProcessor.getOutputEncoding());
+            se.setOmitXmlDeclaration(true);
+         }
+         catch (java.io.IOException ex) {
+            context.errorHandler.error(ex.toString(), 
+                                       publicId, systemId, lineNo, colNo);
+            return PR_CONTINUE; // if the errorHandler returns
          }
 
-         processStatus = super.process(emitter, eventStack, context,
-                                       processStatus);
+         super.process(context);
+         se.startDocument();
+         context.emitter.pushEmitter(se);
+         return PR_CONTINUE;
+      }
 
-         if ((processStatus & ST_PROCESSING) != 0) {
-            StxEmitter se = emitter.popEmitter();
-            se.endDocument(); // flushes stderr
-         }
 
-         return processStatus;
+      /**
+       * Deactivate and flush the StreamEmitter.
+       */
+      public short processEnd(Context context)
+         throws SAXException
+      {
+         context.emitter.popEmitter()
+                        .endDocument(); // flushes stderr
+         return super.processEnd(context);
       }
    }
 }

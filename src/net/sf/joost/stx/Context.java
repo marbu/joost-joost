@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 1.12 2003/02/18 17:08:56 obecker Exp $
+ * $Id: Context.java,v 2.0 2003/04/25 16:47:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,12 +31,13 @@ import net.sf.joost.instruction.PSiblingsFactory;
 import org.xml.sax.Locator;
 
 import java.util.Hashtable;
+import java.util.Stack;
 
 
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 1.12 $ $Date: 2003/02/18 17:08:56 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:47:18 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
@@ -44,13 +45,19 @@ public final class Context implements Cloneable
    /** The locator object for the input stream */
    public Locator locator;
 
+   /** The emitter object for the transformation */
+   public Emitter emitter;
+
+   /** The current ancestor stack */
+   public Stack ancestorStack = new Stack();
+
    /** The position of the current node. */
    public long position;
 
    /** The current item. <code>null</code> means: the current node */
    public Value currentItem;
 
-   /** The currently processed statement in the stylesheet */
+   /** The currently processed statement in the transformation sheet */
    public NodeBase currentInstruction;
 
    /** The group, the current template is a child of */

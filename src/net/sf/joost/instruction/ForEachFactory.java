@@ -1,5 +1,5 @@
 /*
- * $Id: ForEachFactory.java,v 1.2 2003/02/20 09:25:29 obecker Exp $
+ * $Id: ForEachFactory.java,v 2.0 2003/04/25 16:46:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -34,7 +34,6 @@ import java.util.HashSet;
 import java.util.Stack;
 
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Value;
 import net.sf.joost.grammar.Tree;
 
@@ -42,12 +41,21 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>for-each</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2003/02/20 09:25:29 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:32 $
  * @author Oliver Becker
  */
 
 final public class ForEachFactory extends FactoryBase
 {
+   private static org.apache.log4j.Logger log;
+   
+   static {
+      if (DEBUG)
+         // Log4J initialization
+         log = org.apache.log4j.Logger.getLogger(ForEachFactory.class);
+   }
+
+
    /** allowed attributes for this element */
    private HashSet attrNames;
 
@@ -87,69 +95,99 @@ final public class ForEachFactory extends FactoryBase
        */
       private Stack resultStack = new Stack();
 
-      // Constructor
-      protected Instance(String qName, NodeBase parent, Locator locator, 
-                         Tree select)
-      {
-         super(qName, parent, locator, false);
-         this.select = select;
-      }
-      
+      private AbstractInstruction contents;
+
+
       /**
-       * Evaluates the expression given in the select attribute and
-       * processes its children for each of the items of the resulting
-       * sequence
-       *
-       * @param emitter the Emitter
-       * @param eventStack the ancestor event stack
-       * @param processStatus the current processing status
-       * @return the new processing status, influenced by contained
-       *         <code>stx:process-...</code> elements.
-       */    
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
+       * Determines whether this instruction is encountered the first time
+       * (thus the <code>select</code> attribute needs to be evaluated)
+       * or during the processing (as part of the loop)
+       */
+      private boolean firstTurn = true;
+
+      // Constructor
+      protected Instance(final String qName, NodeBase parent, 
+                         Locator locator, Tree select)
+      {
+         super(qName, parent, locator, true);
+         this.select = select;
+         // dummy node, needed as store for the next node
+         next.next = nodeEnd = new AbstractInstruction() {
+            public short process(Context context) 
+               throws SAXException {
+               throw new SAXParseException(
+                  "Processed dummy node of " + qName, 
+                  publicId, systemId, lineNo, colNo);
+            }
+         };
+      }
+
+
+      /**
+       * Create the loop by connecting the end with the start
+       */
+      public boolean compile(int pass)
+      {
+         contents = next;
+         lastChild.next.next = this; // loop
+         return false;
+      }
+
+
+      /**
+       * If {@link #firstTurn} is <code>true</code> then evaluate the
+       * <code>select</code> attribute and choose the first item,
+       * otherwise choose the next item from a previously computed
+       * sequence.
+       */
+      public short process(Context context)
          throws SAXException
       {
-         Value lastItem = context.currentItem; // save current item
-         long lastPosition = context.position; // save current position
-
          Value selectResult;
-         long seqPos = 0;
-         if ((processStatus & ST_PROCESSING) != 0)
-            selectResult = select.evaluate(context, eventStack, this);
+         long seqPos;
+         super.process(context);
+         if (firstTurn) {
+            // save current item and current position
+            resultStack.push(context.currentItem);
+            resultStack.push(new Long(context.position));
+
+            seqPos = 0;
+            selectResult = select.evaluate(context, this);
+         }
          else {
-            // re-entered: restore last sequence and position
             seqPos = ((Long)resultStack.pop()).longValue();
             selectResult = (Value)resultStack.pop();
+            firstTurn = true;
          }
 
-         if (selectResult.type == Value.EMPTY) // nothing to do
-            return processStatus;
-
-         // iterate through the sequence
-         while (selectResult != null) {
-            Value next = selectResult.next;
-            selectResult.next = null; // cut sequence
+         if (selectResult == null || selectResult.type == Value.EMPTY) {
+            // for-each finished (empty sequence left)
+            context.position = ((Long)resultStack.pop()).longValue();
+            context.currentItem = (Value)resultStack.pop();
+            next = nodeEnd.next;
+            super.processEnd(context); // skip "normal" end
+            return PR_CONTINUE;
+         }
+         else {
+            resultStack.push(selectResult.next);
+            resultStack.push(new Long(++seqPos));
+            selectResult.next = null;
             context.currentItem = selectResult;
-            context.position = ++seqPos;
-            processStatus = super.process(emitter, eventStack, context,
-                                          processStatus);
-            if ((processStatus & ST_PROCESSING) == 0) { // interrupted
-               // re-link sequence
-               selectResult.next = next;
-               // save current sequence and position
-               resultStack.push(selectResult);  // save sequence
-               resultStack.push(new Long(seqPos-1));
-               break; // while(...)
-            }
-            selectResult = next;
+            context.position = seqPos;
+            next = contents;
+            return PR_CONTINUE;
          }
+      }
+      
 
-         // done
-         context.currentItem = lastItem;  // restore previous current item
-         context.position = lastPosition; // restore previous position
-
-         return processStatus;
+      /**
+       * Sets {@link #firstTurn} to <code>false</code> to signal the loop.
+       */
+      public short processEnd(Context context)
+         throws SAXException
+      {
+         firstTurn = false;
+         return super.processEnd(context);
       }
    }
 }

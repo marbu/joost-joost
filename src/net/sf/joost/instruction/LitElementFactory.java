@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 1.8 2003/02/20 09:25:29 obecker Exp $
+ * $Id: LitElementFactory.java,v 2.0 2003/04/25 16:46:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,18 +31,16 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import java.util.Hashtable;
-import java.util.Stack;
 
 import net.sf.joost.Constants;
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.grammar.Tree;
 
 
 /** 
  * Factory for literal result elements, which are represented by the
  * inner Instance class. 
- * @version $Revision: 1.8 $ $Date: 2003/02/20 09:25:29 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:33 $
  * @author Oliver Becker
 */
 
@@ -65,12 +63,13 @@ final public class LitElementFactory extends FactoryBase
       if (parent == null) {
          if (lName.equals("transform"))
             throw new SAXParseException(
-               "File is not an STX stylesheet, need namespace `" +
+               "File is not an STX transformation sheet, need namespace `" +
                Constants.STX_NS + "' for the `transform' element",
                locator);
          else
             throw new SAXParseException(
-               "File is not an STX stylesheet, found " + qName, locator);
+               "File is not an STX transformation sheet, found " + qName, 
+               locator);
       }
 
       if (parent instanceof TransformFactory.Instance)
@@ -101,7 +100,7 @@ final public class LitElementFactory extends FactoryBase
                          Attributes attrs, Tree[] avtList, Hashtable nsTable,
                          NodeBase parent, Locator locator)
       {
-         super(qName, parent, locator, false);
+         super(qName, parent, locator, true);
          this.uri = uri;
          this.lName = lName;
          this.attrs = new AttributesImpl(attrs);
@@ -109,34 +108,31 @@ final public class LitElementFactory extends FactoryBase
          this.namespaces = (Hashtable)nsTable.clone();
       }
       
+
       /**
-       * A literal result element will be just copied to the emitter.
-       *
-       * @param emitter the Emitter 
-       * @param eventStack ancestor event stack
-       * @param context the Context object
-       * @param processStatus the current processing status
-       * @return the new processing status, influenced by contained
-       *         <code>stx:process-...</code> elements.
-       */    
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
+       * Emits the start tag of this literal element to the emitter
+       */
+      public short process(Context context)
          throws SAXException
       {
-         if ((processStatus & ST_PROCESSING) != 0) {
-            for (int i=0; i<avtList.length; i++)
-               attrs.setValue(i, 
-                              avtList[i].evaluate(context, eventStack, this)
-                                        .string);
-            emitter.startElement(uri, lName, qName, attrs, namespaces,
-                                 publicId, systemId, lineNo, colNo);
-         }
-         short newStatus = super.process(emitter, eventStack, context,
-                                         processStatus);
-         if ((newStatus & ST_PROCESSING) != 0)
-            emitter.endElement(uri, lName, qName,
-                               publicId, systemId, lineNo, colNo);
-         return newStatus;
+         super.process(context);
+         for (int i=0; i<avtList.length; i++)
+            attrs.setValue(i, avtList[i].evaluate(context, this).string);
+         context.emitter.startElement(uri, lName, qName, attrs, namespaces,
+                                      publicId, systemId, lineNo, colNo);
+         return PR_CONTINUE;
+      }
+
+
+      /**
+       * Emits the end tag of this literal element to the emitter
+       */
+      public short processEnd(Context context)
+         throws SAXException
+      {
+         context.emitter.endElement(uri, lName, qName,
+                                    publicId, systemId, lineNo, colNo);
+         return super.processEnd(context);
       }
 
 

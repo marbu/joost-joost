@@ -1,5 +1,5 @@
 /*
- * $Id: CdataFactory.java,v 1.3 2002/11/27 10:03:10 obecker Exp $
+ * $Id: CdataFactory.java,v 2.0 2003/04/25 16:46:30 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,7 +31,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import java.util.Hashtable;
-import java.util.Stack;
 
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.stx.Context;
@@ -41,7 +40,7 @@ import net.sf.joost.stx.Emitter;
 /** 
  * Factory for <code>cdata</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.3 $ $Date: 2002/11/27 10:03:10 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:30 $
  * @author Oliver Becker
  */
 
@@ -71,7 +70,7 @@ final public class CdataFactory extends FactoryBase
 
       public Instance(String qName, NodeBase parent, Locator locator)
       {
-         super(qName, parent, locator, false);
+         super(qName, parent, locator, true);
          buffer = new StringBuffer();
          strEmitter = new StringEmitter(buffer, 
                                         "(`" + qName + "' started in line " +
@@ -79,33 +78,38 @@ final public class CdataFactory extends FactoryBase
       }
 
 
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
+      /**
+       * Starts a CDATA section.
+       */
+      public short process(Context context)
          throws SAXException
       {
-         if ((processStatus & ST_PROCESSING) != 0) {
-            if (emitter.isEmitterActive(strEmitter)) {
-               context.errorHandler.error(
-                  "Can't create nested CDATA section here",
-                  publicId, systemId, lineNo, colNo);
-               return processStatus; // if the errorHandler returns
-            }
-            buffer.setLength(0);
-            emitter.pushEmitter(strEmitter);
+         if (context.emitter.isEmitterActive(strEmitter)) {
+            context.errorHandler.error(
+               "Can't create nested CDATA section here",
+               publicId, systemId, lineNo, colNo);
+            return PR_CONTINUE; // if the errorHandler returns
          }
+         super.process(context);
+         buffer.setLength(0);
+         context.emitter.pushEmitter(strEmitter);
+         return PR_CONTINUE;
+      }
 
-         processStatus = super.process(emitter, eventStack, context, 
-                                       processStatus);
 
-         if ((processStatus & ST_PROCESSING) != 0) {
-            emitter.popEmitter();
-            emitter.startCDATA(publicId, systemId, lineNo, colNo);
-            emitter.characters(buffer.toString().toCharArray(),
-                               0, buffer.length());
-            emitter.endCDATA();
-         }
-
-         return processStatus;
+      /**
+       * Ends a CDATA section
+       */
+      public short processEnd(Context context)
+         throws SAXException
+      {
+         Emitter emitter = context.emitter;
+         emitter.popEmitter();
+         emitter.startCDATA(publicId, systemId, lineNo, colNo);
+         emitter.characters(buffer.toString().toCharArray(),
+                            0, buffer.length());
+         emitter.endCDATA();
+         return super.processEnd(context);
       }
    }
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: TextNode.java,v 1.3 2003/02/18 17:20:29 obecker Exp $
+ * $Id: TextNode.java,v 2.0 2003/04/25 16:46:35 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -27,15 +27,13 @@ package net.sf.joost.instruction;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
-import java.util.Stack;
-
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
 
 
 /** 
- * Instances created by this factory represent text nodes in the stylesheet
- * @version $Revision: 1.3 $ $Date: 2003/02/18 17:20:29 $
+ * Instances created by this factory represent text nodes in the 
+ * transformation sheet
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:35 $
  * @author Oliver Becker
  */
 
@@ -45,17 +43,19 @@ public class TextNode extends NodeBase
 
    public TextNode(String s, NodeBase parent, Locator locator)
    {
-      super("", parent, locator, true);
+      super("", parent, locator, false);
       string = s;
    }
 
-   protected short process(Emitter emitter, Stack eventStack,
-                           Context context, short processStatus)
+
+   /**
+    * Emit the text of this node to the result stream
+    */
+   public short process(Context context)
       throws SAXException
    {
-      if ((processStatus & ST_PROCESSING) != 0)
-         emitter.characters(string.toCharArray(), 0, string.length());
-      return processStatus;
+      context.emitter.characters(string.toCharArray(), 0, string.length());
+      return PR_CONTINUE;
    }
 
 

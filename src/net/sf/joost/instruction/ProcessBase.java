@@ -1,5 +1,5 @@
 /*
- * $Id: ProcessBase.java,v 1.5 2003/03/19 11:27:12 obecker Exp $
+ * $Id: ProcessBase.java,v 2.0 2003/04/25 16:46:34 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -26,13 +26,14 @@ package net.sf.joost.instruction;
 
 import java.util.Hashtable;
 import java.util.Stack;
+import java.util.Vector;
 
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import net.sf.joost.Constants;
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 
 /**
  * Common base class for all <code>stx:process-<em>xxx</em></code>
@@ -43,17 +44,31 @@ public class ProcessBase extends NodeBase
    // stack for parameters, used in the subclasses
    private Stack paramStack = new Stack();
 
+   protected Vector children = new Vector();
+
    // names of the "group" attribute (if present)
    private String groupQName, groupExpName;
 
    // base group for the next processing; set in the first call
    protected GroupBase nextProcessGroup = null;
 
+
+   // Constructor
    public ProcessBase(String qName, NodeBase parent, Locator locator,
                       String groupQName, String groupExpName)
       throws SAXParseException
    {
-      super(qName, parent, locator, false);
+      super(qName, parent, locator, true);
+
+      // insert instruction that clears the parameter stack when
+      // continuing the processing
+      next.next = new AbstractInstruction() {
+         public short process(Context context) {
+            context.passedParameters = (Hashtable)paramStack.pop();
+            return PR_CONTINUE;
+         }
+      };
+
       this.groupQName = groupQName;
       this.groupExpName = groupExpName;
 
@@ -81,7 +96,10 @@ public class ProcessBase extends NodeBase
    }
 
 
-   public void append(NodeBase node) 
+   /** 
+    * Ensure that only stx:with-param children will be inserted
+    */
+   public void insert(NodeBase node) 
       throws SAXParseException
    {
       if (node instanceof TextNode) {
@@ -100,44 +118,55 @@ public class ProcessBase extends NodeBase
             "(encountered `" + node.qName + "')",
             node.publicId, node.systemId, node.lineNo, node.colNo);
 
-      super.append(node);
+      children.addElement(node);
+      super.insert(node);
    }
 
 
-   protected short process(Emitter emitter, Stack eventStack,
-                           Context context, short processStatus)
+   /**
+    * Determine target group
+    */
+   public boolean compile(int pass)
       throws SAXException
    {
-      if ((processStatus & ST_PROCESSING) != 0) {
-         if (nextProcessGroup == null) { // first entered
-            // Evaluate group attribute
-            if (groupExpName != null) {
-               nextProcessGroup = (GroupBase)
-                  context.currentGroup.namedGroups.get(groupExpName);
-               if (nextProcessGroup == null)
-                  context.errorHandler.error(
-                     "Unknown target group `" + groupQName + 
-                     "' specified for `" + qName + "'", 
-                     publicId, systemId, lineNo, colNo);
-                  // recover: ignore group attribute, use current group
-            }
-            if (nextProcessGroup == null) { // means: still null
-               // use current group 
-               nextProcessGroup = context.currentGroup;
-            }
-         }
-         context.nextProcessGroup = nextProcessGroup;
+      if (pass == 0)
+         return true; // groups not parsed completely yet
 
-         // save and reset parameters
-         paramStack.push(context.passedParameters.clone());
-         context.passedParameters.clear();
-         // process stx:with-param, return value doesn't matter
-         return super.process(emitter, eventStack, context, processStatus);
+      // determine parent group
+      // parent is at most a TemplateBase; start with grand-parent
+      NodeBase tmp = parent.parent;
+      while (!(tmp instanceof GroupBase))
+         tmp = tmp.parent;
+      GroupBase parentGroup = (GroupBase)tmp;
+
+      // Evaluate group attribute
+      if (groupExpName != null) {
+         nextProcessGroup = (GroupBase)
+            parentGroup.namedGroups.get(groupExpName);
+         if (nextProcessGroup == null)
+            throw new SAXParseException(
+               "Unknown target group `" + groupQName + 
+               "' specified for `" + qName + "'", 
+               publicId, systemId, lineNo, colNo);
       }
-      else {
-         // restore parameters, don't process with-param again
-         context.passedParameters = (Hashtable)paramStack.pop();
-         return processStatus;
+      if (nextProcessGroup == null) { // means: still null
+         // use current group 
+         nextProcessGroup = parentGroup;
       }
+      return false; // done
+   }
+
+
+   /**
+    * assign target group,  save and reset parameters
+    */
+   public short process(Context context)
+      throws SAXException
+   {
+      context.nextProcessGroup = nextProcessGroup;
+
+      paramStack.push(context.passedParameters.clone());
+      context.passedParameters.clear();
+      return PR_CONTINUE;
    }
 }

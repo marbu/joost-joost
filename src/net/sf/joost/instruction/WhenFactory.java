@@ -1,5 +1,5 @@
 /*
- * $Id: WhenFactory.java,v 1.7 2003/02/24 13:32:52 obecker Exp $
+ * $Id: WhenFactory.java,v 2.0 2003/04/25 16:46:35 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,9 +31,7 @@ import org.xml.sax.SAXParseException;
 
 import java.util.Hashtable;
 import java.util.HashSet;
-import java.util.Stack;
 
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
 import net.sf.joost.grammar.Tree;
 
@@ -41,7 +39,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>when</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.7 $ $Date: 2003/02/24 13:32:52 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:35 $
  * @author Oliver Becker
  */
 
@@ -89,14 +87,14 @@ final public class WhenFactory extends FactoryBase
    }
 
 
-   /** 
-    * Creates an instance from an <code>stx:if</code> object, needed for
-    * <code>stx:else</code>
-    */
-   protected NodeBase cloneFromIf(IfFactory.Instance ifNode)
-   {
-      return new Instance(ifNode);
-   }
+//     /** 
+//      * Creates an instance from an <code>stx:if</code> object, needed for
+//      * <code>stx:else</code>
+//      */
+//     protected NodeBase cloneFromIf(IfFactory.Instance ifNode)
+//     {
+//        return new Instance(ifNode);
+//     }
 
 
    /** Represents an instance of the <code>when</code> element. */
@@ -104,55 +102,43 @@ final public class WhenFactory extends FactoryBase
    {
       private Tree test;
 
+      private AbstractInstruction trueNext, falseNext;
+
       protected Instance(String qName, NodeBase parent, Locator locator, 
                          Tree test)
       {
-         super(qName, parent, locator, false);
+         super(qName, parent, locator, true);
          this.test = test;
       }
 
-      /** for {@link #cloneFromIf} */
-      protected Instance(IfFactory.Instance ifObj)
-      {
-         super(ifObj);
-         test = ifObj.test;
-         children = ifObj.children;
-      }
-      
-      /**
-       * Evaluates the expression given in the test attribute and
-       * processes its children if this test evaluates to true.
-       *
-       * @param emitter the Emitter
-       * @param eventStack the ancestor event stack
-       * @param processStatus the current processing status
-       * @return the new processing status, influenced by contained
-       *         <code>stx:process-...</code> elements, or 0 if the
-       *         processing is complete
-       */    
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
+
+      public boolean compile(int pass)
          throws SAXException
       {
-         boolean testResult = false;
-         if ((processStatus & ST_PROCESSING) != 0) {
-            // first entry, evaluate test expression
-            testResult = test.evaluate(context, eventStack, this)
-                             .convertToBoolean().bool;
-         }
-         else {
-            // we must have been here before ...
-            testResult = true;
-         }
+         if (pass == 0) // nodeEnd.next not available yet
+            return true;
 
-         short newStatus = processStatus;
-         if (testResult) {
-            newStatus = super.process(emitter, eventStack, context,
-                                      processStatus);
-            if ((newStatus & ST_PROCESSING) != 0) // completed
-               return 0;
+         trueNext = next;
+         falseNext = nodeEnd.next;      // the sibling
+         nodeEnd.next = parent.nodeEnd; // end of stx:choose
+         return false;
+      }
+
+
+      /**
+       * Evaluate the <code>test</code> attribute and adjust the next
+       * instruction depending on the result
+       */
+      public short process(Context context)
+         throws SAXException
+      {
+         if (test.evaluate(context, this).convertToBoolean().bool) {
+            super.process(context);
+            next = trueNext;
          }
-         return newStatus;
+         else
+            next = falseNext;
+         return PR_CONTINUE;
       }
 
 

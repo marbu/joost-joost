@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 1.8 2003/01/30 17:16:26 obecker Exp $
+ * $Id: TransformFactory.java,v 2.0 2003/04/25 16:46:35 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,25 +31,26 @@ import org.xml.sax.SAXParseException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Stack;
 import java.util.Vector;
 
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 
 
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 1.8 $ $Date: 2003/01/30 17:16:26 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:35 $
  * @author Oliver Becker
  */
 
 public class TransformFactory extends FactoryBase
 {
-   // Log4J initialization
-   private static org.apache.log4j.Logger log4j =
-      org.apache.log4j.Logger.getLogger(TransformFactory.class);
+   private static org.apache.log4j.Logger log;
+   static {
+      if (DEBUG)
+         // Log4J initialization
+         log = org.apache.log4j.Logger.getLogger(TransformFactory.class);
+   }
 
 
    /** allowed attributes for this element. */
@@ -111,14 +112,14 @@ public class TransformFactory extends FactoryBase
       }
 
 
-      /** @return all top level elements of the stylesheet */
+      /** @return all top level elements of the transformation sheet */
       public Vector getChildren()
       {
          return children;
       }
 
 
-      public void append(NodeBase node)
+      public void insert(NodeBase node)
          throws SAXParseException
       {
          if (node instanceof OptionsFactory.Instance) {
@@ -132,7 +133,7 @@ public class TransformFactory extends FactoryBase
          else if (node instanceof TemplateBase || // template, procedure
                   node instanceof GroupFactory.Instance ||
                   node instanceof VariableBase) // param, variable, buffer
-            super.append(node);
+            super.insert(node);
          else
             throw new SAXParseException("`" + node.qName + 
                                         "' not allowed as top level element", 

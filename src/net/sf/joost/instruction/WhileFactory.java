@@ -1,5 +1,5 @@
 /*
- * $Id: WhileFactory.java,v 1.1 2003/03/17 15:56:39 obecker Exp $
+ * $Id: WhileFactory.java,v 2.0 2003/04/25 16:46:35 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,10 +31,8 @@ import org.xml.sax.SAXParseException;
 
 import java.util.Hashtable;
 import java.util.HashSet;
-import java.util.Stack;
 
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Value;
 import net.sf.joost.grammar.Tree;
 
@@ -42,7 +40,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>while</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.1 $ $Date: 2003/03/17 15:56:39 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:35 $
  * @author Oliver Becker
  */
 
@@ -80,48 +78,48 @@ final public class WhileFactory extends FactoryBase
    final public class Instance extends NodeBase
    {
       private Tree test;
+      private AbstractInstruction contents;
 
       // Constructor
-      protected Instance(String qName, NodeBase parent, Locator locator, 
-                         Tree test)
+      protected Instance(final String qName, NodeBase parent, 
+                         Locator locator, Tree test)
       {
-         super(qName, parent, locator, false);
+         super(qName, parent, locator, true);
          this.test = test;
+         // dummy node, needed as store for the next node
+         next.next = nodeEnd = new AbstractInstruction() {
+            public short process(Context context) 
+               throws SAXException {
+               throw new SAXParseException(
+                  "Processed dummy node of " + qName, 
+                  publicId, systemId, lineNo, colNo);
+            }
+         };
       }
-      
-      /**
-       * Evaluates the expression given in the test attribute and
-       * processes its children as long as the result is true.
-       *
-       * @param emitter the Emitter
-       * @param eventStack the ancestor event stack
-       * @param processStatus the current processing status
-       * @return the new processing status, influenced by contained
-       *         <code>stx:process-...</code> elements.
-       */    
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
+
+
+      public boolean compile(int pass)
          throws SAXException
       {
-         boolean testResult = false;
-         if ((processStatus & ST_PROCESSING) != 0) {
-            testResult = test.evaluate(context, eventStack, this)
-                             .convertToBoolean().bool;
-         }
-         else {
-            // re-entered, we must have been here before ...
-            testResult = true;
-         }
+         contents = next;
+         lastChild.next.next = this; // loop
+         return false; // done
+      }
 
-         while (testResult) {
-            processStatus = super.process(emitter, eventStack, context,
-                                          processStatus);
-            if ((processStatus & ST_PROCESSING) == 0) // suspend processing
-               break;
-            testResult = test.evaluate(context, eventStack, this)
-                             .convertToBoolean().bool;
-         }
-         return processStatus;
+
+      /**
+       * Evaluate the expression given in the test attribute and
+       * adjust the next instruction depending on the result.
+       */
+      public short process(Context context)
+         throws SAXException
+      {
+         super.process(context);
+         if (test.evaluate(context, this).convertToBoolean().bool)
+            next = contents;
+         else
+            next = nodeEnd.next;
+         return PR_CONTINUE;
       }
    }
 }

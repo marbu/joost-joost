@@ -1,5 +1,5 @@
 /*
- * $Id: PSelfFactory.java,v 1.11 2003/02/08 16:23:54 obecker Exp $
+ * $Id: PSelfFactory.java,v 2.0 2003/04/25 16:46:34 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,16 +31,14 @@ import org.xml.sax.SAXParseException;
 
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Stack;
 
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
 
 
 /**
  * Factory for <code>process-self</code> elements, which are represented by 
  * the inner Instance class.
- * @version $Revision: 1.11 $ $Date: 2003/02/08 16:23:54 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:34 $
  * @author Oliver Becker
  */
 
@@ -91,32 +89,15 @@ public class PSelfFactory extends FactoryBase
       }
 
 
-      protected short process(Emitter emitter, Stack eventStack,
-                             Context context, short processStatus)
+      /** 
+       * @return {@link #PR_SELF}
+       */
+      public short processEnd(Context context)
          throws SAXException
       {
-         // process stx:with-param
-         super.process(emitter, eventStack, context, processStatus);
-
-         // ST_PROCESSING off: search mode
-         if ((processStatus & ST_PROCESSING) == 0) {
-            // toggle ST_PROCESSING 
-            return (short)(processStatus ^ ST_PROCESSING);
-         }
-         // ST_PROCESSING on, other bits off
-         else if (processStatus == ST_PROCESSING) {
-            // ST_PROCESSING off, ST_SELF on
-            return ST_SELF;
-         }
-         // else: ST_PROCESSING on, any other bits on
-         else
-            context.errorHandler.error("Encountered `" + qName + "' after " +
-              (((processStatus & ST_CHILDREN) != 0) ? "stx:process-children" : 
-               ((processStatus & ST_SELF)     != 0) ? "stx:process-self" : 
-               ((processStatus & ST_SIBLINGS) != 0) ? "stx:process-siblings" : 
-                                      "????"),
-                                       publicId, systemId, lineNo, colNo);
-         return processStatus; // if errorHandler returned
+         // no need to call super.processEnd(), there are no local
+         // variable declarations
+         return PR_SELF;
       }
    }
 }

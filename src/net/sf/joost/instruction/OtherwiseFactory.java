@@ -1,5 +1,5 @@
 /*
- * $Id: OtherwiseFactory.java,v 1.4 2002/11/27 10:03:12 obecker Exp $
+ * $Id: OtherwiseFactory.java,v 2.0 2003/04/25 16:46:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,35 +30,18 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import java.util.Hashtable;
-import java.util.Stack;
 
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
+
 
 /** 
  * Factory for <code>otherwise</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.4 $ $Date: 2002/11/27 10:03:12 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:33 $
  * @author Oliver Becker
  */
-
 public class OtherwiseFactory extends FactoryBase
 {
-   /** 
-    * The single instance of this factory, created in the Constructor
-    */
-   public static OtherwiseFactory singleton;
-
-
-   //
-   // Constructor
-   //
-   public OtherwiseFactory()
-   {
-      singleton = this;
-   }
-
-
    /** @return <code>"otherwise"</code> */
    public String getName()
    {
@@ -80,51 +63,16 @@ public class OtherwiseFactory extends FactoryBase
    }
 
 
-   /** 
-    * Creates an instance from an <code>stx:else</code> object.
-    */
-   protected Instance cloneFromElse(NodeBase elseObj)
-   {
-      return new Instance(elseObj);
-   }
-
 
    /** Represents an instance of the <code>otherwise</code> element. */
    final public class Instance extends NodeBase
    {
       public Instance(String qName, NodeBase parent, Locator locator)
       {
-         super(qName, parent, locator, false);
-      }
-
-      /** for {@link #cloneFromElse} */
-      private Instance(NodeBase elseObj)
-      {
-         super(elseObj);
-         children = elseObj.children;
+         super(qName, parent, locator, true);
       }
 
 
-      /**
-       * Processes its content.
-       *
-       * @param emitter the Emitter
-       * @param eventStack the ancestor event stack
-       * @param processStatus the current processing status
-       * @return the new processing status, influenced by contained
-       *         <code>stx:process-...</code> elements, or 0 if the
-       *         processing is complete
-       */
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
-         throws SAXException
-      {
-         processStatus = super.process(emitter, eventStack, context,
-                                       processStatus);
-         if ((processStatus & ST_PROCESSING) != 0)
-            return 0;
-         else
-            return processStatus;
-      }
+      // no special process and processEnd methods required
    }
 }

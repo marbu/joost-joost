@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 1.9 2003/02/02 14:09:30 obecker Exp $
+ * $Id: GroupBase.java,v 2.0 2003/04/25 16:46:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -35,7 +35,6 @@ import java.util.Stack;
 import java.util.Vector;
 
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Value;
 
 
@@ -45,7 +44,7 @@ import net.sf.joost.stx.Value;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 1.9 $ $Date: 2003/02/02 14:09:30 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:32 $
  * @author Oliver Becker
  */
 
@@ -96,15 +95,22 @@ abstract public class GroupBase extends NodeBase
    /** Expanded name of this group */
    protected String groupName;
 
-   // Log4J initialization
-   private static org.apache.log4j.Logger log4j = 
-      org.apache.log4j.Logger.getLogger(GroupBase.class);
+   /** Vector of the children */
+   protected Vector children = new Vector();
+
+
+   private static org.apache.log4j.Logger log;
+   static {
+      if (DEBUG)
+         // Log4J initialization
+         log = org.apache.log4j.Logger.getLogger(GroupBase.class);
+   }
 
 
    // Constructor
    protected GroupBase(String qName, NodeBase parent, Locator locator)
    {
-      super(qName, parent, locator, false);
+      super(qName, parent, locator, true);
       this.parentGroup = (GroupBase)parent;
       containedPublicTemplates = new Vector();
       containedGlobalTemplates = new Vector();
@@ -114,17 +120,21 @@ abstract public class GroupBase extends NodeBase
          namedGroups = parentGroup.namedGroups;
          globalProcedures = parentGroup.globalProcedures;
       }
-
-      // all groups have at least an empty vector of children to simplify
-      // parsing
-      children = new Vector();
    }
    
+
+   public void insert(NodeBase node)
+      throws SAXParseException
+   {
+      // no call of super.insert(node)
+      children.addElement(node);
+   }
    
+
    /**
     * Determines the visible templates for this group.
     */
-   public void parsed()
+   public boolean compile(int pass)
       throws SAXException
    {
       Object[] objs = children.toArray();
@@ -242,6 +252,8 @@ abstract public class GroupBase extends NodeBase
       // create array of group variables
       groupVariables = new VariableBase[vvec.size()];
       vvec.toArray(groupVariables);
+
+      return false; // done
    }
 
 
@@ -249,13 +261,12 @@ abstract public class GroupBase extends NodeBase
     * Initializes recursively the group variables of this group and
     * all contained sub-groups (breadth first).
     */
-   public void initGroupVariables(Emitter emitter, Stack eventStack,
-                                  Context context)
+   public void initGroupVariables(Context context)
       throws SAXException
    {
-      enterRecursionLevel(emitter, eventStack, context);
+      enterRecursionLevel(context);
       for (int i=0; i<containedGroups.length; i++)
-         containedGroups[i].initGroupVariables(emitter, eventStack, context);
+         containedGroups[i].initGroupVariables(context);
    }
 
 
@@ -263,8 +274,7 @@ abstract public class GroupBase extends NodeBase
     * Enters a recursion level by creating a new set of group variable
     * instances.
     */
-   public void enterRecursionLevel(Emitter emitter, Stack eventStack, 
-                                   Context context)
+   public void enterRecursionLevel(Context context)
       throws SAXException
    {
       // shadowed variables, needed if keep-value="yes"
@@ -283,10 +293,11 @@ abstract public class GroupBase extends NodeBase
             varTable.put(groupVariables[i].expName, 
                          ((Value)shadowed.get(groupVariables[i].expName))
                                          .copy());
-         else
-            // compute new value from the select attribute
-            groupVariables[i].process(emitter, eventStack, context,
-                                      ST_PROCESSING);
+         else {
+            for (AbstractInstruction inst = groupVariables[i];
+                 inst != null; inst = inst.next)
+               inst.process(context);
+         }
    }
 
 
@@ -316,11 +327,10 @@ abstract public class GroupBase extends NodeBase
 
    
    // Shouldn't be called
-   protected short process(Emitter h, Stack eventStack, Context c,
-                           short p)
+   public short process(Context c)
       throws SAXException
    {
-      log4j.fatal("process called for " + qName);
-      throw new SAXException("process called for " + qName);
+      throw new SAXParseException("process called for " + qName,
+                                  publicId, systemId, lineNo, colNo);
    }
 }

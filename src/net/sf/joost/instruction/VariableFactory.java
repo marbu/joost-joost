@@ -1,5 +1,5 @@
 /*
- * $Id: VariableFactory.java,v 1.12 2003/02/21 14:20:34 obecker Exp $
+ * $Id: VariableFactory.java,v 2.0 2003/04/25 16:46:35 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,12 +31,10 @@ import org.xml.sax.SAXParseException;
 
 import java.util.Hashtable;
 import java.util.HashSet;
-import java.util.Stack;
 
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.stx.Value;
 
@@ -44,7 +42,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>variable</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.12 $ $Date: 2003/02/21 14:20:34 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:35 $
  * @author Oliver Becker
  */
 
@@ -112,79 +110,69 @@ final public class VariableFactory extends FactoryBase
       {
          super(qName, parent, locator, expName, keepValue, 
                // this element must be empty if there is a select attribute
-               select != null);
+               select == null);
          this.varName = varName;
          this.select = select;
          this.keepValue = keepValue;
       }
-      
-      /**
-       * Declares a variable.
-       *
-       * @param emitter the Emitter
-       * @param eventStack the ancestor event stack
-       * @param context the Context object
-       * @param processStatus the current processing status
-       * @return the new <code>processStatus</code>
-       */    
-      public short process(Emitter emitter, Stack eventStack,
-                           Context context, short processStatus)
+
+
+      public short process(Context context)
          throws SAXException
       {
-         // pre process-...
-         if ((processStatus & ST_PROCESSING) !=0 ) {
-
-            // does this variable has contents?
-            if (children != null) {
-               // create a new StringEmitter for this instance and put it
-               // on the emitter stack
-               emitter.pushEmitter(
-                  new StringEmitter(new StringBuffer(),
-                                    "(`" + qName + "' started in line " +
-                                    lineNo + ")"));
-            }
+         // does this variable have a select attribute?
+         if (select != null) {
+            // select attribute present
+            Value v = select.evaluate(context, this);
+            processVar(v, context);
          }
+         else {
+            // endInstruction present
+            super.process(context);
+            // create a new StringEmitter for this instance and put it
+            // on the emitter stack
+            context.emitter.pushEmitter(
+               new StringEmitter(new StringBuffer(),
+                                 "(`" + qName + "' started in line " +
+                                 lineNo + ")"));
+         }
+         return PR_CONTINUE;
+      }
 
-         processStatus = super.process(emitter, eventStack, context, 
-                                       processStatus);
 
-         // post process-...
-         if ((processStatus & ST_PROCESSING) != 0) {
-            Value v;
-            if (children != null) {
-               // contents present
-               v = new Value(((StringEmitter)emitter.popEmitter())
+      public short processEnd(Context context)
+         throws SAXException
+      {
+         Value v = new Value(((StringEmitter)context.emitter.popEmitter())
                                                     .getBuffer().toString());
-            }
-            else if (select != null) {
-               // select attribute present
-               v = select.evaluate(context, eventStack, this);
-            }
-            else {
-               // initialize with the empty string
-               v = new Value("");
-            }
 
-            // determine scope
-            Hashtable varTable;
-            if (parent instanceof GroupBase) // group variable
-               varTable = (Hashtable)((GroupBase)parent).groupVars.peek();
-            else
-               varTable = context.localVars;
+         processVar(v, context);
 
-            if (varTable.get(expName) != null) {
-               context.errorHandler.error(
-                  "Variable `" + varName + "' already declared",
-                  publicId, systemId, lineNo, colNo);
-               return processStatus;// if the errorHandler returns
-            }
-            varTable.put(expName, v);
+         return super.processEnd(context);
+      }
 
-            if (varTable == context.localVars)
-               parent.declareVariable(expName);
+
+      /** Declares a variable */
+      private void processVar(Value v, Context context)
+         throws SAXException
+      {
+         // determine scope
+         Hashtable varTable;
+         if (parent instanceof GroupBase) // group variable
+            varTable = (Hashtable)((GroupBase)parent).groupVars.peek();
+         else
+            varTable = context.localVars;
+
+         if (varTable.get(expName) != null) {
+            context.errorHandler.error(
+               "Variable `" + varName + "' already declared",
+               publicId, systemId, lineNo, colNo);
+            return;// if the errorHandler returns
          }
+         varTable.put(expName, v);
 
-         return processStatus;
+         if (varTable == context.localVars)
+            parent.declareVariable(expName);
       }
    }
 }

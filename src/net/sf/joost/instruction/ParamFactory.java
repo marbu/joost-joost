@@ -1,5 +1,5 @@
 /*
- * $Id: ParamFactory.java,v 1.12 2003/02/21 14:20:33 obecker Exp $
+ * $Id: ParamFactory.java,v 2.0 2003/04/25 16:46:34 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,12 +31,10 @@ import org.xml.sax.SAXParseException;
 
 import java.util.Hashtable;
 import java.util.HashSet;
-import java.util.Stack;
 
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.stx.Value;
 
@@ -44,7 +42,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>params</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.12 $ $Date: 2003/02/21 14:20:33 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:34 $
  * @author Oliver Becker
  */
 
@@ -86,14 +84,17 @@ final public class ParamFactory extends FactoryBase
             "or a child of stx:template or stx:procedure",
             locator);
 
-      if(parent instanceof TemplateFactory.Instance && 
-            parent.children != null && 
-            !(parent.children.elementAt(parent.children.size()-1) 
-              instanceof Instance))
+      if(parent instanceof TemplateBase &&
+         parent != parent.lastChild && // not the first
+         !(parent.lastChild instanceof Instance) && // not an empty stx:param
+         !(parent.lastChild instanceof NodeBase.End &&
+           ((NodeBase.End)parent.lastChild).getStart()
+                instanceof Instance)) { // not a non-empty stx:param
          throw new SAXParseException(
             "`" + qName + "' instructions must always occur as first " +
             "children of `" + parent.qName + "'",
             locator);
+      }
 
       String nameAtt = getAttribute(qName, attrs, "name", locator);
       String parName = getExpandedName(nameAtt, nsSet, locator);
@@ -126,6 +127,7 @@ final public class ParamFactory extends FactoryBase
       private String varName;
       private Tree select;
       private boolean required;
+      private AbstractInstruction contents, successor;
 
       protected Instance(String qName, NodeBase parent, Locator locator, 
                          String varName, String expName, Tree select,
@@ -133,25 +135,27 @@ final public class ParamFactory extends FactoryBase
       {
          super(qName, parent, locator, expName, 
                false, // keep-value has no meaning here
-               // this element must be empty if there is a select attribute
-               // or the parameter was declared as required
-               select != null || required);
+               // this element may have children if there is no select
+               // attribute and the parameter is not required
+               select == null && !required);
          this.varName = varName;
          this.select = select;
          this.required = required;
       }
-      
-      /**
-       * Declares a parameter.
-       *
-       * @param emitter the Emitter
-       * @param eventStack the ancestor event stack
-       * @param context the Context object
-       * @param processStatus the current processing status
-       * @return <code>processStatus</code>, value doesn't change
-       */    
-      public short process(Emitter emitter, Stack eventStack,
-                           Context context, short processStatus)
+
+
+      public boolean compile(int pass)
+      {
+         if (pass == 0)
+            return true; // nodeEnd not available yet
+
+         contents = next;
+         successor = nodeEnd != null ? nodeEnd.next : next;
+         return false;
+      }
+
+
+      public short process(Context context)
          throws SAXException
       {
          Value v;
@@ -164,71 +168,71 @@ final public class ParamFactory extends FactoryBase
             // passed value from another template via stx:with-param
             v = (Value)context.passedParameters.get(expName);
          }
-
-         // pre process-...
-         if ((processStatus & ST_PROCESSING) !=0 ) {
-
-            // has there no parameter value passed and
-            // does this parameter has contents? (no select attribute present)
-            if (v == null && children != null) {
-               // create a new StringEmitter for this instance and put it
-               // on the emitter stack
-               emitter.pushEmitter(
+         if (v == null) {
+            // no parameter passed
+            if (required) {
+               context.errorHandler.error(
+                  "Missing value for required parameter `" + varName + "'",
+                  publicId, systemId, lineNo, colNo);
+               return PR_CONTINUE; // if the errorHandler returns
+            }
+            else if (select != null) {
+               // select attribute present
+               v = select.evaluate(context, this);
+            }
+            else { 
+               // use contents
+               next = contents;
+               super.process(context);
+               context.emitter.pushEmitter(
                   new StringEmitter(new StringBuffer(),
                                     "(`" + qName + "' started in line " +
                                     lineNo + ")"));
+               return PR_CONTINUE;
             }
          }
+         processParam(v, context);
+         if (nodeEnd != null) {
+            // skip contents, the parameter value is already available
+            next = successor;
+         }
+         return PR_CONTINUE;
+      }
 
-         processStatus = super.process(emitter, eventStack, context, 
-                                       processStatus);
 
-         // post process-...
-         if ((processStatus & ST_PROCESSING) !=0 ) {
-            if (v == null) { // parameter value not passed
-               if (children != null) {
-                  // contents present
-                  v = new Value(((StringEmitter)emitter.popEmitter())
+      public short processEnd(Context context)
+         throws SAXException
+      {
+         processParam(new Value(((StringEmitter)context.emitter.popEmitter())
                                                        .getBuffer()
-                                                       .toString());
-               }
-               else if (select != null) {
-                  // select attribute present
-                  v = select.evaluate(context, eventStack, this);
-               }
-               else if (required) {
-                  context.errorHandler.error(
-                     "Missing value for required parameter `" + varName + "'",
-                     publicId, systemId, lineNo, colNo);
-                  return processStatus; // if the errorHandler returns
-               }
-               else {
-                  // initialize with the empty string
-                  v = new Value("");
-               }
-            }
+                                                       .toString()),
+                      context);
+         return super.processEnd(context);
+      }
 
-            // determine scope
-            Hashtable varTable;
-            if (parent instanceof TransformFactory.Instance) // global para
-               varTable = (Hashtable)((GroupBase)parent).groupVars.peek();
-            else
-               varTable = context.localVars;
 
-            if (varTable.get(expName) != null) {
-               context.errorHandler.error(
-                  "Param `" + varName + "' already declared",
-                  publicId, systemId, lineNo, colNo);
-               return processStatus; // if the errorHandler returns
-            }
+      /** Declare a parameter */
+      public void processParam(Value v, Context context)
+         throws SAXException
+      {
+         // determine scope
+         Hashtable varTable;
+         if (parent instanceof TransformFactory.Instance) // global para
+            varTable = (Hashtable)((GroupBase)parent).groupVars.peek();
+         else
+            varTable = context.localVars;
 
-            varTable.put(expName, v);
-
-            if (varTable == context.localVars)
-               parent.declareVariable(expName);
+         if (varTable.get(expName) != null) {
+            context.errorHandler.error(
+               "Param `" + varName + "' already declared",
+               publicId, systemId, lineNo, colNo);
+            return; // if the errorHandler returns
          }
 
-         return processStatus;
+         varTable.put(expName, v);
+
+         if (varTable == context.localVars)
+            parent.declareVariable(expName);
       }
    }
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: PIFactory.java,v 1.4 2003/02/20 09:25:30 obecker Exp $
+ * $Id: PIFactory.java,v 2.0 2003/04/25 16:46:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,11 +32,9 @@ import org.xml.sax.helpers.AttributesImpl;
 
 import java.util.Hashtable;
 import java.util.HashSet;
-import java.util.Stack;
 
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Value;
 
@@ -44,7 +42,7 @@ import net.sf.joost.stx.Value;
 /** 
  * Factory for <code>processing-instruction</code> elements, which are 
  * represented by the inner Instance class. 
- * @version $Revision: 1.4 $ $Date: 2003/02/20 09:25:30 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:33 $
  * @author Oliver Becker
  */
 
@@ -94,60 +92,57 @@ final public class PIFactory extends FactoryBase
       protected Instance(String qName, NodeBase parent, Locator locator, 
                          Tree name)
       {
-         super(qName, parent, locator, false);
+         super(qName, parent, locator, true);
          this.name = name;
          buffer = new StringBuffer();
          strEmitter = new StringEmitter(buffer, 
                                         "(`" + qName + "' started in line " +
                                         locator.getLineNumber() + ")");
       }
-      
+
+
       /**
-       * Emits a processing-instruction event to the emitter.
-       *
-       * @param emitter the Emitter
-       * @param eventStack the ancestor event stack
-       * @param context the Context object
-       * @param processStatus the current processing status
-       * @return the new <code>processStatus</code>
-       */    
-      protected short process(Emitter emitter, Stack eventStack,
-                              Context context, short processStatus)
+       * Activate a StringEmitter for collecting the data of the new PI
+       */
+      public short process(Context context)
          throws SAXException
       {
-         if ((processStatus & ST_PROCESSING) != 0) {
-            // check for nesting of this stx:processing-instruction
-            if (emitter.isEmitterActive(strEmitter)) {
-               context.errorHandler.error(
-                  "Can't create nested processing instruction here",
-                  publicId, systemId, lineNo, colNo);
-               return processStatus; // if the errorHandler returns
-            }
-            buffer.setLength(0);
-            emitter.pushEmitter(strEmitter);
-
-            piName = name.evaluate(context, eventStack, this).string;
-
-            // TO DO: is this piName valid?
+         super.process(context);
+         // check for nesting of this stx:processing-instruction
+         if (context.emitter.isEmitterActive(strEmitter)) {
+            context.errorHandler.error(
+               "Can't create nested processing instruction here",
+               publicId, systemId, lineNo, colNo);
+            return PR_CONTINUE; // if the errorHandler returns
          }
+         buffer.setLength(0);
+         context.emitter.pushEmitter(strEmitter);
 
-         processStatus = super.process(emitter, eventStack, context,
-                                       processStatus);
+         piName = name.evaluate(context, this).string;
 
-         if ((processStatus & ST_PROCESSING) != 0) {
-            emitter.popEmitter();
-            int index = buffer.length();
-            if (index != 0) {
-               // are there any "?>" in the pi data?
-               String str = buffer.toString();
-               while ((index = str.lastIndexOf("?>", --index)) != -1) 
-                  buffer.insert(index+1, ' ');
-            }
-            emitter.processingInstruction(piName, buffer.toString(),
-                                       publicId, systemId, lineNo, colNo);
+         // TO DO: is this piName valid?
+         return PR_CONTINUE;
+      }
+
+
+      /**
+       * Emits a processing-instruction to the result stream
+       */
+      public short processEnd(Context context)
+         throws SAXException
+      {
+         context.emitter.popEmitter();
+         int index = buffer.length();
+         if (index != 0) {
+            // are there any "?>" in the pi data?
+            String str = buffer.toString();
+            while ((index = str.lastIndexOf("?>", --index)) != -1) 
+               buffer.insert(index+1, ' ');
          }
-
-         return processStatus;
+         context.emitter.processingInstruction(piName, buffer.toString(),
+                                               publicId, systemId, 
+                                               lineNo, colNo);
+         return super.processEnd(context);
       }
    }
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: ElseFactory.java,v 1.3 2002/11/27 10:03:11 obecker Exp $
+ * $Id: ElseFactory.java,v 2.0 2003/04/25 16:46:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,16 +29,12 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
 
 import java.util.Hashtable;
-import java.util.Stack;
-import java.util.Vector;
 
 
 /** 
  * Factory for <code>else</code> elements, which are represented by
- * the inner Instance class. Such <code>else</code> elements will be replaced
- * afterwards by an <code>stx:choose</code> construction during
- * {@link NodeBase#parsed} in the parent element.
- * @version $Revision: 1.3 $ $Date: 2002/11/27 10:03:11 $
+ * the inner Instance class.
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:32 $
  * @author Oliver Becker
  */
 
@@ -58,12 +54,11 @@ public class ElseFactory extends FactoryBase
    {
       checkAttributes(qName, attrs, null, locator);
 
-      Object ifObj;
-      if (parent.children == null ||
-          !((ifObj = parent.children.lastElement())
-               instanceof IfFactory.Instance))
-            throw new SAXParseException(
-               "Found `" + qName + "' without stx:if", locator);
+      if (!(parent.lastChild instanceof NodeBase.End &&
+            ((NodeBase.End)parent.lastChild).getStart() instanceof 
+             IfFactory.Instance))
+         throw new SAXParseException(
+            "Found `" + qName + "' without stx:if", locator);
 
       return new Instance(qName, parent, locator);
    }
@@ -71,39 +66,15 @@ public class ElseFactory extends FactoryBase
 
    /** 
     * Represents an instance of the <code>else</code> element. 
-    * Note: this instance will be replaced by an <code>stx:otherwise</code>
-    * within an <code>stx:choose</code>.
     */
    final public class Instance extends NodeBase
    {
       public Instance(String qName, NodeBase parent, Locator locator)
       {
-         super(qName, parent, locator, false);
+         super(qName, parent, locator, true);
       }
 
-      /** 
-       * Called after <code>stx:else</code> was parsed completely.
-       * This method replaces the preceding <code>stx:if</code> with
-       * an appropriate <code>stx:choose/stx:when</code> and this
-       * <code>stx:else</code> node with an <code>stx:otherwise</code> 
-       * within the newly created <code>stx:choose</code>. This node 
-       * for <code>stx:else</code> itself won't be used later during the
-       * STX transformation process.
-       */
-      public void parsed()
-         throws SAXParseException
-      {
-         Vector siblings = parent.children;
-         // this node must be the last in the siblings list
-         int index = siblings.size() - 1;
-         // replace the stx:if with an stx:choose
-         siblings.setElementAt(
-            ChooseFactory.singleton
-                         .cloneIfElse(siblings.elementAt(index-1),
-                                      siblings.elementAt(index)), 
-            index-1);
-         // remove the stx:else (this node)
-         siblings.removeElementAt(index);
-      }
+
+      // no special process() and processEnd() needed
    }
 }

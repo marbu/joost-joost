@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.40 2003/03/19 11:27:12 obecker Exp $
+ * $Id: Processor.java,v 2.0 2003/04/25 16:47:18 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -51,6 +51,7 @@ import java.util.Vector;
 import java.io.IOException;
 
 import net.sf.joost.Constants;
+import net.sf.joost.instruction.AbstractInstruction;
 import net.sf.joost.instruction.GroupBase;
 import net.sf.joost.instruction.GroupFactory;
 import net.sf.joost.instruction.NodeBase;
@@ -63,7 +64,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.40 $ $Date: 2003/03/19 11:27:12 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:47:18 $
  * @author Oliver Becker
  */
 
@@ -85,7 +86,8 @@ public class Processor extends XMLFilterImpl
 
    /**
     * <p>
-    * We need a node from the stylesheet whose location can be passed to
+    * We need a node from the transformation sheet whose location can be 
+    * passed to
     * {@link Emitter#endElement Emitter.endElement}. Per default this is
     * the root element <code>stx:transform</code>. If <code>stx:options</code>
     * exists then it is this <code>stx:options</code>.
@@ -98,7 +100,7 @@ public class Processor extends XMLFilterImpl
     */
    private NodeBase copyLocation;
 
-   /** The node representing the stylesheet */
+   /** The node representing the transformation sheet */
    private TransformFactory.Instance transformNode;
 
    /**
@@ -137,7 +139,7 @@ public class Processor extends XMLFilterImpl
    /** Last event (this Processor uses one look-ahead) */
    private SAXEvent lastElement = null;
 
-   /** The output encoding specified in the stylesheet */
+   /** The output encoding specified in the transformation sheet */
    private String outputEncoding = "UTF-8";
 
 
@@ -156,7 +158,7 @@ public class Processor extends XMLFilterImpl
     * needed for matching and for position counting within the parent of
     * each event.
     */
-   private Stack eventStack = new Stack();
+   private Stack eventStack;
 
    /** 
     * Stack needed for inner processing (buffers, documents).
@@ -179,6 +181,12 @@ public class Processor extends XMLFilterImpl
    {
       /** The last instantiated template */
       TemplateFactory.Instance template;
+
+      /** The next instruction to be executed */
+      AbstractInstruction instruction;
+
+      /** The current group */
+      GroupBase currentGroup;
 
       /** The context position of the current node (from {@link Context}) */
       long contextPosition;
@@ -217,11 +225,14 @@ public class Processor extends XMLFilterImpl
        * Constructor for the initialization of all fields, needed for
        * <code>stx:process-siblings</code>
        */
-      Data(TemplateFactory.Instance t, long cp, SAXEvent la,
+      Data(TemplateFactory.Instance t, AbstractInstruction i, GroupBase cg,
+           long cp, SAXEvent la,
            TemplateFactory.Instance[] vt, short lps,
            PSiblingsFactory.Instance ps, Hashtable lv, SAXEvent se)
       {
          template = t;
+         instruction = i;
+         currentGroup = cg;
          contextPosition = cp;
          lookAhead = la;
          visibleTemplates = vt;
@@ -232,10 +243,13 @@ public class Processor extends XMLFilterImpl
       }
 
       /** Constructor for "descendant or self" processing */
-      Data(TemplateFactory.Instance t, long cp, SAXEvent la,
+      Data(TemplateFactory.Instance t, AbstractInstruction i, GroupBase cg, 
+           long cp, SAXEvent la,
            TemplateFactory.Instance[] vt, short lps)
       {
          template = t;
+         instruction = i;
+         currentGroup = cg;
          contextPosition = cp;
          lookAhead = la;
          visibleTemplates = vt;
@@ -266,7 +280,7 @@ public class Processor extends XMLFilterImpl
 
 
    // Log4J initialization
-   private static org.apache.log4j.Logger log4j =
+   private static org.apache.log4j.Logger log =
       org.apache.log4j.Logger.getLogger(Processor.class);
 
 
@@ -276,11 +290,12 @@ public class Processor extends XMLFilterImpl
 
    /**
     * Constructs a new <code>Processor</code> instance by parsing an 
-    * STX stylesheet.
-    * @param src the source for the STX stylesheet
+    * STX transformation sheet.
+    * @param src the source for the STX transformation sheet
     * @param errorListener an ErrorListener object for reporting errors
-    *        while <em>parsing the stylesheet</em> (not for processing of 
-    *        XML input with this stylesheet, see {@link #setErrorListener})
+    *        while <em>parsing the transformation sheet</em> (not for 
+    *        processing of XML input with this transformation sheet, 
+    *        see {@link #setErrorListener})
     * @throws IOException if <code>src</code> couldn't be retrieved
     * @throws SAXException if a SAX parser couldn't be created
     */
@@ -290,14 +305,14 @@ public class Processor extends XMLFilterImpl
       // create one XMLReader for parsing *and* processing
       XMLReader reader = getXMLReader();
 
-      // create a Parser for parsing the STX stylesheet
+      // create a Parser for parsing the STX transformation sheet
       ErrorHandlerImpl errorHandler = new ErrorHandlerImpl(errorListener, 
                                                            true);
       Parser stxParser = new Parser(errorHandler);
       reader.setContentHandler(stxParser);
       reader.setErrorHandler(errorHandler);
 
-      // parse the stylesheet
+      // parse the transformation sheet
       reader.parse(src);
 
       init(stxParser);
@@ -309,8 +324,8 @@ public class Processor extends XMLFilterImpl
 
    /**
     * Constructs a new <code>Processor</code> instance by parsing an 
-    * STX stylesheet.
-    * @param src the source for the STX stylesheet
+    * STX transformation sheet.
+    * @param src the source for the STX transformation sheet
     * @throws IOException if <code>src</code> couldn't be retrieved
     * @throws SAXException if a SAX parser couldn't be created
     */
@@ -323,8 +338,8 @@ public class Processor extends XMLFilterImpl
 
    /**
     * Constructs a new Processor instance from an existing Parser
-    * (Joost-Representation of an STX stylesheet)
-    * @param stxParser the joost-Representation of a stylesheet
+    * (Joost-Representation of an STX transformation sheet)
+    * @param stxParser the joost-Representation of a transformation sheet
     * @throws SAXException if a SAX parent parser couldn't be created
     */
    public Processor(Parser stxParser)
@@ -396,21 +411,22 @@ public class Processor extends XMLFilterImpl
          }
       }
 
-      log4j.info("Using " + reader.getClass().getName());
+      log.info("Using " + reader.getClass().getName());
       return reader;
    }
 
 
    /**
     * Initialize a <code>Processor</code> object from an STX Parser
-    * @throws SAXException if global variables of the STX stylesheet 
-    * couldn't be initialized
+    * @throws SAXException if global variables of the STX transformation 
+    * sheet couldn't be initialized
     */
    private void init(Parser stxParser)
       throws SAXException
    {
       context = new Context();
-      emitter = new Emitter(context.errorHandler);
+      emitter = context.emitter = new Emitter(context.errorHandler);
+      eventStack = context.ancestorStack;
 
       setErrorHandler(context.errorHandler); // register error handler
 
@@ -455,7 +471,7 @@ public class Processor extends XMLFilterImpl
                             this);
       }
       catch (SAXException ex) {
-         log4j.warn("Accessing " + parent + ": " + ex);
+         log.warn("Accessing " + parent + ": " + ex);
       }
    }
 
@@ -515,7 +531,7 @@ public class Processor extends XMLFilterImpl
 
 
    /**
-    * @return the output encoding specified in the STX stylesheet
+    * @return the output encoding specified in the STX transformation sheet
     */
    public String getOutputEncoding()
    {
@@ -524,7 +540,7 @@ public class Processor extends XMLFilterImpl
 
 
    /** 
-    * Sets a global parameter of the STX stylesheet
+    * Sets a global parameter of the STX transformation sheet
     * @param name the (expanded) parameter name
     * @param value the parameter value as a string
     */
@@ -537,7 +553,7 @@ public class Processor extends XMLFilterImpl
 
 
    /**
-    * Returns a global parameter of the STX stylesheet
+    * Returns a global parameter of the STX transformation sheet
     * @param name the (expanded) parameter name
     * @return the parameter value or <code>null</code> if this parameter
     *    isn't present
@@ -576,9 +592,10 @@ public class Processor extends XMLFilterImpl
       innerProcStack.push(context.localVars.clone());
       // possible jump to another group (changed visibleTemplates)
       dataStack.push(
-         new Data(null, context.position, context.lookAhead,
+         new Data(null, null, context.currentGroup, context.position, 
+                  context.lookAhead,
                   context.nextProcessGroup.visibleTemplates,
-                  ST_BUFFER));
+                  PR_BUFFER));
    }
 
 
@@ -608,7 +625,7 @@ public class Processor extends XMLFilterImpl
    {
       for (int top=dataStack.size()-1; top >= 0; top--) {
          Data d = (Data)dataStack.elementAt(top);
-         if ((d.lastProcStatus & ST_SELF) != 0) { // stx:process-self
+         if (d.lastProcStatus == PR_SELF) { // stx:process-self
             if (d.template == temp)
                return false; // no, this template was already in use
             // else continue
@@ -637,11 +654,11 @@ public class Processor extends XMLFilterImpl
 
       // Is the previous instruction not an stx:process-self?
       // used for performance (to prevent calling foundUnprocessedTemplate())
-      boolean notSelf = (top.lastProcStatus & ST_SELF) == 0;
+      boolean notSelf = (top.lastProcStatus != PR_SELF);
 
       // first: lookup in the array of visible templates
       for (i=0; i<top.visibleTemplates.length; i++)
-         if (top.visibleTemplates[i].matches(context, eventStack, true) &&
+         if (top.visibleTemplates[i].matches(context, true) &&
              (notSelf || foundUnprocessedTemplate(top.visibleTemplates[i]))) {
             category = top.visibleTemplates;
             break;
@@ -650,7 +667,7 @@ public class Processor extends XMLFilterImpl
       // second: if nothing was found, lookup in the array of global templates
       if (category == null)
          for (i=0; i<globalTemplates.length; i++)
-            if (globalTemplates[i].matches(context, eventStack, true) &&
+            if (globalTemplates[i].matches(context, true) &&
                 (notSelf || foundUnprocessedTemplate(globalTemplates[i]))) {
                category = globalTemplates;
                break;
@@ -664,7 +681,7 @@ public class Processor extends XMLFilterImpl
          if (++i < category.length && priority == category[i].getPriority()) {
             for (; i<category.length &&
                    priority == category[i].getPriority(); i++) {
-               if (category[i].matches(context, eventStack, false))
+               if (category[i].matches(context, false))
                   context.errorHandler.error(
                      "Ambigous template rule with priority " + priority +
                      ", found matching template rule already in line " +
@@ -686,55 +703,81 @@ public class Processor extends XMLFilterImpl
       throws SAXException
    {
       SAXEvent event = (SAXEvent)eventStack.peek();
-      log4j.debug(event);
+      if (DEBUG)
+         if (log.isDebugEnabled()) {
+            log.debug(event);
+            log.debug(context.localVars);
+         }
 
-      if ((((Data)dataStack.peek()).lastProcStatus & ST_SIBLINGS) != 0)
+      if (((Data)dataStack.peek()).lastProcStatus == PR_SIBLINGS)
          processSiblings();
 
       TemplateFactory.Instance temp = findMatchingTemplate();
       if (temp != null) {
          boolean attributeLoop;
-         short procStatus = ST_PROCESSING;
+         AbstractInstruction inst = temp;
          do {
-            log4j.debug("status: " + procStatus);
             attributeLoop = false;
             context.currentItem = null;
-            procStatus = temp.process(emitter, eventStack, context,
-                                      procStatus);
-            if ((procStatus & ST_CHILDREN) != 0) {
-               if ((procStatus & ST_PROCESSING) == 0) {
-                  // processing suspended due to a stx:process-children
-                  dataStack.push(
-                     new Data(temp, context.position, context.lookAhead,
-                              context.nextProcessGroup.visibleTemplates,
-                              procStatus));
-                  if (log4j.isDebugEnabled())
-                     log4j.debug("children - dataStack.push " + 
-                                 dataStack.peek());
-               }
-               // else: process-children encountered, but processing has not
-               // been suspended (text, cdata, comment, pi, attribute)
-               // -> nothing left to do
+
+            int ret = PR_CONTINUE;
+            while (inst != null && ret == PR_CONTINUE) {
+               if (DEBUG)
+                  if (log.isDebugEnabled())
+                     log.debug(inst);
+               ret = inst.process(context);
+               inst = inst.next;
             }
-            else if ((procStatus & ST_SELF) != 0) {
-               // stx:process-self, processing is disabled at any rate
-               // marker for findMatchingTemplate()
+            if (DEBUG) 
+               if (log.isDebugEnabled()) {
+                  log.debug("stop " + ret);
+                  log.debug(context.localVars);
+               }
+            switch (ret) {
+            case PR_CONTINUE: // templated finished
+               if (event.type == SAXEvent.ELEMENT || 
+                   event.type == SAXEvent.ROOT) {
+                  skipDepth = 1;
+                  collectedCharacters.setLength(0); // clear text
+               }
+               break;
+            case PR_CHILDREN: // stx:process-children encountered
                dataStack.push(
-                  new Data(temp, context.position, context.lookAhead,
+                  new Data(temp, inst, context.currentGroup, 
+                           context.position, context.lookAhead,
                            context.nextProcessGroup.visibleTemplates,
-                           procStatus));
+                           PR_CHILDREN));
+               break;
+            case PR_SELF: // stx:process-self encountered
+               dataStack.push(
+                  new Data(temp, inst, context.currentGroup, 
+                           context.position, context.lookAhead,
+                           context.nextProcessGroup.visibleTemplates,
+                           PR_SELF));
                processEvent(); // recurse
                if (event.type == SAXEvent.TEXT || 
                    event.type == SAXEvent.CDATA || 
                    event.type == SAXEvent.COMMENT || 
                    event.type == SAXEvent.PI ||
                    event.type == SAXEvent.ATTRIBUTE) {
-                  // continue processing
+                  // no children present, continue processing
                   dataStack.pop();
-                  temp.process(emitter, eventStack, context, ST_SELF);
+                  ret = PR_CONTINUE;
+                  while (inst != null && ret == PR_CONTINUE) {
+                     if (DEBUG)
+                        if (log.isDebugEnabled())
+                           log.debug(inst);
+                     ret = inst.process(context);
+                     inst = inst.next;
+                  }
+                  if (DEBUG)
+                     if (log.isDebugEnabled())
+                        log.debug("stop " + ret);
+                  // ret == PR_SELF / PR_CHILDREN: Fehlermeldung!
+                  // ret == PR_SIBLINGS? BUG!
                }
-            }
-            else if ((procStatus & ST_SIBLINGS) != 0) {
+               break;
+            case PR_SIBLINGS: // stx:process-siblings encountered
                // no stx:process-children before, skip contents
                if (event.type == SAXEvent.ELEMENT || 
                    event.type == SAXEvent.ROOT) {
@@ -743,28 +786,24 @@ public class Processor extends XMLFilterImpl
                   collectedCharacters.setLength(0); // clear text
                }
                dataStack.push(
-                  new Data(temp, context.position, context.lookAhead,
+                  new Data(temp, inst, context.currentGroup, 
+                           context.position, context.lookAhead,
                            context.nextProcessGroup.visibleTemplates,
-                           procStatus, context.psiblings,
+                           PR_SIBLINGS, 
+                           context.psiblings,
                            context.localVars, event));
-            }
-            else if ((procStatus & ST_ATTRIBUTES) != 0) {
+               break;
+            case PR_ATTRIBUTES: // stx:process-attributes encountered
                // stx:process-attributes, just for elements
                dataStack.push(
-                  new Data(temp, context.position, context.lookAhead,
+                  new Data(temp, inst, context.currentGroup,
+                           context.position, context.lookAhead,
                            context.nextProcessGroup.visibleTemplates,
-                           procStatus));
+                           PR_ATTRIBUTES));
                processAttributes(event.attrs);
                dataStack.pop();
                attributeLoop = true;
-            }
-            else {
-               if (event.type == SAXEvent.ELEMENT || 
-                   event.type == SAXEvent.ROOT) {
-                  // end of template reached, skip contents
-                  skipDepth = 1;
-                  collectedCharacters.setLength(0); // clear text
-               }
+               break;
             }
          } while(attributeLoop);
       }
@@ -774,8 +813,6 @@ public class Processor extends XMLFilterImpl
          case SAXEvent.ROOT:
             dataStack.push(
                new Data(((Data)dataStack.peek()).visibleTemplates));
-            if (log4j.isDebugEnabled())
-               log4j.debug("default - dataStack.push " + dataStack.peek());
             break;
          case SAXEvent.ELEMENT:
             if((context.passThrough & PASS_THROUGH_ELEMENT) != 0)
@@ -786,13 +823,12 @@ public class Processor extends XMLFilterImpl
                                     copyLocation.lineNo, copyLocation.colNo);
             dataStack.push(
                new Data(((Data)dataStack.peek()).visibleTemplates));
-            if (log4j.isDebugEnabled())
-               log4j.debug("default - dataStack.push " + dataStack.peek());
             break;
          case SAXEvent.TEXT:
-            if((context.passThrough & PASS_THROUGH_TEXT) != 0)
+            if((context.passThrough & PASS_THROUGH_TEXT) != 0) {
                emitter.characters(event.value.toCharArray(), 
                                   0, event.value.length());
+            }
             break;
          case SAXEvent.CDATA:
             if((context.passThrough & PASS_THROUGH_TEXT) != 0) {
@@ -829,7 +865,7 @@ public class Processor extends XMLFilterImpl
                                     copyLocation.lineNo, copyLocation.colNo);
             break;
          default:
-            log4j.warn("no default action for " + event);
+            log.warn("no default action for " + event);
          }
       }
    }
@@ -842,7 +878,9 @@ public class Processor extends XMLFilterImpl
    private void processLastElement(SAXEvent currentEvent)
       throws SAXException
    {
-      log4j.debug(lastElement);
+      if (DEBUG)
+         if (log.isDebugEnabled())
+            log.debug(lastElement);
 
       // determine if the look-ahead is a text node
       String s = collectedCharacters.toString();
@@ -861,8 +899,6 @@ public class Processor extends XMLFilterImpl
       ((SAXEvent)eventStack.peek()).countElement(lastElement.uri, 
                                                  lastElement.lName);
       eventStack.push(lastElement);
-      if (log4j.isDebugEnabled())
-         log4j.debug("eventStack.push " + lastElement);
 
       lastElement = null;
       processEvent();
@@ -880,8 +916,9 @@ public class Processor extends XMLFilterImpl
    {
       String s = collectedCharacters.toString();
 
-      if (log4j.isDebugEnabled())
-         log4j.debug("`" + s + "'");
+      if (DEBUG)
+         if (log.isDebugEnabled())
+            log.debug("`" + s + "'");
 
       if (context.stripSpace && s.trim().length() == 0) {
          collectedCharacters.setLength(0);
@@ -896,19 +933,12 @@ public class Processor extends XMLFilterImpl
          ((SAXEvent)eventStack.peek()).countText();
          eventStack.push(SAXEvent.newText(s));
       }
-      if (log4j.isDebugEnabled())
-         log4j.debug("eventStack.push " + eventStack.peek());
       context.lookAhead = null;
 
       processEvent();
-
-      if (log4j.isDebugEnabled())
-         log4j.debug("eventStack.pop " + eventStack.pop());
-      else
-         eventStack.pop();
+      eventStack.pop();
 
       collectedCharacters.setLength(0);
-      log4j.debug("return");
    }
 
 
@@ -922,11 +952,15 @@ public class Processor extends XMLFilterImpl
       throws SAXException
    {
       for (int i=0; i<attrs.getLength(); i++) {
-         log4j.debug(attrs.getQName(i));
+         if (DEBUG)
+            if (log.isDebugEnabled())
+               log.debug(attrs.getQName(i));
          eventStack.push(SAXEvent.newAttribute(attrs, i));
          processEvent();
          eventStack.pop();
-         log4j.debug("done " + attrs.getQName(i));
+         if (DEBUG)
+            if (log.isDebugEnabled())
+               log.debug("done " + attrs.getQName(i));
       }
    }
 
@@ -949,20 +983,20 @@ public class Processor extends XMLFilterImpl
          stopData = null;
          do {
             context.localVars = data.localVars;
-            if (!data.psiblings.matches(context, eventStack)) {
+            if (!data.psiblings.matches(context)) {
                stopData = data;
                stopPos = stackPos;
             }
             data = (Data)dataStack.elementAt(--stackPos);
-         } while ((data.lastProcStatus & ST_SIBLINGS) != 0);
+         } while (data.lastProcStatus == PR_SIBLINGS);
          context.localVars = storedVars;
          if (stopData != null) // the first of the non-matching templates
             clearProcessSiblings(stopData, false);
          // If after clearing the process siblings instructions there is
-         // a new ST_SIBLINGS on the stack, its match conditions must
+         // a new PR_SIBLINGS on the stack, its match conditions must
          // be checked here, too.
       } while (stopData != null && dataStack.size() == stopPos+1 &&
-               (((Data)dataStack.peek()).lastProcStatus & ST_SIBLINGS) != 0);
+               ((Data)dataStack.peek()).lastProcStatus == PR_SIBLINGS);
    }
 
 
@@ -977,8 +1011,8 @@ public class Processor extends XMLFilterImpl
       // find last of these consecutive stx:process-siblings instructions
       Data data, stopData = null;;
       for (int i=dataStack.size()-1; 
-           ((data = (Data)dataStack.elementAt(i))
-                                   .lastProcStatus & ST_SIBLINGS) != 0;
+           (data = (Data)dataStack.elementAt(i)).lastProcStatus == 
+              PR_SIBLINGS;
            i-- ) {
          stopData = data;
       }
@@ -1010,24 +1044,39 @@ public class Processor extends XMLFilterImpl
          context.position = data.contextPosition; // restore position
          context.lookAhead = data.lookAhead;      // restore look ahead
          context.localVars = data.localVars;      // restore variables
-         short prStatus = ST_SIBLINGS;
+         AbstractInstruction inst = data.instruction;
+         int ret;
          do {
             // ignore further stx:process-siblings instructions in this
             // template if the processing was stopped by another
             // stx:process-siblings or clearLast==true
-            prStatus = data.template.process(emitter, eventStack, 
-                                             context, prStatus);
-            if ((prStatus & ST_ATTRIBUTES) != 0)
+            ret = PR_CONTINUE;
+            while (inst != null && ret == PR_CONTINUE) {
+               if (DEBUG)
+                  if (log.isDebugEnabled())
+                     log.debug(inst);
+               ret = inst.process(context);
+               inst = inst.next;
+            }
+            if (DEBUG)             
+               if (log.isDebugEnabled())
+                  {
+                     log.debug("stop " + ret);
+                     log.debug(context.localVars);
+                  }
+            if (ret == PR_ATTRIBUTES)
                processAttributes(data.sibEvent.attrs);
-         } while ((prStatus & ST_PROCESSING) == 0 && 
+         } while (ret != PR_CONTINUE && 
                   (clearLast || data != stopData));
-         if (!clearLast && (prStatus & ST_PROCESSING) == 0) {
+         if (!clearLast && ret != PR_CONTINUE) {
             // put back the last stx:process-siblings instruction
+            stopData.instruction = inst;
             // there might have been a group attribute
             stopData.visibleTemplates = 
                context.nextProcessGroup.visibleTemplates;
             stopData.psiblings = context.psiblings;
             stopData.localVars = context.localVars;
+            context.localVars = storedVars;
             dataStack.push(stopData);
          }
          // remove this event
@@ -1035,7 +1084,6 @@ public class Processor extends XMLFilterImpl
       } while (data != stopData); // last object
       // restore old event stack and local variables
       eventStack.push(event);
-      context.localVars = storedVars;
    }
 
 
@@ -1047,18 +1095,16 @@ public class Processor extends XMLFilterImpl
 
    public void startDocument() throws SAXException
    {
-      log4j.debug("");
-
       // perform this only at the begin of a transformation,
       // not at the begin of processing another document
       if (innerProcStack.empty()) {
          // initialize all group stx:variables
-         transformNode.initGroupVariables(emitter, eventStack, context);
+         transformNode.initGroupVariables(context);
          emitter.startDocument();
       }
       else { // stx:process-document
          innerProcStack.push(eventStack);
-         eventStack = new Stack();
+         context.ancestorStack = eventStack = new Stack();
       }
 
       eventStack.push(SAXEvent.newRoot());
@@ -1076,18 +1122,25 @@ public class Processor extends XMLFilterImpl
       if (skipDepth == 0) {
          clearProcessSiblings();
          Data data = (Data)dataStack.pop();
-         log4j.debug("dataStack.pop: " + data);
+         context.currentGroup = data.currentGroup;
          short prStatus = data.lastProcStatus;
          if (data.template == null) {
             // default action: nothing to do
          }
-         else if ((prStatus & (ST_CHILDREN | ST_SELF)) != 0) {
+         else if (prStatus == PR_CHILDREN || prStatus == PR_SELF) {
             context.position = data.contextPosition; // restore position
             context.lookAhead = data.lookAhead;      // restore look ahead
-            data.template.process(emitter, eventStack, context, prStatus);
+
+            for (AbstractInstruction inst = data.instruction;
+                 inst != null; inst = inst.next) {
+               if (DEBUG)
+                  if (log.isDebugEnabled())
+                     log.debug(inst);
+               inst.process(context);
+            }
          }
          else {
-            log4j.error("encountered 'else' " + prStatus);
+            log.error("encountered 'else' " + prStatus);
          }
       }
       else {
@@ -1097,24 +1150,22 @@ public class Processor extends XMLFilterImpl
 
       if (skipDepth == 0) {
          // look at the previous process status on the stack
-         if ((((Data)dataStack.peek()).lastProcStatus & ST_SELF) != 0)
+         if (((Data)dataStack.peek()).lastProcStatus == PR_SELF)
             endDocument(); // recurse (process-self)
          else {
-            if (log4j.isDebugEnabled())
-               log4j.debug("eventStack.pop " + eventStack.pop());
-            else
-               eventStack.pop();
+            eventStack.pop();
 
             if (innerProcStack.empty())
                emitter.endDocument(transformNode.publicId, 
                                    transformNode.systemId,
                                    transformNode.lineNo, transformNode.colNo);
             else
-               eventStack = (Stack)innerProcStack.pop();
+               eventStack = context.ancestorStack = 
+                            (Stack)innerProcStack.pop();
          }
       }
       else
-         log4j.error("skipDepth at document end: " + skipDepth);
+         log.error("skipDepth at document end: " + skipDepth);
    }
 
 
@@ -1122,11 +1173,12 @@ public class Processor extends XMLFilterImpl
                             Attributes attrs)
       throws SAXException
    {
-      if (log4j.isDebugEnabled()) {
-         log4j.debug(qName);
-         log4j.debug("eventStack: " + eventStack);
-         log4j.debug("dataStack: " + dataStack);
-      }
+      if (DEBUG)             
+         if (log.isDebugEnabled()) {
+            log.debug(qName);
+            log.debug("eventStack: " + eventStack);
+            log.debug("dataStack: " + dataStack);
+         }
 
       if (skipDepth > 0) {
          skipDepth++;
@@ -1156,11 +1208,12 @@ public class Processor extends XMLFilterImpl
    public void endElement(String uri, String lName, String qName)
       throws SAXException
    {
-      if (log4j.isDebugEnabled()) {
-         log4j.debug(qName + " (skipDepth: " + skipDepth + ")");
-         // log4j.debug("eventStack: " + eventStack.toString());
-         // log4j.debug("dataStack: " + dataStack.toString());
-      }
+      if (DEBUG)             
+         if (log.isDebugEnabled()) {
+            log.debug(qName + " (skipDepth: " + skipDepth + ")");
+            // log.debug("eventStack: " + eventStack.toString());
+            // log.debug("dataStack: " + dataStack.toString());
+         }
 
       if (lastElement != null)
          processLastElement(null);
@@ -1173,8 +1226,7 @@ public class Processor extends XMLFilterImpl
          clearProcessSiblings();
 
          Data data = (Data)dataStack.pop();
-         if (log4j.isDebugEnabled())
-            log4j.debug("dataStack.pop " + data);
+         context.currentGroup = data.currentGroup;
          short prStatus = data.lastProcStatus;
          if (data.template == null) {
             // perform default action?
@@ -1184,27 +1236,39 @@ public class Processor extends XMLFilterImpl
                                   copyLocation.systemId,
                                   copyLocation.lineNo, copyLocation.colNo);
          }
-         else if ((prStatus & (ST_CHILDREN | ST_SELF)) != 0) {
+         else if (prStatus == PR_CHILDREN || prStatus == PR_SELF) {
             context.position = data.contextPosition; // restore position
             context.lookAhead = data.lookAhead;      // restore look ahead
             Object topData = dataStack.peek();
             // as long as we encounter stx:process-attributes ...
-            do {
-               prStatus = data.template.process(emitter, eventStack, 
-                                                context, prStatus);
-               if ((prStatus & ST_ATTRIBUTES) != 0)
+            AbstractInstruction inst = data.instruction;
+            int ret = PR_CONTINUE;
+            while (inst != null && ret == PR_CONTINUE) {
+               if (DEBUG)
+                  if (log.isDebugEnabled())
+                     log.debug(inst);
+               ret = inst.process(context);
+               inst = inst.next;
+               if (ret == PR_ATTRIBUTES) {
                   processAttributes(((SAXEvent)eventStack.peek()).attrs);
-            } while ((prStatus & ST_ATTRIBUTES) != 0);
-            if ((prStatus & ST_SIBLINGS) != 0) {
+                  ret = PR_CONTINUE;
+               }
+            }
+            if (DEBUG)
+               if (log.isDebugEnabled())
+                  log.debug("stop " + ret);
+
+            if (ret == PR_SIBLINGS) {
                dataStack.push(
-                  new Data(data.template, context.position, context.lookAhead,
+                  new Data(data.template, inst, context.currentGroup, 
+                           context.position, context.lookAhead,
                            context.nextProcessGroup.visibleTemplates,
-                           prStatus, context.psiblings, context.localVars,
+                           PR_SIBLINGS, context.psiblings, context.localVars,
                            (SAXEvent)eventStack.peek()));
             }
          }
          else {
-            log4j.error("encountered 'else'");
+            log.error("encountered 'else' " + prStatus);
          }
       }
       else
@@ -1212,14 +1276,11 @@ public class Processor extends XMLFilterImpl
 
       if (skipDepth == 0) {
          // look at the previous process status on the data stack
-         if ((((Data)dataStack.peek()).lastProcStatus & ST_SELF) != 0) {
+         if (((Data)dataStack.peek()).lastProcStatus == PR_SELF) {
             endElement(uri, lName, qName); // recurse (process-self)
          }
          else {
-            if (log4j.isDebugEnabled())
-               log4j.debug("eventStack.pop " + eventStack.pop());
-            else
-               eventStack.pop();
+            eventStack.pop();
             nsSupport.popContext();
          }
       }
@@ -1244,8 +1305,6 @@ public class Processor extends XMLFilterImpl
    public void processingInstruction(String target, String data)
       throws SAXException
    {
-//        traceMemory();
-
       if (skipDepth > 0 || insideDTD)
          return;
 
@@ -1261,15 +1320,10 @@ public class Processor extends XMLFilterImpl
       // don't modify the event stack after process-self
       ((SAXEvent)eventStack.peek()).countPI(target);
       eventStack.push(me);
-      if (log4j.isDebugEnabled())
-         log4j.debug("eventStack.push " + me);
 
       processEvent();
 
-      if (log4j.isDebugEnabled())
-         log4j.debug("eventStack.pop " + eventStack.pop());
-      else
-         eventStack.pop();
+      eventStack.pop();
    }
 
 
@@ -1355,7 +1409,8 @@ public class Processor extends XMLFilterImpl
       if (skipDepth > 0 || !context.recognizeCdata)
          return;
 
-      log4j.debug("");
+      if (DEBUG)
+         log.debug("");
 
       if (collectedCharacters.length() != 0) {
          if (lastElement != null) {
@@ -1381,8 +1436,6 @@ public class Processor extends XMLFilterImpl
          processLastElement(dummyNode); // dito, see startCDATA above
       processCharacters(); // test for emptiness occurs there
 
-      log4j.debug("after processing");
-
       insideCDATA = false;
    }
 
@@ -1390,8 +1443,9 @@ public class Processor extends XMLFilterImpl
    public void comment(char[] ch, int start, int length)
       throws SAXException
    {
-      if (log4j.isDebugEnabled())
-         log4j.debug(new String(ch,start,length));
+      if (DEBUG)
+         if (log.isDebugEnabled())
+            log.debug(new String(ch,start,length));
 
       if (skipDepth > 0 || insideDTD)
          return;
@@ -1408,15 +1462,10 @@ public class Processor extends XMLFilterImpl
       // don't modify the event stack after process-self
       ((SAXEvent)eventStack.peek()).countComment();
       eventStack.push(me);
-      if (log4j.isDebugEnabled())
-         log4j.debug("eventStack.push " + me);
 
       processEvent();
 
-      if (log4j.isDebugEnabled())
-         log4j.debug("eventStack.pop " + eventStack.pop());
-      else
-         eventStack.pop();
+      eventStack.pop();
    }
 
 
@@ -1437,16 +1486,16 @@ public class Processor extends XMLFilterImpl
 //        long free = Runtime.getRuntime().freeMemory();
 //        long used = total-free;
 //        maxUsed = (used>maxUsed) ? used : maxUsed;
-//        log4j.debug((total - free) + " = " + total + " - " + free +
+//        log.debug((total - free) + " = " + total + " - " + free +
 //                    "  [" + maxUsed + "]");
 
 //        /*
-//        log4j.debug("templateStack: " + templateStack.size());
-//        log4j.debug("templateProcStack: " + templateProcStack.size());
-//        log4j.debug("categoryStack: " + categoryStack.size());
-//        log4j.debug("eventStack: " + eventStack.size());
-//        log4j.debug("newNs: " + newNs.size());
-//        log4j.debug("collectedCharacters: " + collectedCharacters.capacity());
+//        log.debug("templateStack: " + templateStack.size());
+//        log.debug("templateProcStack: " + templateProcStack.size());
+//        log.debug("categoryStack: " + categoryStack.size());
+//        log.debug("eventStack: " + eventStack.size());
+//        log.debug("newNs: " + newNs.size());
+//        log.debug("collectedCharacters: " + collectedCharacters.capacity());
 //        */
 //     }
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: ProcedureFactory.java,v 1.2 2003/02/02 15:13:24 obecker Exp $
+ * $Id: ProcedureFactory.java,v 2.0 2003/04/25 16:46:34 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,17 +31,15 @@ import org.xml.sax.SAXParseException;
 
 import java.util.Hashtable;
 import java.util.HashSet;
-import java.util.Stack;
 
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.SAXEvent;
 
 
 /**
  * Factory for <code>procedure</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 1.2 $ $Date: 2003/02/02 15:13:24 $
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:34 $
  * @author Oliver Becker
  */
 
@@ -51,9 +49,12 @@ public final class ProcedureFactory extends FactoryBase
    private HashSet attrNames;
 
 
-   // Log4J initialization
-   private static org.apache.log4j.Logger log4j = 
-      org.apache.log4j.Logger.getLogger(ProcedureFactory.class);
+   private static org.apache.log4j.Logger log;
+   static {
+      if (DEBUG)
+         // Log4J initialization
+         log = org.apache.log4j.Logger.getLogger(ProcedureFactory.class);
+   }
 
 
    // Constructor
@@ -129,24 +130,28 @@ public final class ProcedureFactory extends FactoryBase
          this.procName = procName;
       }
 
-      public short process(Emitter emitter, Stack eventStack,
-                           Context context, short processStatus)
+
+      /* 
+         Saving and restoring the current group is necessary if this
+         procedure was entered as a public procedure from a parent group
+         (otherwise a following process-xxx instruction would use the
+         wrong group).
+      */
+
+      public short process(Context context)
          throws SAXException
       {
-         /* 
-            Saving and restoring the current group is necessary if this
-            procedure was entered as a public procedure from a parent group
-            (otherwise a following process-xxx instruction would use the
-            wrong group).
-         */
+         localFieldStack.push(context.currentGroup);
+         return super.process(context);
+      }
 
-         // store current group
-         GroupBase prevGroup = context.currentGroup;      
-         processStatus = super.process(emitter, eventStack, context, 
-                                       processStatus);
-         // reset current group
-         context.currentGroup = prevGroup;
-         return processStatus;
+
+      public short processEnd(Context context)
+         throws SAXException
+      {
+         super.processEnd(context);
+         context.currentGroup = (GroupBase)localFieldStack.pop();
+         return PR_CONTINUE;
       }
 
 

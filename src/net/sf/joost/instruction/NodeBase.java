@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 1.9 2003/02/23 13:45:39 obecker Exp $
+ * $Id: NodeBase.java,v 2.0 2003/04/25 16:46:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,32 +33,103 @@ import java.util.Vector;
 
 import net.sf.joost.Constants;
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.Emitter;
 
 
-/**
- * Abstract base class for all instances of nodes in a STX stylesheet.
- * @version $Revision: 1.9 $ $Date: 2003/02/23 13:45:39 $
+/** 
+ * Abstract base class for all instances of nodes in the STX transformation 
+ * sheet
+ * @version $Revision: 2.0 $ $Date: 2003/04/25 16:46:33 $
  * @author Oliver Becker
  */
-public abstract class NodeBase implements Constants
+public abstract class NodeBase 
+   extends AbstractInstruction implements Constants
 {
-   /** The qualified name of this stx element */
+   //
+   // Inner classes
+   //
+
+   /** 
+    * Generic class that represents the end of an element in the STX
+    * transformation sheet (the end tag). Its {@link #process} method
+    * simply calls {@link #processEnd} in the appropriate {@link NodeBase}
+    * object.
+    */
+   protected final class End extends AbstractInstruction
+   {
+      /** 
+       * The appropriate start tag.
+       */
+      private NodeBase start;
+
+      private End (NodeBase start)
+      {
+         this.start = start;
+      }
+
+      /*
+       * @return {@link #start}
+       */
+      public NodeBase getStart()
+      {
+         return start;
+      }
+
+      /**
+       * Calls the {@link NodeBase#processEnd} method in its 
+       * {@link #start} object.
+       */
+      public short process(Context context)
+         throws SAXException
+      {
+         return start.processEnd(context);
+      }
+
+      // for debugging
+      public String toString()
+      {
+         return "end " + start;
+      }
+
+   }; // inner class End
+
+
+
+   // ---------------------------------------------------------------------
+
+   //
+   // Member fields
+   //
+
+   /** The qualified name of this node */
    protected String qName;
 
    /** The parent of this node */
    protected NodeBase parent;
 
-   /** The public identifier of the stylesheet */
+   /**
+    * The reference to the last child, needed for inserting additional
+    * nodes while parsing the transformation sheet.
+    */
+   protected AbstractInstruction lastChild;
+   
+   /** 
+    * The reference to the end instruction.
+    * <code>null</code> means: must be an empty element.
+    */
+   protected AbstractInstruction nodeEnd;
+
+   /** The public identifier of the transformation sheet */
    public String publicId;
 
-   /** The system identifier of the stylesheet */
+   /** The system identifier of the transformation sheet */
    public String systemId;
 
-   /** The line number of the begin of this node in the stylesheet. */
+   /** The line number of the begin of this node in the transformation
+       sheet. */
    public int lineNo;
 
-   /** The column number of the begin of this node in the stylesheet. */
+   /** The column number of the begin of this node in the transformation
+       sheet. */
    public int colNo;
 
    /** 
@@ -69,33 +140,38 @@ public abstract class NodeBase implements Constants
     */
    public boolean preserveSpace;
 
-   /** Will be set to true by derived classed to indicate that no children
-       are allowed on this node. */
-   protected boolean mustBeEmpty = false;
+   /** The names of local declared variables of this element,
+       available only if this node has stx:variable children */
+   private Vector scopedVariables;
 
-   /** The vector containing all children (type Node) of this node. */
-   protected Vector children;
-
-   /** The node among the children where the processing has been suspended */
-   private NodeBase processNode;
-
-   /** Local declared variables of this Node */
-   private Vector scopedVariables = new Vector();
-
-   /** Stack for local fields within the Instance objects. */
+   /** Stack for storing local fields from this or derived classes */
    protected Stack localFieldStack = new Stack();
 
-   // Log4J initialization
-   private static org.apache.log4j.Logger log4j = 
-      org.apache.log4j.Logger.getLogger(NodeBase.class);
 
+   private static org.apache.log4j.Logger log;
+   static {
+      if (DEBUG) 
+         // Log4J initialization
+         log = org.apache.log4j.Logger.getLogger(NodeBase.class);
+   }
+
+
+   // ---------------------------------------------------------------------
 
    //
-   // Constructors
+   // Constructors   
    //
 
-   protected NodeBase(String qName, NodeBase parent, Locator locator, 
-                      boolean mustBeEmpty)
+   /*
+    * Constructs a node. 
+    * @param qName the qualified name of this node
+    * @param parent the parent of this node
+    * @param locator the location in the transformation sheet
+    * @param mayHaveChildren
+    *        <code>true</code> if the node may have children
+    */
+   protected NodeBase(String qName, NodeBase parent, Locator locator,
+                      boolean mayHaveChildren)
    {
       this.qName = qName;
       this.parent = parent;
@@ -103,117 +179,121 @@ public abstract class NodeBase implements Constants
       systemId = locator.getSystemId();
       lineNo = locator.getLineNumber();
       colNo = locator.getColumnNumber();
-      this.mustBeEmpty = mustBeEmpty;
+
+      if (mayHaveChildren) {
+         next = nodeEnd = new End(this);
+         // indicates that children are allowed
+         lastChild = this; 
+      }
    }
 
-   /** Clone from another node */
-   protected NodeBase(NodeBase obj)
-   {
-      qName = obj.qName;
-      parent = obj.parent;
-      publicId = obj.publicId;
-      systemId = obj.systemId;
-      lineNo = obj.lineNo;
-      colNo = obj.colNo;
-      mustBeEmpty = obj.mustBeEmpty; // not needed actually
-   }
 
+
+   // ---------------------------------------------------------------------
 
    //
    // Methods
    //
 
-   /** Adds the given node to the children of this node. */
-   public void append(NodeBase node)
+   /** 
+    * Insert a new node as a child of this element 
+    * @param node the node to be inserted
+    */
+   public void insert(NodeBase node)
       throws SAXParseException
    {
-      if (mustBeEmpty)
+      if (lastChild == null) 
          throw new SAXParseException("`" + qName + "' must be empty", 
                                      node.publicId, node.systemId, 
                                      node.lineNo, node.colNo);
-      if (children == null)
-         children = new Vector();
-      children.addElement(node);
+
+      // append after lastChild
+      // first: find end of the subtree represented by node
+      AbstractInstruction newLast = node;
+      while (newLast.next != null)
+         newLast = newLast.next;
+      // then: insert the subtree
+      newLast.next = lastChild.next;
+      lastChild.next = node;
+      // adjust lastChild
+      lastChild = newLast;
+
+      // create vector for variable names if necessary
+      if (node instanceof VariableBase && scopedVariables == null)
+         scopedVariables = new Vector();
+   }
+
+
+   /**
+    * This method may be overwritten to perform compilation tasks (for example
+    * optimization) on this node. <code>compile</code> will be called with a
+    * parameter <code>0</code> directly after parsing the node, i.e. after
+    * parsing all children. The invocation with bigger <code>pass</code>
+    * parameters happens not before the whole transformation sheet has been
+    * completely parsed.
+    * 
+    * @param pass the number of invocations already performed on this node
+    * @return <code>true</code> if another invocation in the next pass is
+    *         necessary, <code>false</code> if the compiling is complete.
+    *         This instance returns <code>false</code>.
+    */
+   public boolean compile(int pass)
+      throws SAXException
+   {
+      return false; 
    }
 
 
    /** 
-    * Called after all children of this node have been parsed
-    * (after the end-tag of this node has been detected).
+    * Store the name of a variable as local for this node.
+    * @param name the variable name
     */
-   public void parsed() throws SAXException
-   {
-   }
-
-
-   /** store variable name as local for this node */
    protected void declareVariable(String name)
    {
       scopedVariables.addElement(name);
    }
 
 
-   /** 
-    * Processes this node (including all of its children) by emitting
-    * SAX events to an emitter.
-    *
-    * @param emitter the Emitter
-    * @param eventStack the ancestor event stack
-    * @param context the Context object
-    * @param processStatus the current processing status. Allowed values
-    *        declared in this class are {@link #ST_PROCESSING},
-    *        {@link #ST_CHILDREN}, {@link #ST_SELF}, {@link #ST_SIBLINGS},
-    *        and OR-ed combinations.
-    * @return the new processing status, influenced by contained
-    *         <code>stx:process-...</code> elements.
+   /**
+    * Save local variables if needed.
+    * @return {@link Constants#PR_CONTINUE}
+    * @exception SAXException if an error occurs (in a derived class)
     */
-   protected short process(Emitter emitter, Stack eventStack,
-                           Context context, short processStatus)
+   public short process(Context context)
       throws SAXException
    {
-      if (log4j.isDebugEnabled())
-         log4j.debug(this + ": " + processStatus);
-
-      short newStatus = processStatus;
-      if (children != null) {
-         if ((processStatus & ST_PROCESSING) != 0) { // first entry
-            scopedVariables.clear(); // init (CHECK!)
-            processNode = null;
-         }
-         else {
-            // restore local fields
-            scopedVariables = (Vector)localFieldStack.pop();
-            processNode = (NodeBase)localFieldStack.pop();
-         }
-
-         int size = children.size();
-
-         for (int i=0; i<size; i++) {
-            NodeBase node = (NodeBase)children.elementAt(i);
-            if (processNode == node)
-               processNode = null; // start processing
-            if (processNode == null) {
-               newStatus = node.process(emitter, eventStack, context,
-                                        newStatus);
-               if ((newStatus & ST_PROCESSING) == 0) { // suspend processing
-                  processNode = node; // store node
-                  break; // for
-               }
-            }
-         }
-         if ((newStatus & ST_PROCESSING) != 0 || // processing completed
-             newStatus == 0) {                   // special case for stx:choose
-            // remove local declared variables
-            Object[] objs = scopedVariables.toArray();
-            for (int i=0; i<objs.length; i++)
-               context.localVars.remove(objs[i]);
-         }
-         else {
-            // store local fields
-            localFieldStack.push(processNode);
-            localFieldStack.push(scopedVariables.clone());
-         }
+      if (scopedVariables != null) {
+         // store list of local variables (from another instantiation)
+         localFieldStack.push(scopedVariables.clone());
+         scopedVariables.clear();
       }
-      return newStatus;
+      return PR_CONTINUE;
+   }
+
+   /** 
+    * Called when the end tag will be processed. This instance removes
+    * local variables declared in this node.
+    * @param context the current context
+    * @return {@link Constants#PR_CONTINUE}
+    * @exception SAXException if an error occurs (in a derived class)
+    */
+   protected short processEnd(Context context)
+      throws SAXException
+   {
+      if (scopedVariables != null) {
+         /** remove all local variables */
+         Object[] objs = scopedVariables.toArray();
+         for (int i=0; i<objs.length; i++)
+            context.localVars.remove(objs[i]);
+         scopedVariables = (Vector)localFieldStack.pop();
+      }
+      return PR_CONTINUE;
+   }
+
+
+   // for debugging
+   public String toString()
+   {
+      return getClass().getName() + " " + lineNo;
    }
 }
