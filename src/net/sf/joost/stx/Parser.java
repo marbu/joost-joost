@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 2.0 2003/04/25 16:47:18 obecker Exp $
+ * $Id: Parser.java,v 2.1 2003/04/29 15:06:42 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,7 +46,7 @@ import net.sf.joost.instruction.*;
 /** 
  * Creates the tree representation of an STX transformation sheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 2.0 $ $Date: 2003/04/25 16:47:18 $
+ * @version $Revision: 2.1 $ $Date: 2003/04/29 15:06:42 $
  * @author Oliver Becker
  */
 
@@ -80,14 +80,6 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
    private Vector compilableNodes = new Vector();
 
 
-   private static org.apache.log4j.Logger log;
-
-
-   static {
-      // Log initialization
-      if (DEBUG) 
-         log = org.apache.log4j.Logger.getLogger(Parser.class);
-   }
 
    //
    // Constructor

@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEvent.java,v 1.8 2003/01/21 10:20:58 obecker Exp $
+ * $Id: SAXEvent.java,v 1.9 2003/04/29 15:06:43 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -34,7 +34,7 @@ import java.util.Hashtable;
 
 /** 
  * SAXEvent stores all information attached to an incoming SAX event 
- * @version $Revision: 1.8 $ $Date: 2003/01/21 10:20:58 $
+ * @version $Revision: 1.9 $ $Date: 2003/04/29 15:06:43 $
  * @author Oliver Becker
  */
 final public class SAXEvent
@@ -63,9 +63,6 @@ final public class SAXEvent
 
    private Hashtable posHash;
 
-   // Log4J initialization
-   private static org.apache.log4j.Logger log4j = 
-      org.apache.log4j.Logger.getLogger(SAXEvent.class);
 
    //
    // private constructors
@@ -251,8 +248,6 @@ final public class SAXEvent
     */
    private void _countPosition(String[] keys)
    {
-//        log4j.debug("_countPosition: posHash size: " + posHash.size());
-
       Counter c;
       for (int i=0; i<keys.length; i++) {
          c = (Counter)posHash.get(keys[i]);
@@ -270,7 +265,6 @@ final public class SAXEvent
       Counter c = (Counter)posHash.get(expName);
       if (c == null) {
          // Shouldn't happen
-         log4j.fatal("No position found for " + expName);
          throw new NullPointerException();
       }
       return c.value;
@@ -281,7 +275,6 @@ final public class SAXEvent
       Counter c = (Counter)posHash.get("node()");
       if (c == null) {
          // Shouldn't happen
-         log4j.fatal("No position found");
          throw new NullPointerException();
       }
       return c.value;
@@ -292,7 +285,6 @@ final public class SAXEvent
       Counter c = (Counter)posHash.get("text()");
       if (c == null) {
          // Shouldn't happen
-         log4j.fatal("No position found");
          throw new NullPointerException();
       }
       return c.value;
@@ -303,7 +295,6 @@ final public class SAXEvent
       Counter c = (Counter)posHash.get("cdata()");
       if (c == null) {
          // Shouldn't happen
-         log4j.fatal("No position found");
          throw new NullPointerException();
       }
       return c.value;
@@ -314,7 +305,6 @@ final public class SAXEvent
       Counter c = (Counter)posHash.get("comment()");
       if (c == null) {
          // Shouldn't happen
-         log4j.fatal("No position found");
          throw new NullPointerException();
       }
       return c.value;
@@ -325,7 +315,6 @@ final public class SAXEvent
       Counter c = (Counter)posHash.get("pi(" + target + ")");
       if (c == null) {
          // Shouldn't happen
-         log4j.fatal("No position found for " + target);
          throw new NullPointerException();
       }
       return c.value;

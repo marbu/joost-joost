@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.2 2003/04/29 11:58:49 obecker Exp $
+ * $Id: FunctionTable.java,v 2.3 2003/04/29 15:06:42 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,19 +39,11 @@ import net.sf.joost.grammar.Tree;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.2 $ $Date: 2003/04/29 11:58:49 $
+ * @version $Revision: 2.3 $ $Date: 2003/04/29 15:06:42 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
 {
-   private static org.apache.log4j.Logger log;
-   static {
-      if (DEBUG)
-         // Log4J initialization
-         log = org.apache.log4j.Logger.getLogger(FunctionTable.class);
-   }
-
-
    /** Contains one instance for each function. */
    private Hashtable functionHash;
 

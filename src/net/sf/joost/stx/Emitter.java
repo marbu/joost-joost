@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.15 2003/03/13 10:58:40 obecker Exp $
+ * $Id: Emitter.java,v 1.16 2003/04/29 15:06:41 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import net.sf.joost.emitter.StxEmitter;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.15 $ $Date: 2003/03/13 10:58:40 $
+ * @version $Revision: 1.16 $ $Date: 2003/04/29 15:06:41 $
  * @author Oliver Becker
  */
 
@@ -71,10 +71,6 @@ public final class Emitter
 
 
    private boolean insideCDATA = false;
-
-   // Log4J initialization
-   private static org.apache.log4j.Logger log4j = 
-      org.apache.log4j.Logger.getLogger(Emitter.class);
 
 
    Emitter(ErrorHandlerImpl errorHandler) // package private
@@ -106,9 +102,6 @@ public final class Emitter
    private void processLastElement()
       throws SAXException
    {
-//        log4j.debug("processLastElement: " + lastQName);
-//        traceMemory();
-
       Hashtable lastNs = (Hashtable)namespaceStack.peek();
          
       // Check, if the element is in some namespace
@@ -266,13 +259,7 @@ public final class Emitter
          if (lastAttrs != null)
             processLastElement();
 
-         SAXEvent ev = null;
-         try {
-            ev = (SAXEvent)outputEvents.pop();
-         }
-         catch (EmptyStackException ex) {
-            log4j.fatal(ex);
-         }
+         SAXEvent ev = (SAXEvent)outputEvents.pop();
          if (ev == null || ev.type != SAXEvent.ELEMENT) {
             errorHandler.fatalError(
                "Attempt to emit unmatched end tag " +
@@ -471,7 +458,7 @@ public final class Emitter
          namespaceStack.pop();
       }
       else
-         log4j.fatal("No StxEmitter on the emitter stack");
+         throw new SAXException("No StxEmitter on the emitter stack");
 
       return ret;
    }
@@ -484,12 +471,4 @@ public final class Emitter
    {
       return (contH == emitter) || (emitterStack.search(emitter) != -1);
    }
-
-
-//     private void traceMemory()
-//     {
-//        log4j.debug("namespaceStack size: " + namespaceStack.size());
-//        log4j.debug("outputEvents size: " + outputEvents.size());
-//        log4j.debug("inScopeNamespaces size: " + inScopeNamespaces.size());
-//     }
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: ErrorHandlerImpl.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: ErrorHandlerImpl.java,v 1.2 2003/04/29 15:06:41 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import javax.xml.transform.TransformerConfigurationException;
 /**
  * Class for receiving notifications of warnings and errors and for passing
  * them to a registered ErrorListener object.
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2003/04/29 15:06:41 $
  * @author Oliver Becker
  */
 public final class ErrorHandlerImpl implements ErrorHandler
@@ -53,11 +53,6 @@ public final class ErrorHandlerImpl implements ErrorHandler
     * TransformerConfigurationExceptions
     */
    private boolean configurationFlag = false;
-
-
-//     // Log4J initialization
-//     private static org.apache.log4j.Logger log4j = 
-//        org.apache.log4j.Logger.getLogger(ErrorHandler.class);
 
 
    //

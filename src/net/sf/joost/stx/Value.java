@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.9 2003/04/29 11:57:58 obecker Exp $
+ * $Id: Value.java,v 1.10 2003/04/29 15:06:43 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -27,16 +27,11 @@ package net.sf.joost.stx;
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.9 $ $Date: 2003/04/29 11:57:58 $
+ * @version $Revision: 1.10 $ $Date: 2003/04/29 15:06:43 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
 {
-   // Log4J initialization
-   private static org.apache.log4j.Logger log4j = 
-      org.apache.log4j.Logger.getLogger(Value.class);
-
-
    /** type constant */
    public static final int 
       EMPTY   = 0,
@@ -140,9 +135,9 @@ public class Value implements Cloneable
          }
          break;
       default:
-         log4j.error("Don't know how to convert " + type + " to number");
-         number = 0.0;
-         break;
+         // Mustn't happen
+         throw new RuntimeException("Don't know how to convert " + type + 
+                                    " to number");
       }
       type = NUMBER;
       next = null;
@@ -169,9 +164,9 @@ public class Value implements Cloneable
       case STRING:
          break;
       default:
-         log4j.error("Don't know how to convert " + type + " to string");
-         string = "";
-         break;
+         // Mustn't happen
+         throw new RuntimeException("Don't know how to convert " + type + 
+                                    " to string");
       }
       type = STRING;
       next = null;
@@ -196,9 +191,9 @@ public class Value implements Cloneable
          bool = !string.equals("");
          break;
       default:
-         log4j.error("Don't know how to convert " + type + " to boolean");
-         bool = false;
-         break;
+         // Mustn't happen
+         throw new RuntimeException("Don't know how to convert " + type + 
+                                    " to boolean");
       }
       type = BOOLEAN;
       next = null;
@@ -241,8 +236,7 @@ public class Value implements Cloneable
          return ret;
       }
       catch(CloneNotSupportedException e) {
-         log4j.fatal(e);
-         return new Value("");
+         throw new RuntimeException("copy() failed for Value", e);
       }
    }
 
