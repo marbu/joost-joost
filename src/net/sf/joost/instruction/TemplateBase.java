@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateBase.java,v 2.4 2003/06/03 14:30:25 obecker Exp $
+ * $Id: TemplateBase.java,v 2.5 2004/01/07 10:03:39 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -27,9 +27,6 @@ package net.sf.joost.instruction;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import java.util.Hashtable;
-import java.util.Stack;
-
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 
@@ -37,7 +34,7 @@ import net.sf.joost.stx.ParseContext;
 /**
  * Common base class for {@link TemplateFactory.Instance} and
  * {@link ProcedureFactory.Instance}.
- * @version $Revision: 2.4 $ $Date: 2003/06/03 14:30:25 $
+ * @version $Revision: 2.5 $ $Date: 2004/01/07 10:03:39 $
  * @author Oliver Becker
  */
 
@@ -62,9 +59,6 @@ public abstract class TemplateBase extends NodeBase
    /** Does this template establish a new scope for group variables? */
    private boolean newScope;
    
-   /** stack for local variables */
-   private Stack localVarStack = new Stack();
-
    /** The parent of this template */
    public GroupBase parentGroup;
 
@@ -88,9 +82,6 @@ public abstract class TemplateBase extends NodeBase
       throws SAXException
    {
       context.currentGroup = parentGroup;
-      // store previous set of local variables
-      localFieldStack.push(context.localVars.clone());
-      context.localVars.clear();
       if (newScope) {
          // initialize group variables
          parentGroup.enterRecursionLevel(context);
@@ -101,8 +92,6 @@ public abstract class TemplateBase extends NodeBase
    public short processEnd(Context context)
       throws SAXException
    {
-      // restore previous set of local variables
-      context.localVars = (Hashtable)localFieldStack.pop();
       if (newScope)
          parentGroup.exitRecursionLevel();
       return PR_CONTINUE;

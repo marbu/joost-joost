@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.28 2003/12/28 12:31:08 zubow Exp $
+ * $Id: Processor.java,v 2.29 2004/01/07 10:03:37 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -19,7 +19,7 @@
  * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________.
+ * Contributor(s): Anatolij Zubow
  */
 
 package net.sf.joost.stx;
@@ -56,7 +56,7 @@ import net.sf.joost.trace.DebugProcessor;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.28 $ $Date: 2003/12/28 12:31:08 $
+ * @version $Revision: 2.29 $ $Date: 2004/01/07 10:03:37 $
  * @author Oliver Becker
  */
 
@@ -134,9 +134,9 @@ public class Processor extends XMLFilterImpl
 
    /**
     * Stack needed for inner processing (buffers, documents).
-    * This stack stores the event stack for <code>stx:process-document</code>,
-    * character data that has been already read as look-ahead
-    * ({@link #collectedCharacters}), and local variables.
+    * This stack stores the event stack for <code>stx:process-document</code>
+    * and character data that has been already read as look-ahead
+    * ({@link #collectedCharacters}).
     */
    private Stack innerProcStack = new Stack();
 
@@ -169,6 +169,9 @@ public class Processor extends XMLFilterImpl
       /** Next group in the processing, contains the visible templates */
       GroupBase targetGroup;
 
+      /** current table of local variables */
+      Hashtable localVars;
+
       /**
        * Last process status while processing this template.
        * The values used are defined in {@link Constants} as "process state
@@ -185,39 +188,37 @@ public class Processor extends XMLFilterImpl
       /** current event (for stx:process-siblings) */
       SAXEvent sibEvent;
 
-      /** current table of local variables (for stx:process-siblings) */
-      Hashtable localVars;
-
 
       /**
        * Constructor for the initialization of all fields, needed for
        * <code>stx:process-siblings</code>
        */
-      Data(TemplateFactory.Instance t, AbstractInstruction i, GroupBase cg,
-           long cp, GroupBase tg, short lps,
-           PSiblingsFactory.Instance ps, Hashtable lv, SAXEvent se)
+      Data(short lps, TemplateFactory.Instance t, AbstractInstruction i, 
+           GroupBase cg, long cp, GroupBase tg, Hashtable lv,
+           PSiblingsFactory.Instance ps, SAXEvent se)
       {
+         lastProcStatus = lps;
          template = t;
          instruction = i;
          currentGroup = cg;
          contextPosition = cp;
          targetGroup = tg;
-         lastProcStatus = lps;
-         psiblings = ps;
          localVars = (Hashtable)lv.clone();
+         psiblings = ps;
          sibEvent = se;
       }
 
       /** Constructor for "descendant or self" processing */
-      Data(TemplateFactory.Instance t, AbstractInstruction i, GroupBase cg,
-           long cp, GroupBase tg, short lps)
+      Data(short lps, TemplateFactory.Instance t, AbstractInstruction i, 
+           GroupBase cg, long cp, GroupBase tg, Hashtable lv)
       {
+         lastProcStatus = lps;
          template = t;
          instruction = i;
          currentGroup = cg;
          contextPosition = cp;
          targetGroup = tg;
-         lastProcStatus = lps;
+         localVars = (Hashtable)lv.clone();
       }
 
       /**
@@ -701,13 +702,11 @@ public class Processor extends XMLFilterImpl
       // there might be characters already read
       innerProcStack.push(collectedCharacters.toString());
       collectedCharacters.setLength(0);
-      // store local variables
-      innerProcStack.push(context.localVars.clone());
       // possible jump to another group (changed visibleTemplates)
       dataStack.push(
-         new Data(null, null, context.currentGroup, context.position,
-                  context.targetGroup,
-                  PR_BUFFER));
+         new Data(PR_BUFFER, null, null, 
+                  context.currentGroup, context.position,
+                  context.targetGroup, context.localVars));
    }
 
 
@@ -721,8 +720,7 @@ public class Processor extends XMLFilterImpl
       clearProcessSiblings();
 
       // remove Data object from startInnerProcessing()
-      dataStack.pop();
-      context.localVars = (Hashtable)innerProcStack.pop();
+      context.localVars = dataStack.pop().localVars;
       collectedCharacters.append(innerProcStack.pop());
    }
 
@@ -830,6 +828,7 @@ public class Processor extends XMLFilterImpl
       if (temp != null) {
          boolean attributeLoop;
          AbstractInstruction inst = temp;
+         context.localVars.clear();
          do {
             // loop as long as stx:process-attributes interrupts the inner
             // while
@@ -864,9 +863,9 @@ public class Processor extends XMLFilterImpl
                break;
             case PR_CHILDREN: // stx:process-children encountered
                dataStack.push(
-                  new Data(temp, inst, context.currentGroup,
+                  new Data(PR_CHILDREN, temp, inst, context.currentGroup,
                            context.position, context.targetGroup,
-                           PR_CHILDREN));
+                           context.localVars));
                if (context.targetHandler != null) {
                   // instruction had a filter attribute
                   startExternDocument();
@@ -881,8 +880,9 @@ public class Processor extends XMLFilterImpl
                break;
             case PR_SELF: // stx:process-self encountered
                dataStack.push(
-                  new Data(temp, inst, context.currentGroup,
-                           context.position, context.targetGroup, PR_SELF));
+                  new Data(PR_SELF, temp, inst, context.currentGroup,
+                           context.position, context.targetGroup, 
+                           context.localVars));
                if (context.targetHandler != null) {
                   // instruction had a filter attribute
                   switch (event.type) {
@@ -966,10 +966,10 @@ public class Processor extends XMLFilterImpl
                      throw new SAXException("Non-recoverable error");
                   case PR_SIBLINGS:
                      dataStack.push(
-                        new Data(temp, inst, context.currentGroup,
-                                 context.position, context.targetGroup,
-                                 PR_SIBLINGS, context.psiblings,
-                                 context.localVars, event));
+                        new Data(PR_SIBLINGS, temp, inst, 
+                                 context.currentGroup, context.position, 
+                                 context.targetGroup, context.localVars,
+                                 context.psiblings, event));
                      break;
                   // case PR_ATTRIBUTES: won't happen
                   // case PR_CONTINUE: nothing to do
@@ -984,10 +984,10 @@ public class Processor extends XMLFilterImpl
                   collectedCharacters.setLength(0); // clear text
                }
                dataStack.push(
-                  new Data(temp, inst, context.currentGroup,
-                           context.position, context.targetGroup,
-                           PR_SIBLINGS, context.psiblings,
-                           context.localVars, event));
+                  new Data(PR_SIBLINGS, temp, inst, 
+                           context.currentGroup, context.position, 
+                           context.targetGroup, context.localVars, 
+                           context.psiblings, event));
                break;
             case PR_ATTRIBUTES: // stx:process-attributes encountered
                // happens only for elements with attributes
@@ -1170,8 +1170,8 @@ public class Processor extends XMLFilterImpl
       // actually only the target group need to be put on this stack ..
       // (for findMatchingTemplate)
       dataStack.push(
-         new Data(null, null, context.currentGroup,
-                  context.position, context.targetGroup, PR_ATTRIBUTES));
+         new Data(PR_ATTRIBUTES, null, null, context.currentGroup,
+                  context.position, context.targetGroup, context.localVars));
       for (int i=0; i<attrs.getLength(); i++) {
          if (DEBUG)
             if (log.isDebugEnabled())
@@ -1185,9 +1185,10 @@ public class Processor extends XMLFilterImpl
                log.debug("done " + attrs.getQName(i));
       }
       Data d = dataStack.pop();
-      // restore position and current group
+      // restore position, current group and variables
       context.position = d.contextPosition;
       context.currentGroup = d.currentGroup;
+      context.localVars = d.localVars;
    }
 
 
@@ -1448,6 +1449,7 @@ public class Processor extends XMLFilterImpl
          }
          else if (prStatus == PR_CHILDREN || prStatus == PR_SELF) {
             context.position = data.contextPosition; // restore position
+            context.localVars = data.localVars;
             AbstractInstruction inst = data.instruction;
             int ret = PR_CONTINUE;
             while (inst != null && ret == PR_CONTINUE) {
@@ -1589,6 +1591,7 @@ public class Processor extends XMLFilterImpl
          }
          else if (prStatus == PR_CHILDREN || prStatus == PR_SELF) {
             context.position = data.contextPosition; // restore position
+            context.localVars = data.localVars;
             Object topData = dataStack.peek();
             AbstractInstruction inst = data.instruction;
             int ret = PR_CONTINUE;
@@ -1628,10 +1631,10 @@ public class Processor extends XMLFilterImpl
             }
             case PR_SIBLINGS:
                dataStack.push(
-                  new Data(data.template, inst, context.currentGroup,
-                           context.position, context.targetGroup,
-                           PR_SIBLINGS, context.psiblings, context.localVars,
-                           (SAXEvent)eventStack.peek()));
+                  new Data(PR_SIBLINGS, data.template, inst, 
+                           context.currentGroup, context.position, 
+                           context.targetGroup, context.localVars,
+                           context.psiblings, (SAXEvent)eventStack.peek()));
                break;
             case PR_ERROR:
                throw new SAXException("Non-recoverable error");
