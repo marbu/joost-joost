@@ -1,2 +1,1 @@
 Main-Class: net.sf.joost.Main
-Class-Path: commons-logging.jar lib/commons-logging.jar
