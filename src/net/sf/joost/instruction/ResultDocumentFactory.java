@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 2.4 2003/06/03 14:30:25 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 2.5 2003/06/13 11:38:05 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -47,7 +47,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.4 $ $Date: 2003/06/03 14:30:25 $
+ * @version $Revision: 2.5 $ $Date: 2003/06/13 11:38:05 $
  * @author Oliver Becker
  */
 
@@ -85,7 +85,7 @@ final public class ResultDocumentFactory extends FactoryBase
       throws SAXParseException
    {
       String hrefAtt = getAttribute(qName, attrs, "href", context);
-      Tree href = parseExpr(hrefAtt, context);
+      Tree href = parseAVT(hrefAtt, context);
 
       String encodingAtt = attrs.getValue("encoding");
 
