@@ -1,5 +1,5 @@
 /*
- * $Id: ErrorListenerImpl.java,v 1.3 2003/12/28 12:21:20 zubow Exp $
+ * $Id: ErrorListenerImpl.java,v 1.4 2005/03/25 17:40:20 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -120,7 +120,7 @@ public class ErrorListenerImpl implements ErrorListener {
 
         System.err.println("FATALERROR occured - ErrorListenerImpl " + name);
         System.err.println(exception.getMessage());
-        //chancel transformation
+        // cancel transformation
         throw exception;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: DebugProcessor.java,v 1.20 2004/12/27 18:55:23 obecker Exp $
+ * $Id: DebugProcessor.java,v 1.21 2005/03/25 17:39:43 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -49,7 +49,7 @@ import org.xml.sax.XMLReader;
 
 /**
  * Extends the {@link net.sf.joost.stx.Processor} with debug features.
- * @version $Revision: 1.20 $ $Date: 2004/12/27 18:55:23 $
+ * @version $Revision: 1.21 $ $Date: 2005/03/25 17:39:43 $
  * @author Zubow
  */
 public class DebugProcessor extends Processor {
@@ -160,8 +160,8 @@ public class DebugProcessor extends Processor {
         boolean atomicnode  = false;
         int ret             = -1;
 
-        // check, if transformation should be chanceled
-        if (transformer.CHANCEL_TRANSFORMATION) {
+        // check, if transformation should be cancelled
+        if (transformer.cancelTransformation) {
             return Constants.PR_ERROR;
         }
 

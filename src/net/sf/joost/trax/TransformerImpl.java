@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.25 2005/03/13 17:13:01 obecker Exp $
+ * $Id: TransformerImpl.java,v 1.26 2005/03/25 17:39:48 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -97,10 +97,10 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
 
     /**
      * This is a run-time flag (only used when {@link #DEBUG_MODE} is true).
-     * If the value is <code>true</code>, the transformation will be chanceled
+     * If the value is <code>true</code>, the transformation will be cancelled
      * at the next possible execution step.
      */
-    public boolean CHANCEL_TRANSFORMATION = false;
+    public boolean cancelTransformation = false;
 
     /**
     * The trace manager.
