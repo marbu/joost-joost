@@ -3,21 +3,15 @@
  *
  *	TestCases for TraX-Transformer
  *
- *	$Id: TestCases.java,v 1.5 2003/03/06 17:46:55 zubow Exp $
+ *	$Id: TestCases.java,v 1.6 2003/11/01 14:53:50 zubow Exp $
  *
  */
 
 package test.joost.trax;
 
 import org.apache.log4j.Logger;
-import org.apache.xml.serialize.XMLSerializer;
-import org.apache.xml.serialize.SerializerFactory;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.DOMWriterImpl;
+import org.apache.xml.serialize.*;
 import org.w3c.dom.Node;
-import org.w3c.dom.Element;
-import org.w3c.dom.Document;
-import org.w3c.dom.ls.DOMWriter;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLFilter;
@@ -2135,9 +2129,9 @@ public class TestCases {
      */
     public static String serializeDOM2String(Node node) throws IOException {
 
-        DOMWriter domWriter = new DOMWriterImpl();
+        DOMSerializerImpl serializer = new DOMSerializerImpl();
 
-        return domWriter.writeToString(node);
+        return serializer.writeToString(node);
     }
 
 
