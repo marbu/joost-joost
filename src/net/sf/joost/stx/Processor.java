@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 1.32 2003/01/27 18:15:28 obecker Exp $
+ * $Id: Processor.java,v 1.33 2003/01/30 17:17:27 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -51,6 +51,7 @@ import java.util.Vector;
 import java.io.IOException;
 
 import net.sf.joost.Constants;
+import net.sf.joost.instruction.GroupBase;
 import net.sf.joost.instruction.GroupFactory;
 import net.sf.joost.instruction.NodeBase;
 import net.sf.joost.instruction.OptionsFactory;
@@ -62,7 +63,7 @@ import net.sf.joost.instruction.TransformFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 1.32 $ $Date: 2003/01/27 18:15:28 $
+ * @version $Revision: 1.33 $ $Date: 2003/01/30 17:17:27 $
  * @author Oliver Becker
  */
 
@@ -575,9 +576,8 @@ public class Processor extends XMLFilterImpl
       dataStack.push(
          new Data(null, context.position, context.lookAhead,
                   context.nextProcessGroup != null 
-                  ? (TemplateFactory.Instance[])
-                    transformNode.namedGroups.get(
-                       context.nextProcessGroup) 
+                  ? ((GroupBase)transformNode.namedGroups.get(
+                       context.nextProcessGroup)).visibleTemplates 
                   :((Data)dataStack.peek()).visibleTemplates,
                   ST_BUFFER));
    }
@@ -711,9 +711,9 @@ public class Processor extends XMLFilterImpl
                   dataStack.push(
                      new Data(temp, context.position, context.lookAhead,
                               context.nextProcessGroup != null 
-                                ? (TemplateFactory.Instance[])
-                                  transformNode.namedGroups.get(
-                                     context.nextProcessGroup) 
+                                ? ((GroupBase)transformNode.namedGroups.get(
+                                     context.nextProcessGroup))
+                                  .visibleTemplates
                                 : temp.parentGroup.visibleTemplates,
                               procStatus));
                   if (log4j.isDebugEnabled())
@@ -730,9 +730,8 @@ public class Processor extends XMLFilterImpl
                dataStack.push(
                   new Data(temp, context.position, context.lookAhead,
                            context.nextProcessGroup != null 
-                              ? (TemplateFactory.Instance[])
-                                transformNode.namedGroups.get(
-                                   context.nextProcessGroup) 
+                              ? ((GroupBase)transformNode.namedGroups.get(
+                                   context.nextProcessGroup)).visibleTemplates
                               : ((Data)dataStack.peek()).visibleTemplates,
                            procStatus));
                processEvent(); // recurse
@@ -757,9 +756,8 @@ public class Processor extends XMLFilterImpl
                dataStack.push(
                   new Data(temp, context.position, context.lookAhead,
                            context.nextProcessGroup != null 
-                              ? (TemplateFactory.Instance[])
-                                transformNode.namedGroups.get(
-                                   context.nextProcessGroup) 
+                              ? ((GroupBase)transformNode.namedGroups.get(
+                                   context.nextProcessGroup)).visibleTemplates
                               : temp.parentGroup.visibleTemplates,
                            procStatus, context.psiblings,
                            context.localVars, event));
@@ -769,9 +767,8 @@ public class Processor extends XMLFilterImpl
                dataStack.push(
                   new Data(temp, context.position, context.lookAhead,
                            context.nextProcessGroup != null 
-                              ? (TemplateFactory.Instance[])
-                                transformNode.namedGroups.get(
-                                   context.nextProcessGroup) 
+                              ? ((GroupBase)transformNode.namedGroups.get(
+                                   context.nextProcessGroup)).visibleTemplates
                               : temp.parentGroup.visibleTemplates,
                            procStatus));
                processAttributes(event.attrs);
@@ -1032,8 +1029,9 @@ public class Processor extends XMLFilterImpl
             // put back the last stx:process-siblings instruction
             // there might have been a group attribute
             stopData.visibleTemplates = context.nextProcessGroup != null 
-               ? (TemplateFactory.Instance[])
-                 transformNode.namedGroups.get(context.nextProcessGroup) 
+               ? ((GroupBase)
+               transformNode.namedGroups.get(context.nextProcessGroup))
+                  .visibleTemplates
                : data.template.parentGroup.visibleTemplates;
             stopData.psiblings = context.psiblings;
             dataStack.push(stopData);
@@ -1206,9 +1204,8 @@ public class Processor extends XMLFilterImpl
                dataStack.push(
                   new Data(data.template, context.position, context.lookAhead,
                            context.nextProcessGroup != null 
-                              ? (TemplateFactory.Instance[])
-                                transformNode.namedGroups.get(
-                                   context.nextProcessGroup) 
+                              ? ((GroupBase)transformNode.namedGroups.get(
+                                   context.nextProcessGroup)).visibleTemplates
                               : data.template.parentGroup.visibleTemplates,
                            prStatus, context.psiblings, context.localVars,
                            (SAXEvent)eventStack.peek()));
