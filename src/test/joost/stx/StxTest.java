@@ -1,5 +1,5 @@
 /*
- * $Id: StxTest.java,v 1.3 2005/01/23 18:37:22 obecker Exp $
+ * $Id: StxTest.java,v 1.4 2005/04/29 17:08:17 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -43,7 +43,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 /**
- * @version $Revision: 1.3 $ $Date: 2005/01/23 18:37:22 $
+ * @version $Revision: 1.4 $ $Date: 2005/04/29 17:08:17 $
  * @author Oliver Becker
  */
 public class StxTest extends TestCase
@@ -70,6 +70,7 @@ public class StxTest extends TestCase
    
    public void testExamplesWithTrax() 
    {
+      System.out.println("Start testExamplesWithTrax");
       boolean testResult = true;
       
       File testDir = new File("../test");
@@ -154,5 +155,6 @@ public class StxTest extends TestCase
          }
       }
       assertTrue(testResult);
+      System.out.println("Done testExamplesWithTrax");
    }
 }
