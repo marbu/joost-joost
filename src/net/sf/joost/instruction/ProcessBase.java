@@ -1,5 +1,5 @@
 /*
- * $Id: ProcessBase.java,v 2.11 2004/10/30 11:23:52 obecker Exp $
+ * $Id: ProcessBase.java,v 2.12 2005/04/29 17:15:51 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Common base class for all <code>stx:process-<em>xxx</em></code>
  * instructions
- * @version $Revision: 2.11 $ $Date: 2004/10/30 11:23:52 $
+ * @version $Revision: 2.12 $ $Date: 2005/04/29 17:15:51 $
  * @author Oliver Becker
  */
 public class ProcessBase extends NodeBase
@@ -60,8 +60,9 @@ public class ProcessBase extends NodeBase
    protected GroupBase targetGroup = null;
 
    // filter and src values
-   protected String href, useBufQName, useBufExpName;
+   protected String useBufQName, useBufExpName;
    protected Tree filter;
+   private Tree hrefTree;
 
    private NodeBase me;
 
@@ -102,10 +103,10 @@ public class ProcessBase extends NodeBase
                "'. Expect url(...) or buffer(...) specification.",
                context.locator);
          if (src.startsWith("url(")) {
-            href = src.substring(4, src.length()-1).trim();
-            if ((href.startsWith("\"") && href.endsWith("\"")) ||
-                (href.startsWith("\'") && href.endsWith("\'")))
-               href = href.substring(1, href.length()-1);
+            // part between "url(" and ")" will be evaluated as an expression
+            hrefTree = 
+               FactoryBase.parseExpr(src.substring(4, src.length()-1).trim(), 
+                                     context);
          }
          else if (src.startsWith("buffer(")) {
             useBufQName = src.substring(7, src.length()-1).trim();
@@ -238,6 +239,9 @@ public class ProcessBase extends NodeBase
                       .resolve(filterMethod, ubr, context.passedParameters);
          }
          else {
+            String href = (hrefTree != null)
+               ? hrefTree.evaluate(context, this).getStringValue() 
+               : null;
             handler = 
                context.defaultTransformerHandlerResolver
                       .resolve(filterMethod, href, systemId, 
