@@ -1,4 +1,9 @@
-classes doc
+classes
+doc
 joost.jar
 joost-*.zip
 joost-*.tar.gz
+.classpath
+.metadata
+.project
+.settings
