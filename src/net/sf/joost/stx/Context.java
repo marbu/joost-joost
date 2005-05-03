@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 2.15 2004/10/29 18:58:14 obecker Exp $
+ * $Id: Context.java,v 2.16 2005/05/03 18:17:26 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.xml.sax.Locator;
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 2.15 $ $Date: 2004/10/29 18:58:14 $
+ * @version $Revision: 2.16 $ $Date: 2005/05/03 18:17:26 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
@@ -128,14 +128,21 @@ public final class Context implements Cloneable
    /** Instantiate a new emitter object for a new result event stream */
    public void pushEmitter(StxEmitter stxEmitter)
    {
-   	emitter = emitter.pushEmitter(stxEmitter);
+      emitter = emitter.pushEmitter(stxEmitter);
    }
+   
+   /** re-use a previous emitter for the event stream */
+   public void pushEmitter(Emitter anEmitter)
+   {
+      anEmitter.prev = emitter;
+      emitter = anEmitter;
+   }   
 
    /** Restore previous emitter after finishing a result event stream */
    public StxEmitter popEmitter()
    {
-   	StxEmitter stxEmitter = (StxEmitter)emitter.contH;
-   	emitter = emitter.prev;
-   	return stxEmitter;
+      StxEmitter stxEmitter = (StxEmitter)emitter.contH;
+      emitter = emitter.prev;
+      return stxEmitter;
    }
 }

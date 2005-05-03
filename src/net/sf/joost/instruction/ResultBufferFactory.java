@@ -1,5 +1,5 @@
 /*
- * $Id: ResultBufferFactory.java,v 2.2 2004/09/29 06:18:40 obecker Exp $
+ * $Id: ResultBufferFactory.java,v 2.3 2005/05/03 18:17:00 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,6 +30,7 @@ import java.util.Stack;
 
 import net.sf.joost.emitter.BufferEmitter;
 import net.sf.joost.stx.Context;
+import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.ParseContext;
 
 import org.xml.sax.Attributes;
@@ -40,7 +41,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>result-buffer</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2004/09/29 06:18:40 $
+ * @version $Revision: 2.3 $ $Date: 2005/05/03 18:17:00 $
  * @author Oliver Becker
  */
 
@@ -105,23 +106,24 @@ final public class ResultBufferFactory extends FactoryBase
          throws SAXException
       {
          super.process(context);
-         Object buffer = context.localVars.get(expName);
-         if (buffer == null) {
+         Object emitter = context.localVars.get(expName);
+         if (emitter == null) {
             GroupBase group = context.currentGroup;
-            while (buffer == null && group != null) {
-               buffer = ((Hashtable)((Stack)context.groupVars.get(group))
+            while (emitter == null && group != null) {
+               emitter = ((Hashtable)((Stack)context.groupVars.get(group))
                                             .peek()).get(expName);
                group = group.parentGroup;
             }
          }
-         if (buffer == null) {
+         if (emitter == null) {
             context.errorHandler.error(
                "Can't fill an undeclared buffer `" + bufName + "'",
                publicId, systemId, lineNo, colNo);
             return PR_CONTINUE;
          }
-
-         if (context.emitter.isEmitterActive((BufferEmitter)buffer)) {
+         
+         BufferEmitter buffer = (BufferEmitter) ((Emitter)emitter).contH;
+         if (context.emitter.isEmitterActive(buffer)) {
             context.errorHandler.error(
                "Buffer `" + bufName + "' acts already as result buffer",
                publicId, systemId, lineNo, colNo);
@@ -129,8 +131,9 @@ final public class ResultBufferFactory extends FactoryBase
          }
 
          if (clear)
-            ((BufferEmitter)buffer).clear();
-         context.pushEmitter((BufferEmitter)buffer);
+            buffer.clear();
+         
+         context.pushEmitter((Emitter) emitter);
          return PR_CONTINUE;
       }
 
