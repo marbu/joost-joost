@@ -1,5 +1,5 @@
 /*
- * $Id: BufferReader.java,v 1.4 2005/05/03 18:17:26 obecker Exp $
+ * $Id: BufferReader.java,v 1.5 2005/05/04 07:43:16 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import org.xml.sax.ext.LexicalHandler;
 
 /**
  * An XMLReader object that uses the events from a buffer.
- * @version $Revision: 1.4 $ $Date: 2005/05/03 18:17:26 $
+ * @version $Revision: 1.5 $ $Date: 2005/05/04 07:43:16 $
  * @author Oliver Becker
  */
 
@@ -79,16 +79,16 @@ public class BufferReader implements XMLReader, Constants
                        int lineNo, int colNo)
       throws SAXException
    {
-      Object emitter = context.localVars.get(bufExpName);
-      if (emitter == null) {
+      Object eObj = context.localVars.get(bufExpName);
+      if (eObj == null) {
          GroupBase group = context.currentGroup;
-         while (emitter == null && group != null) {
-            emitter = ((Hashtable)((Stack)context.groupVars.get(group))
+         while (eObj == null && group != null) {
+            eObj = ((Hashtable)((Stack)context.groupVars.get(group))
                                          .peek()).get(bufExpName);
             group = group.parentGroup;
          }
       }
-      if (emitter == null) {
+      if (eObj == null) {
          context.errorHandler.error(
             "Can't process an undeclared buffer `" + bufQName + "'",
             publicId, systemId, lineNo, colNo);
@@ -96,7 +96,12 @@ public class BufferReader implements XMLReader, Constants
          this.events = new SAXEvent[0];
          return;
       }
-      this.events = ((BufferEmitter) ((Emitter) emitter).contH).getEvents();
+      
+      Emitter emitter = (Emitter) eObj;
+      // endDocument() doesn't add a event to the buffer.
+      // However, it checks that the buffer contents is well-formed
+      emitter.endDocument(context.currentInstruction);
+      this.events = ((BufferEmitter) emitter.contH).getEvents();
    }
 
 
