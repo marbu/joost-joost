@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.33 2005/03/21 08:23:19 obecker Exp $
+ * $Id: Emitter.java,v 1.34 2005/05/14 09:39:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -35,6 +35,7 @@ import java.util.Hashtable;
 import java.util.Stack;
 
 import net.sf.joost.Constants;
+import net.sf.joost.emitter.BufferEmitter;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.instruction.AbstractInstruction;
 import net.sf.joost.instruction.NodeBase;
@@ -52,7 +53,7 @@ import org.xml.sax.helpers.NamespaceSupport;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.33 $ $Date: 2005/03/21 08:23:19 $
+ * @version $Revision: 1.34 $ $Date: 2005/05/14 09:39:32 $
  * @author Oliver Becker
  */
 
@@ -213,7 +214,8 @@ public class Emitter implements Constants
          if (!openedElements.isEmpty()) {
             errorHandler.fatalError(
                "Missing end tag for `" + openedElements.pop() + 
-               "' at the document end", 
+               "' at the end of the " + 
+               (contH instanceof BufferEmitter ? "buffer" : "document"), 
                instruction.getNode().publicId, instruction.getNode().systemId, 
                instruction.lineNo, instruction.colNo);
          }
