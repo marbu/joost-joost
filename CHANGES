@@ -5,6 +5,9 @@ Changes since 20041107
   the part between 'url(' and ')' will be evaluated as an STXPath expression.
   This means unquoted URLs like in "url(filename.xsl)" won't work anymore,
   use "url('filename.xsl')" instead.
+- relaxed buffer restrictions: allow adding non-well-formed XML within a
+  single stx:result-buffer instruction; the buffer contents must be
+  well-formed when stx:process-buffer is called (thanks to Maurice Jumelet)
 - Bugfixes: 1086639, 1086657, 1093383, 1107878, 1170453, 1170454, 1170668
 
 Changes since 20041002
