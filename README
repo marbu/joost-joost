@@ -1,4 +1,4 @@
-$Id: README,v 1.7 2004/04/19 12:28:04 obecker Exp $
+$Id: README,v 1.8 2005/05/20 18:09:23 obecker Exp $
 
 This module contains Java source files for Joost.
 
@@ -14,19 +14,22 @@ classpath respectively. The CVS contains only joostGen.jar, compiled from
 the sources in the helper module.
 
 Additionally you have to install
+- Commons Logging from http://jakarta.apache.org/commons/logging/
+  (Tested with 1.0.3 and 1.0.4)
 - log4j from http://jakarta.apache.org/log4j/
-  (Latest tested version: 1.2.7)
-- junit.jar from http://junit.org/ and
-  xercesImpl.jar (version 2.6.0) from http://xml.apache.org/xerces2-j/
+  (Latest tested version: 1.2.9)
+- junit.jar from http://junit.org/ (version 3.8.1) and
+  xercesImpl.jar (version 2.6.0 or above) from http://xml.apache.org/xerces2-j/
   for compiling the src/test package
 - fop.jar and avalon-framework-cvs-20020806.jar
   from http://xml.apache.org/fop/ 
   (Latest tested version: 0.20.5)
   for compiling sf.net.joost.emitter.FOPEmitter.java
-  (If you don't want a FOP connection just remove this file and
-  comment out some lines in sf.net.joost.Main.java)
+  (avalon-framework-api-4.1.5.jar and avalon-framework-impl-4.1.5.jar work as well)
+  If you don't want a FOP connection just remove this file and
+  comment out some lines in sf.net.joost.Main.java
 
-If you don't have Java 1.4 installed on your computer, you have to 
+In case you don't have at least Java 1.4 installed on your computer, you have to 
 add manually a SAX2 compliant parser and the JAXP 1.1 interfaces, too.
 
 
