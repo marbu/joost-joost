@@ -1,3 +1,6 @@
+Changes since 20050521
+- Bugfix: 1215468
+
 Changes since 20041107
 - added command line switch -noext and TrAX attribute ALLOW_EXTENSION_FUNCTIONS
   to prevent/allow the call of Java extension functions

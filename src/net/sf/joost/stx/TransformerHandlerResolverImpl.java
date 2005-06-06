@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerResolverImpl.java,v 2.7 2004/09/29 06:09:36 obecker Exp $
+ * $Id: TransformerHandlerResolverImpl.java,v 2.8 2005/06/06 18:16:32 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -33,6 +33,7 @@ import java.util.Properties;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.SAXSource;
@@ -52,7 +53,7 @@ import net.sf.joost.trax.TrAXConstants;
 /**
  * The default implementation of an {@link TransformerHandlerResolver}.
  * It supports currently only XSLT transformers.
- * @version $Revision: 2.7 $ $Date: 2004/09/29 06:09:36 $
+ * @version $Revision: 2.8 $ $Date: 2005/06/06 18:16:32 $
  * @author Oliver Becker
  */
 
@@ -83,8 +84,23 @@ public final class TransformerHandlerResolverImpl
    /** A custom resolver object registered via
        {@link Processor#setTransformerHandlerResolver} */ 
    public TransformerHandlerResolver customResolver;
+   
+   /** The context for accessing global transformaing parameters */
+   private Context context;
 
 
+
+   /**
+    * @param context
+    */
+   public TransformerHandlerResolverImpl(Context context)
+   {
+      super();
+      this.context = context;
+   }
+
+   
+   
    /** Creates a new Hashtable with String values only */
    private Hashtable createExternalParameters(Hashtable params)
    {
@@ -192,7 +208,7 @@ public final class TransformerHandlerResolverImpl
          if (tf.getFeature(SAXTransformerFactory.FEATURE)) {
             SAXTransformerFactory stf = (SAXTransformerFactory)tf;
             // distinguish the two Source (href or reader) variants
-            Source source;
+            Source source = null;
             if (reader != null)
                source = new SAXSource(reader, new InputSource());
             else {
@@ -201,11 +217,17 @@ public final class TransformerHandlerResolverImpl
                                          (mIndex == M_STX ? "STX" : "XSLT") + 
                                          " transformation");
                try {
-                  source = new StreamSource(
-                              new URL(new URL(base), href).toExternalForm());
+                  if (context.uriResolver != null)
+                     source = context.uriResolver.resolve(href, base);
+                  if (source == null)
+                     source = new StreamSource(
+                                 new URL(new URL(base), href).toExternalForm());
                }
                catch (MalformedURLException muex) {
                   throw new SAXException(muex);
+               }
+               catch (TransformerException te) {
+                  throw new SAXException(te);
                }
             }
             try {
