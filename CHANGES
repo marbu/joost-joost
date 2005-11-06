@@ -1,4 +1,10 @@
 Changes since 20050521
+- added plugin ability for net.sf.joost.TransformerHandlerResolver classes;
+  no need any more to programatically register filter implementations, Joost
+  will automatically detect them after their registration as Java 1.3 services,
+  i.e. in the META-INF/services/net.sf.joost.TransformerHandlerResolver file
+  (thanks to Fikin).
+- xslt and stx filters support transformers reusage (thanks to Fikin).
 - Bugfix: 1215468
 
 Changes since 20041107

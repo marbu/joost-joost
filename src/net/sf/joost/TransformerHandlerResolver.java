@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerResolver.java,v 1.4 2003/07/23 16:26:47 obecker Exp $
+ * $Id: TransformerHandlerResolver.java,v 1.5 2005/11/06 21:21:52 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -19,7 +19,7 @@
  * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________.
+ * Contributor(s): fikin_________________________________.
  */
 
 package net.sf.joost;
@@ -35,19 +35,27 @@ import javax.xml.transform.sax.TransformerHandler;
 /**
  * Basic interface for resolving external {@link TransformerHandler}
  * objects.
- * <p>
- * An object that implements this interface can be called by the
+ * 
+ * <p>An object that implements this interface can be called by the
  * STX processor if it encounters a request to hand over the processing
- * to an external {@link TransformerHandler} object. A
- * <code><strong>TransformerHandlerResolver</strong></code> must be 
+ * to an external {@link TransformerHandler} object. 
+ * 
+ * <p>A <code><strong>TransformerHandlerResolver</strong></code> can be 
  * registered by using the Joost specific 
  * {@link net.sf.joost.stx.Processor#setTransformerHandlerResolver} method,
  * or (using JAXP) by calling 
  * {@link javax.xml.transform.TransformerFactory#setAttribute}
  * with the string {@link net.sf.joost.trax.TrAXConstants#KEY_TH_RESOLVER} 
  * as its first argument.
- * <p>
- * The {@link javax.xml.transform.sax.TransformerHandler} object returned 
+ * 
+ * <p>Also <code><strong>TransformerHandlerResolver</strong></code> can be 
+ * registered using <strong>Java1.3 services plugin mechanism</strong>. 
+ * This is achieved by specifying the particular handler implementation 
+ * in META-INF/services/net.sf.joost.TransformerHandlerResolver file. Joost is using
+ * Jakarta's Discovery library to locate all available plugins which provides
+ * some additional configuration options one can employ as well.
+ * 
+ * <p>The {@link javax.xml.transform.sax.TransformerHandler} object returned 
  * by each of the <code>resolve</code> methods is required to accept a 
  * {@link javax.xml.transform.sax.SAXResult} as parameter in the 
  * {@link TransformerHandler#setResult} method.
@@ -60,7 +68,7 @@ import javax.xml.transform.sax.TransformerHandler;
  * {@link javax.xml.transform.Transformer} dummy solely as means to the
  * end of enabling {@link javax.xml.transform.Transformer#setParameter}.
  *
- * @version $Revision: 1.4 $ $Date: 2003/07/23 16:26:47 $
+ * @version $Revision: 1.5 $ $Date: 2005/11/06 21:21:52 $
  * @author Oliver Becker
  */
 
@@ -127,4 +135,12 @@ public interface TransformerHandlerResolver
     *         {@link TransformerHandler} object for this filter
     */
    boolean available(String method);
+
+
+   /**
+    * Return all supported filter-method URIs
+    * Each one must return true when checked against {@link available()}.
+    * @return array of supported URIs
+    */
+   public String[] resolves();
 }

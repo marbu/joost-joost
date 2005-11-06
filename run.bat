@@ -1,7 +1,7 @@
 @echo off
 
 rem Set the following keys to 1 if you want to get this script working
-rem user settings HKEY_CURRENM_USER is also ok
+rem user settings HKEY_CURREN_USER is also ok
 rem HKEY_LOCAL_MACHINE\Software\Microsoft\Command Processor\EnableExtensions
 rem HKEY_LOCAL_MACHINE\Software\Microsoft\Command Processor\DelayedExpansion
 rem or open a new shell with the following command:

@@ -1,5 +1,5 @@
 /*
- * $Id: NSFilter.java,v 1.5 2004/09/29 05:47:51 obecker Exp $
+ * $Id: NSFilter.java,v 1.6 2005/11/06 21:22:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -57,7 +57,7 @@ import org.xml.sax.helpers.XMLFilterImpl;
  * <li>acting as a TransformerHandler, that removes all elements in a
  *     given namespace (passed as a parameter)</li>
  * </ul>
- * @version $Revision: 1.5 $ $Date: 2004/09/29 05:47:51 $
+ * @version $Revision: 1.6 $ $Date: 2005/11/06 21:22:37 $
  * @author Oliver Becker
  */
 
@@ -143,6 +143,11 @@ public class NSFilter
    public boolean available(String method)
    {
       return METHOD.equals(method);
+   }
+
+   public String[] resolves()
+   {
+      return new String[] { METHOD };
    }
 
 

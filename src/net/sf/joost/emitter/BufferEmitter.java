@@ -1,5 +1,5 @@
 /*
- * $Id: BufferEmitter.java,v 1.4 2005/03/13 17:12:49 obecker Exp $
+ * $Id: BufferEmitter.java,v 1.5 2005/11/06 21:22:21 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -36,11 +36,11 @@ import org.xml.sax.SAXException;
 
 /**
  * This class implements a buffer for storing SAX events.
- * @version $Revision: 1.4 $ $Date: 2005/03/13 17:12:49 $
+ * @version $Revision: 1.5 $ $Date: 2005/11/06 21:22:21 $
  * @author Oliver Becker
  */
 
-final public class BufferEmitter extends StxEmitterBase {
+public class BufferEmitter extends StxEmitterBase {
 
    /** the event buffer */
    private Vector buffer = new Vector();

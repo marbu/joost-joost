@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerResolverImpl.java,v 2.8 2005/06/06 18:16:32 obecker Exp $
+ * $Id: TransformerHandlerResolverImpl.java,v 2.9 2005/11/06 21:22:37 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,263 +24,267 @@
 
 package net.sf.joost.stx;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Properties;
 
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamSource;
 
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-import net.sf.joost.Constants;
-import net.sf.joost.TransformerHandlerResolver;
-import net.sf.joost.trax.TrAXConstants;
+import org.apache.commons.logging.Log;
 
+import org.apache.commons.discovery.tools.Service;
+
+import net.sf.joost.OptionalLog;
+import net.sf.joost.TransformerHandlerResolver;
 
 /**
  * The default implementation of an {@link TransformerHandlerResolver}.
- * It supports currently only XSLT transformers.
- * @version $Revision: 2.8 $ $Date: 2005/06/06 18:16:32 $
- * @author Oliver Becker
+ * 
+ * It supports pluggable {@link TransformerHandlerResolver} implementations.
+ * Plugin mechanism is based on Jakarta's Discovery library.
+ * 
+ * During instantiation it will scan for available handlers and cache them.
+ * Upon call to {@link resolve()} it will look for a handler supporting the given
+ * method URI and will delegate the call to it.
+ * 
+ * @version $Revision: 2.9 $ $Date: 2005/11/06 21:22:37 $
+ * @author fikin
  */
 
-public final class TransformerHandlerResolverImpl
-   implements TransformerHandlerResolver
+public final class TransformerHandlerResolverImpl 
+    implements TransformerHandlerResolver 
 {
-   /** The URI identifying an XSLT transformation (the XSLT namespace) */
-   public static final String XSLT_METHOD = 
-      "http://www.w3.org/1999/XSL/Transform";
+    /** logging object */
+    static Log log = OptionalLog.getLog(TransformerHandlerResolverImpl.class);
 
-   /** The URI identifying a SAX parser */
-   public static final String SAX_METHOD =
-      "http://xml.org/sax";
+    /** hashtable with available methods and their plugin implementations */
+    static Hashtable plugins = new Hashtable();
 
-   /** The URI identifying the HTTP POST method */
-   public static final String HTTP_POST_METHOD =
-      "http://www.ietf.org/rfc/rfc2616.txt#POST";
+    /**
+     * Defines plugin factory behaviour when duplicated method implementations
+     * are discovered. One of following values:
+     *  -   (undefined)     use last found implementation and print 
+     *                      warning messages each time
+     * -    warning         see (undefined)
+     * -    fail            throw exception if duplicate encountered
+     * -    ignore          ignore that duplicate and print
+     *                      warning message only
+     */
+    static final String flgName = "net.sf.joost.THResolver.duplicates";
 
+    /**
+     * Custom handler provided via {link @Processor} interface
+     */
+    public TransformerHandlerResolver customResolver = null;
 
-   private static String[] knownMethods = {
-      Constants.STX_NS, XSLT_METHOD, SAX_METHOD, HTTP_POST_METHOD
-   };
-
-   // indexes in @knownMethods
-   private static int M_STX = 0, M_XSLT = 1, M_SAX = 2, M_POST = 3;
-
-
-   /** A custom resolver object registered via
-       {@link Processor#setTransformerHandlerResolver} */ 
-   public TransformerHandlerResolver customResolver;
-   
-   /** The context for accessing global transformaing parameters */
+   /** The context for accessing global transformation parameters */
    private Context context;
+   // TODO this was meant to pass the URIResolver, but this doesn't work
+   // anymore. Solution: change the TransformerHandlerResolver interface
+   // and pass the URIResolver directly
 
+    /** indicate whether this object has been initialized or not */
+    private boolean notInitilizedYet = true;
 
-
-   /**
-    * @param context
-    */
    public TransformerHandlerResolverImpl(Context context)
    {
-      super();
       this.context = context;
    }
 
-   
-   
-   /** Creates a new Hashtable with String values only */
-   private Hashtable createExternalParameters(Hashtable params)
-   {
-      // create new Hashtable with String values only
-      Hashtable result = new Hashtable();
-      for (Enumeration e=params.keys(); e.hasMoreElements();) {
-         String key = (String)e.nextElement();
-         // remove preceding "{}" if present
-         String name = key.startsWith("{}") ? key.substring(2) : key;
-         result.put(name, 
-                    ((Value)(params.get(key))).getStringValue());
-      }
-      return result;
-   }
 
+    /**
+     * Initialize the object
+     * It scans plugins directories and create a hashtable of all implemented
+     * filter-methods and their factories.
+     * In case of duplicated method implementations its behaviour is
+     * defined by {link @flgName} system property.
+     * @throws SAXException when duplicated method implementation is found
+     * and has been asked to raise an exception
+     */
+    private void init() throws SAXException {
 
-   public TransformerHandler resolve(String method, String href, String base,
-                                     Hashtable params)
-      throws SAXException
-   {
-      if (customResolver != null) {
-         TransformerHandler handler =
-            customResolver.resolve(method, href, base,
-                                   createExternalParameters(params));
-         if (handler != null)
-            return handler;
-      }
+        if (log.isDebugEnabled())
+            log.debug("init() : entering");
 
-      return resolve(method, href, base, null, params);
-   }
+        // revert init() flag
+        notInitilizedYet = false;
 
+        // system property which says what to do in case of
+        // duplicated method implementations
+        String prop = System.getProperty(flgName);
+        if (log.isDebugEnabled())
+            log.debug(flgName + "=" + prop);
+        int flg;
+        // fail with exception if duplicate is found
+        if ("fail".equalsIgnoreCase(prop))
+            flg = 1;
+        // ignore duplicate and print info message
+        else if ("ignore".equalsIgnoreCase(prop))
+            flg = 2;
+        // accept duplicate and print warning message
+        else
+            // just a warning and replace
+            flg = 3;
 
-   public TransformerHandler resolve(String method, XMLReader reader, 
-                                     Hashtable params)
-      throws SAXException
-   {
-      if (customResolver != null) {
-         TransformerHandler handler =
-            customResolver.resolve(method, reader,
-                                   createExternalParameters(params));
-         if (handler != null)
-            return handler;
-      }
+        // plugin classes
+        Enumeration clss = Service.providers(TransformerHandlerResolver.class);
 
-      return resolve(method, null, null, reader, params);
-   }
+        // loop over founded classes
+        while (clss.hasMoreElements()) {
+            TransformerHandlerResolver plg = (TransformerHandlerResolver) clss.nextElement();
+            String cls = plg.getClass().toString();
 
+            if (log.isDebugEnabled())
+                log.debug("scanning implemented stx-filter-methods of " + cls);
 
-   private TransformerHandler resolve(String method, 
-                                      String href, String base,
-                                      XMLReader reader, Hashtable params)
-      throws SAXException
-   {
-      // determine index of a known filter method
-      int mIndex;
-      for (mIndex=0; mIndex<knownMethods.length; mIndex++)
-         if (knownMethods[mIndex].equals(method))
-            break;
-      // mIndex == knownMethods.length means: unknown
+            // lookup over implemented methods
+            Iterator m = Arrays.asList(plg.resolves()).iterator();
+            while (m.hasNext()) {
 
-      if (mIndex == M_STX || mIndex == M_XSLT) {
-         final String TFPROP = "javax.xml.transform.TransformerFactory";
-         final String STXIMP = "net.sf.joost.trax.TransformerFactoryImpl";
-         String propVal = System.getProperty(TFPROP);
-         boolean propChanged = false;
+                // method name (url)
+                String mt = (String) m.next();
 
-         if (mIndex == M_STX) {
-            // ensure that Joost's implementation will be used
-            if (!STXIMP.equals(propVal)) {
-               System.setProperty(TFPROP, STXIMP);
-               propChanged = true;
+                if (log.isDebugEnabled())
+                    log.debug("stx-filter-method found : " + mt);
+
+                // see if method is already defined by some other plugin ?
+                TransformerHandlerResolver firstPlg = (TransformerHandlerResolver) 
+                        plugins.get(mt);
+
+                if (null != firstPlg) {
+                    String msg = "Plugin '" + cls.toString()
+                            + "' implements stx-filter-method '" + mt
+                            + "' which already has been implemented by '"
+                            + firstPlg.getClass().toString() + "'!";
+                    if (flg == 1) { // fail
+                        if (log.isDebugEnabled())
+                            log.debug("plugin already implemented!");
+                        throw new SAXException(msg);
+                    } else if (flg == 2) { // ignore
+                        log.warn(msg +
+                            "\nImplementation ignored, using first plugin!");
+                    } else { // warning
+                        log.warn(msg + 
+                            "\nUsing new implementation, previous plugin ignored!");
+                        plugins.put(mt, plg);
+                    }
+
+                } else {
+                    // add method to the hashtable
+                    plugins.put(mt, plg);
+                }
             }
-         }
-         else {
-            // use an XSLT engine
-            String xsltFac = 
-               System.getProperty(TrAXConstants.KEY_XSLT_FACTORY);
-            if (xsltFac != null || STXIMP.equals(propVal)) {
-               // change this property, 
-               // otherwise we wouldn't get an XSLT transformer
-               if (xsltFac != null)
-                  System.setProperty(TFPROP, xsltFac);
-               else {
-                  Properties props = System.getProperties();
-                  props.remove(TFPROP);
-                  System.setProperties(props);
-               }
-               propChanged = true;
-            }
-         }
 
-         TransformerFactory tf = TransformerFactory.newInstance();
+        }
 
-         if (propChanged) {
-            // reset property
-            if (propVal != null)
-               System.setProperty(TFPROP, propVal);
-            else {
-               Properties props = System.getProperties();
-               props.remove(TFPROP);
-               System.setProperties(props);
-            }
-         }
+        if (log.isDebugEnabled())
+            log.debug("init() : exiting");
+    }
 
-         if (tf.getFeature(SAXTransformerFactory.FEATURE)) {
-            SAXTransformerFactory stf = (SAXTransformerFactory)tf;
-            // distinguish the two Source (href or reader) variants
-            Source source = null;
-            if (reader != null)
-               source = new SAXSource(reader, new InputSource());
-            else {
-               if (href == null)
-                  throw new SAXException("Missing source for " + 
-                                         (mIndex == M_STX ? "STX" : "XSLT") + 
-                                         " transformation");
-               try {
-                  if (context.uriResolver != null)
-                     source = context.uriResolver.resolve(href, base);
-                  if (source == null)
-                     source = new StreamSource(
-                                 new URL(new URL(base), href).toExternalForm());
-               }
-               catch (MalformedURLException muex) {
-                  throw new SAXException(muex);
-               }
-               catch (TransformerException te) {
-                  throw new SAXException(te);
-               }
-            }
+    /** Creates a new Hashtable with String values only */
+    private Hashtable createExternalParameters(Hashtable params) 
+    {
+        // create new Hashtable with String values only
+        Hashtable result = new Hashtable();
+        for (Enumeration e = params.keys(); e.hasMoreElements();) {
+            String key = (String) e.nextElement();
+            // remove preceding "{}" if present
+            String name = key.startsWith("{}") ? key.substring(2) : key;
+            result.put(name, ((Value) (params.get(key))).getStringValue());
+        }
+        return result;
+    }
+
+    /**
+     * Resolve given method via searching for a plugin providing
+     * implementation for it.
+     * Returns TransformerHandler for that method or throws exception.
+     */
+    public TransformerHandler resolve(String method, String href, String base,
+            Hashtable params) 
+    throws SAXException 
+    {
+        if (customResolver != null) {
+            TransformerHandler handler = customResolver.resolve(method, href,
+                    base, params);
+            if (handler != null)
+                return handler;
+        }
+
+        if (notInitilizedYet)
+            init();
+
+        TransformerHandlerResolver impl = (TransformerHandlerResolver) plugins.get(method);
+        if (impl == null)
+            throw new SAXException("Undefined filter implementation for method '" 
+                    + method + "'");
+        return impl.resolve(method, href, base, createExternalParameters(params));
+    }
+
+    /**
+     * This is essentially same method as common resolve 
+     * but it assumes that params are already "parsed" via
+     * @link #createExternalParameters(Hashtable)
+     */
+    public TransformerHandler resolve(String method, XMLReader reader,
+            Hashtable params ) 
+    throws SAXException 
+    {
+        if (customResolver != null) {
+            TransformerHandler handler = customResolver.resolve(method, reader,
+                    params );
+            if (handler != null)
+                return handler;
+        }
+
+        if (notInitilizedYet)
+            init();
+
+        TransformerHandlerResolver impl = (TransformerHandlerResolver) plugins.get(method);
+        if (impl == null)
+            throw new SAXException(
+                    "Undefined filter implementation for method '" + method
+                            + "'");
+        return impl.resolve(method, reader, createExternalParameters(params) );
+    }
+
+    /**
+     * Lookup given method via searching for a plugin providing implementation for it.
+     * Returns TransformerHandler for that method or throws exception.
+     */
+    public boolean available(String method) 
+    {
+        if (notInitilizedYet) {
             try {
-               TransformerHandler handler = stf.newTransformerHandler(source);
-               if (!params.isEmpty()) {
-                  // set transformation parameters
-                  Transformer t = handler.getTransformer();
-                  for (Enumeration e=params.keys(); e.hasMoreElements(); ) {
-                     String key = (String)e.nextElement();
-                     String name = key.startsWith("{}") ? key.substring(2) 
-                                                        : key;
-                     t.setParameter(name, ((Value)(params.get(key)))
-                                          .getStringValue());
-                  }
-               }
-               return handler;
+                init();
+            } catch (SAXException e) {
+                log.error("Error while initializing the plugins", e);
             }
-            catch (TransformerConfigurationException tfe) { 
-               throw new SAXException(tfe);
+        }
+
+        return (plugins.get(method) != null);
+    }
+
+    /**
+     * Return all supported filter-method URIs
+     * Each one must return true when checked against {@link available()}.
+     * @return array of supported URIs
+     */
+    public String[] resolves() 
+    {
+        if (notInitilizedYet) {
+            try {
+                init();
+            } catch (SAXException e) {
+                log.error("Error while initializing the plugins", e);
             }
-         }
-      }
+        }
 
-      if (mIndex == M_SAX) {
-         if (href != null || reader != null)
-            throw new SAXException("Attribute `filter-src' not allowed " +
-                                   "for method `" + method + "'");
-         return new SAXWrapperHandler();
-      }
-
-      if (mIndex == M_POST) {
-         if (href != null || reader != null)
-            throw new SAXException("Attribute `filter-src' not allowed " +
-                                   "for method `" + method + "'");
-         Value v = (Value)params.get("{}target");
-         if (v == null)
-            throw new SAXException("Missing parameter `target' for filter " + 
-                                   "method `" + method + "'");
-         
-         return new HttpPostHandler(v.getStringValue());
-      }
-
-      return null;
-   }
-
-
-   public boolean available(String method)
-   {
-      if (customResolver != null && customResolver.available(method))
-         return true;
-      for (int i=0; i<knownMethods.length; i++)
-         if (knownMethods[i].equals(method))
-            return true;
-      return false;
-   }
+        String[] uris = new String[plugins.size()];
+        return (String[]) plugins.keySet().toArray(uris);
+    }
 }
