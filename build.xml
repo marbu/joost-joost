@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.20 2005/02/28 08:29:34 obecker Exp $
+ | $Id: build.xml,v 1.21 2005/11/24 20:41:06 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -141,6 +141,7 @@
     <copy todir="${classes}">
       <fileset dir="${src}">
         <include name="**/*.txt"/>
+        <include name="META-INF/**"/>
       </fileset>
     </copy>
     <!-- update version file -->
