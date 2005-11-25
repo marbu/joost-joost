@@ -168,6 +168,32 @@ public class THResolver implements TransformerHandlerResolver {
     public static final BooleanAttribute USE_INTERNAL_XALAN_TH = 
         new BooleanAttribute("USE-INTERNAL-XALAN-TH", "true", attrs);
 
+    
+    /**
+     * Class instances for Xalan. Necessary to check whether the current
+     * TransformerHandler instance is from Xalan to prevent a Xalan bug,
+     * see below.
+     */
+    private static final Class XALAN_IMPL_CLASS, XALAN_XSLT_IMPL_CLASS;
+    static {
+       Class clazz;
+       try {
+          clazz = Class.forName("org.apache.xalan.processor.TransformerFactoryImpl");
+       }
+       catch (Throwable t) {
+          clazz = null;
+       }
+       XALAN_IMPL_CLASS = clazz;
+       try {
+          clazz = Class.forName("org.apache.xalan.xsltc.trax.TransformerFactoryImpl");
+       }
+       catch (Throwable t) {
+          clazz = null;
+       }
+       XALAN_XSLT_IMPL_CLASS = clazz;
+    }
+    
+    
 
     /* local vars */
     
@@ -428,8 +454,10 @@ public class THResolver implements TransformerHandlerResolver {
             // it is so that Xalan Transformers are reusable
             // but TransformerHandlers are not
             // see http://issues.apache.org/bugzilla/show_bug.cgi?id=1205 for more details
-            if ( ( (saxtf instanceof org.apache.xalan.processor.TransformerFactoryImpl ) ||
-                   (saxtf instanceof org.apache.xalan.xsltc.trax.TransformerFactoryImpl) ) &&
+            if (((XALAN_IMPL_CLASS != null
+               && XALAN_IMPL_CLASS.isAssignableFrom(saxtf.getClass()))
+               || (XALAN_XSLT_IMPL_CLASS != null
+               && XALAN_XSLT_IMPL_CLASS.isAssignableFrom(saxtf.getClass()))) &&
                    USE_INTERNAL_XALAN_TH.booleanValue() )
             {
                 if ( log.isDebugEnabled() )
