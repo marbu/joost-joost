@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerResolverImpl.java,v 2.9 2005/11/06 21:22:37 obecker Exp $
+ * $Id: TransformerHandlerResolverImpl.java,v 2.10 2005/11/28 20:10:59 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -51,7 +51,7 @@ import net.sf.joost.TransformerHandlerResolver;
  * Upon call to {@link resolve()} it will look for a handler supporting the given
  * method URI and will delegate the call to it.
  * 
- * @version $Revision: 2.9 $ $Date: 2005/11/06 21:22:37 $
+ * @version $Revision: 2.10 $ $Date: 2005/11/28 20:10:59 $
  * @author fikin
  */
 
@@ -87,8 +87,8 @@ public final class TransformerHandlerResolverImpl
    // anymore. Solution: change the TransformerHandlerResolver interface
    // and pass the URIResolver directly
 
-    /** indicate whether this object has been initialized or not */
-    private boolean notInitilizedYet = true;
+    /** indicate whether {@link #plugins} has been initialized or not */
+    private static boolean notInitializedYet = true;
 
    public TransformerHandlerResolverImpl(Context context)
    {
@@ -111,7 +111,7 @@ public final class TransformerHandlerResolverImpl
             log.debug("init() : entering");
 
         // revert init() flag
-        notInitilizedYet = false;
+        notInitializedYet = false;
 
         // system property which says what to do in case of
         // duplicated method implementations
@@ -215,7 +215,7 @@ public final class TransformerHandlerResolverImpl
                 return handler;
         }
 
-        if (notInitilizedYet)
+        if (notInitializedYet)
             init();
 
         TransformerHandlerResolver impl = (TransformerHandlerResolver) plugins.get(method);
@@ -241,7 +241,7 @@ public final class TransformerHandlerResolverImpl
                 return handler;
         }
 
-        if (notInitilizedYet)
+        if (notInitializedYet)
             init();
 
         TransformerHandlerResolver impl = (TransformerHandlerResolver) plugins.get(method);
@@ -258,7 +258,7 @@ public final class TransformerHandlerResolverImpl
      */
     public boolean available(String method) 
     {
-        if (notInitilizedYet) {
+        if (notInitializedYet) {
             try {
                 init();
             } catch (SAXException e) {
@@ -276,7 +276,7 @@ public final class TransformerHandlerResolverImpl
      */
     public String[] resolves() 
     {
-        if (notInitilizedYet) {
+        if (notInitializedYet) {
             try {
                 init();
             } catch (SAXException e) {
