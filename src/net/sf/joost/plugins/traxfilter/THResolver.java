@@ -26,6 +26,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Properties;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -47,6 +48,7 @@ import net.sf.joost.TransformerHandlerResolver;
 import net.sf.joost.plugins.attributes.Attribute;
 import net.sf.joost.plugins.attributes.BooleanAttribute;
 import net.sf.joost.plugins.attributes.StringAttribute;
+import net.sf.joost.trax.TrAXConstants;
 import net.sf.joost.trax.TransformerFactoryImpl;
 
 /**
@@ -440,7 +442,40 @@ public class THResolver implements TransformerHandlerResolver {
                 log.debug("newTHOutOfTraX(): use default Joost factory "+
                         saxtf.getClass().toString());
         } else {
-            saxtf = (SAXTransformerFactory)TransformerFactory.newInstance();
+           final String TFPROP = "javax.xml.transform.TransformerFactory";
+           final String STXIMP = "net.sf.joost.trax.TransformerFactoryImpl";
+           String propVal = System.getProperty(TFPROP);
+           boolean propChanged = false;
+           
+           String xsltFac = 
+              System.getProperty(TrAXConstants.KEY_XSLT_FACTORY);
+           if (xsltFac != null || STXIMP.equals(propVal)) {
+              // change this property, 
+              // otherwise we wouldn't get an XSLT transformer
+              if (xsltFac != null)
+                 System.setProperty(TFPROP, xsltFac);
+              else {
+                 Properties props = System.getProperties();
+                 props.remove(TFPROP);
+                 System.setProperties(props);
+              }
+              propChanged = true;
+           }
+
+           saxtf = (SAXTransformerFactory)TransformerFactory.newInstance();
+           
+           if (propChanged) {
+              // reset property
+              if (propVal != null)
+                 System.setProperty(TFPROP, propVal);
+              else {
+                 Properties props = System.getProperties();
+                 props.remove(TFPROP);
+                 System.setProperties(props);
+              }
+           }
+           
+           
             if ( log.isDebugEnabled() )
                 log.debug("newTHOutOfTraX(): use default TraX factory "+
                         saxtf.getClass().toString());
