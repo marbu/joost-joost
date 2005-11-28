@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.29 2005/03/13 17:13:03 obecker Exp $
+ * $Id: Main.java,v 1.30 2005/11/28 20:50:36 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -19,7 +19,7 @@
  * are Copyright (C) ______ _______________________. 
  * All Rights Reserved.
  *
- * Contributor(s): Nikolai Fiikov
+ * Contributor(s): Nikolay Fiykov
  */
 
 package net.sf.joost;
@@ -48,7 +48,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.29 $ $Date: 2005/03/13 17:13:03 $
+ * @version $Revision: 1.30 $ $Date: 2005/11/28 20:50:36 $
  * @author Oliver Becker
  */
 public class Main implements Constants
