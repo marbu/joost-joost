@@ -1,5 +1,5 @@
 /*
- * $Id: URIResolverTest.java,v 1.2 2004/09/29 05:47:51 obecker Exp $
+ * $Id: URIResolverTest.java,v 1.3 2006/01/09 19:53:36 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import org.w3c.dom.Element;
 
 /**
  * Example class that demonstrates the usage of URI resolvers in Joost.
- * @version $Revision: 1.2 $ $Date: 2004/09/29 05:47:51 $
+ * @version $Revision: 1.3 $ $Date: 2006/01/09 19:53:36 $
  * @author Oliver Becker
  */
 
@@ -99,7 +99,7 @@ public class URIResolverTest implements URIResolver
    //
 
 
-   public Source resolve(String  href, String base)
+   public Source resolve(String href, String base)
    {
       System.err.println("resolve('" + href + "', '" + base + "')");
       try {

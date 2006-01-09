@@ -25,6 +25,14 @@
           <stx:text>&#xA;</stx:text>
           <stx:process-children />
         </input>
+        <stx:text>&#xA;</stx:text>
+        <filter>
+          <stx:text>&#xA;</stx:text>
+          <stx:process-document 
+            href="'urn:import'" 
+            filter-method="http://stx.sourceforge.net/2002/ns" 
+            filter-src="url('urn:import')"/>
+        </filter>
       </result>
     </stx:else>
   </stx:template>
