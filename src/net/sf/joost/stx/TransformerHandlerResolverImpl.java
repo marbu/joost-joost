@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerResolverImpl.java,v 2.11 2005/11/28 20:51:27 obecker Exp $
+ * $Id: TransformerHandlerResolverImpl.java,v 2.12 2006/01/09 19:42:44 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -27,6 +27,7 @@ package net.sf.joost.stx;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import javax.xml.transform.URIResolver;
 import javax.xml.transform.sax.TransformerHandler;
 
 import net.sf.joost.OptionalLog;
@@ -47,7 +48,7 @@ import org.xml.sax.XMLReader;
  * Upon call to {@link resolve()} it will look for a handler supporting the given
  * method URI and will delegate the call to it.
  * 
- * @version $Revision: 2.11 $ $Date: 2005/11/28 20:51:27 $
+ * @version $Revision: 2.12 $ $Date: 2006/01/09 19:42:44 $
  * @author fikin
  */
 
@@ -81,20 +82,9 @@ public final class TransformerHandlerResolverImpl
     */
    public TransformerHandlerResolver customResolver = null;
    
-   /** The context for accessing global transformation parameters */
-   private Context context;
-   // TODO this was meant to pass the URIResolver, but this doesn't work
-   // anymore. Solution: change the TransformerHandlerResolver interface
-   // and pass the URIResolver directly
-   
    /** indicate whether {@link #plugins} has been initialized or not */
    private static boolean notInitializedYet = true;
    
-   public TransformerHandlerResolverImpl(Context context)
-   {
-      this.context = context;
-   }
-
 
    /**
     * Initialize the object
@@ -207,11 +197,12 @@ public final class TransformerHandlerResolverImpl
      * @return TransformerHandler for that method or throws exception.
      */
    public TransformerHandler resolve(String method, String href, String base,
+                                     URIResolver uriResolver,
                                      Hashtable params) throws SAXException
    {
       if (customResolver != null) {
          TransformerHandler handler = 
-            customResolver.resolve(method, href, base, params);
+            customResolver.resolve(method, href, base, uriResolver, params);
          if (handler != null)
             return handler;
       }
@@ -224,7 +215,7 @@ public final class TransformerHandlerResolverImpl
       if (impl == null)
          throw new SAXException("Undefined filter implementation for method '"
                + method + "'");
-      return impl.resolve(method, href, base, createExternalParameters(params));
+      return impl.resolve(method, href, base, uriResolver, createExternalParameters(params));
    }
 
    /**

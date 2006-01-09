@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerResolver.java,v 1.5 2005/11/06 21:21:52 obecker Exp $
+ * $Id: TransformerHandlerResolver.java,v 1.6 2006/01/09 19:42:44 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -29,6 +29,7 @@ import org.xml.sax.XMLReader;
 
 import java.util.Hashtable;
 
+import javax.xml.transform.URIResolver;
 import javax.xml.transform.sax.TransformerHandler;
 
 
@@ -68,7 +69,7 @@ import javax.xml.transform.sax.TransformerHandler;
  * {@link javax.xml.transform.Transformer} dummy solely as means to the
  * end of enabling {@link javax.xml.transform.Transformer#setParameter}.
  *
- * @version $Revision: 1.5 $ $Date: 2005/11/06 21:21:52 $
+ * @version $Revision: 1.6 $ $Date: 2006/01/09 19:42:44 $
  * @author Oliver Becker
  */
 
@@ -87,6 +88,7 @@ public interface TransformerHandlerResolver
     *        <code>null</code> if the <code>filter-src</code> attribute is 
     *        missing
     * @param base the base URI of the transformation sheet
+    * @param uriResolver the optional URIResolver configured for Joost
     * @param params the set of parameters specified using 
     *        <code>stx:with-param</code> elements, all values are 
     *        {@link String}s
@@ -97,7 +99,7 @@ public interface TransformerHandlerResolver
     *        initialization
     */
    TransformerHandler resolve(String method, String href, String base,
-                              Hashtable params)
+                              URIResolver uriResolver, Hashtable params)
       throws SAXException;
 
 

@@ -1,5 +1,5 @@
 /*
- * $Id: THResolver.java,v 1.1 2005/11/06 21:22:21 obecker Exp $
+ * $Id: THResolver.java,v 1.2 2006/01/09 19:42:44 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,6 +26,7 @@ package net.sf.joost.plugins.saxfilter;
 
 import java.util.Hashtable;
 
+import javax.xml.transform.URIResolver;
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.apache.commons.logging.Log;
@@ -49,7 +50,7 @@ import net.sf.joost.TransformerHandlerResolver;
  *    />
  *    ...
  * 
- * @version $Revision: 1.1 $ $Date: 2005/11/06 21:22:21 $
+ * @version $Revision: 1.2 $ $Date: 2006/01/09 19:42:44 $
  * @author Oliver Becker
  */
 
@@ -71,25 +72,26 @@ public final class THResolver
    }
    
    /**
-    * If given method is @SAX_METHOD return cahched (or new)
+    * If given method is {@link #SAX_METHOD} return cached (or new)
     * Trax compatible instance.
-    * otherwise return null. 
+    * otherwise return <code>null</code>. 
     */
    public TransformerHandler resolve(
        String method, 
        String href, 
        String base,
+       URIResolver uriResolver,
        Hashtable params
    ) throws SAXException
    {
-      return resolve(method, href, base, null, params);
+      return resolve(method, href, base, uriResolver, null, params);
    }
 
 
    /**
-    * If given method is @SAX_METHOD return cahched (or new)
+    * If given method is {@link #SAX_METHOD} return cached (or new)
     * Trax compatible instance.
-    * otherwise return null. 
+    * otherwise return <code>null</code>. 
     */
    public TransformerHandler resolve(
        String method, 
@@ -97,7 +99,7 @@ public final class THResolver
        Hashtable params
    ) throws SAXException
    {
-      return resolve(method, null, null, reader, params);
+      return resolve(method, null, null, null, reader, params);
    }
 
 
@@ -110,6 +112,7 @@ public final class THResolver
        String method, 
        String href, 
        String base,
+       URIResolver uriResolver,
        XMLReader reader, 
        Hashtable params
    ) throws SAXException

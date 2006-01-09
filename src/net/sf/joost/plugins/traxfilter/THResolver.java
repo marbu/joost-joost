@@ -1,5 +1,5 @@
 /*
- * $Id: THResolver.java,v 1.4 2005/11/28 20:51:27 obecker Exp $
+ * $Id: THResolver.java,v 1.5 2006/01/09 19:42:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -33,7 +33,9 @@ import java.util.Properties;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.URIResolver;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
@@ -107,7 +109,7 @@ import net.sf.joost.trax.TransformerFactoryImpl;
  * or
  * &lt;stx:with-param name="http://stx.sourceforge.net/2002/ns/trax-filter/attribute:http://apache.org/xalan/features/incremental" select="'true'" /&gt;
  * 
- * @version $Revision: 1.4 $ $Date: 2005/11/28 20:51:27 $
+ * @version $Revision: 1.5 $ $Date: 2006/01/09 19:42:44 $
  * @author fikin
  */
 public class THResolver implements TransformerHandlerResolver {
@@ -232,9 +234,11 @@ public class THResolver implements TransformerHandlerResolver {
     * (non-Javadoc)
     * 
     * @see net.sf.joost.TransformerHandlerResolver#resolve(java.lang.String,
-    *      java.lang.String, java.lang.String, java.util.Hashtable)
+    *      java.lang.String, java.lang.String, javax.xml.transform.URIResolver,
+    *      java.util.Hashtable)
     */
    public TransformerHandler resolve(String method, String href, String base,
+                                     URIResolver uriResolver,
                                      Hashtable params) throws SAXException 
    {
       if (!available(method))
@@ -256,26 +260,35 @@ public class THResolver implements TransformerHandlerResolver {
       // new transformer if non available
       if (th == null) {
          // prepare the source
-         Source source;
+         Source source = null;
          try {
-            if (HREF_IS_SYSTEM_ID.booleanValue()) {
-               // systemId
-               if (log.isDebugEnabled())
-                  log.debug("resolve(url): new source out of systemId='" + href
-                        + "'");
-               source = new StreamSource(href);
+            // use custom URIResolver if present
+            if (uriResolver != null) {
+               source = uriResolver.resolve(href, base);
             }
-            else {
-               // file
-               String url = new URL(new URL(base), href).toExternalForm();
-               if (log.isDebugEnabled())
-                  log.debug("resolve(url): new source out of file='" + url
-                        + "'");
-               source = new StreamSource(url);
+            if (source == null) {
+               if (HREF_IS_SYSTEM_ID.booleanValue()) {
+                  // systemId
+                  if (log.isDebugEnabled())
+                     log.debug("resolve(url): new source out of systemId='"
+                           + href + "'");
+                  source = new StreamSource(href);
+               }
+               else {
+                  // file
+                  String url = new URL(new URL(base), href).toExternalForm();
+                  if (log.isDebugEnabled())
+                     log.debug("resolve(url): new source out of file='" + url
+                               + "'");
+                  source = new StreamSource(url);
+               }
             }
          }
          catch (MalformedURLException muex) {
             throw new SAXException(muex);
+         }
+         catch (TransformerException tex) {
+            throw new SAXException(tex);
          }
 
          th = newTHOutOfTraX(method, source, params);
