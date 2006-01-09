@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.20 2005/01/23 19:47:29 obecker Exp $
+ * $Id: Value.java,v 1.21 2006/01/09 19:00:58 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -19,7 +19,7 @@
  * are Copyright (C) ______ _______________________. 
  * All Rights Reserved.
  *
- * Contributor(s): Thomas Behrends.
+ * Contributor(s): Thomas Behrends, Charles Brown.
  */
 
 package net.sf.joost.stx;
@@ -32,7 +32,7 @@ import java.util.ArrayList;
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.20 $ $Date: 2005/01/23 19:47:29 $
+ * @version $Revision: 1.21 $ $Date: 2006/01/09 19:00:58 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -153,34 +153,9 @@ public class Value implements Cloneable
          bool = ((Boolean)obj).booleanValue();
          return;
       }
-      else if (obj instanceof Double) {
+      else if (obj instanceof Number) {
          type = NUMBER;
-         number = ((Double)obj).doubleValue();
-         return;
-      }
-      else if (obj instanceof Float) {
-         type = NUMBER;
-         number = ((Float)obj).floatValue();
-         return;
-      }
-      else if (obj instanceof Byte) {
-         type = NUMBER;
-         number = ((Byte)obj).byteValue();
-         return;
-      }
-      else if (obj instanceof Short) {
-         type = NUMBER;
-         number = ((Short)obj).shortValue();
-         return;
-      }
-      else if (obj instanceof Integer) {
-         type = NUMBER;
-         number = ((Integer)obj).intValue();
-         return;
-      }
-      else if (obj instanceof Long) {
-         type = NUMBER;
-         number = ((Long)obj).longValue();
+         number = ((Number) obj).doubleValue();
          return;
       }
       else {
@@ -196,11 +171,6 @@ public class Value implements Cloneable
    //
 
    // Getter
-
-   public double getNumber()
-   {
-      return number;
-   }
 
    public String getString()
    {
@@ -268,7 +238,7 @@ public class Value implements Cloneable
       case NUMBER:
          String v = Double.toString(number);
          if (v.endsWith(".0"))
-            v = v.substring(0,v.length()-2);
+            v = v.substring(0, v.length()-2);
          return v;
       case OBJECT:
          return object != null ? object.toString() : "";
@@ -407,7 +377,7 @@ public class Value implements Cloneable
          if (target == Character.class) return 19;
          if (target == String.class)    return 20;
          if (target == float.class)     return 21;
-         if (target == Float.class)     return 22;            
+         if (target == Float.class)     return 22;
          if (target == double.class)    return 23;
          if (target == Double.class)    return 24;
          break;
@@ -415,7 +385,7 @@ public class Value implements Cloneable
          if (target == double.class)    return 0;
          if (target == Double.class)    return 1;
          if (target == float.class)     return 2;
-         if (target == Float.class)     return 3;           
+         if (target == Float.class)     return 3;
          if (target == long.class)      return 4;
          if (target == Long.class)      return 5;
          if (target == int.class)       return 6;
@@ -432,13 +402,13 @@ public class Value implements Cloneable
          break;
       case NODE: // treat NODE and STRING equal
       case STRING: 
-         if (target == String.class)    return 0;        
+         if (target == String.class)    return 0;
          if (target == char.class)      return 1;
          if (target == Character.class) return 2;
          if (target == double.class)    return 10;
          if (target == Double.class)    return 11;
          if (target == float.class)     return 12;
-         if (target == Float.class)     return 13;            
+         if (target == Float.class)     return 13;
          if (target == int.class)       return 14;
          if (target == Integer.class)   return 15;
          if (target == long.class)      return 16;
