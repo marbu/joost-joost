@@ -1,5 +1,5 @@
 /*
- * $Id: HtmlEmitter.java,v 1.3 2004/11/07 12:30:38 obecker Exp $
+ * $Id: HtmlEmitter.java,v 1.4 2006/01/12 19:28:02 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -33,7 +33,7 @@ import org.xml.sax.SAXException;
 
 /**
  *  This class implements an emitter for html code.
- *  @version $Revision: 1.3 $ $Date: 2004/11/07 12:30:38 $
+ *  @version $Revision: 1.4 $ $Date: 2006/01/12 19:28:02 $
  *  @author Thomas Behrends
  */
 public class HtmlEmitter extends StreamEmitter 
@@ -144,12 +144,7 @@ public class HtmlEmitter extends StreamEmitter
                case '\r': out.append("&#xD;");  break;
                case 160: out.append("&nbsp;");  break;
                default:
-                  if (charsetEncoder.canEncode(attChars[j]))
-                     out.append(attChars[j]);
-                  else // output character reference
-                     out.append("&#")
-                        .append((int)attChars[j])
-                        .append(";");
+                  j = encodeCharacters(attChars, j, out);
                }
          out.append('\"');
       }
@@ -213,12 +208,7 @@ public class HtmlEmitter extends StreamEmitter
                case '>': out.append("&gt;");   break;
                case 160: out.append("&nbsp;"); break;
                default: 
-                  if (charsetEncoder.canEncode(ch[start+i]))
-                     out.append(ch[start+i]);
-                  else // output character reference
-                     out.append("&#")
-                        .append((int)ch[start+i])
-                        .append(";");
+                  i = encodeCharacters(ch, start+i, out) - start;
                }
             writer.write(out.toString());
          }

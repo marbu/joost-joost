@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.26 2005/03/13 17:12:49 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.27 2006/01/12 19:28:02 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -47,7 +47,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Base class for emitter classes that produce a character stream.
- * @version $Revision: 1.26 $ $Date: 2005/03/13 17:12:49 $
+ * @version $Revision: 1.27 $ $Date: 2006/01/12 19:28:02 $
  * @author Oliver Becker
  */
 public abstract class StreamEmitter extends StxEmitterBase implements Constants
@@ -199,6 +199,46 @@ public abstract class StreamEmitter extends StxEmitterBase implements Constants
    public void setOmitXmlDeclaration(boolean flag)
    { }
 
+   /**
+    * Encode a character from a character array, respect surrogate pairs
+    * @param chars the character array
+    * @param index the current index
+    * @param sb the buffer to append the encoded character
+    * @return the new index (if a pair has been consumed)
+    * @throws SAXException when there's no low surrogate
+    */
+   protected int encodeCharacters(char[] chars, int index, StringBuffer sb)
+         throws SAXException
+   {
+      if (charsetEncoder.canEncode(chars[index]))
+         sb.append(chars[index]);
+      else { // output character reference
+         // check surrogate pairs
+         if (chars[index] >= '\uD800' && chars[index] <= '\uDBFF') {
+            // a high surrogate
+            index++;
+            if (index < chars.length && chars[index] >= '\uDC00'
+                  && chars[index] <= '\uDFFF') {
+               // a low surrogate
+               // output the calculated code value
+               sb.append("&#")
+                 .append((chars[index - 1] - 0xD800) * 0x400
+                             + (chars[index] - 0xDC00) + 0x10000)
+                 .append(';');
+            }
+            else
+               throw new SAXException("Surrogate pair encoding error - "
+                     + "missing low surrogate after code "
+                     + (int) chars[index - 1]);
+         }
+         else {
+            sb.append("&#")
+              .append((int) chars[index])
+              .append(';');
+         }
+      }
+      return index;
+   }
 
 
    //

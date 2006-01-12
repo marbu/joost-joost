@@ -5,6 +5,7 @@ Changes since 20050521
   i.e. in the META-INF/services/net.sf.joost.TransformerHandlerResolver file
   (thanks to Fikin).
 - xslt and stx filters support transformers reusage (thanks to Fikin).
+- added support for Unicode surrogate pairs
 - Bugfix: 1215468
 
 Changes since 20041107

@@ -1,5 +1,5 @@
 /*
- * $Id: XmlEmitter.java,v 1.3 2004/10/25 20:39:33 obecker Exp $
+ * $Id: XmlEmitter.java,v 1.4 2006/01/12 19:28:02 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -39,7 +39,7 @@ import org.xml.sax.SAXException;
 /**
  * This class implements an emitter that uses the <code>xml</code> output
  * method for byte or character streams.
- * @version $Revision: 1.3 $ $Date: 2004/10/25 20:39:33 $
+ * @version $Revision: 1.4 $ $Date: 2006/01/12 19:28:02 $
  * @author Oliver Becker, Anatolij Zubow
  */
 public class XmlEmitter extends StreamEmitter 
@@ -140,12 +140,7 @@ public class XmlEmitter extends StreamEmitter
                case '\n': out.append("&#xA;");  break;
                case '\r': out.append("&#xD;");  break;
                default:
-                  if (charsetEncoder.canEncode(attChars[j]))
-                     out.append(attChars[j]);
-                  else // output character reference
-                     out.append("&#")
-                        .append((int)attChars[j])
-                        .append(";");
+                  j = encodeCharacters(attChars, j, out);
                }
             out.append('\"');
          }
@@ -280,12 +275,7 @@ public class XmlEmitter extends StreamEmitter
                case '<': out.append("&lt;"); break;
                case '>': out.append("&gt;"); break;
                default: 
-                  if (charsetEncoder.canEncode(ch[start+i]))
-                     out.append(ch[start+i]);
-                  else // output character reference
-                     out.append("&#")
-                        .append((int)ch[start+i])
-                        .append(";");
+                  i = encodeCharacters(ch, start+i, out) - start;
                }
             writer.write(out.toString());
          }
