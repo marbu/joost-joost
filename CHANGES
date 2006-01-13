@@ -6,6 +6,9 @@ Changes since 20050521
   (thanks to Fikin).
 - xslt and stx filters support transformers reusage (thanks to Fikin).
 - added support for Unicode surrogate pairs
+- Fix for #1215468 required a change in the TransformerHandlerResolver interface:
+  added URIResolver parameter in 
+  TransformerHandler resolve(String, String, String, URIResolver, Hashtable)
 - Bugfix: 1215468
 
 Changes since 20041107
