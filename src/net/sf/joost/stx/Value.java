@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.21 2006/01/09 19:00:58 obecker Exp $
+ * $Id: Value.java,v 1.22 2006/01/13 19:02:39 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,19 +24,32 @@
 
 package net.sf.joost.stx;
 
-import net.sf.joost.grammar.EvalException;
-
-import java.util.List;
+import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+import net.sf.joost.grammar.EvalException;
 
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.21 $ $Date: 2006/01/09 19:00:58 $
+ * @version $Revision: 1.22 $ $Date: 2006/01/13 19:02:39 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
 {
+   // number format for number to string conversion
+   private static NumberFormat numberFormat;
+   static {
+      numberFormat = NumberFormat.getInstance(Locale.ENGLISH);
+      numberFormat.setGroupingUsed(false);
+      numberFormat.setMinimumFractionDigits(0);
+      numberFormat.setMaximumFractionDigits(325);
+      // The smallest double is 2^-1074, that is 4.9E-324, 
+      // so 325 digits should be enough
+   }
+   
    // value constants
    public final static Value VAL_TRUE = new Value(true);
    public final static Value VAL_FALSE = new Value(false);
@@ -236,10 +249,19 @@ public class Value implements Cloneable
       case BOOLEAN:
          return bool ? "true" : "false";
       case NUMBER:
-         String v = Double.toString(number);
-         if (v.endsWith(".0"))
-            v = v.substring(0, v.length()-2);
-         return v;
+         if ((number < 1e-3 || number >= 1e7) && !Double.isInfinite(number)) {
+            // This is the range where Double.toString produces the scientific
+            // notation - we use NumberFormat to prevent this
+            synchronized (numberFormat) {
+               return numberFormat.format(number);
+            }
+         }
+         else {
+            String v = Double.toString(number);
+            if (v.endsWith(".0"))
+               v = v.substring(0, v.length() - 2);
+            return v;
+         }
       case OBJECT:
          return object != null ? object.toString() : "";
       default:
