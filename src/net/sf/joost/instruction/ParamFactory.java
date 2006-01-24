@@ -1,5 +1,5 @@
 /*
- * $Id: ParamFactory.java,v 2.7 2004/11/06 13:07:32 obecker Exp $
+ * $Id: ParamFactory.java,v 2.8 2006/01/24 08:55:06 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>params</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.7 $ $Date: 2004/11/06 13:07:32 $
+ * @version $Revision: 2.8 $ $Date: 2006/01/24 08:55:06 $
  * @author Oliver Becker
  */
 
@@ -104,7 +104,7 @@ final public class ParamFactory extends FactoryBase
       private Tree select;
       private boolean required;
       private AbstractInstruction contents, successor;
-      private Hashtable globalParams;
+//      private Hashtable globalParams;
 
       protected Instance(String qName, NodeBase parent, ParseContext context,
                          String varName, String expName, Tree select,
@@ -118,7 +118,6 @@ final public class ParamFactory extends FactoryBase
          this.varName = varName;
          this.select = select;
          this.required = required;
-         this.globalParams = context.transformNode.globalParams;
       }
 
 
@@ -139,7 +138,7 @@ final public class ParamFactory extends FactoryBase
          Value v;
          if (parent instanceof GroupBase) {
             // passed value from the outside
-            v = (Value)globalParams.get(expName);
+            v = (Value)context.globalParameters.get(expName);
          }
          else {
             // passed value from another template via stx:with-param

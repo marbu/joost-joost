@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 2.13 2004/10/30 15:15:17 obecker Exp $
+ * $Id: TransformFactory.java,v 2.14 2006/01/24 08:55:06 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 2.13 $ $Date: 2004/10/30 15:15:17 $
+ * @version $Revision: 2.14 $ $Date: 2006/01/24 08:55:06 $
  * @author Oliver Becker
  */
 
@@ -186,9 +186,6 @@ public class TransformFactory extends FactoryBase
    /** Represents an instance of the <code>transform</code> element. */
    final public class Instance extends GroupBase
    {
-      /** names of global parameters (<code>stx:param</code>) */
-      public Hashtable globalParams;
-
       /** mapping table for <code>stx:namespace-alias</code> instructions */
       public Hashtable namespaceAliases;
 
@@ -214,7 +211,6 @@ public class TransformFactory extends FactoryBase
          if (parent == null) {
             namedGroups = new Hashtable(); // shared with all sub-groups
             globalProcedures = new Hashtable(); // also shared
-            globalParams = new Hashtable(); // shared with all includes
             namespaceAliases = new Hashtable(); // also shared
          }
          else {
@@ -224,7 +220,6 @@ public class TransformFactory extends FactoryBase
             // -> should be improved/fixed)
             while (!(parent instanceof TransformFactory.Instance))
                parent = parent.parent;
-            globalParams = ((TransformFactory.Instance)parent).globalParams;
             namespaceAliases = 
                ((TransformFactory.Instance)parent).namespaceAliases;
          }

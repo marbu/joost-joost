@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.50 2005/01/23 18:36:33 obecker Exp $
+ * $Id: Processor.java,v 2.51 2006/01/24 08:55:07 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -69,7 +69,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.50 $ $Date: 2005/01/23 18:36:33 $
+ * @version $Revision: 2.51 $ $Date: 2006/01/24 08:55:07 $
  * @author Oliver Becker
  */
 
@@ -660,7 +660,7 @@ public class Processor extends XMLFilterImpl
    {
       if (!name.startsWith("{"))
          name = "{}" + name;
-      transformNode.globalParams.put(name, new Value(value));
+      context.globalParameters.put(name, new Value(value));
    }
 
 
@@ -674,7 +674,7 @@ public class Processor extends XMLFilterImpl
    {
       if (!name.startsWith("{"))
          name = "{}" + name;
-      Value param = (Value)transformNode.globalParams.get(name);
+      Value param = (Value)context.globalParameters.get(name);
       try {
          if (param != null)
             return param.toJavaObject(Object.class);
@@ -694,7 +694,7 @@ public class Processor extends XMLFilterImpl
     */
    public void clearParameters()
    {
-      transformNode.globalParams.clear();
+      context.globalParameters.clear();
    }
 
 

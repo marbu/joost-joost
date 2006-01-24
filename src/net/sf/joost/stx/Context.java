@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 2.18 2006/01/09 19:42:44 obecker Exp $
+ * $Id: Context.java,v 2.19 2006/01/24 08:55:07 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.xml.sax.Locator;
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 2.18 $ $Date: 2006/01/09 19:42:44 $
+ * @version $Revision: 2.19 $ $Date: 2006/01/24 08:55:07 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
@@ -81,6 +81,9 @@ public final class Context implements Cloneable
    /** Local defined variables of a template. */
    public Hashtable localVars = new Hashtable();
 
+   /** External parameters passed to the transformation */
+   public Hashtable globalParameters = new Hashtable();
+   
    /** Parameters passed to the next template */
    public Hashtable passedParameters = new Hashtable();
 
