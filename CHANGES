@@ -11,7 +11,7 @@ Changes since 20050521
 - Fix for #1215468 required a change in the TransformerHandlerResolver interface:
   added URIResolver parameter in 
   TransformerHandler resolve(String, String, String, URIResolver, Hashtable)
-- Bugfix: 1215468
+- Bugfixes: 1215468, 1365639
 
 Changes since 20041107
 - added command line switch -noext and TrAX attribute ALLOW_EXTENSION_FUNCTIONS
