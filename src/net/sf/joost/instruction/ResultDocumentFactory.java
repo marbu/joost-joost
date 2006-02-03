@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 2.17 2005/03/11 18:13:13 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 2.18 2006/02/03 19:04:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.17 $ $Date: 2005/03/11 18:13:13 $
+ * @version $Revision: 2.18 $ $Date: 2006/02/03 19:04:44 $
  * @author Oliver Becker
  */
 
@@ -60,6 +60,7 @@ final public class ResultDocumentFactory extends FactoryBase
       attrNames.add("href");
       attrNames.add("output-encoding");
       attrNames.add("output-method");
+      attrNames.add("append");
    }
 
 
@@ -89,9 +90,13 @@ final public class ResultDocumentFactory extends FactoryBase
                context.locator);
       }
 
+      // default is "no" (false)
+      boolean append =
+         getEnumAttValue("append", attrs, YESNO_VALUES, context) == YES_VALUE;
+
       checkAttributes(qName, attrs, attrNames, context);
       return new Instance(qName, parent, context, href, encodingAtt, 
-                          methodAtt);
+                          methodAtt, append);
    }
 
 
@@ -100,14 +105,17 @@ final public class ResultDocumentFactory extends FactoryBase
    {
       private Tree href;
       private String encoding, method;
+      private boolean append;
 
       protected Instance(String qName, NodeBase parent, ParseContext context,
-                         Tree href, String encoding, String method)
+                         Tree href, String encoding, String method, 
+                         boolean append)
       {
          super(qName, parent, context, true);
          this.href = href;
          this.encoding = encoding;
          this.method = method;
+         this.append = append;
       }
       
 
@@ -130,7 +138,7 @@ final public class ResultDocumentFactory extends FactoryBase
             // a Result object
             Writer osw = context.emitter.getResultWriter(
                             filename, encoding, 
-                            publicId, systemId, lineNo, colNo);
+                            publicId, systemId, lineNo, colNo, append);
 
             Properties props = (Properties)context.currentProcessor
                                                   .outputProperties.clone();
@@ -138,6 +146,8 @@ final public class ResultDocumentFactory extends FactoryBase
             if (method != null)
                props.setProperty(OutputKeys.METHOD, method);
             se = StreamEmitter.newEmitter(osw, encoding, props);
+            if (append)
+               se.setOmitXmlDeclaration(true);
             localFieldStack.push(osw);
          }
          catch (java.io.IOException ex) {

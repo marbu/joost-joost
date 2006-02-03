@@ -1,5 +1,5 @@
 /*
- * $Id: DebugEmitter.java,v 1.11 2004/11/06 13:45:03 obecker Exp $
+ * $Id: DebugEmitter.java,v 1.12 2006/02/03 19:04:46 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -44,7 +44,7 @@ import org.xml.sax.helpers.LocatorImpl;
 
 /**
  * Extends the {@link net.sf.joost.stx.Emitter} with debug features.
- * @version $Revision: 1.11 $ $Date: 2004/11/06 13:45:03 $
+ * @version $Revision: 1.12 $ $Date: 2006/02/03 19:04:46 $
  * @author Zubow
  */
 public class DebugEmitter extends Emitter {
@@ -112,7 +112,7 @@ public class DebugEmitter extends Emitter {
      */
     public Writer getResultWriter(String href, String encoding,
                                  String publicId, String systemId,
-                                 int lineNo, int colNo)
+                                 int lineNo, int colNo, boolean append)
       throws java.io.IOException, SAXException {
         if (log != null)
             log.debug("requesting writer for " + href);

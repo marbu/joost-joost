@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.80 2006/01/12 19:28:03 obecker Exp $ -->
+<!-- $Id: index.html,v 1.81 2006/02/03 19:04:46 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -192,7 +192,15 @@
       <li>stx:process-attributes (group?)</li>
       <li>stx:process-document (href, base?, group?,
                                 filter-method?, filter-src?)</li>
-      <li>stx:result-document (href, output-method?, output-encoding?)</li>
+      <li>stx:result-document (href, output-method?, output-encoding?, append?)
+          <br>
+          <em><code>append = "yes"|"no"</code></em> is a <em>Joost</em> 
+          specific extension. If set to <code>yes</code> then the result stream 
+          will be appended to a probably existing file (specified by the
+          <code>href</code> attribute). <em>Joost</em> won't produce an XML 
+          declaration in this case, regardless if there is already a file to 
+          append to or not. If set to <code>no</code> (the default) it will 
+          replace the old file.</li>
       <li>stx:buffer (name)</li>
       <li>stx:result-buffer (name, clear?)</li>
       <li>stx:process-buffer (name, group?, filter-method?, filter-src?)</li>

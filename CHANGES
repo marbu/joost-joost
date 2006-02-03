@@ -8,6 +8,7 @@ Changes since 20050521
 - added support for Unicode surrogate pairs
 - output numbers in a XML Schema conformant way (prevent scientific notation)
   (Feature request 1337383)
+- added 'append' attribute to stx:result-document
 - Fix for #1215468 required a change in the TransformerHandlerResolver interface:
   added URIResolver parameter in 
   TransformerHandler resolve(String, String, String, URIResolver, Hashtable)

@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.34 2005/05/14 09:39:32 obecker Exp $
+ * $Id: Emitter.java,v 1.35 2006/02/03 19:04:46 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -53,7 +53,7 @@ import org.xml.sax.helpers.NamespaceSupport;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.34 $ $Date: 2005/05/14 09:39:32 $
+ * @version $Revision: 1.35 $ $Date: 2006/02/03 19:04:46 $
  * @author Oliver Becker
  */
 
@@ -500,13 +500,15 @@ public class Emitter implements Constants
     * @param publicId public ID of the transformation sheet
     * @param systemId system ID of the transformation sheet
     * @param lineNo line number of the <code>stx:result-document</code>
-                    instruction
+    *               instruction
     * @param colNo column number of the <code>stx:result-document</code>
-                   instruction
+    *              instruction
+    * @param append flag that determines, whether the new XML should be
+    *               appended to an existing file
     */
    public Writer getResultWriter(String href, String encoding,
                                  String publicId, String systemId, 
-                                 int lineNo, int colNo)
+                                 int lineNo, int colNo, boolean append)
       throws java.io.IOException, SAXException, URISyntaxException
    {
       // Note: currently we don't check if a file is already open.
@@ -533,7 +535,7 @@ public class Emitter implements Constants
       if (dirPos != -1)
          new File(absFilename.substring(0, dirPos)).mkdirs();
 
-      FileOutputStream fos = new FileOutputStream(hrefFile);
+      FileOutputStream fos = new FileOutputStream(hrefFile, append);
       OutputStreamWriter osw;
       try {
          osw = new OutputStreamWriter(fos, encoding);
