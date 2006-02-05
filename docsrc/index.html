@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.81 2006/02/03 19:04:46 obecker Exp $ -->
+<!-- $Id: index.html,v 1.82 2006/02/05 14:42:20 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -41,9 +41,7 @@
       <p>The latest version was created <strong>@@@DATE@@@</strong>
       and may be <strong><a target="_top"
          href="https://sourceforge.net/project/showfiles.php?group_id=55258">
-      downloaded here</a></strong>. Note: though the code runs hopefully
-      without major crashes, it should still be regarded as an alpha
-      version.</p>
+      downloaded here</a></strong>.</p>
       <p>
       <em>Joost</em> is released under the Mozilla Public License 1.1.
       Have a look at the
@@ -199,7 +197,9 @@
           will be appended to a probably existing file (specified by the
           <code>href</code> attribute). <em>Joost</em> won't produce an XML 
           declaration in this case, regardless if there is already a file to 
-          append to or not. If set to <code>no</code> (the default) it will 
+          append to or not. Note that the resulting document can't be
+          well-formed XML since it doesn't have a single root element. If
+          <code>append</code> is set to <code>no</code> (the default) it will 
           replace the old file.</li>
       <li>stx:buffer (name)</li>
       <li>stx:result-buffer (name, clear?)</li>
