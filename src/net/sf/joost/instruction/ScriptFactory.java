@@ -1,5 +1,5 @@
 /*
- * $Id: ScriptFactory.java,v 2.1 2006/02/27 19:47:18 obecker Exp $
+ * $Id: ScriptFactory.java,v 2.2 2006/02/27 20:11:33 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import org.xml.sax.SAXParseException;
  * inner Instance class. <code>script</code> is an extension element that
  * belongs to the Joost namespace {@link net.sf.joost.Constants#JOOST_EXT_NS}.
  * 
- * @version $Revision: 2.1 $ $Date: 2006/02/27 19:47:18 $
+ * @version $Revision: 2.2 $ $Date: 2006/02/27 20:11:33 $
  * @author Nikolay Fiykov
  */
 
@@ -151,12 +151,6 @@ final public class ScriptFactory extends FactoryBase
 
          // done
          return false;
-      }
-      
-      public String getScript() 
-      {
-         // TODO return something more specific? Parsed JavaScript?
-         return script;
       }
       
       public boolean processable()
