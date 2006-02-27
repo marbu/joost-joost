@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 2.11 2005/01/23 19:47:27 obecker Exp $
+ * $Id: LitElementFactory.java,v 2.12 2006/02/27 19:47:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.xml.sax.helpers.NamespaceSupport;
 /** 
  * Factory for literal result elements, which are represented by the
  * inner Instance class. 
- * @version $Revision: 2.11 $ $Date: 2005/01/23 19:47:27 $
+ * @version $Revision: 2.12 $ $Date: 2006/02/27 19:47:18 $
  * @author Oliver Becker
 */
 
@@ -132,7 +132,7 @@ final public class LitElementFactory
        * Apply all declared namespaces aliases 
        * (<code>stx:namespace-alias</code>)
        */
-      public boolean compile(int pass)
+      public boolean compile(int pass, ParseContext context)
          throws SAXException
       {
          if (pass == 0)

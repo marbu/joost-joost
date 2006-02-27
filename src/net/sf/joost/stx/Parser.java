@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 2.17 2004/12/27 18:49:43 obecker Exp $
+ * $Id: Parser.java,v 2.18 2006/02/27 19:47:19 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import org.xml.sax.helpers.NamespaceSupport;
 /** 
  * Creates the tree representation of an STX transformation sheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 2.17 $ $Date: 2004/12/27 18:49:43 $
+ * @version $Revision: 2.18 $ $Date: 2006/02/27 19:47:19 $
  * @author Oliver Becker
  */
 
@@ -59,8 +59,11 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
    /** The current (last created) Node. */
    private NodeBase currentNode;
 
-   /** Hashtable for factory objects, one for each type. */
+   /** Hashtable for STX factory objects, one for each type. */
    private Hashtable stxFactories;
+
+   /** Hashtable for Joost extension factory objects, one for each type. */
+   private Hashtable joostFactories;
 
    /** The factory for literal result elements. */
    private LitElementFactory litFac;
@@ -93,7 +96,8 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
       this.pContext = pContext;
       this.parserListener = pContext.parserListener;
       
-      FactoryBase[] facs = {
+      // factories for elements from the STX namespace
+      FactoryBase[] stxFacs = {
          new TransformFactory(),
          new GroupFactory(),
          new IncludeFactory(),
@@ -136,9 +140,13 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
          new OtherwiseFactory(),
          new MessageFactory()
       };
-      stxFactories = new Hashtable(facs.length);
-      for (int i=0; i<facs.length; i++)
-         stxFactories.put(facs[i].getName(), facs[i]);
+      stxFactories = createFactoryMap(stxFacs);
+      
+      // factories for elements from the Joost namespace
+      FactoryBase[] joostFacs = {
+         new ScriptFactory()
+      };
+      joostFactories = createFactoryMap(joostFacs);
 
       litFac = new LitElementFactory();
       openedElements = new Stack();
@@ -146,6 +154,20 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
       newNamespaces = new Hashtable();
    }
 
+   /**
+    * creates hashtable and sets its initial content to the given array
+    * 
+    * @param map to be instantiated
+    * @param data to be filled in the map
+    */
+   private Hashtable createFactoryMap(FactoryBase[] data)
+   {
+      Hashtable map = new Hashtable(data.length);
+      for (int i = 0; i < data.length; i++)
+         map.put(data[i].getName(), data[i]);
+      return map;
+   }
+      
 
    /**
     * @return the STX node factories, indexed by local name
@@ -224,8 +246,10 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
             compilableNodes.toArray(nodes);
             compilableNodes.clear(); // for the next pass
             for (int i=0; i<size; i++)
-               if (nodes[i].compile(pass)) // still need another invocation
+               if (nodes[i].compile(pass, pContext)) {
+                  // still need another invocation
                   compilableNodes.addElement(nodes[i]);
+               }
          }
          compilableNodes = null; // for garbage collection
 
@@ -272,6 +296,15 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
                 fac instanceof ElementFactory ||
                 fac instanceof ElementStartFactory)
                newNamespaces = getInScopeNamespaces();
+         }
+         else if (JOOST_EXT_NS.equals(uri)) {
+            FactoryBase fac = (FactoryBase) joostFactories.get(lName);
+            if (fac == null) 
+               throw new SAXParseException("Unknown statement `" + qName + 
+                                           "'", pContext.locator);
+            newNode = fac.createNode(currentNode != null 
+                                        ? currentNode : includingGroup, 
+                                     qName, attrs, pContext);
          }
          else {
             newNode = litFac.createNode(currentNode, uri, lName, qName, attrs,
@@ -335,7 +368,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
          // the including Parser will call it
          if (!(currentNode == pContext.transformNode && 
                includingGroup != null))
-            if ((currentNode).compile(0))
+            if ((currentNode).compile(0, pContext))
                // need another invocation
                compilableNodes.addElement(currentNode); 
          // add the compilable nodes from an included stx:transform

@@ -1,5 +1,5 @@
 /*
- * $Id: ParseContext.java,v 2.7 2004/12/29 19:10:48 obecker Exp $
+ * $Id: ParseContext.java,v 2.8 2006/02/27 19:47:19 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -25,6 +25,7 @@
 package net.sf.joost.stx;
 
 import java.util.Hashtable;
+import java.util.Map;
 
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.URIResolver;
@@ -38,7 +39,7 @@ import org.xml.sax.Locator;
 /**
  * Instances of this class provide context information while parsing
  * an STX document.
- * @version $Revision: 2.7 $ $Date: 2004/12/29 19:10:48 $
+ * @version $Revision: 2.8 $ $Date: 2006/02/27 19:47:19 $
  * @author Oliver Becker
  */
 public final class ParseContext
@@ -63,6 +64,12 @@ public final class ParseContext
    
    /** Are calls on Java extension functions allowed? */
    public boolean allowExternalFunctions = true;
+   
+   /** 
+    * Maps namespaces to a set of javascript functions from the 
+    * <code>joost:script</code> element
+    */
+   public Map scriptUriMap = new Hashtable();
 
    
    //

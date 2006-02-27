@@ -1,5 +1,5 @@
 /*
- * $Id: TextNode.java,v 2.2 2004/10/30 11:23:52 obecker Exp $
+ * $Id: TextNode.java,v 2.3 2006/02/27 19:47:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,7 +33,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Instances created by this factory represent text nodes in the 
  * transformation sheet
- * @version $Revision: 2.2 $ $Date: 2004/10/30 11:23:52 $
+ * @version $Revision: 2.3 $ $Date: 2006/02/27 19:47:18 $
  * @author Oliver Becker
  */
 
@@ -67,5 +67,13 @@ public class TextNode extends NodeBase
    public boolean isWhitespaceNode()
    {
       return string.trim().length() == 0;
+   }
+   
+   /**
+    * @return the text content of this node.
+    */
+   public String getContents() 
+   {
+      return string;
    }
 }

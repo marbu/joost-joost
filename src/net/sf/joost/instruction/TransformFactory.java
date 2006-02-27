@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 2.14 2006/01/24 08:55:06 obecker Exp $
+ * $Id: TransformFactory.java,v 2.15 2006/02/27 19:47:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 2.14 $ $Date: 2006/01/24 08:55:06 $
+ * @version $Revision: 2.15 $ $Date: 2006/02/27 19:47:18 $
  * @author Oliver Becker
  */
 
@@ -259,7 +259,8 @@ public class TransformFactory extends FactoryBase
              node instanceof GroupBase ||    // group, transform (= include)
              node instanceof VariableBase)   // param, variable, buffer
             super.insert(node);
-         else if (node instanceof NSAliasFactory.Instance) {
+         else if (node instanceof NSAliasFactory.Instance || 
+                  node instanceof ScriptFactory.Instance) {
             // nothing to do in this case
          }
          else

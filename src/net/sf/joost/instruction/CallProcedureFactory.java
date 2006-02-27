@@ -1,5 +1,5 @@
 /*
- * $Id: CallProcedureFactory.java,v 2.6 2003/06/03 14:30:19 obecker Exp $
+ * $Id: CallProcedureFactory.java,v 2.7 2006/02/27 19:47:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.stx.ParseContext;
 /**
  * Factory for <code>call-procedure</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.6 $ $Date: 2003/06/03 14:30:19 $
+ * @version $Revision: 2.7 $ $Date: 2006/02/27 19:47:18 $
  * @author Oliver Becker
  */
 
@@ -100,7 +100,7 @@ public class CallProcedureFactory extends FactoryBase
       /**
        * Determine statically the target procedure.
        */
-      public boolean compile(int pass)
+      public boolean compile(int pass, ParseContext context)
          throws SAXException
       {
          if (pass == 0)
@@ -108,7 +108,7 @@ public class CallProcedureFactory extends FactoryBase
 
          // determine procedure object
          // targetGroup stems from compile() in ProcessBase
-         super.compile(pass);
+         super.compile(pass, context);
          procedure = (ProcedureFactory.Instance)
             targetGroup.visibleProcedures.get(procExpName);
          if (procedure == null) {

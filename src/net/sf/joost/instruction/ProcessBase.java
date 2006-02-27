@@ -1,5 +1,5 @@
 /*
- * $Id: ProcessBase.java,v 2.13 2006/01/09 19:42:44 obecker Exp $
+ * $Id: ProcessBase.java,v 2.14 2006/02/27 19:47:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Common base class for all <code>stx:process-<em>xxx</em></code>
  * instructions
- * @version $Revision: 2.13 $ $Date: 2006/01/09 19:42:44 $
+ * @version $Revision: 2.14 $ $Date: 2006/02/27 19:47:18 $
  * @author Oliver Becker
  */
 public class ProcessBase extends NodeBase
@@ -174,7 +174,7 @@ public class ProcessBase extends NodeBase
    /**
     * Determine target group
     */
-   public boolean compile(int pass)
+   public boolean compile(int pass, ParseContext context)
       throws SAXException
    {
       if (pass == 0)

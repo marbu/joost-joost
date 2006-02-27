@@ -1,5 +1,5 @@
 /*
- * $Id: ChooseFactory.java,v 2.3 2004/09/17 18:45:23 obecker Exp $
+ * $Id: ChooseFactory.java,v 2.4 2006/02/27 19:47:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,7 +33,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>choose</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.3 $ $Date: 2004/09/17 18:45:23 $
+ * @version $Revision: 2.4 $ $Date: 2006/02/27 19:47:18 $
  * @author Oliver Becker
  */
 
@@ -116,7 +116,7 @@ final public class ChooseFactory extends FactoryBase
       /**
        * Check if there is at least one child.
        */
-      public boolean compile(int pass)
+      public boolean compile(int pass, ParseContext context)
          throws SAXParseException
       {
          if (lastChild == this)

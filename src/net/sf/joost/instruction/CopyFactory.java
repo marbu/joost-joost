@@ -1,5 +1,5 @@
 /*
- * $Id: CopyFactory.java,v 2.10 2004/10/30 11:23:51 obecker Exp $
+ * $Id: CopyFactory.java,v 2.11 2006/02/27 19:47:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.xml.sax.helpers.AttributesImpl;
 /** 
  * Factory for <code>copy</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.10 $ $Date: 2004/10/30 11:23:51 $
+ * @version $Revision: 2.11 $ $Date: 2006/02/27 19:47:18 $
  * @author Oliver Becker
  */
 
@@ -114,7 +114,7 @@ final public class CopyFactory extends FactoryBase
 
 
       /** Store pointers to the contents and the successor */
-      public boolean compile(int pass)
+      public boolean compile(int pass, ParseContext context)
       {
          if (pass == 0)
             return true; // successor not available yet

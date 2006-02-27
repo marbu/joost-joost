@@ -1,5 +1,5 @@
 /*
- * $Id: ParamFactory.java,v 2.8 2006/01/24 08:55:06 obecker Exp $
+ * $Id: ParamFactory.java,v 2.9 2006/02/27 19:47:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>params</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.8 $ $Date: 2006/01/24 08:55:06 $
+ * @version $Revision: 2.9 $ $Date: 2006/02/27 19:47:18 $
  * @author Oliver Becker
  */
 
@@ -121,7 +121,7 @@ final public class ParamFactory extends FactoryBase
       }
 
 
-      public boolean compile(int pass)
+      public boolean compile(int pass, ParseContext context)
       {
          if (pass == 0)
             return true; // nodeEnd not available yet

@@ -1,5 +1,5 @@
 /*
- * $Id: ForEachFactory.java,v 2.7 2004/11/06 13:03:05 obecker Exp $
+ * $Id: ForEachFactory.java,v 2.8 2006/02/27 19:47:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>for-each-item</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.7 $ $Date: 2004/11/06 13:03:05 $
+ * @version $Revision: 2.8 $ $Date: 2006/02/27 19:47:18 $
  * @author Oliver Becker
  */
 
@@ -124,7 +124,7 @@ final public class ForEachFactory extends FactoryBase
       /**
        * Create the loop by connecting the end with the start
        */
-      public boolean compile(int pass)
+      public boolean compile(int pass, ParseContext context)
       {
          if (pass == 0) // successor not available yet
             return true;

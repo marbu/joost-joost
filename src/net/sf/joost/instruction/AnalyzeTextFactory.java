@@ -1,5 +1,5 @@
 /*
- * $Id: AnalyzeTextFactory.java,v 1.2 2004/09/29 06:07:48 obecker Exp $
+ * $Id: AnalyzeTextFactory.java,v 1.3 2006/02/27 19:47:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Factory for <code>analyze-text</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2004/09/29 06:07:48 $
+ * @version $Revision: 1.3 $ $Date: 2006/02/27 19:47:18 $
  * @author Oliver Becker
  */
 
@@ -176,7 +176,7 @@ final public class AnalyzeTextFactory extends FactoryBase
        * Check if there is at least one <code>stx:match</code> child
        * and establish a loop
        */
-      public boolean compile(int pass)
+      public boolean compile(int pass, ParseContext context)
          throws SAXParseException
       {
          if (pass == 0)

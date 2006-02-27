@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.29 2005/01/23 19:47:28 obecker Exp $
+ * $Id: FunctionTable.java,v 2.30 2006/02/27 19:47:19 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -51,7 +51,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.29 $ $Date: 2005/01/23 19:47:28 $
+ * @version $Revision: 2.30 $ $Date: 2006/02/27 19:47:19 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -142,6 +142,13 @@ final public class FunctionTable implements Constants
             throw new SAXParseException(
                "No permission to call extension function `" + qName + "'",
                pContext.locator);
+      }
+      
+      // TODO map values should be a representation of script functions
+      String script = (String) pContext.scriptUriMap.get(uri);
+      if (script != null) {
+         // we have some script code for this namespace prefix
+         return new ScriptFunction(script);
       }
       
       Instance function = 
@@ -1945,8 +1952,8 @@ final public class FunctionTable implements Constants
        * @param locator the Locator object
        * @exception SAXParseException if there's no proper function
        */
-      public ExtensionFunction(String className, String lName, Tree args, 
-                               Locator locator)
+      private ExtensionFunction(String className, String lName, Tree args, 
+                                Locator locator)
          throws SAXParseException
       {
          // identify the requested class
@@ -2260,4 +2267,49 @@ final public class FunctionTable implements Constants
       /** Not called */
       public String getName() { return null; }
    }
+   
+
+   // ***********************************************************************
+
+   //
+   // Javascript extension functions
+   //
+
+   /**
+    * An instance of this class represents a Javascript extension function
+    * defined by the <code>joost:script</code> element.
+    * @see net.sf.joost.instruction.ScriptFactory
+    */
+   final public static class ScriptFunction implements Instance 
+   {
+      private String dummy;
+      
+      private ScriptFunction(String dummy) 
+      {
+         this.dummy = dummy;
+      }
+      
+      public Value evaluate(Context context, int top, Tree args)
+            throws SAXException, EvalException
+      {
+         // TODO Fikin, now it's your turn! :-)
+         return new Value(dummy);
+      }
+
+      
+      // These functions will never be called. 
+      // However, they are required by the Instance interface.
+
+      /** Not called */
+      public int getMinParCount() { return 0; }
+
+      /** Not called */
+      public int getMaxParCount() { return 0; }
+
+      /** Not called */
+      public String getName() { return null; }
+
+
+   }
+   
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 2.10 2004/10/30 11:20:09 obecker Exp $
+ * $Id: NodeBase.java,v 2.11 2006/02/27 19:47:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Abstract base class for all instances of nodes in the STX transformation 
  * sheet
- * @version $Revision: 2.10 $ $Date: 2004/10/30 11:20:09 $
+ * @version $Revision: 2.11 $ $Date: 2006/02/27 19:47:18 $
  * @author Oliver Becker
  */
 public abstract class NodeBase 
@@ -242,11 +242,12 @@ public abstract class NodeBase
     * completely parsed.
     * 
     * @param pass the number of invocations already performed on this node
+    * @param context the parse context
     * @return <code>true</code> if another invocation in the next pass is
     *         necessary, <code>false</code> if the compiling is complete.
     *         This instance returns <code>false</code>.
     */
-   public boolean compile(int pass)
+   public boolean compile(int pass, ParseContext context)
       throws SAXException
    {
       return false; 

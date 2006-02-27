@@ -1,5 +1,5 @@
 /*
- * $Id: WhenFactory.java,v 2.5 2004/11/06 13:07:32 obecker Exp $
+ * $Id: WhenFactory.java,v 2.6 2006/02/27 19:47:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>when</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.5 $ $Date: 2004/11/06 13:07:32 $
+ * @version $Revision: 2.6 $ $Date: 2006/02/27 19:47:18 $
  * @author Oliver Becker
  */
 
@@ -96,7 +96,7 @@ final public class WhenFactory extends FactoryBase
       }
 
 
-      public boolean compile(int pass)
+      public boolean compile(int pass, ParseContext context)
          throws SAXException
       {
          if (pass == 0) // nodeEnd.next not available yet

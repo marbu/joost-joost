@@ -1,5 +1,5 @@
 /*
- * $Id: MatchFactory.java,v 1.1 2004/01/26 20:21:27 obecker Exp $
+ * $Id: MatchFactory.java,v 1.2 2006/02/27 19:47:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>match</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.1 $ $Date: 2004/01/26 20:21:27 $
+ * @version $Revision: 1.2 $ $Date: 2006/02/27 19:47:18 $
  * @author Oliver Becker
  */
 
@@ -101,7 +101,7 @@ final public class MatchFactory extends FactoryBase
       }
 
 
-      public boolean compile(int pass)
+      public boolean compile(int pass, ParseContext context)
          throws SAXException
       {
          nodeEnd.next = analyzeText.nodeEnd; // back to stx:analyze-text

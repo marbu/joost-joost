@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 2.14 2005/01/23 19:47:27 obecker Exp $
+ * $Id: GroupBase.java,v 2.15 2006/02/27 19:47:18 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import org.xml.sax.SAXParseException;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 2.14 $ $Date: 2005/01/23 19:47:27 $
+ * @version $Revision: 2.15 $ $Date: 2006/02/27 19:47:18 $
  * @author Oliver Becker
  */
 
@@ -159,7 +159,7 @@ abstract public class GroupBase extends NodeBase
     * array of group templates in pass 1.
     * @exception SAXException if conflicts were encountered
     */
-   public boolean compile(int pass)
+   public boolean compile(int pass, ParseContext context)
       throws SAXException
    {
       if (pass == 1) {
