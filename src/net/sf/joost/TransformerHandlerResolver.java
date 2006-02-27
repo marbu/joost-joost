@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerResolver.java,v 1.6 2006/01/09 19:42:44 obecker Exp $
+ * $Id: TransformerHandlerResolver.java,v 1.7 2006/02/27 19:37:37 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -69,7 +69,7 @@ import javax.xml.transform.sax.TransformerHandler;
  * {@link javax.xml.transform.Transformer} dummy solely as means to the
  * end of enabling {@link javax.xml.transform.Transformer#setParameter}.
  *
- * @version $Revision: 1.6 $ $Date: 2006/01/09 19:42:44 $
+ * @version $Revision: 1.7 $ $Date: 2006/02/27 19:37:37 $
  * @author Oliver Becker
  */
 
@@ -141,7 +141,8 @@ public interface TransformerHandlerResolver
 
    /**
     * Return all supported filter-method URIs
-    * Each one must return true when checked against {@link available()}.
+    * Each one must return <code>true</code> when checked against 
+    * {@link #available(String)}.
     * @return array of supported URIs
     */
    public String[] resolves();
