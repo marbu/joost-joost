@@ -1,4 +1,4 @@
-$Id: README,v 1.9 2005/11/06 21:21:51 obecker Exp $
+$Id: README,v 1.10 2006/03/17 19:55:32 obecker Exp $
 
 This module contains Java source files for Joost.
 
@@ -29,6 +29,10 @@ Additionally you have to install
   (avalon-framework-api-4.1.5.jar and avalon-framework-impl-4.1.5.jar work as well)
   If you don't want a FOP connection just remove this file and
   comment out some lines in sf.net.joost.Main.java
+- Jakarta BSF from http://jakarta.apache.org/bsf/
+- Some scripting engine which is to be used by the joost:script element.
+  Check the BSF site for references which languages are supported and where to 
+  get the libraries from.
 
 In case you don't have at least Java 1.4 installed on your computer, you have to 
 add manually a SAX2 compliant parser and the JAXP 1.1 interfaces, too.

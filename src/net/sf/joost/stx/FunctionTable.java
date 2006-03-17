@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 2.30 2006/02/27 19:47:19 obecker Exp $
+ * $Id: FunctionTable.java,v 2.31 2006/03/17 19:54:35 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,6 +43,7 @@ import net.sf.joost.grammar.Tree;
 import net.sf.joost.grammar.tree.EqTree;
 import net.sf.joost.grammar.tree.ValueTree;
 import net.sf.joost.instruction.AnalyzeTextFactory;
+import net.sf.joost.instruction.ScriptFactory;
 
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
@@ -50,8 +51,8 @@ import org.xml.sax.SAXParseException;
 
 
 /**
- * Wrapper class for all STXPath function implementations.
- * @version $Revision: 2.30 $ $Date: 2006/02/27 19:47:19 $
+ * Wrapper class and manager for all STXPath function implementations.
+ * @version $Revision: 2.31 $ $Date: 2006/03/17 19:54:35 $
  * @author Oliver Becker
  */
 final public class FunctionTable implements Constants
@@ -117,23 +118,48 @@ final public class FunctionTable implements Constants
       for (int i=0; i<functions.length; i++)
          functionHash.put(functions[i].getName(), functions[i]);
    }
+   
+   /** The parse context for this <code>FunctionTable</code> instance */
+   private ParseContext pContext;
 
+   /**
+    * The scripts manager that maintains <code>joost:script</code> elements.
+    */
+   private ScriptsManager scriptsManager = null; // lazily constructed
+   
+   //
+   // Constructor
+   //
+   
+   /**
+    * Creates a new <code>FunctionTable</code> instance with a given parse 
+    * context
+    */
+   public FunctionTable(ParseContext pContext) {
+      this.pContext = pContext;
+   }
+
+   
+   //
+   // Methods
+   //
+   
    /**
     * Looks for a function implementation.
     *
     * @param uri URI of the expanded function name
     * @param lName local function name
     * @param args parameters (needed here just for counting)
-    * @param pContext the parse context
     *
     * @return the implementation instance for this function
     * @exception SAXParseException if the function wasn't found or the number
     *            of parameters is wrong
     */
-   public static Instance getFunction(String uri, String lName, String qName,
-                                      Tree args, ParseContext pContext)
+   public Instance getFunction(String uri, String lName, String qName,
+                               Tree args)
       throws SAXParseException
    {
+      // execute java methods
       if (uri.startsWith("java:")) {
          if (pContext.allowExternalFunctions)
             return new ExtensionFunction(uri.substring(5), lName, args, 
@@ -143,13 +169,10 @@ final public class FunctionTable implements Constants
                "No permission to call extension function `" + qName + "'",
                pContext.locator);
       }
-      
-      // TODO map values should be a representation of script functions
-      String script = (String) pContext.scriptUriMap.get(uri);
-      if (script != null) {
-         // we have some script code for this namespace prefix
-         return new ScriptFunction(script);
-      }
+
+      // execute script functions
+      if (getScriptsManager().isScriptUri(uri))
+         return getScriptsManager().newScriptFunction(uri, lName, qName);
       
       Instance function = 
          (Instance)functionHash.get("{" + uri + "}" + lName);
@@ -180,6 +203,7 @@ final public class FunctionTable implements Constants
    }
 
 
+   
    /**
     * @return a value for an optional function argument. Either the
     *         argument was present, or the current item will be used.
@@ -196,6 +220,24 @@ final public class FunctionTable implements Constants
             new Value((SAXEvent)context.ancestorStack.elementAt(top-1));
       else // no event available (e.g. init of global variables)
          return Value.VAL_EMPTY;
+   }
+   
+   private ScriptsManager getScriptsManager() 
+   {
+      if (scriptsManager == null)
+         scriptsManager = new ScriptsManager();
+      return scriptsManager;
+   }
+   
+   public boolean isScriptPrefix(String prefix)
+   {
+      return getScriptsManager().getURI(prefix) != null;   
+   }
+   
+   public void addScript(ScriptFactory.Instance scriptElement, String scriptCode)
+         throws SAXException
+   {
+      getScriptsManager().addNewScript(scriptElement, scriptCode);
    }
 
 
@@ -2267,49 +2309,4 @@ final public class FunctionTable implements Constants
       /** Not called */
       public String getName() { return null; }
    }
-   
-
-   // ***********************************************************************
-
-   //
-   // Javascript extension functions
-   //
-
-   /**
-    * An instance of this class represents a Javascript extension function
-    * defined by the <code>joost:script</code> element.
-    * @see net.sf.joost.instruction.ScriptFactory
-    */
-   final public static class ScriptFunction implements Instance 
-   {
-      private String dummy;
-      
-      private ScriptFunction(String dummy) 
-      {
-         this.dummy = dummy;
-      }
-      
-      public Value evaluate(Context context, int top, Tree args)
-            throws SAXException, EvalException
-      {
-         // TODO Fikin, now it's your turn! :-)
-         return new Value(dummy);
-      }
-
-      
-      // These functions will never be called. 
-      // However, they are required by the Instance interface.
-
-      /** Not called */
-      public int getMinParCount() { return 0; }
-
-      /** Not called */
-      public int getMaxParCount() { return 0; }
-
-      /** Not called */
-      public String getName() { return null; }
-
-
-   }
-   
 }

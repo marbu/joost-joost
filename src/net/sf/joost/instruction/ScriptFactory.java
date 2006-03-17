@@ -1,5 +1,5 @@
 /*
- * $Id: ScriptFactory.java,v 2.2 2006/02/27 20:11:33 obecker Exp $
+ * $Id: ScriptFactory.java,v 2.3 2006/03/17 19:54:39 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,6 +24,10 @@
 
 package net.sf.joost.instruction;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.HashSet;
 
 import net.sf.joost.stx.Context;
@@ -38,8 +42,8 @@ import org.xml.sax.SAXParseException;
  * inner Instance class. <code>script</code> is an extension element that
  * belongs to the Joost namespace {@link net.sf.joost.Constants#JOOST_EXT_NS}.
  * 
- * @version $Revision: 2.2 $ $Date: 2006/02/27 20:11:33 $
- * @author Nikolay Fiykov
+ * @version $Revision: 2.3 $ $Date: 2006/03/17 19:54:39 $
+ * @author Nikolay Fiykov, Oliver Becker
  */
 
 final public class ScriptFactory extends FactoryBase
@@ -52,6 +56,7 @@ final public class ScriptFactory extends FactoryBase
    {
       attrNames = new HashSet();
       attrNames.add("prefix");
+      attrNames.add("language");
       attrNames.add("src");
    }
 
@@ -79,11 +84,21 @@ final public class ScriptFactory extends FactoryBase
       }
       String scriptUri = (String) context.nsSet.get(prefixAtt);
 
+      // check if the prefix has been already defined
+      if (context.getFunctionTable().isScriptPrefix(prefixAtt)) {
+         throw new SAXParseException("Prefix `" + prefixAtt + "' of `" + qName 
+               + "' has been already defined by another script element",
+               context.locator);
+      }
+
       String srcAtt = attrs.getValue("src");
+
+      String langAtt = getAttribute(qName, attrs, "language", context);
 
       checkAttributes(qName, attrs, attrNames, context);
 
-      return new Instance(qName, parent, context, scriptUri, srcAtt);
+      return new Instance(qName, parent, context, prefixAtt, scriptUri, srcAtt, 
+                          langAtt);
    }
 
    /* -------------------------------------------------------------------- */
@@ -91,25 +106,31 @@ final public class ScriptFactory extends FactoryBase
    /** Represents an instance of the <code>script</code> element. */
    final public class Instance extends NodeBase
    {
+      /** namespace prefix from prefix attribute of the script element */
+      private String prefix;
+      
+      /** namespace URI for the prefix */
       private String scriptUri;
 
+      /** scripting language */
+      private String lang;
+      
+      /** optional location of a source file */
       private String src;
       
-      // provisional representation of the script content
+      /** the script content */
       private String script;
-      // TODO provide a better representation, perhaps a functions map ...
 
       // Constructor
       protected Instance(String qName, NodeBase parent, ParseContext context,
-                         String scriptUri, String src)
+                         String prefix, String scriptUri, String src, 
+                         String lang)
       {
          super(qName, parent, context, false);
+         this.prefix = prefix;
          this.scriptUri = scriptUri;
          this.src = src;
-         
-         if (src != null) {
-            // TODO read this URL
-         }
+         this.lang = lang;
       }
 
       // for debugging
@@ -131,6 +152,13 @@ final public class ScriptFactory extends FactoryBase
                node.publicId, node.systemId, node.lineNo, node.colNo);
          }
          
+         if (src != null) {
+            throw new SAXParseException("`" + qName
+                  + "' may not contain text (script code) if the `src' " +
+                        "attribute is used",
+                  node.publicId, node.systemId, node.lineNo, node.colNo);
+         }
+
          script = ((TextNode) node).getContents();
          
          // no need to invoke super.insert(node) since this element won't be
@@ -139,19 +167,38 @@ final public class ScriptFactory extends FactoryBase
 
       public boolean compile(int pass, ParseContext context) throws SAXException
       {
-         // fill ParseContext.scriptUriMap
-         // TODO values should be script function maps or similar
-         String otherScript = (String) context.scriptUriMap.get(scriptUri);
-         if (otherScript != null) {
-            otherScript += "\n" + script; // MOCK: simply append the text
-            context.scriptUriMap.put(scriptUri, otherScript);
+         // read script's content
+         String data = null;
+         if (src == null) {
+            data = script;
          }
-         else
-            context.scriptUriMap.put(scriptUri, script);
+         else {
+            try {
+               BufferedReader in = new BufferedReader(new InputStreamReader(
+                     new URL(new URL(context.locator.getSystemId()), src)
+                           .openStream()));
+               String l;
+               StringBuffer buf = new StringBuffer(4096);
+               while ((l = in.readLine()) != null) {
+                  buf.append('\n');
+                  buf.append(l);
+               }
+               data = buf.toString();
+            }
+            catch (IOException e) {
+               throw new SAXParseException("Exception while reading from " + src, 
+                                           publicId, systemId, lineNo, colNo, e);
+            }
+         }
+
+         // add the script element
+         context.getFunctionTable().addScript(this, data);
 
          // done
          return false;
       }
+
+
       
       public boolean processable()
       {
@@ -164,6 +211,21 @@ final public class ScriptFactory extends FactoryBase
       {
          throw new SAXParseException("process called for " + qName,
                                      publicId, systemId, lineNo, colNo);
+      }
+
+      public String getLang()
+      {
+         return lang;
+      }
+
+      public String getPrefix()
+      {
+         return prefix;
+      }
+
+      public String getUri()
+      {
+         return scriptUri;
       }
    }
 }

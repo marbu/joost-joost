@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTree.java,v 1.2 2004/12/17 18:25:50 obecker Exp $
+ * $Id: FunctionTree.java,v 1.3 2006/03/17 19:54:38 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Objects of FunctionTree represent function calls in the syntax tree of a
  * pattern or an STXPath expression.
- * @version $Revision: 1.2 $ $Date: 2004/12/17 18:25:50 $
+ * @version $Revision: 1.3 $ $Date: 2006/03/17 19:54:38 $
  * @author Oliver Becker
  */
 final public class FunctionTree extends Tree
@@ -73,7 +73,7 @@ final public class FunctionTree extends Tree
          lName = qName;
       }
 
-      func = FunctionTable.getFunction(uri, lName, qName, left, context);
+      func = context.getFunctionTable().getFunction(uri, lName, qName, left);
    }
 
    public Value evaluate(Context context, int top)

@@ -1,5 +1,5 @@
 /*
- * $Id: EvalException.java,v 1.1 2002/08/27 09:40:51 obecker Exp $
+ * $Id: EvalException.java,v 1.2 2006/03/17 19:54:31 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -26,14 +26,45 @@ package net.sf.joost.grammar;
 
 /**
  * Signals an error while evaluating an expression.
- * @version $Revision: 1.1 $ $Date: 2002/08/27 09:40:51 $
+ * @version $Revision: 1.2 $ $Date: 2006/03/17 19:54:31 $
  * @author Oliver Becker
  */
 
 public class EvalException extends Exception
 {
-   public EvalException(String s)
+   public EvalException(String msg)
    {
-      super(s);
+      super(msg);
+   }
+   
+   public EvalException(String msg, Exception cause)
+   {
+      super(msg, cause);
+   }
+   
+   public EvalException(Exception cause)
+   {
+      super(cause);
+   }
+   
+   /**
+    * @see java.lang.Throwable#getMessage()
+    */
+   public String getMessage() {
+      String message = super.getMessage();
+      Throwable cause = getCause();
+      if (message == null && cause != null)
+         return cause.getMessage();
+      else
+         return message;
+   }
+   
+   /**
+    * @see java.lang.Object#toString()
+    */
+   public String toString() {
+      if (getCause() != null)
+         return getCause().toString();
+      return super.toString();
    }
 }
