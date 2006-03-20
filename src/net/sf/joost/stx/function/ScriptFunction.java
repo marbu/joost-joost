@@ -1,3 +1,27 @@
+/*
+ * $Id: ScriptFunction.java,v 1.2 2006/03/20 19:23:50 obecker Exp $
+ * 
+ * The contents of this file are subject to the Mozilla Public License 
+ * Version 1.1 (the "License"); you may not use this file except in 
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the 
+ * License.
+ *
+ * The Original Code is: this file
+ *
+ * The Initial Developer of the Original Code is Oliver Becker.
+ *
+ * Portions created by  ______________________ 
+ * are Copyright (C) ______ _______________________. 
+ * All Rights Reserved.
+ *
+ * Contributor(s): Nikolay Fiykov. 
+ */
+
 package net.sf.joost.stx.function;
 
 import java.util.Stack;
@@ -7,7 +31,7 @@ import net.sf.joost.grammar.EvalException;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Value;
-import net.sf.joost.stx.FunctionTable.Instance;
+import net.sf.joost.stx.function.FunctionTable.Instance;
 
 import org.apache.bsf.BSFEngine;
 import org.apache.bsf.BSFException;
@@ -18,6 +42,8 @@ import org.xml.sax.SAXException;
  * by the <code>joost:script</code> element.
  * 
  * @see net.sf.joost.instruction.ScriptFactory
+ * @version $Revision: 1.2 $ $Date: 2006/03/20 19:23:50 $
+ * @author Nikolay Fiykov, Oliver Becker
  */
 final public class ScriptFunction implements Instance
 {
@@ -119,20 +145,11 @@ final public class ScriptFunction implements Instance
    // However, they are required by the Instance interface.
 
    /** Not called */
-   public int getMinParCount()
-   {
-      return 0;
-   }
+   public int getMinParCount() { return 0; }
 
    /** Not called */
-   public int getMaxParCount()
-   {
-      return 0;
-   }
+   public int getMaxParCount() { return 0; }
 
    /** Not called */
-   public String getName()
-   {
-      return null;
-   }
+   public String getName() { return null; }
 }

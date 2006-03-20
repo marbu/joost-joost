@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTree.java,v 1.3 2006/03/17 19:54:38 obecker Exp $
+ * $Id: FunctionTree.java,v 1.4 2006/03/20 19:23:51 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,9 +28,9 @@ import net.sf.joost.Constants;
 import net.sf.joost.grammar.EvalException;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
-import net.sf.joost.stx.FunctionTable;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Value;
+import net.sf.joost.stx.function.FunctionTable;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -38,7 +38,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Objects of FunctionTree represent function calls in the syntax tree of a
  * pattern or an STXPath expression.
- * @version $Revision: 1.3 $ $Date: 2006/03/17 19:54:38 $
+ * @version $Revision: 1.4 $ $Date: 2006/03/20 19:23:51 $
  * @author Oliver Becker
  */
 final public class FunctionTree extends Tree

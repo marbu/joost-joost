@@ -1,5 +1,5 @@
 /*
- * $Id: AnalyzeTextFactory.java,v 1.3 2006/02/27 19:47:18 obecker Exp $
+ * $Id: AnalyzeTextFactory.java,v 1.4 2006/03/20 19:23:51 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -35,12 +35,13 @@ import java.util.Vector;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
+import net.sf.joost.stx.function.RegexGroup;
 
 
 /** 
  * Factory for <code>analyze-text</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.3 $ $Date: 2006/02/27 19:47:18 $
+ * @version $Revision: 1.4 $ $Date: 2006/03/20 19:23:51 $
  * @author Oliver Becker
  */
 
@@ -50,7 +51,7 @@ final public class AnalyzeTextFactory extends FactoryBase
     * Name of a special pseudo-variable that contains the values for
     * the regex-group function. (Note: "normal" variables start always
     * with a namespace in curly braces like '<code>{uri}name</code>')
-    * @see net.sf.joost.stx.FunctionTable.RegexGroup 
+    * @see net.sf.joost.stx.function.RegexGroup 
     */
    public static String REGEX_GROUP = "%REGEX-GROUP";
 
@@ -208,7 +209,7 @@ final public class AnalyzeTextFactory extends FactoryBase
       /** 
        * For the regex-group function (accessed from the stx:match and
        * stx:no-match children, so they cannot be private)
-       * @see net.sf.joost.stx.FunctionTable.RegexGroup 
+       * @see net.sf.joost.stx.function.RegexGroup 
        */
       protected String[] capSubstr, noMatchStr;
 
