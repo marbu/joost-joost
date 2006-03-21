@@ -1,5 +1,5 @@
 /*
- * $Id: ScriptFactory.java,v 2.3 2006/03/17 19:54:39 obecker Exp $
+ * $Id: ScriptFactory.java,v 2.4 2006/03/21 19:25:05 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.xml.sax.SAXParseException;
  * inner Instance class. <code>script</code> is an extension element that
  * belongs to the Joost namespace {@link net.sf.joost.Constants#JOOST_EXT_NS}.
  * 
- * @version $Revision: 2.3 $ $Date: 2006/03/17 19:54:39 $
+ * @version $Revision: 2.4 $ $Date: 2006/03/21 19:25:05 $
  * @author Nikolay Fiykov, Oliver Becker
  */
 
@@ -85,7 +85,7 @@ final public class ScriptFactory extends FactoryBase
       String scriptUri = (String) context.nsSet.get(prefixAtt);
 
       // check if the prefix has been already defined
-      if (context.getFunctionTable().isScriptPrefix(prefixAtt)) {
+      if (context.getFunctionFactory().isScriptPrefix(prefixAtt)) {
          throw new SAXParseException("Prefix `" + prefixAtt + "' of `" + qName 
                + "' has been already defined by another script element",
                context.locator);
@@ -192,7 +192,7 @@ final public class ScriptFactory extends FactoryBase
          }
 
          // add the script element
-         context.getFunctionTable().addScript(this, data);
+         context.getFunctionFactory().addScript(this, data);
 
          // done
          return false;

@@ -1,5 +1,5 @@
 /*
- * $Id: RegexGroup.java,v 1.1 2006/03/20 19:23:50 obecker Exp $
+ * $Id: RegexGroup.java,v 1.2 2006/03/21 19:25:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,7 +31,7 @@ import net.sf.joost.grammar.Tree;
 import net.sf.joost.instruction.AnalyzeTextFactory;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Value;
-import net.sf.joost.stx.function.FunctionTable.Instance;
+import net.sf.joost.stx.function.FunctionFactory.Instance;
 
 import org.xml.sax.SAXException;
 
@@ -41,7 +41,7 @@ import org.xml.sax.SAXException;
  * sub-expression of a regular expression from an <code>stx:match</code>
  * element.
  * 
- * @version $Revision: 1.1 $ $Date: 2006/03/20 19:23:50 $
+ * @version $Revision: 1.2 $ $Date: 2006/03/21 19:25:03 $
  * @author Oliver Becker
  */
 final public class RegexGroup implements Instance
@@ -53,7 +53,7 @@ final public class RegexGroup implements Instance
    public int getMaxParCount() { return 1; }
 
    /** @return "regex-group" */
-   public String getName() { return FunctionTable.FNSP + "regex-group"; }
+   public String getName() { return FunctionFactory.FNSP + "regex-group"; }
 
    public Value evaluate(Context context, int top, Tree args)
       throws SAXException, EvalException

@@ -1,5 +1,5 @@
 /*
- * $Id: ScriptFunction.java,v 1.2 2006/03/20 19:23:50 obecker Exp $
+ * $Id: ScriptFunction.java,v 1.3 2006/03/21 19:25:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,7 +31,7 @@ import net.sf.joost.grammar.EvalException;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Value;
-import net.sf.joost.stx.function.FunctionTable.Instance;
+import net.sf.joost.stx.function.FunctionFactory.Instance;
 
 import org.apache.bsf.BSFEngine;
 import org.apache.bsf.BSFException;
@@ -42,7 +42,7 @@ import org.xml.sax.SAXException;
  * by the <code>joost:script</code> element.
  * 
  * @see net.sf.joost.instruction.ScriptFactory
- * @version $Revision: 1.2 $ $Date: 2006/03/20 19:23:50 $
+ * @version $Revision: 1.3 $ $Date: 2006/03/21 19:25:03 $
  * @author Nikolay Fiykov, Oliver Becker
  */
 final public class ScriptFunction implements Instance

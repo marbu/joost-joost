@@ -1,5 +1,5 @@
 /*
- * $Id: StringPad.java,v 1.1 2006/03/20 19:23:50 obecker Exp $
+ * $Id: StringPad.java,v 1.2 2006/03/21 19:25:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,7 +28,7 @@ import net.sf.joost.grammar.EvalException;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Value;
-import net.sf.joost.stx.function.FunctionTable.Instance;
+import net.sf.joost.stx.function.FunctionFactory.Instance;
 
 import org.xml.sax.SAXException;
 
@@ -37,7 +37,7 @@ import org.xml.sax.SAXException;
  * Returns a string composed of as many copies of its first argument as
  * specified in its second argument.
  * 
- * @version $Revision: 1.1 $ $Date: 2006/03/20 19:23:50 $
+ * @version $Revision: 1.2 $ $Date: 2006/03/21 19:25:03 $
  * @author Oliver Becker
  */
 final public class StringPad implements Instance 
@@ -49,7 +49,7 @@ final public class StringPad implements Instance
    public int getMaxParCount() { return 2; }
 
    /** @return "string-pad" */
-   public String getName() { return FunctionTable.FNSP + "string-pad"; }
+   public String getName() { return FunctionFactory.FNSP + "string-pad"; }
    
    public Value evaluate(Context context, int top, Tree args)
       throws SAXException, EvalException

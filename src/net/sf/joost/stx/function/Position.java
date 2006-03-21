@@ -1,5 +1,5 @@
 /*
- * $Id: Position.java,v 1.1 2006/03/20 19:23:50 obecker Exp $
+ * $Id: Position.java,v 1.2 2006/03/21 19:25:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -27,13 +27,13 @@ package net.sf.joost.stx.function;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Value;
-import net.sf.joost.stx.function.FunctionTable.Instance;
+import net.sf.joost.stx.function.FunctionFactory.Instance;
 
 /**
  * The <code>position</code> function.<br>
  * Returns the context position of this node.
  * 
- * @version $Revision: 1.1 $ $Date: 2006/03/20 19:23:50 $
+ * @version $Revision: 1.2 $ $Date: 2006/03/21 19:25:03 $
  * @author Oliver Becker
  */
 final public class Position implements Instance
@@ -45,7 +45,7 @@ final public class Position implements Instance
    public int getMaxParCount() { return 0; }
 
    /** @return "position" */
-   public String getName() { return FunctionTable.FNSP + "position"; }
+   public String getName() { return FunctionFactory.FNSP + "position"; }
 
    public Value evaluate(Context context, int top, Tree args)
    {

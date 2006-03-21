@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTree.java,v 1.4 2006/03/20 19:23:51 obecker Exp $
+ * $Id: FunctionTree.java,v 1.5 2006/03/21 19:25:04 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,7 +30,7 @@ import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Value;
-import net.sf.joost.stx.function.FunctionTable;
+import net.sf.joost.stx.function.FunctionFactory;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -38,13 +38,13 @@ import org.xml.sax.SAXParseException;
 /**
  * Objects of FunctionTree represent function calls in the syntax tree of a
  * pattern or an STXPath expression.
- * @version $Revision: 1.4 $ $Date: 2006/03/20 19:23:51 $
+ * @version $Revision: 1.5 $ $Date: 2006/03/21 19:25:04 $
  * @author Oliver Becker
  */
 final public class FunctionTree extends Tree
 {
    /*** the function instance */
-   private FunctionTable.Instance func;
+   private FunctionFactory.Instance func;
 
    
    /** 
@@ -73,7 +73,7 @@ final public class FunctionTree extends Tree
          lName = qName;
       }
 
-      func = context.getFunctionTable().getFunction(uri, lName, qName, left);
+      func = context.getFunctionFactory().getFunction(uri, lName, qName, left);
    }
 
    public Value evaluate(Context context, int top)

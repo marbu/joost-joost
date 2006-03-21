@@ -1,5 +1,5 @@
 /*
- * $Id: ItemAt.java,v 1.1 2006/03/20 19:23:50 obecker Exp $
+ * $Id: ItemAt.java,v 1.2 2006/03/21 19:25:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,7 +28,7 @@ import net.sf.joost.grammar.EvalException;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Value;
-import net.sf.joost.stx.function.FunctionTable.Instance;
+import net.sf.joost.stx.function.FunctionFactory.Instance;
 
 import org.xml.sax.SAXException;
 
@@ -37,7 +37,7 @@ import org.xml.sax.SAXException;
  * Returns the item in the sequence (first parameter) at the specified position
  * (second parameter).
  * 
- * @version $Revision: 1.1 $ $Date: 2006/03/20 19:23:50 $
+ * @version $Revision: 1.2 $ $Date: 2006/03/21 19:25:03 $
  * @author Oliver Becker
  */
 final public class ItemAt implements Instance
@@ -49,7 +49,7 @@ final public class ItemAt implements Instance
    public int getMaxParCount() { return 2; }
 
    /** @return "item-at" */
-   public String getName() { return FunctionTable.FNSP + "item-at"; }
+   public String getName() { return FunctionFactory.FNSP + "item-at"; }
 
    public Value evaluate(Context context, int top, Tree args)
       throws SAXException, EvalException
@@ -67,7 +67,7 @@ final public class ItemAt implements Instance
       if (seq == null)
          throw new EvalException("Position " + dpos + 
                                  " out of bounds in call to function `" + 
-                                 getName().substring(FunctionTable.FNSP.length()) + "'");
+                                 getName().substring(FunctionFactory.FNSP.length()) + "'");
       else
          return seq.singleCopy();
    }

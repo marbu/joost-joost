@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTable.java,v 1.1 2006/03/20 19:23:50 obecker Exp $
+ * $Id: FunctionFactory.java,v 1.1 2006/03/21 19:25:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -36,7 +36,6 @@ import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.stx.Value;
 
 import org.apache.bsf.BSFEngine;
-import org.apache.bsf.BSFException;
 import org.apache.bsf.BSFManager;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -44,10 +43,10 @@ import org.xml.sax.SAXParseException;
 
 /**
  * Factory for all STXPath function implementations.
- * @version $Revision: 1.1 $ $Date: 2006/03/20 19:23:50 $
+ * @version $Revision: 1.1 $ $Date: 2006/03/21 19:25:03 $
  * @author Oliver Becker, Nikolay Fiykov
  */
-final public class FunctionTable implements Constants
+final public class FunctionFactory implements Constants
 {
    /**
     * Type for all functions
@@ -139,20 +138,23 @@ final public class FunctionTable implements Constants
          functionHash.put(functions[i].getName(), functions[i]);
    }
    
-   /** The parse context for this <code>FunctionTable</code> instance */
+   /** The parse context for this <code>FunctionFactory</code> instance */
    private ParseContext pContext;
 
-   
+   /** prefix-uri map of all script declarations */
+   private Hashtable scriptUriMap = new Hashtable();
+
+
 
    //
    // Constructor
    //
    
    /**
-    * Creates a new <code>FunctionTable</code> instance with a given parse 
+    * Creates a new <code>FunctionFactory</code> instance with a given parse 
     * context
     */
-   public FunctionTable(ParseContext pContext) {
+   public FunctionFactory(ParseContext pContext) {
       this.pContext = pContext;
    }
 
@@ -188,10 +190,9 @@ final public class FunctionTable implements Constants
       }
 
       // execute script functions
-      if (this.prefixUriMap.containsValue(uri))
+      if (this.scriptUriMap.containsValue(uri))
          if (pContext.allowExternalFunctions) {
-            BSFEngine engine = (BSFEngine) this.uriEngineMap.get(uri);
-            return new ScriptFunction(engine, lName, qName);
+            return createScriptFunction(uri, lName, qName);
          }
          else
             throw new SAXParseException(
@@ -245,26 +246,17 @@ final public class FunctionTable implements Constants
       else // no event available (e.g. init of global variables)
          return Value.VAL_EMPTY;
    }
-   
-   public boolean isScriptPrefix(String prefix)
-   {
-      return this.prefixUriMap.get(prefix) != null;   
-   }
-   
-   public void addScript(ScriptFactory.Instance scriptElement, String scriptCode)
-         throws SAXException
-   {
-      addNewScript(scriptElement, scriptCode);
-   }
 
-   
-// **********************************************************************
+
+
+   // ************************************************************************
+
+   //
+   // Accessing script functions via BSF
+   //
    
    /** BSF Manager instance, singleton */
    private BSFManager bsfManager;
-
-   /** prefix-uri map of all script declarations */
-   private Hashtable prefixUriMap = new Hashtable();
 
    /** uri-BSFEngine map of all script declarations */
    private Hashtable uriEngineMap = new Hashtable();
@@ -280,40 +272,57 @@ final public class FunctionTable implements Constants
    }
 
    /**
-    * prepare whatever is needed for handling of a new script prefix
-    * 
-    * @param scriptInstance the instance of the joost:script element
-    * @param script script content itself
+    * @param prefix a namespace prefix
+    * @return <code>true</code> if this prefix was used for a script element
     */
-   private void addNewScript(ScriptFactory.Instance scriptInstance,
-                            String script) throws SAXException
+   public boolean isScriptPrefix(String prefix)
    {
-      String nsPrefix = scriptInstance.getPrefix();
-      String nsUri = scriptInstance.getUri();
-      this.prefixUriMap.put(nsPrefix, nsUri);
-
+      return this.scriptUriMap.get(prefix) != null;   
+   }
+   
+   /**
+    * Called from {@link ScriptFactory.Instance} to create a new script part.
+    * 
+    * @param scriptElement the <code>joost:script</code> instance
+    * @param scriptCode the script code
+    * @throws SAXException
+    */
+   public void addScript(ScriptFactory.Instance scriptElement, String scriptCode)
+         throws SAXException
+   {
+      String nsPrefix = scriptElement.getPrefix();
+      String nsUri = scriptElement.getUri();
+      this.scriptUriMap.put(nsPrefix, nsUri);
+      
       // set scripting engine
       BSFEngine engine = null;
       try {
-         engine = getBSFManager().loadScriptingEngine(scriptInstance.getLang());
+         engine = getBSFManager().loadScriptingEngine(scriptElement.getLang());
          this.uriEngineMap.put(nsUri, engine);
       }
-      catch (BSFException e) {
+      catch (Exception e) {
          throw new SAXParseException("Exception while creating scripting "
-               + "engine for prefix ´" + nsPrefix + "' and language `" 
-               + scriptInstance.getLang() + "'",
-               scriptInstance.publicId, scriptInstance.systemId, 
-               scriptInstance.lineNo, scriptInstance.colNo, e);
+               + "engine for prefix ´" + nsPrefix + "' and language `"
+               + scriptElement.getLang() + "'", scriptElement.publicId,
+               scriptElement.systemId, scriptElement.lineNo,
+               scriptElement.colNo, e);
       }
       // execute stx-global script code
       try {
-         engine.exec("JoostScript", -1, -1, script);
+         engine.exec("JoostScript", -1, -1, scriptCode);
       }
-      catch (BSFException e) {
+      catch (Exception e) {
          throw new SAXParseException("Exception while executing the script "
-               + "for prefix `" + nsPrefix + "'", 
-               scriptInstance.publicId, scriptInstance.systemId, 
-               scriptInstance.lineNo, scriptInstance.colNo, e);
+               + "for prefix `" + nsPrefix + "'", scriptElement.publicId,
+               scriptElement.systemId, scriptElement.lineNo,
+               scriptElement.colNo, e);
       }
+   }
+   
+   private ScriptFunction createScriptFunction(String uri, String lName,
+                                               String qName)
+   {
+      return new ScriptFunction(((BSFEngine) this.uriEngineMap.get(uri)),
+            lName, qName);
    }
 }

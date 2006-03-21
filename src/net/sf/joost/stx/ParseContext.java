@@ -1,5 +1,5 @@
 /*
- * $Id: ParseContext.java,v 2.10 2006/03/20 19:23:51 obecker Exp $
+ * $Id: ParseContext.java,v 2.11 2006/03/21 19:25:08 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,7 +30,7 @@ import javax.xml.transform.ErrorListener;
 import javax.xml.transform.URIResolver;
 
 import net.sf.joost.instruction.TransformFactory;
-import net.sf.joost.stx.function.FunctionTable;
+import net.sf.joost.stx.function.FunctionFactory;
 
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.Locator;
@@ -39,7 +39,7 @@ import org.xml.sax.Locator;
 /**
  * Instances of this class provide context information while parsing
  * an STX document.
- * @version $Revision: 2.10 $ $Date: 2006/03/20 19:23:51 $
+ * @version $Revision: 2.11 $ $Date: 2006/03/21 19:25:08 $
  * @author Oliver Becker
  */
 public final class ParseContext
@@ -69,7 +69,7 @@ public final class ParseContext
     * The function table for maintaining function definitions, especially of
     * the script functions
     */
-   private FunctionTable functionTable;
+   private FunctionFactory functionFactory;
 
    
    //
@@ -107,10 +107,10 @@ public final class ParseContext
       errorHandler = new ErrorHandlerImpl(errorListener, true);
    }
 
-   public FunctionTable getFunctionTable()
+   public FunctionFactory getFunctionFactory()
    {
-      if (functionTable == null)
-         functionTable = new FunctionTable(this);
-      return functionTable;
+      if (functionFactory == null)
+         functionFactory = new FunctionFactory(this);
+      return functionFactory;
    }
 }

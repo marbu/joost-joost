@@ -1,5 +1,5 @@
 /*
- * $Id: IndexOf.java,v 1.1 2006/03/20 19:23:50 obecker Exp $
+ * $Id: IndexOf.java,v 1.2 2006/03/21 19:25:03 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,7 +30,7 @@ import net.sf.joost.grammar.tree.EqTree;
 import net.sf.joost.grammar.tree.ValueTree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Value;
-import net.sf.joost.stx.function.FunctionTable.Instance;
+import net.sf.joost.stx.function.FunctionFactory.Instance;
 
 import org.xml.sax.SAXException;
 
@@ -43,7 +43,7 @@ import org.xml.sax.SAXException;
  * @see <a target="xq1xp2fo"
  *      href="http://www.w3.org/TR/xpath-functions/#func-index-of"> fn:index-of
  *      in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
- * @version $Revision: 1.1 $ $Date: 2006/03/20 19:23:50 $
+ * @version $Revision: 1.2 $ $Date: 2006/03/21 19:25:03 $
  * @author Oliver Becker
  */
 final public class IndexOf implements Instance
@@ -55,7 +55,7 @@ final public class IndexOf implements Instance
    public int getMaxParCount() { return 2; }
 
    /** @return "index-of" */
-   public String getName() { return FunctionTable.FNSP + "index-of"; }
+   public String getName() { return FunctionFactory.FNSP + "index-of"; }
 
    public Value evaluate(Context context, int top, Tree args)
       throws SAXException, EvalException
