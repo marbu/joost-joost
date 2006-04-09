@@ -1,5 +1,5 @@
 /*
- * $Id: ScriptFunction.java,v 1.3 2006/03/21 19:25:03 obecker Exp $
+ * $Id: ScriptFunction.java,v 1.4 2006/04/09 21:41:40 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.xml.sax.SAXException;
  * by the <code>joost:script</code> element.
  * 
  * @see net.sf.joost.instruction.ScriptFactory
- * @version $Revision: 1.3 $ $Date: 2006/03/21 19:25:03 $
+ * @version $Revision: 1.4 $ $Date: 2006/04/09 21:41:40 $
  * @author Nikolay Fiykov, Oliver Becker
  */
 final public class ScriptFunction implements Instance
@@ -70,7 +70,7 @@ final public class ScriptFunction implements Instance
     * @param args
     * @return Object[]
     */
-   protected Object[] convertInputArgs(Context context, int top, Tree args)
+   private Object[] convertInputArgs(Context context, int top, Tree args)
          throws SAXException
    {
       // evaluate current parameters
@@ -89,30 +89,13 @@ final public class ScriptFunction implements Instance
       Vector ret = new Vector();
       while (!varr.isEmpty()) {
          Value v = (Value) varr.pop();
-         // try {
-         // ret.add( v.toJavaObject( Object.class ) );
-         switch (v.type) {
-         case Value.EMPTY:
-            break;
-         case Value.OBJECT:
-            ret.add(v.getObject());
-            break;
-         case Value.NODE:
-            ret.add(v.getNode());
-            break;
-         case Value.BOOLEAN:
-            ret.add(new Boolean(v.getBooleanValue()));
-            break;
-         case Value.NUMBER:
-            ret.add(new Double(v.getNumberValue()));
-            break;
-         case Value.STRING:
-            ret.add(v.getStringValue());
-            break;
+         try {
+            ret.add(v.toJavaObject(Object.class));
+         } 
+         catch( EvalException e ) {
+            // Mustn't happen!
+            throw new SAXException( e );
          }
-         // } catch( EvalException e ) {
-         // throw new SAXException( e );
-         // }
       }
 
       return ret.toArray();
@@ -136,7 +119,7 @@ final public class ScriptFunction implements Instance
       catch (BSFException e) {
          throw new EvalException("Exception while executing " + qName, e);
       }
-
+      
       // wrap the result
       return new Value(ret);
    }
