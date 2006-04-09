@@ -1,5 +1,5 @@
 /*
- * $Id: THResolver.java,v 1.2 2006/01/09 19:42:44 obecker Exp $
+ * $Id: THResolver.java,v 1.3 2006/04/09 21:36:44 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -33,6 +33,7 @@ import org.apache.commons.logging.Log;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import net.sf.joost.Constants;
 import net.sf.joost.OptionalLog;
 import net.sf.joost.TransformerHandlerResolver;
 
@@ -50,7 +51,7 @@ import net.sf.joost.TransformerHandlerResolver;
  *    />
  *    ...
  * 
- * @version $Revision: 1.2 $ $Date: 2006/01/09 19:42:44 $
+ * @version $Revision: 1.3 $ $Date: 2006/04/09 21:36:44 $
  * @author Oliver Becker
  */
 
@@ -117,7 +118,7 @@ public final class THResolver
        Hashtable params
    ) throws SAXException
    {
-       if ( log.isDebugEnabled() )
+       if (Constants.DEBUG)
            log.debug("sax-filter : resolve '"+method+"'");
        
        if ( ! available(method) )

@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerResolverImpl.java,v 2.12 2006/01/09 19:42:44 obecker Exp $
+ * $Id: TransformerHandlerResolverImpl.java,v 2.13 2006/04/09 21:35:33 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -30,6 +30,7 @@ import java.util.Hashtable;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.sax.TransformerHandler;
 
+import net.sf.joost.Constants;
 import net.sf.joost.OptionalLog;
 import net.sf.joost.TransformerHandlerResolver;
 
@@ -48,15 +49,16 @@ import org.xml.sax.XMLReader;
  * Upon call to {@link resolve()} it will look for a handler supporting the given
  * method URI and will delegate the call to it.
  * 
- * @version $Revision: 2.12 $ $Date: 2006/01/09 19:42:44 $
+ * @version $Revision: 2.13 $ $Date: 2006/04/09 21:35:33 $
  * @author fikin
  */
 
 public final class TransformerHandlerResolverImpl 
-    implements TransformerHandlerResolver 
+    implements TransformerHandlerResolver, Constants 
 {
    /** logging object */
-   private static Log log = OptionalLog.getLog(TransformerHandlerResolverImpl.class);
+   private static Log log = 
+      OptionalLog.getLog(TransformerHandlerResolverImpl.class);
    
    /** hashtable with available methods and their plugin implementations */
    private static Hashtable plugins = new Hashtable();
@@ -97,7 +99,7 @@ public final class TransformerHandlerResolverImpl
     */
    private void init() throws SAXException {
 
-        if (log.isDebugEnabled())
+      if (DEBUG)
          log.debug("init() : entering");
 
       // revert init() flag
@@ -106,7 +108,7 @@ public final class TransformerHandlerResolverImpl
       // system property which says what to do in case of
       // duplicated method implementations
       String prop = System.getProperty(flgName);
-      if (log.isDebugEnabled())
+      if (DEBUG)
          log.debug(flgName + "=" + prop);
       int flg;
       // fail with exception if duplicate is found
@@ -127,7 +129,7 @@ public final class TransformerHandlerResolverImpl
       while (clss.hasMoreElements()) {
          TransformerHandlerResolver plg = 
             (TransformerHandlerResolver) clss.nextElement();
-         if (log.isDebugEnabled())
+         if (DEBUG)
             log.debug("scanning implemented stx-filter-methods of class" 
                       + plg.getClass());
 
@@ -138,7 +140,7 @@ public final class TransformerHandlerResolverImpl
             // method name (url)
             String mt = uriMethods[i];
 
-            if (log.isDebugEnabled())
+            if (DEBUG)
                log.debug("stx-filter-method found : " + mt);
 
             // see if method is already defined by some other plugin ?
@@ -151,17 +153,19 @@ public final class TransformerHandlerResolverImpl
                      + "' which already has been implemented by '"
                      + firstPlg.getClass().toString() + "'!";
                if (flg == FLAG_FAIL) {
-                  if (log.isDebugEnabled())
+                  if (DEBUG)
                      log.debug("plugin already implemented!");
                   throw new SAXException(msg);
                }
                else if (flg == FLAG_IGNORE) {
-                  log.warn(msg
-                        + "\nImplementation ignored, using first plugin!");
+                  if (log != null)
+                     log.warn(msg + "\nImplementation ignored, "
+                              + "using first plugin!");
                }
                else { // replace + warning
-                  log.warn(msg
-                       + "\nUsing new implementation, previous plugin ignored!");
+                  if (log != null)
+                     log.warn(msg + "\nUsing new implementation, "
+                           + "previous plugin ignored!");
                   plugins.put(mt, plg);
                }
             }
@@ -173,7 +177,7 @@ public final class TransformerHandlerResolverImpl
 
       }
 
-      if (log.isDebugEnabled())
+      if (DEBUG)
          log.debug("init() : exiting");
    }
 
@@ -253,8 +257,10 @@ public final class TransformerHandlerResolverImpl
       if (notInitializedYet) {
          try {
             init();
-         } catch (SAXException e) {
-            log.error("Error while initializing the plugins", e);
+         }
+         catch (SAXException e) {
+            if (log != null)
+               log.error("Error while initializing the plugins", e);
          }
       }
       
@@ -271,11 +277,13 @@ public final class TransformerHandlerResolverImpl
       if (notInitializedYet) {
          try {
             init();
-         } catch (SAXException e) {
-            log.error("Error while initializing the plugins", e);
+         }
+         catch (SAXException e) {
+            if (log != null)
+               log.error("Error while initializing the plugins", e);
          }
       }
-      
+
       String[] uris = new String[plugins.size()];
       return (String[]) plugins.keySet().toArray(uris);
    }

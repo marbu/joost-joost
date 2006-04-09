@@ -1,5 +1,5 @@
 /*
- * $Id: THResolver.java,v 1.5 2006/01/09 19:42:44 obecker Exp $
+ * $Id: THResolver.java,v 1.6 2006/04/09 21:36:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -109,21 +109,21 @@ import net.sf.joost.trax.TransformerFactoryImpl;
  * or
  * &lt;stx:with-param name="http://stx.sourceforge.net/2002/ns/trax-filter/attribute:http://apache.org/xalan/features/incremental" select="'true'" /&gt;
  * 
- * @version $Revision: 1.5 $ $Date: 2006/01/09 19:42:44 $
+ * @version $Revision: 1.6 $ $Date: 2006/04/09 21:36:44 $
  * @author fikin
  */
-public class THResolver implements TransformerHandlerResolver {
+public class THResolver implements TransformerHandlerResolver, Constants {
    
    /** supported methods */
-   public static final String STX_METHOD = Constants.STX_NS;
+   public static final String STX_METHOD = STX_NS;
    public static final String XSLT_METHOD = "http://www.w3.org/1999/XSL/Transform";
    public static final String TRAX_METHOD = "http://java.sun.com/xml/jaxp";
    
    /* supported parameter prefixes */
    /** namespace for filter's own attributes */
-   public static final String FILTER_ATTR_NS = Constants.STX_NS + "/trax-filter";
+   public static final String FILTER_ATTR_NS = STX_NS + "/trax-filter";
    /** namespace for attributes provided to underlying Trax object */
-   public static final String TRAX_ATTR_NS   = Constants.STX_NS + "/trax-filter/attribute";
+   public static final String TRAX_ATTR_NS   = STX_NS + "/trax-filter/attribute";
    
    /** internal representation of parameters namespaces */
    static final String tmp_FILTER_ATTR_NS = "{"+FILTER_ATTR_NS+"}";
@@ -224,7 +224,7 @@ public class THResolver implements TransformerHandlerResolver {
     * @see net.sf.joost.plugins.HandlerPlugin#resolves()
     */
    public String[] resolves() {
-      if (log.isDebugEnabled())
+      if (DEBUG)
          log.debug("resolves()");
       
       return METHODS;
@@ -244,7 +244,7 @@ public class THResolver implements TransformerHandlerResolver {
       if (!available(method))
          throw new SAXException("Not supported filter-method:" + method);
       
-      if (log.isDebugEnabled())
+      if (DEBUG)
          log.debug("resolve(url): href=" + href + ", base=" + base);
       
       if (href == null)
@@ -269,7 +269,7 @@ public class THResolver implements TransformerHandlerResolver {
             if (source == null) {
                if (HREF_IS_SYSTEM_ID.booleanValue()) {
                   // systemId
-                  if (log.isDebugEnabled())
+                  if (DEBUG)
                      log.debug("resolve(url): new source out of systemId='"
                            + href + "'");
                   source = new StreamSource(href);
@@ -277,7 +277,7 @@ public class THResolver implements TransformerHandlerResolver {
                else {
                   // file
                   String url = new URL(new URL(base), href).toExternalForm();
-                  if (log.isDebugEnabled())
+                  if (DEBUG)
                      log.debug("resolve(url): new source out of file='" + url
                                + "'");
                   source = new StreamSource(url);
@@ -313,7 +313,7 @@ public class THResolver implements TransformerHandlerResolver {
       if (!available(method))
          throw new SAXException("Not supported filter-method:" + method);
       
-      if (log.isDebugEnabled())
+      if (DEBUG)
          log.debug("resolve(buffer)");
       
       if (reader == null)
@@ -329,7 +329,7 @@ public class THResolver implements TransformerHandlerResolver {
       // new transformer if non available
       if (th == null) {
          // prepare the source
-         if (log.isDebugEnabled())
+         if (DEBUG)
             log.debug("resolve(buffer): new source out of buffer");
          Source source = new SAXSource(reader, new InputSource());
          
@@ -349,7 +349,7 @@ public class THResolver implements TransformerHandlerResolver {
     * @see net.sf.joost.TransformerHandlerResolver#available(java.lang.String)
     */
    public boolean available(String method) {
-      if (log.isDebugEnabled())
+      if (DEBUG)
          log.debug("available(): method="+method);
       
       return (STX_METHOD.equals(method) 
@@ -366,7 +366,7 @@ public class THResolver implements TransformerHandlerResolver {
     */
    protected TransformerHandler getReusableHrefTH(String method, String href) 
    {
-      if (log.isDebugEnabled())
+      if (DEBUG)
          log.debug("getReusableHrefTH(): href="+href);
       
       if (REUSE_TH_URL.booleanValue())
@@ -379,7 +379,7 @@ public class THResolver implements TransformerHandlerResolver {
     * @param th
     */
    protected void cacheHrefTH( String method, String href, TransformerHandler th ) {
-      if (log.isDebugEnabled())
+      if (DEBUG)
          log.debug("cacheHrefTH()");
       
       if (REUSE_TH_URL.booleanValue())
@@ -394,7 +394,7 @@ public class THResolver implements TransformerHandlerResolver {
     */
    protected TransformerHandler getReusableXmlReaderTH(String method) 
    {
-      if (log.isDebugEnabled())
+      if (DEBUG)
          log.debug("getReusableXmlReaderTH()");
       
       if (REUSE_TH_BUFFER.booleanValue())
@@ -407,7 +407,7 @@ public class THResolver implements TransformerHandlerResolver {
     * @param th
     */
    protected void cacheBufferTH( String method, TransformerHandler th ) {
-      if (log.isDebugEnabled())
+      if (DEBUG)
          log.debug("cacheBufferTH()");
       
       if (REUSE_TH_BUFFER.booleanValue())
@@ -424,7 +424,7 @@ public class THResolver implements TransformerHandlerResolver {
                                                Hashtable params)
       throws SAXException
    {
-      if (log.isDebugEnabled())
+      if (DEBUG)
          log.debug("newTHOutOfTraX()");
       
       SAXTransformerFactory saxtf;
@@ -434,7 +434,7 @@ public class THResolver implements TransformerHandlerResolver {
          try {
             saxtf = (SAXTransformerFactory) (Class.forName(FACTORY
                   .getValueStr())).newInstance();
-            if (log.isDebugEnabled())
+            if (DEBUG)
                log.debug("newTHOutOfTraX(): use custom TraX factory "
                      + FACTORY.getValueStr());
          }
@@ -460,7 +460,7 @@ public class THResolver implements TransformerHandlerResolver {
             }
          }
          saxtf = stxTraxFactory;
-         if (log.isDebugEnabled())
+         if (DEBUG)
             log.debug("newTHOutOfTraX(): use default Joost factory "
                   + saxtf.getClass().toString());
       }
@@ -499,7 +499,7 @@ public class THResolver implements TransformerHandlerResolver {
          }
          
          
-         if ( log.isDebugEnabled() )
+         if (DEBUG)
             log.debug("newTHOutOfTraX(): use default TraX factory "+
                       saxtf.getClass().toString());
       }
@@ -518,14 +518,14 @@ public class THResolver implements TransformerHandlerResolver {
                && XALAN_XSLT_IMPL_CLASS.isAssignableFrom(saxtf.getClass())))
            && USE_INTERNAL_XALAN_TH.booleanValue()) {
 
-            if (log.isDebugEnabled())
+            if (DEBUG)
                log.debug("newTHOutOfTraX(): creating internal reusable Xalan TH");
             // instantiate out custom TH wrapper on top of xalan's TR
             Transformer xalanTr = saxtf.newTransformer(source);
             return new XalanReusableTH(xalanTr);
          }
          else {
-            if (log.isDebugEnabled())
+            if (DEBUG)
                log.debug("newTHOutOfTraX(): creating factory's reusable TH");
             // TraX way to create TH
             return saxtf.newTransformerHandler(source);
@@ -556,7 +556,7 @@ public class THResolver implements TransformerHandlerResolver {
             // it is, remove the namespace prefix and set it to the factory
             String    name = key.substring(tmp_TRAX_ATTR_NS.length()).toLowerCase();
             saxtf.setAttribute( name, params.get( key ) );
-            if ( log.isDebugEnabled() )
+            if (DEBUG)
                log.debug("newTHOutOfTraX(): set factory attribute "+name+"="+params.get(key));
          }
       }
@@ -573,7 +573,7 @@ public class THResolver implements TransformerHandlerResolver {
     */
    protected void prepareTh( TransformerHandler th, Hashtable params ) 
    {
-      if (log.isDebugEnabled())
+      if (DEBUG)
          log.debug("prepareTh()");
       
       Transformer tr = th.getTransformer();
@@ -585,7 +585,7 @@ public class THResolver implements TransformerHandlerResolver {
       if (!params.isEmpty()) {
          for (Enumeration e=params.keys(); e.hasMoreElements(); ) {
             String key = (String)e.nextElement();
-            if ( log.isDebugEnabled() )
+            if (DEBUG)
                log.debug("prepareTh(): set parameter "+key+"="+params.get(key));
             
             if ( !key.startsWith( tmp_TRAX_ATTR_NS ) && 
@@ -604,7 +604,7 @@ public class THResolver implements TransformerHandlerResolver {
     * @param params
     */
    protected void setFilterAttributes(Hashtable params) {
-      if (log.isDebugEnabled())
+      if (DEBUG)
          log.debug("setFilterAttributes()");
       
       // loop over all coming parameters
@@ -623,7 +623,7 @@ public class THResolver implements TransformerHandlerResolver {
                                                   name+" not supported");
             
             a.setValue( (String)params.get( key ) );
-            if ( log.isDebugEnabled() )
+            if (DEBUG)
                log.debug("setFilterAttributes(): set attribute "+name+"="+params.get(key));
          }
       }
