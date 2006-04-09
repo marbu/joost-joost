@@ -1,3 +1,8 @@
+Changes since 20060205
+- Added special element joost:script for script support (e.g. Javascript)
+  (thanks again to Fikin).
+- Bugfix: 1446221
+
 Changes since 20050521
 - added plugin ability for net.sf.joost.TransformerHandlerResolver classes;
   no need any more to programatically register filter implementations, Joost
