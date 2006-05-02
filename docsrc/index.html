@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.82 2006/02/05 14:42:20 obecker Exp $ -->
+<!-- $Id: index.html,v 1.83 2006/05/02 18:50:42 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -27,6 +27,7 @@
       demonstrates the functionality of STX.
       </p>
 
+      <!-- Have to make the StDB working again!
       <table cellspacing="10pt" width="15%" align="right"
              style="background-color: #ffffee;
                     margin-left: 10pt; margin-bottom: 10pt">
@@ -36,6 +37,7 @@
               a debugger for STX based on Joost</em>
         </td></tr>
       </table>
+      -->
 
         
       <p>The latest version was created <strong>@@@DATE@@@</strong>
@@ -70,9 +72,20 @@
             Project</a>
          </li>
          <li>
+           <a target="_top" 
+           href="http://jakarta.apache.org/commons/discovery/">Commons 
+           Discovery</a> from Apache Jakarta, if you want to use external
+           filters such as XSLT transformations
+         </li>
+         <li>
+           the <a target="_top" href="http://jakarta.apache.org/bsf/">Bean 
+           Scripting Framework</a> from Apache Jakarta and a proper scripting
+           engine, if you want to use the experimental Script support
+         </li>
+         <li>
             optionally (see below) the <a target="_top"
-            href="http://jakarta.apache.org/commons/logging/">Logging
-            Component</a> from Apache Jakarta Commons</li>
+            href="http://jakarta.apache.org/commons/logging/">Commons Logging
+            Component</a> from Apache Jakarta</li>
          <li>and of course a Java platform, at least version 1.4</li>
       </ul>
       <p>
@@ -246,6 +259,19 @@
           </li>
       </ul>
       <p>
+      <strong><em>Built-in extension elements</em></strong><br>
+      A built-in extension element must be used with a fully-qualified
+      name and the prefix bound to the namespace
+      <code>http://joost.sf.net/extension</code>
+      <ul>
+      <li>joost:script (prefix, language, scr?)<br>
+          defines a script. <a href="#scripting">See below</a> under 
+          "Extensions" for details.</li>
+      </ul> 
+      
+      <hr>
+
+      <p>
       <strong><em>Supported STXPath functions</em></strong>
       <ul>
       <li>string(object?)</li>
@@ -316,6 +342,70 @@
       </ul>
 
       <h4>Extensions</h4>
+      
+      <h5><a name="scripting">Scripting</a></h5>
+      <p>
+        This release of <em>Joost</em> introduces experimental support for 
+        scripting languages. It uses the bean scripting framework BSF (see 
+        above) as a bridge to concrete scripting engines.
+      </p>
+      <p>
+        The new element <code>joost:script</code> defines a script. The prefix 
+        (in this case <code>joost</code>) must be bound to <em>Joost</em>'s 
+        extension namespace <code>http://joost.sf.net/extension</code>. 
+        The element <code>joost:script</code> must be a child of 
+        <code>stx:transform</code> or <code>stx:group</code> and allows only 
+        text contents. It has the following attributes:
+      </p>
+      <ul>
+        <li>
+          <code>prefix</code>: the namespace prefix that defines the functions
+          of this script. The namespace must be in scope for the 
+          <code>script</code> element. The invocation of script functions
+          requires the use of this prefix.
+        </li>
+        <li>
+          <code>language</code>: the language identifier, that is used by BSF 
+          to find the proper scripting engine.
+        </li>
+        <li>
+          <code>src</code> (optional): the URL of an external script
+        </li>
+      </ul>
+      <p><strong>Example</strong> that uses Javascript 
+      (<a href="http://www.mozilla.org/rhino/">Rhino</a>):</p>
+      <pre>&lt;stx:transform xmlns:stx="http://stx.sourceforge.net/2002/ns" 
+               <strong>xmlns:joost="http://joost.sf.net/extension"
+               xmlns:js="urn:javascript"</strong>
+               version="1.0">
+
+  <strong>&lt;joost:script prefix="js" language="javascript">
+  &lt;![CDATA[
+    function fac(n) {
+      var res = 1;
+      while (n > 1) {
+        res = res * n;
+        n--;
+      }
+      return res;
+    }
+  ]]>
+  &lt;/joost:script></strong>
+
+  &lt;stx:template match="/">
+    &lt;stx:value-of select="concat('5! = ', <strong>js:fac(5)</strong>)" />
+  &lt;/stx:template>
+
+&lt;/stx:transform></pre>
+      <p>This "transformation" will output<br>
+      5! = 120</p>
+      <p>
+        <em>Note</em>: global script variables will be initialized only once at 
+        the moment. This is important for re-used transformation sheets via
+        JAXP <code>Templates</code> objects.
+      </p>
+      
+      <hr>
           
       <h5>HTML output</h5>
       <p>
@@ -328,7 +418,9 @@
         <em>disable-output-escaping</em> feature of XSLT can be simulated
         by using the <code>stx:cdata</code> instruction.
       </p>
-                  
+          
+      <hr>
+              
       <h5>Invoking Java methods</h5>
       <p>
         <em>Joost</em> allows the use of extension functions written in Java.
@@ -571,6 +663,8 @@
         parameter.
       </p>
 
+      <hr>
+      
       <h5>Using external SAX2 filters</h5>
       <p>
         <em>Joost</em> implements the usage of external SAX2 filters as
