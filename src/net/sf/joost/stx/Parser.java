@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 2.18 2006/02/27 19:47:19 obecker Exp $
+ * $Id: Parser.java,v 2.19 2006/05/04 17:23:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import org.xml.sax.helpers.NamespaceSupport;
 /** 
  * Creates the tree representation of an STX transformation sheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 2.18 $ $Date: 2006/02/27 19:47:19 $
+ * @version $Revision: 2.19 $ $Date: 2006/05/04 17:23:32 $
  * @author Oliver Becker
  */
 
@@ -157,8 +157,8 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
    /**
     * creates hashtable and sets its initial content to the given array
     * 
-    * @param map to be instantiated
     * @param data to be filled in the map
+    * @return the created hashtable
     */
    private Hashtable createFactoryMap(FactoryBase[] data)
    {
