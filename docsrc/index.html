@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.83 2006/05/02 18:50:42 obecker Exp $ -->
+<!-- $Id: index.html,v 1.84 2006/05/05 06:13:13 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -137,7 +137,7 @@
         </tr>
         <tr>
           <td valign="top"><strong><code>-noext</code></strong></td>
-          <td>prevent calls on Java extension functions</td>
+          <td>prevent calls on Java extension functions and script functions</td>
         </tr>
         <tr>
           <td valign="top"><strong><code>-time</code></strong></td>
@@ -265,8 +265,8 @@
       <code>http://joost.sf.net/extension</code>
       <ul>
       <li>joost:script (prefix, language, scr?)<br>
-          defines a script. <a href="#scripting">See below</a> under 
-          "Extensions" for details.</li>
+          defines a script, see <a href="#scripting">Scripting</a> in the 
+          <em>Extensions</em> section below.</li>
       </ul> 
       
       <hr>
@@ -326,7 +326,8 @@
       <ul>
       <li>sequence(obj)<br>
           converts a Java array or a <code>java.util.List</code> object to
-          a sequence, see <em>Extensions</em> below</li>
+          a sequence, see <a href="#ext-sequence">Invoking Java methods</a> in
+          the <em>Extensions</em> section below.</li>
       </ul> 
 
       <h4>Limitations</h4>
@@ -655,6 +656,7 @@
       </table>
 
       <p>
+        <a name="ext-sequence"></a>
         A wrapped Java Object of type <code>java.lang.Object[]</code> or
         <code>java.util.List</code> may be converted to a sequence using
         the <em>Joost</em> extension function <code>sequence</code>.
