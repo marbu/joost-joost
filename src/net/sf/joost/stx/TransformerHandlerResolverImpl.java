@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerResolverImpl.java,v 2.14 2006/05/04 17:23:32 obecker Exp $
+ * $Id: TransformerHandlerResolverImpl.java,v 2.15 2006/06/20 17:32:58 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -50,7 +50,7 @@ import org.xml.sax.XMLReader;
  * or {@link #resolve(String, XMLReader, Hashtable)} it will look for a handler 
  * supporting the given method URI and will delegate the call to it.
  * 
- * @version $Revision: 2.14 $ $Date: 2006/05/04 17:23:32 $
+ * @version $Revision: 2.15 $ $Date: 2006/06/20 17:32:58 $
  * @author fikin
  */
 
@@ -205,9 +205,11 @@ public final class TransformerHandlerResolverImpl
                                      URIResolver uriResolver,
                                      Hashtable params) throws SAXException
    {
+      Hashtable externalParams = createExternalParameters(params);
       if (customResolver != null) {
          TransformerHandler handler = 
-            customResolver.resolve(method, href, base, uriResolver, params);
+            customResolver.resolve(method, href, base, uriResolver,
+                                   externalParams);
          if (handler != null)
             return handler;
       }
@@ -220,7 +222,7 @@ public final class TransformerHandlerResolverImpl
       if (impl == null)
          throw new SAXException("Undefined filter implementation for method '"
                + method + "'");
-      return impl.resolve(method, href, base, uriResolver, createExternalParameters(params));
+      return impl.resolve(method, href, base, uriResolver, externalParams);
    }
 
    /**
@@ -231,9 +233,10 @@ public final class TransformerHandlerResolverImpl
    public TransformerHandler resolve(String method, XMLReader reader,
                                      Hashtable params) throws SAXException
    {
+      Hashtable externalParams = createExternalParameters(params);
       if (customResolver != null) {
          TransformerHandler handler = 
-            customResolver.resolve(method, reader, params);
+            customResolver.resolve(method, reader, externalParams);
          if (handler != null)
             return handler;
       }
@@ -246,7 +249,7 @@ public final class TransformerHandlerResolverImpl
       if (impl == null)
          throw new SAXException("Undefined filter implementation for method '"
                + method + "'");
-      return impl.resolve(method, reader, createExternalParameters(params));
+      return impl.resolve(method, reader, externalParams);
    }
 
    /**
@@ -265,7 +268,8 @@ public final class TransformerHandlerResolverImpl
          }
       }
       
-      return (plugins.get(method) != null);
+      return (customResolver != null && customResolver.available(method)) 
+             || plugins.get(method) != null;
    }
 
    /**

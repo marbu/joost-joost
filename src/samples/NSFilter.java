@@ -1,5 +1,5 @@
 /*
- * $Id: NSFilter.java,v 1.7 2006/01/09 19:42:44 obecker Exp $
+ * $Id: NSFilter.java,v 1.8 2006/06/20 17:32:58 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -58,7 +58,7 @@ import org.xml.sax.helpers.XMLFilterImpl;
  * <li>acting as a TransformerHandler, that removes all elements in a
  *     given namespace (passed as a parameter)</li>
  * </ul>
- * @version $Revision: 1.7 $ $Date: 2006/01/09 19:42:44 $
+ * @version $Revision: 1.8 $ $Date: 2006/06/20 17:32:58 $
  * @author Oliver Becker
  */
 
@@ -94,9 +94,12 @@ public class NSFilter
                                new StreamResult(System.out));
       } catch (TransformerException e) {
          SourceLocator sloc = e.getLocator();
-         System.err.println(sloc.getSystemId() + ":" + sloc.getLineNumber() +
-                            ":" + sloc.getColumnNumber() + ": " +
-                            e.getMessage());
+         if (sloc != null)
+            System.err.println(sloc.getSystemId() + ":" + sloc.getLineNumber()
+                               + ":" + sloc.getColumnNumber() + ": "
+                               + e.getMessage());
+         else
+            System.err.println(e.getMessage());
       }
    }
 

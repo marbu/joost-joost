@@ -1,3 +1,6 @@
+Changes since 20060505
+- Bugfix: 1509455
+
 Changes since 20060205
 - Added special element joost:script for script support (e.g. Javascript)
   (thanks again to Fikin).
