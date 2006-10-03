@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.52 2006/06/20 17:32:58 obecker Exp $
+ * $Id: Processor.java,v 2.53 2006/10/03 13:06:50 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -69,7 +69,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.52 $ $Date: 2006/06/20 17:32:58 $
+ * @version $Revision: 2.53 $ $Date: 2006/10/03 13:06:50 $
  * @author Oliver Becker
  */
 
@@ -752,6 +752,13 @@ public class Processor extends XMLFilterImpl
    public void endInnerProcessing()
       throws SAXException
    {
+      // look-ahead mechanism
+      if (lastElement != null)
+         processLastElement(true);
+
+      if (collectedCharacters.length() != 0)
+         processCharacters();
+
       // Clean up dataStack: terminate pending stx:process-siblings
       clearProcessSiblings();
 
