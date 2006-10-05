@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: runtest.sh,v 1.6 2003/08/29 10:50:17 obecker Exp $
+# $Id: runtest.sh,v 1.7 2006/10/05 10:42:06 obecker Exp $
 # Performs a chosen set of transformations and compares the output with
 # an expected result
 
@@ -44,7 +44,7 @@ for i in ${files}; do
     fi
     # run and compare
     if [ -f "${source}" ]; then
-        run.sh ${source} ${bn}.stx -o ${tmp} ${para} && diff ${tmp} ${bn}.res
+        `dirname $0`/run.sh ${source} ${bn}.stx -o ${tmp} ${para} && diff ${tmp} ${bn}.res
         rm -f ${tmp}
     else
         echo No XML source found for `basename ${bn}`
