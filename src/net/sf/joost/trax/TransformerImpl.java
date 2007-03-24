@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.27 2005/03/25 18:30:05 obecker Exp $
+ * $Id: TransformerImpl.java,v 1.28 2007/03/24 20:55:51 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -73,11 +73,9 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
     private Processor processor = null; // Bugfix
 
     private URIResolver uriRes          = null;
-    private ErrorListener errorListener = null;
 
-    // init default errorlistener
-    protected TransformationErrListener defaultErrorListener =
-        new TransformationErrListener();
+    // init with default errorlistener
+    private ErrorListener errorListener =  new TransformationErrListener();
 
     private HashSet supportedProperties = new HashSet();
 
@@ -222,7 +220,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
                                 xmlReader.setFeature(FEAT_NSPREFIX, false);
                                 // maybe there would be other features
                                 } catch (SAXException sE) {
-                                    defaultErrorListener.warning(new TransformerException(sE.getMessage(), sE));
+                                   getErrorListener().warning(new TransformerException(sE.getMessage(), sE));
                                 }
                             }
                             // set the the SAXSource as the parent of the STX-Processor
@@ -235,7 +233,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
                 } else {
                     TransformerException tE =
                             new TransformerException("InputSource is null - could not perform transformation");
-                    defaultErrorListener.fatalError(tE);
+                    getErrorListener().fatalError(tE);
                 }
                 //perform result
                 performResults(result, out);
@@ -247,10 +245,10 @@ public class TransformerImpl extends Transformer implements TrAXConstants {
                 } else {
                     tE = new TransformerException(ex.getMessage(), ex);
                 }
-                defaultErrorListener.fatalError(tE);
+                getErrorListener().fatalError(tE);
             } catch (IOException ex) {
                 // will this ever happen?
-                defaultErrorListener.fatalError(new TransformerException(ex.getMessage(), ex));
+               getErrorListener().fatalError(new TransformerException(ex.getMessage(), ex));
             }
         }
     }

@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerImpl.java,v 1.13 2005/03/13 17:13:01 obecker Exp $
+ * $Id: TransformerHandlerImpl.java,v 1.14 2007/03/24 20:55:51 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -138,7 +138,7 @@ public class TransformerHandlerImpl implements TransformerHandler, Constants {
                 TransformerConfigurationException tE =
                     new TransformerConfigurationException(e.getMessage(), e);
                 try {
-                    ((TransformerImpl)transformer).defaultErrorListener.fatalError(tE);
+                    transformer.getErrorListener().fatalError(tE);
                 } catch (TransformerException innerE) {
                     throw new IllegalArgumentException(innerE.getMessage());
                 }
