@@ -1,5 +1,5 @@
 /*
- * $Id: THResolver.java,v 1.6 2006/04/09 21:36:44 obecker Exp $
+ * $Id: THResolver.java,v 1.7 2007/05/19 10:15:53 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -109,7 +109,7 @@ import net.sf.joost.trax.TransformerFactoryImpl;
  * or
  * &lt;stx:with-param name="http://stx.sourceforge.net/2002/ns/trax-filter/attribute:http://apache.org/xalan/features/incremental" select="'true'" /&gt;
  * 
- * @version $Revision: 1.6 $ $Date: 2006/04/09 21:36:44 $
+ * @version $Revision: 1.7 $ $Date: 2007/05/19 10:15:53 $
  * @author fikin
  */
 public class THResolver implements TransformerHandlerResolver, Constants {
@@ -622,7 +622,7 @@ public class THResolver implements TransformerHandlerResolver, Constants {
                throw new IllegalArgumentException("setFilterAttributes() : "+
                                                   name+" not supported");
             
-            a.setValue( (String)params.get( key ) );
+            a.setValue( String.valueOf( params.get( key ) ) );
             if (DEBUG)
                log.debug("setFilterAttributes(): set attribute "+name+"="+params.get(key));
          }

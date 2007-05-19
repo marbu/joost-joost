@@ -1,5 +1,5 @@
 /*
- * $Id: THResolver.java,v 1.3 2006/04/09 21:36:44 obecker Exp $
+ * $Id: THResolver.java,v 1.4 2007/05/19 10:15:52 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -51,7 +51,7 @@ import net.sf.joost.TransformerHandlerResolver;
  *    </stx:process-self>
  *    ...
  * 
- * @version $Revision: 1.3 $ $Date: 2006/04/09 21:36:44 $
+ * @version $Revision: 1.4 $ $Date: 2007/05/19 10:15:52 $
  * @author Oliver Becker
  */
 
@@ -125,7 +125,7 @@ public final class THResolver
        if ( (reader != null) || (href != null) )
            throw new SAXException("Attribute 'filter-src' not allowed for method '" + method + "'");
         
-       String v = (String)params.get("target");
+       String v = String.valueOf(params.get("target"));
        if (v == null)
           throw new SAXException("Missing parameter 'target' for filter " + 
                                  "method '" + method + "'");

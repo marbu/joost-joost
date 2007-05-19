@@ -1,5 +1,5 @@
 /*
- * $Id: NSFilter.java,v 1.8 2006/06/20 17:32:58 obecker Exp $
+ * $Id: NSFilter.java,v 1.9 2007/05/19 10:15:53 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -58,7 +58,7 @@ import org.xml.sax.helpers.XMLFilterImpl;
  * <li>acting as a TransformerHandler, that removes all elements in a
  *     given namespace (passed as a parameter)</li>
  * </ul>
- * @version $Revision: 1.8 $ $Date: 2006/06/20 17:32:58 $
+ * @version $Revision: 1.9 $ $Date: 2007/05/19 10:15:53 $
  * @author Oliver Becker
  */
 
@@ -127,7 +127,7 @@ public class NSFilter
          if (href != null)
             throw new SAXException("Specification of an external source '" + 
                                    href + "' not allowed for " + method);
-         skipUri = (String)params.get("uri");
+         skipUri = String.valueOf(params.get("uri"));
          return this;
       }
       else

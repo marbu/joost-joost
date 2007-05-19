@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerResolverImpl.java,v 2.15 2006/06/20 17:32:58 obecker Exp $
+ * $Id: TransformerHandlerResolverImpl.java,v 2.16 2007/05/19 10:15:53 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -50,7 +50,7 @@ import org.xml.sax.XMLReader;
  * or {@link #resolve(String, XMLReader, Hashtable)} it will look for a handler 
  * supporting the given method URI and will delegate the call to it.
  * 
- * @version $Revision: 2.15 $ $Date: 2006/06/20 17:32:58 $
+ * @version $Revision: 2.16 $ $Date: 2007/05/19 10:15:53 $
  * @author fikin
  */
 
@@ -182,7 +182,7 @@ public final class TransformerHandlerResolverImpl
          log.debug("init() : exiting");
    }
 
-   /** Creates a new Hashtable with String values only */
+   /** Creates a new Hashtable with String resp. Object values */
    private Hashtable createExternalParameters(Hashtable params)
    {
       // create new Hashtable with String values only
@@ -191,7 +191,9 @@ public final class TransformerHandlerResolverImpl
          String key = (String) e.nextElement();
          // remove preceding "{}" if present
          String name = key.startsWith("{}") ? key.substring(2) : key;
-         result.put(name, ((Value) (params.get(key))).getStringValue());
+         Value val = ((Value) (params.get(key)));
+         result.put(name, val.type == Value.OBJECT ? val.getObject() 
+                                                   : val.getStringValue());
       }
       return result;
    }
