@@ -1,5 +1,5 @@
 /*
- * $Id: ExtSequence.java,v 1.2 2006/03/21 19:25:03 obecker Exp $
+ * $Id: ExtSequence.java,v 1.3 2007/05/20 18:00:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import org.xml.sax.SAXException;
  * Converts a Java array or a {@link List} object to a sequence. Any other value
  * will be returned unchanged.
  * 
- * @version $Revision: 1.2 $ $Date: 2006/03/21 19:25:03 $
+ * @version $Revision: 1.3 $ $Date: 2007/05/20 18:00:44 $
  * @author Oliver Becker
  */
 final public class ExtSequence implements Instance
@@ -52,6 +52,9 @@ final public class ExtSequence implements Instance
 
    /** @return "sequence" */
    public String getName() { return FunctionFactory.JENSP + "sequence"; }
+
+   /** @return <code>true</code> */
+   public boolean isConstant() { return true; }
 
    public Value evaluate(Context context, int top, Tree args)
       throws SAXException, EvalException

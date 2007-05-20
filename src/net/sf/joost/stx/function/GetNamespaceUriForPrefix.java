@@ -1,5 +1,5 @@
 /*
- * $Id: GetNamespaceUriForPrefix.java,v 1.2 2006/03/21 19:25:03 obecker Exp $
+ * $Id: GetNamespaceUriForPrefix.java,v 1.3 2007/05/20 18:00:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.xml.sax.SAXException;
  *      href="http://www.w3.org/TR/xpath-functions/#func-get-namespace-uri-for-prefix">
  *      fn:get-namespace-uri-for-prefix in "XQuery 1.0 and XPath 2.0 Functions
  *      and Operators"</a>
- * @version $Revision: 1.2 $ $Date: 2006/03/21 19:25:03 $
+ * @version $Revision: 1.3 $ $Date: 2007/05/20 18:00:44 $
  * @author Oliver Becker
  */
 final public class GetNamespaceUriForPrefix implements Instance
@@ -54,6 +54,9 @@ final public class GetNamespaceUriForPrefix implements Instance
 
    /** @return "get-namespace-uri-for-prefix" */
    public String getName() { return FunctionFactory.FNSP + "get-namespace-uri-for-prefix"; }
+
+   /** @return <code>true</code> */
+   public boolean isConstant() { return true; }
 
    public Value evaluate(Context context, int top, Tree args)
       throws SAXException, EvalException

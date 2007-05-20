@@ -1,5 +1,5 @@
 /*
- * $Id: StringJoin.java,v 1.2 2006/03/21 19:25:03 obecker Exp $
+ * $Id: StringJoin.java,v 1.3 2007/05/20 18:00:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import org.xml.sax.SAXException;
  * @see <a target="xq1xp2fo"
  *      href="http://www.w3.org/TR/xpath-functions/#func-string-join">
  *      fn:string-join in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
- * @version $Revision: 1.2 $ $Date: 2006/03/21 19:25:03 $
+ * @version $Revision: 1.3 $ $Date: 2007/05/20 18:00:44 $
  * @author Oliver Becker
  */
 final public class StringJoin implements Instance 
@@ -54,6 +54,9 @@ final public class StringJoin implements Instance
    /** @return "string-join" */
    public String getName() { return FunctionFactory.FNSP + "string-join"; }
    
+   /** @return <code>true</code> */
+   public boolean isConstant() { return true; }
+
    public Value evaluate(Context context, int top, Tree args)
       throws SAXException, EvalException
    {

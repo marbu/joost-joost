@@ -1,5 +1,5 @@
 /*
- * $Id: ScriptFunction.java,v 1.4 2006/04/09 21:41:40 obecker Exp $
+ * $Id: ScriptFunction.java,v 1.5 2007/05/20 18:00:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.xml.sax.SAXException;
  * by the <code>joost:script</code> element.
  * 
  * @see net.sf.joost.instruction.ScriptFactory
- * @version $Revision: 1.4 $ $Date: 2006/04/09 21:41:40 $
+ * @version $Revision: 1.5 $ $Date: 2007/05/20 18:00:44 $
  * @author Nikolay Fiykov, Oliver Becker
  */
 final public class ScriptFunction implements Instance
@@ -135,4 +135,7 @@ final public class ScriptFunction implements Instance
 
    /** Not called */
    public String getName() { return null; }
+
+   /** @return <code>false</code> (we don't know) */
+   public boolean isConstant() { return false; }
 }

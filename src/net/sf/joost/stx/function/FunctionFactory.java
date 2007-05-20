@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionFactory.java,v 1.1 2006/03/21 19:25:03 obecker Exp $
+ * $Id: FunctionFactory.java,v 1.2 2007/05/20 18:00:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * Factory for all STXPath function implementations.
- * @version $Revision: 1.1 $ $Date: 2006/03/21 19:25:03 $
+ * @version $Revision: 1.2 $ $Date: 2007/05/20 18:00:44 $
  * @author Oliver Becker, Nikolay Fiykov
  */
 final public class FunctionFactory implements Constants
@@ -61,6 +61,12 @@ final public class FunctionFactory implements Constants
 
       /** Expanded name of the function. */
       public String getName();
+
+      /**
+       * @return <code>true</code> if a call to this function with constant 
+       *         parameters returns always the same result
+       */
+      public boolean isConstant();
 
       /** 
        * The evaluation method.

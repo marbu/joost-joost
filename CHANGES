@@ -1,5 +1,6 @@
 Changes since 20061005
 - Bugfixes: 1574978, 1689706
+- Optimization when processing the attributes of literal result elements
 
 Changes since 20060505
 - Bugfixes: 1489567, 1509455

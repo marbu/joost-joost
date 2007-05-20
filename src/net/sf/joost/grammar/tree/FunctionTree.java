@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTree.java,v 1.5 2006/03/21 19:25:04 obecker Exp $
+ * $Id: FunctionTree.java,v 1.6 2007/05/20 18:00:43 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Objects of FunctionTree represent function calls in the syntax tree of a
  * pattern or an STXPath expression.
- * @version $Revision: 1.5 $ $Date: 2006/03/21 19:25:04 $
+ * @version $Revision: 1.6 $ $Date: 2007/05/20 18:00:43 $
  * @author Oliver Becker
  */
 final public class FunctionTree extends Tree
@@ -91,5 +91,10 @@ final public class FunctionTree extends Tree
          // if the errorHandler decides to continue ...
          return Value.VAL_EMPTY;
       }
+   }
+   
+   public boolean isConstant()
+   {
+      return func.isConstant() && (left == null || left.isConstant());
    }
 }

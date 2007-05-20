@@ -1,5 +1,5 @@
 /*
- * $Id: ExtensionFunction.java,v 1.2 2006/03/21 19:25:03 obecker Exp $
+ * $Id: ExtensionFunction.java,v 1.3 2007/05/20 18:00:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import org.xml.sax.SAXParseException;
  * An instance of this class represents a Java extension function. Parts of this
  * code are taken from Michael Kay's Saxon XSLT processor implementation.
  * 
- * @version $Revision: 1.2 $ $Date: 2006/03/21 19:25:03 $
+ * @version $Revision: 1.3 $ $Date: 2007/05/20 18:00:44 $
  * @author Oliver Becker
  */
 final public class ExtensionFunction implements Instance
@@ -387,4 +387,8 @@ final public class ExtensionFunction implements Instance
 
    /** Not called */
    public String getName() { return null; }
+
+   /** @return <code>false</code> (we don't know) */
+   public boolean isConstant() { return false; }
+
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: StringPad.java,v 1.2 2006/03/21 19:25:03 obecker Exp $
+ * $Id: StringPad.java,v 1.3 2007/05/20 18:00:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import org.xml.sax.SAXException;
  * Returns a string composed of as many copies of its first argument as
  * specified in its second argument.
  * 
- * @version $Revision: 1.2 $ $Date: 2006/03/21 19:25:03 $
+ * @version $Revision: 1.3 $ $Date: 2007/05/20 18:00:44 $
  * @author Oliver Becker
  */
 final public class StringPad implements Instance 
@@ -51,6 +51,9 @@ final public class StringPad implements Instance
    /** @return "string-pad" */
    public String getName() { return FunctionFactory.FNSP + "string-pad"; }
    
+   /** @return <code>true</code> */
+   public boolean isConstant() { return true; }
+
    public Value evaluate(Context context, int top, Tree args)
       throws SAXException, EvalException
    {

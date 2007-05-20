@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 2.12 2006/02/27 19:47:18 obecker Exp $
+ * $Id: LitElementFactory.java,v 2.13 2007/05/20 18:00:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.xml.sax.helpers.NamespaceSupport;
 /** 
  * Factory for literal result elements, which are represented by the
  * inner Instance class. 
- * @version $Revision: 2.12 $ $Date: 2006/02/27 19:47:18 $
+ * @version $Revision: 2.13 $ $Date: 2007/05/20 18:00:44 $
  * @author Oliver Becker
 */
 
@@ -129,15 +129,31 @@ final public class LitElementFactory
 
 
       /**
-       * Apply all declared namespaces aliases 
-       * (<code>stx:namespace-alias</code>)
+       * Determine constant attribute values and apply all declared namespaces 
+       * aliases (<code>stx:namespace-alias</code>)
        */
       public boolean compile(int pass, ParseContext context)
          throws SAXException
       {
-         if (pass == 0)
-            // have to wait until the whole STX sheet has been parsed
+         if (pass == 0) {
+            // evalute constant attribute values
+            boolean allConstant = true;
+            for (int i = 0; i < avtList.length; i++) {
+               if (avtList[i].isConstant()) {
+                  attrs.setValue(i, avtList[i].evaluate(null, -1)
+                                 .getString());
+                  avtList[i] = null;
+               }
+               else
+                  allConstant = false;
+            }
+            if (allConstant) // no need to iterate over the array
+               avtList = new Tree[0];
+
+            // For applying the declared namespaces we have to wait until the 
+            // whole STX sheet has been parsed
             return true;
+         }
 
          if (namespaceAliases.size() == 0)
             // no aliases declared
@@ -210,8 +226,9 @@ final public class LitElementFactory
       {
          super.process(context);
          for (int i=0; i<avtList.length; i++)
-            attrs.setValue(i, avtList[i].evaluate(context, this)
-                                        .getString());
+            if (avtList[i] != null)
+               attrs.setValue(i, avtList[i].evaluate(context, this)
+                                           .getString());
          context.emitter.startElement(uri, lName, qName, attrs, namespaces,
                                       this);
          return PR_CONTINUE;

@@ -1,5 +1,5 @@
 /*
- * $Id: Position.java,v 1.2 2006/03/21 19:25:03 obecker Exp $
+ * $Id: Position.java,v 1.3 2007/05/20 18:00:44 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,7 +33,7 @@ import net.sf.joost.stx.function.FunctionFactory.Instance;
  * The <code>position</code> function.<br>
  * Returns the context position of this node.
  * 
- * @version $Revision: 1.2 $ $Date: 2006/03/21 19:25:03 $
+ * @version $Revision: 1.3 $ $Date: 2007/05/20 18:00:44 $
  * @author Oliver Becker
  */
 final public class Position implements Instance
@@ -46,6 +46,9 @@ final public class Position implements Instance
 
    /** @return "position" */
    public String getName() { return FunctionFactory.FNSP + "position"; }
+
+   /** @return <code>false</code> */
+   public boolean isConstant() { return false; }
 
    public Value evaluate(Context context, int top, Tree args)
    {

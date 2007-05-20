@@ -1,5 +1,5 @@
 /*
- * $Id: CommentTestTree.java,v 1.1 2004/09/29 05:59:51 obecker Exp $
+ * $Id: CommentTestTree.java,v 1.2 2007/05/20 18:00:43 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,7 +33,7 @@ import org.xml.sax.SAXException;
 /**
  * Objects of CommentTestTree represent comment test nodes ("comment()") in 
  * the syntax tree of a pattern or an STXPath expression.
- * @version $Revision: 1.1 $ $Date: 2004/09/29 05:59:51 $
+ * @version $Revision: 1.2 $ $Date: 2007/05/20 18:00:43 $
  * @author Oliver Becker
  */
 final public class CommentTestTree extends Tree
@@ -62,5 +62,10 @@ final public class CommentTestTree extends Tree
    public double getPriority()
    {
       return -0.5;
+   }
+   
+   public boolean isConstant()
+   {
+      return false;
    }
 }

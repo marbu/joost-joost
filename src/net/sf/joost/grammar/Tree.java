@@ -1,5 +1,5 @@
 /*
- * $Id: Tree.java,v 2.12 2004/09/29 05:59:50 obecker Exp $
+ * $Id: Tree.java,v 2.13 2007/05/20 18:00:45 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,7 +33,7 @@ import org.xml.sax.SAXException;
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 2.12 $ $Date: 2004/09/29 05:59:50 $
+ * @version $Revision: 2.13 $ $Date: 2007/05/20 18:00:45 $
  * @author Oliver Becker
  */
 public abstract class Tree
@@ -213,6 +213,16 @@ public abstract class Tree
    public double getPriority()
    {
       return 0.5;
+   }
+   
+   
+   /**
+    * @return whether the expression represented by this tree is constant
+    */
+   public boolean isConstant()
+   {
+      return (right == null || right.isConstant())
+                && (left == null || left.isConstant());
    }
 
    

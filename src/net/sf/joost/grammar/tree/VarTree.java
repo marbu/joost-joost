@@ -1,5 +1,5 @@
 /*
- * $Id: VarTree.java,v 1.1 2004/09/29 05:59:51 obecker Exp $
+ * $Id: VarTree.java,v 1.2 2007/05/20 18:00:43 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Objects of VarTree represent variable reference ('$var') nodes in the
  * syntax tree of a pattern or an STXPath expression.
- * @version $Revision: 1.1 $ $Date: 2004/09/29 05:59:51 $
+ * @version $Revision: 1.2 $ $Date: 2007/05/20 18:00:43 $
  * @author Oliver Becker
  */
 final public class VarTree extends Tree
@@ -99,5 +99,11 @@ final public class VarTree extends Tree
       }
       // create a copy if the result is a sequence
       return v1.next == null ? v1 : v1.copy();
+   }
+   
+
+   public boolean isConstant()
+   {
+      return false;
    }
 }
