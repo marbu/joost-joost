@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.87 2007/05/27 12:05:14 obecker Exp $ -->
+<!-- $Id: index.html,v 1.88 2007/05/29 05:33:55 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -259,6 +259,14 @@
           just a wrapper for other logging facilities, <em>Joost</em> doesn't
           provide any mechanisms to configure the underlying logger.
           </li>
+      <li>stx:analyze-text (select)<br>
+          stx:match (regex) <br>
+          stx:no-match <br>
+          <em>As described in chapter 
+          <a href="http://stx.sourceforge.net/documents/spec-stx-20040701.html#processing-text">5.10 Processing Text</a> 
+          of the former STX working draft. This feature is experimental, at the 
+          moment it simply uses the regular expression syntax from Java,
+          see the <a href="http://java.sun.com/j2se/1.4.2/docs/api/java/util/regex/Pattern.html">class Pattern in Java 1.4</a></em></li>
       </ul>
       <p>
       <strong><em>Built-in extension elements</em></strong><br>
@@ -319,6 +327,8 @@
       <li>max(sequence)</li>
       <li>avg(sequence)</li>
       <li>filter-available(string)</li>
+      <li>regex-group(number) &ndash; <em>as described in 
+      <a href="http://stx.sourceforge.net/documents/spec-stx-20040701.html#F-sf:regex-group">the former STX working draft</a>.</em></li>
       </ul>
       <p>
       <strong><em>Built-in extension functions</em></strong><br>
@@ -765,7 +775,7 @@
         <img src="http://sflogo.sourceforge.net/sflogo.php?group_id=55258&amp;type=5"
              width="210" height="62" border="0" alt="SourceForge Logo"
              align="right" style="margin-bottom: 5pt;"></a>
-        <strong>Have fun and tell me what you think!</strong>
+        <strong>Have fun!</strong>
         <br><br>
         <span style="font-size: small">
           <a target="_top"

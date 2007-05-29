@@ -1,5 +1,6 @@
 bubble*
 challenge.*
+csv-to-table.*
 dmoz.*
 dmoz-lookup.*
 el2att*

@@ -1,5 +1,5 @@
 /*
- * $Id: AnalyzeTextFactory.java,v 1.4 2006/03/20 19:23:51 obecker Exp $
+ * $Id: AnalyzeTextFactory.java,v 1.5 2007/05/29 05:33:56 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,24 +24,26 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
 import java.util.HashSet;
 import java.util.Stack;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
-import net.sf.joost.stx.function.RegexGroup;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 
 /** 
  * Factory for <code>analyze-text</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.4 $ $Date: 2006/03/20 19:23:51 $
+ * @version $Revision: 1.5 $ $Date: 2007/05/29 05:33:56 $
  * @author Oliver Becker
  */
 
@@ -115,42 +117,15 @@ final public class AnalyzeTextFactory extends FactoryBase
       public void insert(NodeBase node)
          throws SAXParseException
       {
-         if (node instanceof TextNode) {
-            if (((TextNode)node).isWhitespaceNode())
-               return; // ignore white space nodes (from xml:space="preserve")
-            else
-               throw new SAXParseException(
-                  "`" + qName +
-                  "' may only contain stx:match and stx:no-match children " +
-                  "(encountered text)",
-                  node.publicId, node.systemId, node.lineNo, node.colNo);
-         }
-
-//          if (!(node instanceof MatchFactory.Instance ||
-//                node instanceof NoMatchFactory.Instance))
-//             throw new SAXParseException(
-//                "`" + qName + 
-//                "' may only contain stx:match and stx:no-match children " +
-//                "(encountered `" + node.qName + "')",
-//                node.publicId, node.systemId, node.lineNo, node.colNo);
-
-//          if (nomatchPresent)
-//             throw new SAXParseException(
-//                 "`" + qName + 
-//                 "' must not have more children after stx:no-match",
-//                 node.publicId, node.systemId, node.lineNo, node.colNo);
-
-//          if (node instanceof NoMatchFactory.Instance) {
-//             if (lastChild == this) {
-//                throw new SAXParseException(
-//                   "`" + qName + "' must have at least one stx:match child " +
-//                   "before stx:no-match",
-//                   node.publicId, node.systemId, node.lineNo, node.colNo);
-//             }
-//             nomatchPresent = true;
-//          }
-
          if (node instanceof MatchFactory.Instance) {
+            if (noMatchChild != null) {
+               // this test is not really necessary for the implementation,
+               // however, it is required by the specification
+               throw new SAXParseException(
+                  "`" + qName + 
+                  "' must not have more children after stx:no-match",
+                  node.publicId, node.systemId, node.lineNo, node.colNo);
+            }
             mVector.add(node);
          } 
          else if (node instanceof NoMatchFactory.Instance) {
@@ -160,6 +135,16 @@ final public class AnalyzeTextFactory extends FactoryBase
                   "' child",
                   node.publicId, node.systemId, node.lineNo, node.colNo);
             noMatchChild = node;
+         }
+         else if (node instanceof TextNode) {
+            if (((TextNode)node).isWhitespaceNode())
+               return; // ignore white space nodes (from xml:space="preserve")
+            else
+               throw new SAXParseException(
+                  "`" + qName +
+                  "' may only contain stx:match and stx:no-match children " +
+                  "(encountered text)",
+                  node.publicId, node.systemId, node.lineNo, node.colNo);
          }
          else
             throw new SAXParseException(
@@ -200,9 +185,6 @@ final public class AnalyzeTextFactory extends FactoryBase
       }
 
 
-      private int maxSubstringLength, firstIndex;
-      private String text;
-
       // needed to detect recursive invocations
       private boolean continued = false;
 
@@ -212,7 +194,7 @@ final public class AnalyzeTextFactory extends FactoryBase
        * @see net.sf.joost.stx.function.RegexGroup 
        */
       protected String[] capSubstr, noMatchStr;
-
+      
 
       /**
        * Evaluate the expression given in the <code>select</code> attribute;
@@ -221,47 +203,80 @@ final public class AnalyzeTextFactory extends FactoryBase
       public short process(Context context)
          throws SAXException
       {
+         String text;
+         int lastIndex;
+         Matcher[] matchers;
+         
          if (continued) {
-            text = (String)localFieldStack.pop(); // use the previous text
+            // restore previous values
+            text = (String)localFieldStack.pop();
+            lastIndex = ((Integer)localFieldStack.pop()).intValue();
+            matchers = (Matcher[])localFieldStack.pop();
             continued = false; // in case there will be an stx:process-xxx
          }
          else { // this is a new invocation
             text = select.evaluate(context, this).getStringValue();
+            lastIndex = 0;
             // create a pseudo variable for regex-group()
             if (context.localVars.get(REGEX_GROUP) == null)
                context.localVars.put(REGEX_GROUP, new Stack());
-            capSubstr = new String[1];
-            noMatchStr = new String[1];
-         }
-         if (text.length() != 0) {
-            firstIndex = text.length();
-            maxSubstringLength = -1;
-            int matchIndex = -1;
-
-            // ISSUE: do this only once per stx:analyze-text?
+            matchers = new Matcher[matchChildren.length];
             for (int i=0; i<matchChildren.length; i++) {
                String re = 
                   matchChildren[i].regex.evaluate(context, 
                                                   matchChildren[i]).getString();
+               try {
+                  matchers[i] = Pattern.compile(re, Pattern.MULTILINE)
+                                       .matcher(text);
+               }
+               catch (PatternSyntaxException e) {
+                  context.errorHandler.fatalError(e.getMessage(),
+                                                  publicId, systemId, 
+                                                  lineNo, colNo);
+                  return PR_ERROR;
+               }
+            }
+         }
 
-               // TODO: replace this part by regular expression matching
-               int start = text.indexOf(re);
-               if (start != -1 && start <= firstIndex) {
-                  if (start < firstIndex || re.length() > maxSubstringLength) {
-                     firstIndex = start;
-                     maxSubstringLength = re.length();
+         if (text.length() != lastIndex) {
+            int newIndex = text.length();
+            int maxSubstringLength = 0;
+            int matchIndex = -1;
+
+            for (int i=0; i<matchers.length; i++) {
+               int start = -1;
+               if (matchers[i].find(lastIndex)) {
+                  if (matchers[i].start() == matchers[i].end()) {
+                     while (matchers[i].find()) {
+                        if (matchers[i].start() != matchers[i].end()) {
+                           start = matchers[i].start();
+                           break;
+                        }
+                     }
+                  }
+                  else
+                     start = matchers[i].start();
+               }
+               if (start > -1 && start <= newIndex) {
+                  int length = matchers[i].end() - start;
+                  if (start < newIndex || length > maxSubstringLength) {
+                     newIndex = matchers[i].start();
+                     maxSubstringLength = length;
                      matchIndex = i;
                   }
                }
             }
 
+            noMatchStr = new String[1];
             if (matchIndex != -1) { // found an stx:match
-               capSubstr[0] = text.substring(firstIndex, 
-                                             firstIndex + maxSubstringLength);
-               noMatchStr[0] = text.substring(0, firstIndex);
-               localFieldStack.push(
-                  text.substring(firstIndex + maxSubstringLength));
-               if (noMatchChild != null && firstIndex != 0) { 
+               capSubstr = new String[matchers[matchIndex].groupCount() + 1];
+               for (int i=0; i<capSubstr.length; i++)
+                  capSubstr[i] = matchers[matchIndex].group(i);
+               noMatchStr[0] = text.substring(lastIndex, newIndex);
+               localFieldStack.push(matchers);
+               localFieldStack.push(new Integer(newIndex + maxSubstringLength));
+               localFieldStack.push(text);
+               if (noMatchChild != null && newIndex != lastIndex) { 
                   // invoke stx:no-match before stx:match
                   next = noMatchChild;
                   noMatchChild.nodeEnd.next = matchChildren[matchIndex];
@@ -280,7 +295,7 @@ final public class AnalyzeTextFactory extends FactoryBase
                   next = successor; // leave stx:analyze-text instantly
             }
          }
-         else // text.length() == 0, nothing to do
+         else // text.length() == lastIndex, we're done
             next = successor;
 
          return PR_CONTINUE;

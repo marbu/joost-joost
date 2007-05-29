@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionFactory.java,v 1.2 2007/05/20 18:00:44 obecker Exp $
+ * $Id: FunctionFactory.java,v 1.3 2007/05/29 05:33:56 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * Factory for all STXPath function implementations.
- * @version $Revision: 1.2 $ $Date: 2007/05/20 18:00:44 $
+ * @version $Revision: 1.3 $ $Date: 2007/05/29 05:33:56 $
  * @author Oliver Becker, Nikolay Fiykov
  */
 final public class FunctionFactory implements Constants
@@ -135,7 +135,7 @@ final public class FunctionFactory implements Constants
          new Min(),
          new Max(),
          new Avg(),
-//           new RegexGroup(),
+         new RegexGroup(),
          new FilterAvailable(),
          new ExtSequence()
       };
