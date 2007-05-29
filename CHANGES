@@ -1,6 +1,5 @@
 Changes since 20070527
 - added stx:analyze-text, stx:match, stx:no-match, sf:regex-group
-  (using Java regex)
 
 Changes since 20061005
 - Bugfixes: 1574978, 1689706

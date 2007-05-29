@@ -1,5 +1,5 @@
 /*
- * $Id: MatchFactory.java,v 1.2 2006/02/27 19:47:18 obecker Exp $
+ * $Id: MatchFactory.java,v 1.3 2007/05/29 20:49:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -36,10 +36,11 @@ import net.sf.joost.stx.ParseContext;
 import net.sf.joost.grammar.Tree;
 
 
-/** 
- * Factory for <code>match</code> elements, which are represented by
- * the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2006/02/27 19:47:18 $
+/**
+ * Factory for <code>match</code> elements, which are represented by the inner
+ * Instance class.
+ * 
+ * @version $Revision: 1.3 $ $Date: 2007/05/29 20:49:32 $
  * @author Oliver Becker
  */
 
@@ -53,8 +54,7 @@ final public class MatchFactory extends FactoryBase
    {
       attrNames = new HashSet();
       attrNames.add("regex");
-// TODO:
-//       attrNames.add("case");
+      attrNames.add("case");
    }
 
 
@@ -65,19 +65,25 @@ final public class MatchFactory extends FactoryBase
    }
 
 
-   public NodeBase createNode(NodeBase parent, String qName, 
-                              Attributes attrs, ParseContext context)
+   public NodeBase createNode(NodeBase parent, String qName, Attributes attrs,
+                              ParseContext context) 
       throws SAXParseException
    {
       if (!(parent instanceof AnalyzeTextFactory.Instance))
          throw new SAXParseException(
-            "`" + qName + "' must be child of stx:analyze-text",
+            "`" + qName + "' must be child of stx:analyze-text", 
             context.locator);
 
       String regexAtt = getAttribute(qName, attrs, "regex", context);
       Tree regexExpr = parseAVT(regexAtt, context);
+
+      boolean insensitive = 
+         getEnumAttValue("case", attrs, 
+                         new String[] { "sensitive", "insensitive" }, 
+                         context) == 1;
+
       checkAttributes(qName, attrs, attrNames, context);
-      return new Instance(qName, parent, context, regexExpr);
+      return new Instance(qName, parent, context, regexExpr, insensitive);
    }
 
 
@@ -85,18 +91,28 @@ final public class MatchFactory extends FactoryBase
    /** Represents an instance of the <code>match</code> element. */
    final public class Instance extends NodeBase
    {
-      /** The AVT in the regex attribute; 
-          it will be evaluated in the stx:analyze-text parent */
+      /**
+       * The AVT in the regex attribute; it will be evaluated in the
+       * stx:analyze-text parent
+       */
       protected Tree regex;
+      
+      /** 
+       * <code>true</code> if the case attribute has the value "insensitive", 
+       * <code>false</code> otherwise 
+       */
+      protected boolean insensitive;
 
       /** The parent */
       private AnalyzeTextFactory.Instance analyzeText;
 
+
       protected Instance(String qName, NodeBase parent, ParseContext context,
-                         Tree regex)
+                         Tree regex, boolean insensitive)
       {
          super(qName, parent, context, true);
          this.regex = regex;
+         this.insensitive = insensitive;
          analyzeText = (AnalyzeTextFactory.Instance)parent;
       }
 
@@ -109,7 +125,7 @@ final public class MatchFactory extends FactoryBase
       }
 
 
-      public short process(Context context)
+      public short process(Context context) 
          throws SAXException
       {
          super.process(context);
@@ -120,7 +136,7 @@ final public class MatchFactory extends FactoryBase
       }
 
 
-      public short processEnd(Context context)
+      public short processEnd(Context context) 
          throws SAXException
       {
          ((Stack)context.localVars.get(AnalyzeTextFactory.REGEX_GROUP)).pop();

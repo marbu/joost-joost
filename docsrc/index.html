@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.88 2007/05/29 05:33:55 obecker Exp $ -->
+<!-- $Id: index.html,v 1.89 2007/05/29 20:49:32 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -260,13 +260,15 @@
           provide any mechanisms to configure the underlying logger.
           </li>
       <li>stx:analyze-text (select)<br>
-          stx:match (regex) <br>
+          stx:match (regex, case?) <br>
           stx:no-match <br>
           <em>As described in chapter 
           <a href="http://stx.sourceforge.net/documents/spec-stx-20040701.html#processing-text">5.10 Processing Text</a> 
-          of the former STX working draft. This feature is experimental, at the 
-          moment it simply uses the regular expression syntax from Java,
-          see the <a href="http://java.sun.com/j2se/1.4.2/docs/api/java/util/regex/Pattern.html">class Pattern in Java 1.4</a></em></li>
+          of the former STX working draft. Joost uses the regular expression
+          syntax from Java in multiline mode, see the 
+          <a href="http://java.sun.com/j2se/1.4.2/docs/api/java/util/regex/Pattern.html">class Pattern in Java 1.4</a>
+          (I haven't checked yet, whether there are differences to the syntax
+          defined by the XML data model spec.)</em></li>
       </ul>
       <p>
       <strong><em>Built-in extension elements</em></strong><br>

@@ -1,5 +1,5 @@
 /*
- * $Id: AnalyzeTextFactory.java,v 1.5 2007/05/29 05:33:56 obecker Exp $
+ * $Id: AnalyzeTextFactory.java,v 1.6 2007/05/29 20:49:32 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>analyze-text</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.5 $ $Date: 2007/05/29 05:33:56 $
+ * @version $Revision: 1.6 $ $Date: 2007/05/29 20:49:32 $
  * @author Oliver Becker
  */
 
@@ -225,9 +225,11 @@ final public class AnalyzeTextFactory extends FactoryBase
                String re = 
                   matchChildren[i].regex.evaluate(context, 
                                                   matchChildren[i]).getString();
+               int flags = Pattern.MULTILINE;
+               if (matchChildren[i].insensitive)
+                  flags |= Pattern.CASE_INSENSITIVE;
                try {
-                  matchers[i] = Pattern.compile(re, Pattern.MULTILINE)
-                                       .matcher(text);
+                  matchers[i] = Pattern.compile(re, flags).matcher(text);
                }
                catch (PatternSyntaxException e) {
                   context.errorHandler.fatalError(e.getMessage(),
