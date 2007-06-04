@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXFilter.java,v 1.8 2004/10/30 12:34:37 obecker Exp $
+ * $Id: TrAXFilter.java,v 1.9 2007/06/04 19:52:25 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -142,9 +142,9 @@ public class TrAXFilter extends XMLFilterImpl implements Constants {
             parent.setContentHandler(this.processor);
             parent.setProperty("http://xml.org/sax/properties/lexical-handler",
                              this.processor);
-            //parent.setEntityResolver(this);
-            //parent.setDTDHandler(this);
-            //parent.setErrorHandler(this);
+            parent.setEntityResolver(this);
+            parent.setDTDHandler(this);
+            parent.setErrorHandler(this);
             parent.parse(input);
 
         } catch (TransformerConfigurationException tE) {
