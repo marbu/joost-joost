@@ -1,5 +1,5 @@
 /*
- * $Id: AnalyzeTextFactory.java,v 1.6 2007/05/29 20:49:32 obecker Exp $
+ * $Id: AnalyzeTextFactory.java,v 1.7 2007/06/04 19:57:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -29,11 +29,12 @@ import java.util.Stack;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
+import net.sf.joost.grammar.EvalException;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
+import net.sf.joost.util.regex.JRegularExpression;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -43,7 +44,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>analyze-text</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.6 $ $Date: 2007/05/29 20:49:32 $
+ * @version $Revision: 1.7 $ $Date: 2007/06/04 19:57:37 $
  * @author Oliver Becker
  */
 
@@ -225,13 +226,15 @@ final public class AnalyzeTextFactory extends FactoryBase
                String re = 
                   matchChildren[i].regex.evaluate(context, 
                                                   matchChildren[i]).getString();
+               
                int flags = Pattern.MULTILINE;
                if (matchChildren[i].insensitive)
                   flags |= Pattern.CASE_INSENSITIVE;
                try {
-                  matchers[i] = Pattern.compile(re, flags).matcher(text);
+                  matchers[i] = 
+                     new JRegularExpression(re, true, flags).matcher(text);
                }
-               catch (PatternSyntaxException e) {
+               catch (EvalException e) {
                   context.errorHandler.fatalError(e.getMessage(),
                                                   publicId, systemId, 
                                                   lineNo, colNo);
