@@ -2,6 +2,7 @@ Changes since 20070529
 - Bugfix: 1730697
 - incorporated code from Michael Kay's Saxon to support full XPath 2.0
   regular expressions
+- added matches(), replace()
 
 Changes since 20070527
 - added stx:analyze-text, stx:match, stx:no-match, sf:regex-group

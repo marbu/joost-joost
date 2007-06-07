@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.22 2006/01/13 19:02:39 obecker Exp $
+ * $Id: Value.java,v 1.23 2007/06/07 19:52:54 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -34,7 +34,7 @@ import net.sf.joost.grammar.EvalException;
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.22 $ $Date: 2006/01/13 19:02:39 $
+ * @version $Revision: 1.23 $ $Date: 2007/06/07 19:52:54 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -127,10 +127,10 @@ public class Value implements Cloneable
    }
 
    /** Constructs a <code>Value</code> containing a string */
-   public Value(String s)
+   public Value(CharSequence s)
    {
       type = STRING;
-      string = s;
+      string = s != null ? s.toString() : null;
    }
 
    /**
@@ -156,7 +156,7 @@ public class Value implements Cloneable
          type = EMPTY;
          return;
       }
-      else if (obj instanceof String || obj instanceof Character) {
+      else if (obj instanceof CharSequence || obj instanceof Character) {
          type = STRING;
          string = obj.toString();
          return;
