@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionFactory.java,v 1.4 2007/06/07 19:52:54 obecker Exp $
+ * $Id: FunctionFactory.java,v 1.5 2007/06/12 21:16:49 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * Factory for all STXPath function implementations.
- * @version $Revision: 1.4 $ $Date: 2007/06/07 19:52:54 $
+ * @version $Revision: 1.5 $ $Date: 2007/06/12 21:16:49 $
  * @author Oliver Becker, Nikolay Fiykov
  */
 final public class FunctionFactory implements Constants
@@ -124,6 +124,7 @@ final public class FunctionFactory implements Constants
          new StringPad(),
          new Matches(),
          new Replace(),
+         new Tokenize(),
          new EscapeUri(),
          new Empty(),
          new Exists(),
