@@ -1,5 +1,5 @@
 /*
- * $Id: Matches.java,v 1.1 2007/06/07 19:52:54 obecker Exp $
+ * $Id: Matches.java,v 1.2 2007/06/13 20:29:07 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.xml.sax.SAXException;
  * @see <a target="xq1xp2fo"
  *      href="http://www.w3.org/TR/xpath-functions/#func-matches">
  *      fn:matches in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
- * @version $Revision: 1.1 $ $Date: 2007/06/07 19:52:54 $
+ * @version $Revision: 1.2 $ $Date: 2007/06/13 20:29:07 $
  * @author Oliver Becker
  */
 final public class Matches implements Instance
@@ -73,8 +73,7 @@ final public class Matches implements Instance
          pattern = args.right.evaluate(context, top).getStringValue();
          flags = "";
       }
-      return new JRegularExpression(pattern, true, 
-                                    JRegularExpression.setFlags(flags))
+      return new JRegularExpression(pattern, true, flags)
                     .containsMatch(input) ? Value.VAL_TRUE : Value.VAL_FALSE;
    }
 }

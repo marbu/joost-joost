@@ -1,5 +1,5 @@
 /*
- * $Id: JRegularExpression.java,v 1.1 2007/06/04 19:57:37 obecker Exp $
+ * $Id: JRegularExpression.java,v 1.2 2007/06/13 20:29:08 obecker Exp $
  *
  * Copied from Michael Kay's Saxon 8.9
  * Local changes (excluding package declarations and imports) marked as // OB
@@ -69,7 +69,12 @@ public class JRegularExpression implements RegularExpression {
             throw new EvalException(e.getMessage());
         }
     }
-
+    
+    // OB: new constructor
+    public JRegularExpression(CharSequence regex, boolean isXPath, String flags) throws EvalException {
+       this(regex, isXPath, setFlags(flags));
+    }
+    
     /**
      * Get the Java regular expression (after translation from an XPath regex, but before compilation)
      */
@@ -186,8 +191,9 @@ public class JRegularExpression implements RegularExpression {
      * @throws SAXException if the supplied value is invalid
      */
 
+// OB: changed thrown exception
 //    public static int setFlags(CharSequence inFlags) throws DynamicError {
-    public static int setFlags(CharSequence inFlags) throws SAXException {
+    public static int setFlags(CharSequence inFlags) throws EvalException {
         int flags = Pattern.UNIX_LINES;
         for (int i=0; i<inFlags.length(); i++) {
             char c = inFlags.charAt(i);
@@ -210,7 +216,7 @@ public class JRegularExpression implements RegularExpression {
 //                    DynamicError err = new DynamicError("Invalid character '" + c + "' in regular expression flags");
 //                    err.setErrorCode("FORX0001");
 //                    throw err;
-                    throw new SAXException("Invalid character '" + c + "' in regular expression flags");
+                    throw new EvalException("Invalid character '" + c + "' in regular expression flags");
             }
         }
         return flags;

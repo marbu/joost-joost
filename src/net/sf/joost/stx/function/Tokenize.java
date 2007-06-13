@@ -1,5 +1,5 @@
 /*
- * $Id: Tokenize.java,v 1.1 2007/06/12 21:16:49 obecker Exp $
+ * $Id: Tokenize.java,v 1.2 2007/06/13 20:29:07 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,7 +46,7 @@ import org.xml.sax.SAXException;
  * @see <a target="xq1xp2fo"
  *      href="http://www.w3.org/TR/xpath-functions/#func-tokenize">
  *      fn:tokenize in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
- * @version $Revision: 1.1 $ $Date: 2007/06/12 21:16:49 $
+ * @version $Revision: 1.2 $ $Date: 2007/06/13 20:29:07 $
  * @author Oliver Becker
  */
 final public class Tokenize implements Instance
@@ -78,8 +78,7 @@ final public class Tokenize implements Instance
          flags = "";
       }
 
-      RegularExpression re = 
-         new JRegularExpression(pattern, true, JRegularExpression.setFlags(flags));
+      RegularExpression re = new JRegularExpression(pattern, true, flags);
       if (re.matches(""))
          throw new EvalException("The regular expression in tokenize() must " +
                                  "not be one that matches a zero-length string");
