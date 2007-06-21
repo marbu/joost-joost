@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.92 2007/06/12 21:16:49 obecker Exp $ -->
+<!-- $Id: index.html,v 1.93 2007/06/21 18:59:37 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -185,61 +185,34 @@
       <h4>Features</h4>
       <p>
       <strong><em>Supported stx elements</em></strong> (and their attributes)
-      in the namespace <code>http://stx.sourceforge.net/2002/ns</code>
+      in the namespace <code>http://stx.sourceforge.net/2002/ns</code> in
+      alphabetical order
       <ul>
-      <li>stx:transform (version, stxpath-default-namespace?,
-          output-method?, output-encoding?, pass-through?, strip-space?,
-          recognize-cdata?, exclude-result-prefixes?)</li>
+      <li>stx:analyze-text (select)<br>
+          stx:match (regex, case?) <br>
+          stx:no-match <br>
+          <em>As described in chapter 
+          <a href="http://stx.sourceforge.net/documents/spec-stx-20040701.html#processing-text">5.10 Processing Text</a> 
+          of the former STX working draft. Joost uses by default multiline
+          mode.</em></li>
+      <li>stx:assign (name, select)</li>
+      <li>stx:attribute ({name}, {namespace}?, select)</li>
+      <li>stx:buffer (name)</li>
+      <li>stx:call-procedure (name, group?)</li>
+      <li>stx:cdata</li>
+      <li>stx:choose<br>
+          stx:when (test)<br>
+          stx:otherwise</li>
+      <li>stx:comment (select?)</li>
+      <li>stx:copy (attributes?)</li>
+      <li>stx:end-element ({name}, {namespace}?)</li>
+      <li>stx:element (name, namespace?)</li>
+      <li>stx:for-each-item (name, select)</li>
       <li>stx:group (name?, pass-through?, strip-space?,
           recognize-cdata?)</li>
+      <li>stx:if (test)<br>
+          stx:else</li>
       <li>stx:include (href)</li>
-      <li>stx:namespace-alias (sheet-prefix, result-prefix) &ndash;
-          (<em>uses the sheet-prefix in the result</em>)</li>
-      <li>stx:template (match, priority?, public?, visibility?,
-                        new-scope?)</li>
-      <li>stx:procedure (name, public?, visibility?, new-scope?)</li>
-      <li>stx:call-procedure (name, group?)</li>
-      <li>stx:copy (attributes?)</li>
-      <li>stx:process-children (group?, filter-method?, filter-src?)</li>
-      <li>stx:process-self (group?, filter-method?, filter-src?)</li>
-      <li>stx:process-siblings (group?, while?, until?)</li>
-      <li>stx:process-attributes (group?)</li>
-      <li>stx:process-document (href, base?, group?,
-                                filter-method?, filter-src?)</li>
-      <li>stx:result-document (href, output-method?, output-encoding?, append?)
-          <br>
-          <em><code>append = "yes"|"no"</code></em> is a <em>Joost</em> 
-          specific extension. If set to <code>yes</code> then the result stream 
-          will be appended to a probably existing file (specified by the
-          <code>href</code> attribute). <em>Joost</em> won't produce an XML 
-          declaration in this case, regardless if there is already a file to 
-          append to or not. Note that the resulting document can't be
-          well-formed XML since it doesn't have a single root element. If
-          <code>append</code> is set to <code>no</code> (the default) it will 
-          replace the old file.</li>
-      <li>stx:buffer (name)</li>
-      <li>stx:result-buffer (name, clear?)</li>
-      <li>stx:process-buffer (name, group?, filter-method?, filter-src?)</li>
-      <li>stx:value-of (select, separator?)</li>
-      <li>stx:if (test)</li>
-      <li>stx:else</li>
-      <li>stx:choose</li>
-      <li>stx:when (test)</li>
-      <li>stx:otherwise</li>
-      <li>stx:for-each-item (name, select)</li>
-      <li>stx:while (test)</li>
-      <li>stx:text</li>
-      <li>stx:cdata</li>
-      <li>stx:element (name, namespace?)</li>
-      <li>stx:start-element ({name}, {namespace}?)</li>
-      <li>stx:end-element ({name}, {namespace}?)</li>
-      <li>stx:attribute ({name}, {namespace}?, select)</li>
-      <li>stx:comment (select?)</li>
-      <li>stx:processing-instruction ({name}, select?)</li>
-      <li>stx:variable (name, select?, keep-value?)</li>
-      <li>stx:assign (name, select)</li>
-      <li>stx:param (name, select?, required?)</li>
-      <li>stx:with-param (name, select?)</li>
       <li>stx:message (select?, {terminate}?, logger?, level?) &ndash;
           (<em>prints its content to standard error output or uses the
           specified logger with the given level</em>)
@@ -260,13 +233,41 @@
           just a wrapper for other logging facilities, <em>Joost</em> doesn't
           provide any mechanisms to configure the underlying logger.
           </li>
-      <li>stx:analyze-text (select)<br>
-          stx:match (regex, case?) <br>
-          stx:no-match <br>
-          <em>As described in chapter 
-          <a href="http://stx.sourceforge.net/documents/spec-stx-20040701.html#processing-text">5.10 Processing Text</a> 
-          of the former STX working draft. Joost uses by default multiline
-          mode.</em></li>
+      <li>stx:namespace-alias (sheet-prefix, result-prefix) &ndash;
+          (<em>uses the sheet-prefix in the result</em>)</li>
+      <li>stx:param (name, select?, required?)</li>
+      <li>stx:procedure (name, public?, visibility?, new-scope?)</li>
+      <li>stx:process-attributes (group?)</li>
+      <li>stx:process-buffer (name, group?, filter-method?, filter-src?)</li>
+      <li>stx:process-children (group?, filter-method?, filter-src?)</li>
+      <li>stx:process-document (href, base?, group?,
+                                filter-method?, filter-src?)</li>
+      <li>stx:process-self (group?, filter-method?, filter-src?)</li>
+      <li>stx:process-siblings (group?, while?, until?)</li>
+      <li>stx:processing-instruction ({name}, select?)</li>
+      <li>stx:result-buffer (name, clear?)</li>
+      <li>stx:result-document (href, output-method?, output-encoding?, append?)
+          <br>
+          <em><code>append = "yes"|"no"</code></em> is a <em>Joost</em> 
+          specific extension. If set to <code>yes</code> then the result stream 
+          will be appended to a probably existing file (specified by the
+          <code>href</code> attribute). <em>Joost</em> won't produce an XML 
+          declaration in this case, regardless if there is already a file to 
+          append to or not. Note that the resulting document can't be
+          well-formed XML since it doesn't have a single root element. If
+          <code>append</code> is set to <code>no</code> (the default) it will 
+          replace the old file.</li>
+      <li>stx:start-element ({name}, {namespace}?)</li>
+      <li>stx:template (match, priority?, public?, visibility?,
+                        new-scope?)</li>
+      <li>stx:text</li>
+      <li>stx:transform (version, stxpath-default-namespace?,
+          output-method?, output-encoding?, pass-through?, strip-space?,
+          recognize-cdata?, exclude-result-prefixes?)</li>
+      <li>stx:value-of (select, separator?)</li>
+      <li>stx:variable (name, select?, keep-value?)</li>
+      <li>stx:while (test)</li>
+      <li>stx:with-param (name, select?)</li>
       </ul>
       <p>
       <strong><em>Built-in extension elements</em></strong><br>
@@ -282,56 +283,57 @@
       <hr>
 
       <p>
-      <strong><em>Supported STXPath functions</em></strong>
+      <strong><em>Supported STXPath functions</em></strong> in alphabetical
+      order
       <ul>
-      <li>string(object?)</li>
-      <li>number(object?)</li>
+      <li>avg(sequence)</li>
       <li>boolean(object)</li>
-      <li>position()</li>
-      <li>name(node?)</li>
-      <li>local-name(node?)</li>
-      <li>namespace-uri(node?)</li>
-      <li>get-namespace-uri-for-prefix(string, node)</li>
-      <li>get-in-scope-prefixes(node)</li>
-      <li>node-kind(node)</li>
-      <li>not(boolean)</li>
-      <li>true()</li>
-      <li>false()</li>
-      <li>floor(number)</li>
       <li>ceiling(number)</li>
-      <li>round(number)</li>
       <li>concat(string, string+)</li>
+      <li>contains(string, string)</li>
+      <li>count(sequence)</li>
+      <li>empty(sequence)</li>
+      <li>ends-with(string, string)</li>
+      <li>escape-uri(string, boolean)</li>
+      <li>exists(sequence)</li>
+      <li>false()</li>
+      <li>filter-available(string)</li>
+      <li>floor(number)</li>
+      <li>get-in-scope-prefixes(node)</li>
+      <li>get-namespace-uri-for-prefix(string, node)</li>
+      <li>has-child-nodes()</li>
+      <li>index-of(sequence, object)</li>
+      <li>insert-before(sequence, number, sequence)</li>
+      <li>item-at(sequence, number)</li>
+      <li>local-name(node?)</li>
+      <li>matches(string, string, string?)</li>
+      <li>max(sequence)</li>
+      <li>min(sequence)</li>
+      <li>name(node?)</li>
+      <li>namespace-uri(node?)</li>
+      <li>node-kind(node)</li>
+      <li>normalize-space(string?)</li>
+      <li>not(boolean)</li>
+      <li>number(object?)</li>
+      <li>position()</li>
+      <li>regex-group(number) &ndash; <em>as described in 
+          <a href="http://stx.sourceforge.net/documents/spec-stx-20040701.html#F-sf:regex-group">the former STX working draft</a>.</em></li>
+      <li>remove(sequence, number)</li>
+      <li>replace(string, string, string, string?)</li>
+      <li>round(number)</li>
+      <li>starts-with(string, string)</li>
+      <li>string(object?)</li>
       <li>string-join(sequence, string)</li>
       <li>string-length(string?)</li>
-      <li>normalize-space(string?)</li>
-      <li>contains(string, string)</li>
-      <li>starts-with(string, string)</li>
-      <li>ends-with(string, string)</li>
-      <li>substring(string, string, string?)</li>
-      <li>substring-before(string, string)</li>
-      <li>substring-after(string, string)</li>
-      <li>translate(string, string, string)</li>
       <li>string-pad(string, number)</li>
-      <li>matches(string, string, string?)</li>
-      <li>replace(string, string, string, string?)</li>
-      <li>tokenize(string, string, string?)</li>
-      <li>escape-uri(string, boolean)</li>
-      <li>has-child-nodes()</li>
-      <li>empty(sequence)</li>
-      <li>exists(sequence)</li>
-      <li>item-at(sequence, number)</li>
-      <li>index-of(sequence, object)</li>
       <li>subsequence(sequence, number, number?)</li>
-      <li>insert-before(sequence, number, sequence)</li>
-      <li>remove(sequence, number)</li>
-      <li>count(sequence)</li>
+      <li>substring(string, string, string?)</li>
+      <li>substring-after(string, string)</li>
+      <li>substring-before(string, string)</li>
       <li>sum(sequence)</li>
-      <li>min(sequence)</li>
-      <li>max(sequence)</li>
-      <li>avg(sequence)</li>
-      <li>filter-available(string)</li>
-      <li>regex-group(number) &ndash; <em>as described in 
-      <a href="http://stx.sourceforge.net/documents/spec-stx-20040701.html#F-sf:regex-group">the former STX working draft</a>.</em></li>
+      <li>tokenize(string, string, string?)</li>
+      <li>translate(string, string, string)</li>
+      <li>true()</li>
       </ul>
       <p>
       <strong><em>Built-in extension functions</em></strong><br>
