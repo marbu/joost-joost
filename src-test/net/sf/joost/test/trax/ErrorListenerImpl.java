@@ -1,5 +1,5 @@
 /*
- * $Id: ErrorListenerImpl.java,v 1.4 2005/03/25 17:40:20 obecker Exp $
+ * $Id: ErrorListenerImpl.java,v 1.1 2007/07/15 15:32:28 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -22,7 +22,7 @@
  * Contributor(s): ______________________________________.
  */
 
-package test.joost.trax;
+package net.sf.joost.test.trax;
 
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.TransformerException;

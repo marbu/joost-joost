@@ -1,5 +1,5 @@
 /*
- * $Id: TestTestCases.java,v 1.4 2003/11/01 17:02:58 zubow Exp $
+ * $Id: TestTestCases.java,v 1.1 2007/07/15 15:32:28 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -22,7 +22,7 @@
  * Contributor(s): ______________________________________.
  */
 
-package test.joost.trax;
+package net.sf.joost.test.trax;
 
 import junit.framework.TestCase;
 
@@ -57,15 +57,15 @@ public class TestTestCases extends TestCase {
 
     public void testRunTests0() {
 
-        String xmlId = "test/flat.xml";
+        String xmlId = "data/flat.xml";
 
         assertTrue(TestCases.runTests0(xmlId));
     }
 
     public void testRunTests1() {
 
-        String xmlId = "test/flat.xml";
-        String stxId = "test/flat.stx";
+        String xmlId = "data/flat.xml";
+        String stxId = "data/flat.stx";
 
         assertTrue(TestCases.runTests1(xmlId, stxId));
     }
@@ -73,8 +73,8 @@ public class TestTestCases extends TestCase {
 
     public void testRunTests2() {
 
-        String xmlId = "test/flat.xml";
-        String stxId = "test/flat.stx";
+        String xmlId = "data/flat.xml";
+        String stxId = "data/flat.stx";
         String outId = "testdata/out.xml";
         String check = "testdata/resultflat.xml";
 
@@ -106,16 +106,16 @@ public class TestTestCases extends TestCase {
 
     public void testRunTests3() {
 
-        String xmlId = "test/flat.xml";
-        String stxId = "test/flat.stx";
+        String xmlId = "data/flat.xml";
+        String stxId = "data/flat.stx";
 
         assertTrue(TestCases.runTests3(xmlId, stxId));
     }
 
     public void testRunTests4() {
 
-        String xmlId = "test/flat.xml";
-        String stxId = "test/flat.stx";
+        String xmlId = "data/flat.xml";
+        String stxId = "data/flat.stx";
 
         assertTrue(TestCases.runTests4(xmlId, stxId));
     }
@@ -123,42 +123,42 @@ public class TestTestCases extends TestCase {
 
     public void testRunTests5() {
 
-        String xmlId1   = "test/flat.xml";
-        String xmlId2   = "test/flat2.xml";
-        String stxId    = "test/flat.stx";
+        String xmlId1   = "data/flat.xml";
+        String xmlId2   = "data/flat2.xml";
+        String stxId    = "data/flat.stx";
 
         assertTrue(TestCases.runTests5(xmlId1, xmlId2, stxId));
     }
 
     public void testRunTests6() {
 
-        String xmlId   = "test/flat.xml";
-        String stxId    = "test/flat.stx";
+        String xmlId   = "data/flat.xml";
+        String stxId   = "data/flat.stx";
 
         assertTrue(TestCases.runTests6(xmlId, stxId));
     }
 
     public void testRunTests7() {
 
-        String xmlId   = "test/flat.xml";
-        String stxId    = "test/flat.stx";
+        String xmlId   = "data/flat.xml";
+        String stxId   = "data/flat.stx";
 
         assertTrue(TestCases.runTests7(xmlId, stxId));
     }
 
     public void testRunTests8() {
 
-        String xmlId   = "test/flat.xml";
-        String stxId    = "test/flat.stx";
+        String xmlId   = "data/flat.xml";
+        String stxId   = "data/flat.stx";
 
         assertTrue(TestCases.runTests8(xmlId, stxId));
     }
 
     public void testRunTests9() {
 
-        String xmlId   = "test/flat.xml";
-        String stxId1    = "test/flat.stx";
-        String stxId2    = "test/flat2.stx";
+        String xmlId   = "data/flat.xml";
+        String stxId1  = "data/flat.stx";
+        String stxId2  = "data/indent.stx";
 
         assertTrue(TestCases.runTests9(xmlId, stxId1, stxId2));
     }
@@ -166,32 +166,32 @@ public class TestTestCases extends TestCase {
 
     public void testRunTests10() {
 
-        String xmlId   = "test/flat.xml";
-        String stxId    = "test/flat.stx";
+        String xmlId   = "data/flat.xml";
+        String stxId   = "data/flat.stx";
 
         assertTrue(TestCases.runTests10(xmlId, stxId));
     }
 
     public void testRunTests11() {
 
-        String xmlId   = "test/flat.xml";
-        String stxId    = "test/flat.stx";
+        String xmlId   = "data/flat.xml";
+        String stxId   = "data/flat.stx";
 
         assertTrue(TestCases.runTests11(xmlId, stxId));
     }
 
     public void testRunTests12() {
 
-        String xmlId   = "test/flat.xml";
-        String stxId    = "test/flat.stx";
+        String xmlId   = "data/flat.xml";
+        String stxId   = "data/flat.stx";
 
         assertTrue(TestCases.runTests12(xmlId, stxId));
     }
 
     public void testRunTests13() {
 
-        String xmlId   = "test/flat.xml";
-        String stxId    = "test/flat.stx";
+        String xmlId   = "data/flat.xml";
+        String stxId   = "data/flat.stx";
 
         assertTrue(TestCases.runTests13(xmlId, stxId));
     }
@@ -200,7 +200,7 @@ public class TestTestCases extends TestCase {
     //exampleUseAssociated --> not yet implemented in joost
     public void testRunTests14() {
 
-        String xmlId   = "test/flat.xml";
+        String xmlId   = "data/flat.xml";
 
         assertTrue(TestCases.runTests14(xmlId));
     }
@@ -210,8 +210,8 @@ public class TestTestCases extends TestCase {
     //@todo : fixing this error
     public void testRunTests15() {
 
-        String xmlId   = "test/flat.xml";
-        String stxId    = "test/flat.stx";
+        String xmlId   = "data/flat.xml";
+        String stxId   = "data/flat.stx";
 
         assertTrue(TestCases.runTests15(xmlId, stxId));
     }
@@ -219,8 +219,8 @@ public class TestTestCases extends TestCase {
 
     public void testRunTests16() {
 
-        String xmlId   = "test/flat.xml";
-        String stxId    = "test/flat.stx";
+        String xmlId   = "data/flat.xml";
+        String stxId   = "data/flat.stx";
 
         assertTrue(TestCases.runTests16(xmlId, stxId));
     }
@@ -229,10 +229,10 @@ public class TestTestCases extends TestCase {
 
     public void testRunTests18() {
 
-        String xmlId    = "test/flat.xml";
-        String stxId1   = "test/flat.stx";
-        String stxId2   = "test/flat2.stx";
-        String stxId3   = "test/flat3.stx";
+        String xmlId    = "data/flat.xml";
+        String stxId1   = "data/flat.stx";
+        String stxId2   = "data/indent.stx";
+        String stxId3   = "data/copy.stx";
 
         assertTrue(TestCases.runTests18(xmlId, stxId1, stxId2, stxId3));
     }
@@ -248,8 +248,8 @@ public class TestTestCases extends TestCase {
 /*
     public void testRunTests19() {
 
-        String xmlId    = "test/flat.xml";
-        String stxId    = "test/flat.stx";
+        String xmlId    = "data/flat.xml";
+        String stxId    = "data/flat.stx";
 
         //verification result for transformation of flat.xml with flat.stx
         String VERIFY   = "testdata/resultflatnoencoding.xml";
@@ -293,8 +293,8 @@ public class TestTestCases extends TestCase {
 
     public void testRunTests20() {
 
-        String xmlId    = "test/flat.xml";
-        String stxId1   = "test/flat.stx";
+        String xmlId    = "data/flat.xml";
+        String stxId1   = "data/flat.stx";
 
         assertTrue(TestCases.runTests20(xmlId, stxId1));
     }
@@ -303,8 +303,8 @@ public class TestTestCases extends TestCase {
 
     public void testRunTests21() {
 
-        String xmlId    = "test/flat.xml";
-        String stxId1   = "test/flat.stx";
+        String xmlId    = "data/flat.xml";
+        String stxId1   = "data/flat.stx";
 
         assertTrue(TestCases.runTests21(xmlId, stxId1));
     }
@@ -312,8 +312,8 @@ public class TestTestCases extends TestCase {
 
     public void testRunTests22() {
 
-        String xmlId    = "test/flat.xml";
-        String stxId1   = "test/flat.stx";
+        String xmlId    = "data/flat.xml";
+        String stxId1   = "data/flat.stx";
 
         assertTrue(TestCases.runTests22(xmlId, stxId1));
     }
@@ -324,8 +324,8 @@ public class TestTestCases extends TestCase {
 
     public void testRunTests23() {
 
-        String xmlId    = "test/flat.xml";
-        String stxId1   = "test/flat.stx";
+        String xmlId    = "data/flat.xml";
+        String stxId1   = "data/flat.stx";
 
         assertTrue(TestCases.runTests23(xmlId, stxId1));
     }
@@ -333,8 +333,8 @@ public class TestTestCases extends TestCase {
 
     public void testRunTests24() {
 
-        String xmlId    = "test/flat.xml";
-        String stxId1   = "test/flat.stx";
+        String xmlId    = "data/flat.xml";
+        String stxId1   = "data/flat.stx";
 
         assertTrue(TestCases.runTests24(xmlId, stxId1));
     }
@@ -342,27 +342,34 @@ public class TestTestCases extends TestCase {
 
     public void testRunTests25() {
 
-        String xmlId    = "test/flat.xml";
-        String stxId1   = "test/flat.stx";
+        String xmlId    = "data/flat.xml";
+        String stxId1   = "data/flat.stx";
 
         assertTrue(TestCases.runTests25(xmlId, stxId1));
     }
 
     public void testRunTests26() {
 
-        String xmlId    = "test/flat.xml";
-        String stxId1   = "test/flat.stx";
+        String xmlId    = "data/flat.xml";
+        String stxId1   = "data/flat.stx";
 
         assertTrue(TestCases.runTests26(xmlId, stxId1));
     }
 
     public void testRunTests27() {
 
-        String xmlId    = "test/flat.xml";
-        String stxId1   = "test/flat.stx";
+        String xmlId    = "data/flat.xml";
+        String stxId1   = "data/flat.stx";
 
         assertTrue(TestCases.runTests27(xmlId, stxId1));
     }
+
+    public void testRunTests28() {
+
+       String xmlId    = "data/flat.xml";
+
+       assertTrue(TestCases.runTests28(xmlId));
+   }
 
     private void init() {
 

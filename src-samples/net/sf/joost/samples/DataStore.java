@@ -1,5 +1,5 @@
 /*
- * $Id: DataStore.java,v 1.2 2003/06/30 19:29:27 obecker Exp $
+ * $Id: DataStore.java,v 1.1 2007/07/15 15:32:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -22,7 +22,7 @@
  * Contributor(s): ______________________________________. 
  */
 
-package samples;
+package net.sf.joost.samples;
 
 import java.util.HashSet;
 import java.io.ByteArrayInputStream;
@@ -55,7 +55,7 @@ import javax.xml.transform.stream.StreamSource;
  * <li>a proper STX sheet {@link #STX_SHEET}, contained as a String object,
  *     as well as a dummy XML source {@link #XML_DUMMY}
  * </ul>
- * @version $Revision: 1.2 $ $Date: 2003/06/30 19:29:27 $
+ * @version $Revision: 1.1 $ $Date: 2007/07/15 15:32:29 $
  * @author Oliver Becker
  */
 
@@ -163,7 +163,7 @@ public class DataStore
    private static final String STX_SHEET = 
       "<?xml version='1.0'?>" +
       "<stx:transform xmlns:stx='http://stx.sourceforge.net/2002/ns'" +
-      "               xmlns:d='java:samples.DataStore'" +
+      "               xmlns:d='java:net.sf.joost.samples.DataStore'" +
       "               xmlns:i='java:java.util.Iterator'" +
       "               version='1.0'" +
       "               exclude-result-prefixes='d i'>" +

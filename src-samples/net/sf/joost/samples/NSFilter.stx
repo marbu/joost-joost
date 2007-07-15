@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: NSFilter.stx,v 1.3 2003/07/23 16:26:48 obecker Exp $
+ | $Id: NSFilter.stx,v 1.1 2007/07/15 15:32:29 obecker Exp $
  | Self-containing example for using an external SAX filter.
  | Since this example transforms only data from a buffer, it will
  | produce the same result on whatever XML input.

@@ -1,5 +1,5 @@
 /*
- * $Id: RunTests.java,v 1.6 2003/12/28 12:21:20 zubow Exp $
+ * $Id: RunTests.java,v 1.1 2007/07/15 15:32:28 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -22,7 +22,7 @@
  * Contributor(s): ______________________________________.
  */
 
-package test.joost.trax;
+package net.sf.joost.test.trax;
 
 
 import org.apache.log4j.Logger;

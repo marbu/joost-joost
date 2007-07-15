@@ -1,5 +1,5 @@
 /*
- * $Id: RunProfiler.java,v 1.3 2003/11/01 17:03:07 zubow Exp $
+ * $Id: AllTests.java,v 1.1 2007/07/15 15:32:28 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -22,21 +22,23 @@
  * Contributor(s): ______________________________________.
  */
 
-package test.joost.trax.profiler;
+package net.sf.joost.test.trax;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-/**
- * @author Zubow
+/*
+ *	Datei: $RCSfile: AllTests.java,v $
+ *	JUnit-Test-Suite for TraX-Transformers
+ *	$Id: AllTests.java,v 1.1 2007/07/15 15:32:28 obecker Exp $
  */
-public class RunProfiler extends TestSuite{
+public class AllTests extends TestSuite {
 
     // Define a static logger variable so that it references the
-    // Logger instance named "RunProfiler".
-    static Logger log = Logger.getLogger(RunProfiler.class);
+    // Logger instance named "RunTests".
+    static Logger log = Logger.getLogger(AllTests.class);
     private static String log4jprop = "conf/log4j.properties";
 
     static {
@@ -44,13 +46,13 @@ public class RunProfiler extends TestSuite{
         PropertyConfigurator.configure(log4jprop);
     }
 
-    public RunProfiler(String s) {
+    public AllTests(String s) {
         super(s);
     }
 
     public static Test suite() {
         TestSuite suite = new TestSuite();
-        suite.addTestSuite(test.joost.trax.profiler.ProfilerTestCases.class);
+        suite.addTestSuite(net.sf.joost.test.trax.TestTestCases.class);
         return suite;
     }
 }

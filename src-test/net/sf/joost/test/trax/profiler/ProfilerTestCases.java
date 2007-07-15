@@ -1,5 +1,5 @@
 /*
- * $Id: ProfilerTestCases.java,v 1.8 2004/12/27 18:56:34 obecker Exp $
+ * $Id: ProfilerTestCases.java,v 1.1 2007/07/15 15:32:29 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -22,7 +22,7 @@
  * Contributor(s): ______________________________________.
  */
 
-package test.joost.trax.profiler;
+package net.sf.joost.test.trax.profiler;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

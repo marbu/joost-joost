@@ -1,5 +1,5 @@
 /*
- * $Id: StxTest.java,v 1.4 2005/04/29 17:08:17 obecker Exp $
+ * $Id: StxTest.java,v 1.1 2007/07/15 15:32:29 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -21,7 +21,7 @@
  *
  * Contributor(s): ______________________________________.
  */
-package test.joost.stx;
+package net.sf.joost.test.stx;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -43,7 +43,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 /**
- * @version $Revision: 1.4 $ $Date: 2005/04/29 17:08:17 $
+ * @version $Revision: 1.1 $ $Date: 2007/07/15 15:32:29 $
  * @author Oliver Becker
  */
 public class StxTest extends TestCase

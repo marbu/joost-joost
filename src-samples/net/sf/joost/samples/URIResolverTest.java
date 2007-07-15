@@ -1,5 +1,5 @@
 /*
- * $Id: URIResolverTest.java,v 1.3 2006/01/09 19:53:36 obecker Exp $
+ * $Id: URIResolverTest.java,v 1.1 2007/07/15 15:32:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -22,7 +22,7 @@
  * Contributor(s): ______________________________________. 
  */
 
-package samples;
+package net.sf.joost.samples;
 
 import java.io.StringReader;
 
@@ -44,7 +44,7 @@ import org.w3c.dom.Element;
 
 /**
  * Example class that demonstrates the usage of URI resolvers in Joost.
- * @version $Revision: 1.3 $ $Date: 2006/01/09 19:53:36 $
+ * @version $Revision: 1.1 $ $Date: 2007/07/15 15:32:29 $
  * @author Oliver Becker
  */
 
@@ -52,11 +52,8 @@ public class URIResolverTest implements URIResolver
 {
    public static void main(String[] args)
    {
-      if (args.length != 2) {
-         System.err.println(
-            "Usage: java samples.URIResolverTest Source STX-sheet");
-         System.exit(1);
-      }
+      // example transformation
+      String testSTX = "URIResolverTest.stx";
 
       // use Joost as transformation engine
       System.setProperty("javax.xml.transform.TransformerFactory",
@@ -71,13 +68,14 @@ public class URIResolverTest implements URIResolver
          // register the resolver for <stx:include>
          factory.setURIResolver(resolver);
 
-         Transformer transformer =
-            factory.newTransformer(new StreamSource(args[1]));
+         Transformer transformer = factory.newTransformer(
+            new StreamSource(URIResolverTest.class.getResourceAsStream(testSTX)));
 
          // register the same resolver for <stx:process-document>
          transformer.setURIResolver(resolver);
 
-         transformer.transform(new StreamSource(args[0]),
+         transformer.transform(new StreamSource(
+                                  URIResolverTest.class.getResourceAsStream(testSTX)),
                                new StreamResult(System.out));
       } catch (TransformerException e) {
          SourceLocator sloc = e.getLocator();

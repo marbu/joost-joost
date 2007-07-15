@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerThread.java,v 1.3 2003/11/01 17:03:07 zubow Exp $
+ * $Id: TransformerThread.java,v 1.1 2007/07/15 15:32:35 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -22,7 +22,7 @@
  * Contributor(s): ______________________________________.
  */
 
-package test.joost.trax.thread;
+package net.sf.joost.test.trax.thread;
 
 
 import javax.xml.transform.*;

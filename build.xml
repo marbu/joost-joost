@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.22 2006/10/05 11:21:28 obecker Exp $
+ | $Id: build.xml,v 1.23 2007/07/15 15:32:35 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -8,6 +8,8 @@
 <project name="joost" default="all" basedir=".">
 
   <property name="src" value="src" />
+  <property name="src.test" value="src-test" />
+  <property name="src.samples" value="src-samples" />
   <property name="classes" value="classes" />
   <property name="doc" value="doc" />
   <property name="grammar.dir" value="${src}/net/sf/joost/grammar" />
@@ -109,14 +111,14 @@
   
   <target name="maketests" depends="compile"
     description="compiles the java sources from the test subdirectory">
-    <javac debug="on" srcdir="${src}" includes="test/**"
+    <javac debug="on" srcdir="${src.test}"
            destdir="${classes}" classpathref="cp" />
   </target>
 
   
   <target name="compile" depends="dep, mk.classes"
     description="compiles the java sources into the classes subdirectory (with debug information)"> 
-    <javac debug="on" srcdir="${src}" excludes="test/**"
+    <javac debug="on" srcdir="${src}"
            destdir="${classes}" classpathref="cp" />
     <antcall target="compile-non-java" />
   </target>
@@ -126,10 +128,10 @@
           description="creates joost.jar (without test classes and debug information)">
     <delete dir="${classes}" />
     <mkdir dir="${classes}" />
-    <javac srcdir="${src}" destdir="${classes}" classpathref="cp" excludes="test/**" optimize="true"/>
+    <javac srcdir="${src}" destdir="${classes}" classpathref="cp" optimize="true"/>
     <antcall target="compile-non-java" />
     <jar jarfile="${ant.project.name}.jar"
-         basedir="${classes}" excludes="test/**, samples/**"
+         basedir="${classes}"
          manifest="conf/manifest.mf" />
   </target>
 
@@ -267,6 +269,8 @@
         <include name="ISSUES" />
         <include name="build.xml" />
         <include name="${src}/**" />
+        <include name="${src.text}/**" />
+        <include name="${src.samples}/**" />
         <include name="conf/**" />
         <include name="lib/**" />
         <include name="${doc}/api/**" />

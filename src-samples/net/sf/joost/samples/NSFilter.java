@@ -1,5 +1,5 @@
 /*
- * $Id: NSFilter.java,v 1.9 2007/05/19 10:15:53 obecker Exp $
+ * $Id: NSFilter.java,v 1.1 2007/07/15 15:32:29 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -22,7 +22,7 @@
  * Contributor(s): ______________________________________. 
  */
 
-package samples;
+package net.sf.joost.samples;
 
 import java.util.Hashtable;
 
@@ -58,7 +58,7 @@ import org.xml.sax.helpers.XMLFilterImpl;
  * <li>acting as a TransformerHandler, that removes all elements in a
  *     given namespace (passed as a parameter)</li>
  * </ul>
- * @version $Revision: 1.9 $ $Date: 2007/05/19 10:15:53 $
+ * @version $Revision: 1.1 $ $Date: 2007/07/15 15:32:29 $
  * @author Oliver Becker
  */
 
@@ -68,11 +68,9 @@ public class NSFilter
 {
    public static void main(String[] args)
    {
-      if (args.length != 2) {
-         System.err.println("Usage: java samples.NSFilter Source STX-sheet");
-         System.exit(1);
-      }
-
+      // example transformation
+      String testSTX = "NSFilter.stx";
+      
       // use Joost as transformation engine
       System.setProperty("javax.xml.transform.TransformerFactory",
                          "net.sf.joost.trax.TransformerFactoryImpl");
@@ -88,9 +86,11 @@ public class NSFilter
          factory.setAttribute(TrAXConstants.KEY_TH_RESOLVER, filter);
 
          Transformer transformer =
-            factory.newTransformer(new StreamSource(args[1]));
+            factory.newTransformer(
+               new StreamSource(NSFilter.class.getResourceAsStream(testSTX)));
 
-         transformer.transform(new StreamSource(args[0]),
+         transformer.transform(new StreamSource(
+                                  NSFilter.class.getResourceAsStream(testSTX)),
                                new StreamResult(System.out));
       } catch (TransformerException e) {
          SourceLocator sloc = e.getLocator();

@@ -1,5 +1,5 @@
 /*
- * $Id: ExampleContentHandler.java,v 1.4 2003/11/01 17:02:58 zubow Exp $
+ * $Id: ExampleContentHandler.java,v 1.1 2007/07/15 15:32:28 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -22,7 +22,7 @@
  * Contributor(s): ______________________________________.
  */
 
-package test.joost.trax;
+package net.sf.joost.test.trax;
 
 import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
