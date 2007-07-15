@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.53 2006/10/03 13:06:50 obecker Exp $
+ * $Id: Processor.java,v 2.54 2007/07/15 15:20:42 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -38,6 +38,7 @@ import javax.xml.transform.URIResolver;
 
 import net.sf.joost.Constants;
 import net.sf.joost.OptionalLog;
+import net.sf.joost.OutputURIResolver;
 import net.sf.joost.TransformerHandlerResolver;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.grammar.EvalException;
@@ -69,7 +70,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.53 $ $Date: 2006/10/03 13:06:50 $
+ * @version $Revision: 2.54 $ $Date: 2007/07/15 15:20:42 $
  * @author Oliver Becker
  */
 
@@ -441,6 +442,8 @@ public class Processor extends XMLFilterImpl
       setParent(getXMLReader());
       setTransformerHandlerResolver(
          proc.context.defaultTransformerHandlerResolver.customResolver);
+      setOutputURIResolver(proc.context.outputUriResolver);
+      
    }
 
    /**
@@ -718,6 +721,16 @@ public class Processor extends XMLFilterImpl
    public void setURIResolver(URIResolver resolver)
    {
       context.uriResolver = resolver;
+   }
+
+
+   /**
+    * Registers an {@link OutputURIResolver} for <code>stx:result-document</code>
+    * @param resolver the resolver to be registered
+    */
+   public void setOutputURIResolver(OutputURIResolver resolver)
+   {
+      context.outputUriResolver = resolver;
    }
 
 

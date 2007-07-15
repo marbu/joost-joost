@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.23 2004/12/30 18:24:59 obecker Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.24 2007/07/15 15:20:41 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -46,6 +46,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import net.sf.joost.OptionalLog;
+import net.sf.joost.OutputURIResolver;
 import net.sf.joost.TransformerHandlerResolver;
 import net.sf.joost.emitter.StreamEmitter;
 import net.sf.joost.emitter.StxEmitter;
@@ -78,6 +79,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     private   URIResolver uriResolver               = null;
     private   ErrorListener errorListener           = null;
     protected TransformerHandlerResolver thResolver = null;
+    protected OutputURIResolver outputUriResolver   = null;
     protected boolean allowExternalFunctions        = true;
 
     // init default errorlistener
@@ -148,13 +150,25 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     public Object getAttribute(String name)
         throws IllegalArgumentException {
 
-        if (name.equals(KEY_TH_RESOLVER)) {
+        if (KEY_TH_RESOLVER.equals(name)) {
             return thResolver;
-        } else if (name.equals(DEBUG_FEATURE)) {
-            return new Boolean(debugmode);
-        } else if (name.equals(MESSAGE_EMITTER_CLASS)) {
+        }
+        else if (KEY_OUTPUT_URI_RESOLVER.equals(name)) {
+           return outputUriResolver;
+        }
+        else if (MESSAGE_EMITTER_CLASS.equals(name)) {
         	return msgEmitter;
-        } else {
+        }
+        else if (KEY_XSLT_FACTORY.equals(name)) {
+           return System.getProperty(KEY_XSLT_FACTORY);
+        }
+        else if (ALLOW_EXTERNAL_FUNCTIONS.equals(name)) {
+           return new Boolean(allowExternalFunctions);
+        }
+        else if (DEBUG_FEATURE.equals(name)) {
+           return new Boolean(debugmode);
+       }
+        else {
             if (log != null)
                 log.warn("Feature not supported: " + name);
             throw new IllegalArgumentException("Feature not supported: " + name);
@@ -172,11 +186,13 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     public void setAttribute(String name, Object value)
         throws IllegalArgumentException {
 
-        if (name.equals(KEY_TH_RESOLVER)) {
+        if (KEY_TH_RESOLVER.equals(name)) {
             thResolver = (TransformerHandlerResolver)value;
-        } else if (name.equals(DEBUG_FEATURE)) {
-            this.debugmode = ((Boolean)value).booleanValue();
-        } else if (name.equals(MESSAGE_EMITTER_CLASS)) {
+        }
+        else if (KEY_OUTPUT_URI_RESOLVER.equals(name)) {
+           outputUriResolver = (OutputURIResolver)value;
+        }
+        else if (MESSAGE_EMITTER_CLASS.equals(name)) {
             // object is of type string, so use reflection
             if (value instanceof String) {
                 try {
@@ -192,11 +208,17 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
                 throw new IllegalArgumentException("Emitter is of wrong type,"
                         + "should be either a String or a StxEmitter");
             }
-        } else if (name.equals(KEY_XSLT_FACTORY)) {
+        }
+        else if (KEY_XSLT_FACTORY.equals(name)) {
             System.setProperty(KEY_XSLT_FACTORY, (String)value);
-        } else if (name.equals(ALLOW_EXTERNAL_FUNCTIONS)) {
+        }
+        else if (ALLOW_EXTERNAL_FUNCTIONS.equals(name)) {
             this.allowExternalFunctions = ((Boolean)value).booleanValue();
-        } else {
+        }
+        else if (DEBUG_FEATURE.equals(name)) {
+           this.debugmode = ((Boolean)value).booleanValue();
+       }
+        else {
             if (log != null)
                 log.warn("Feature not supported: " + name);
             throw new IllegalArgumentException("Feature not supported: " + name);

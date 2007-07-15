@@ -1,3 +1,6 @@
+Changes since 20070621
+- added interface OutputURIResolver
+
 Changes since 20070529
 - Bugfixes: 1730697, 1741087
 - incorporated code from Michael Kay's Saxon to support full XPath 2.0

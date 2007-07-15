@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXConstants.java,v 1.13 2004/12/17 18:25:49 obecker Exp $
+ * $Id: TrAXConstants.java,v 1.14 2007/07/15 15:20:41 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -29,7 +29,7 @@ import net.sf.joost.Constants;
 
 /**
  * Common interface for TrAX related constants.
- * @version $Revision: 1.13 $ $Date: 2004/12/17 18:25:49 $
+ * @version $Revision: 1.14 $ $Date: 2007/07/15 15:20:41 $
  * @author Anatolij Zubow
  */
 public interface TrAXConstants extends Constants {
@@ -50,6 +50,15 @@ public interface TrAXConstants extends Constants {
      */
     public static String KEY_TH_RESOLVER =
         "http://joost.sf.net/attributes/transformer-handler-resolver";
+
+
+    /**
+     * Key for the Joost property
+     * {@link net.sf.joost.OutputURIResolver}
+     * @see javax.xml.transform.TransformerFactory#setAttribute
+     */
+    public static String KEY_OUTPUT_URI_RESOLVER =
+        "http://joost.sf.net/attributes/output-uri-resolver";
 
 
     /** 

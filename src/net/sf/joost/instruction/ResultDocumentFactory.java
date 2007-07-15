@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 2.18 2006/02/03 19:04:44 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 2.19 2007/07/15 15:20:41 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,11 +30,15 @@ import java.util.HashSet;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.TransformerException;
 
 import net.sf.joost.emitter.StreamEmitter;
+import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
+import net.sf.joost.trax.TrAXHelper;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -44,7 +48,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.18 $ $Date: 2006/02/03 19:04:44 $
+ * @version $Revision: 2.19 $ $Date: 2007/07/15 15:20:41 $
  * @author Oliver Becker
  */
 
@@ -131,24 +135,47 @@ final public class ResultDocumentFactory extends FactoryBase
             encoding = context.currentProcessor.getOutputEncoding();
 
          String filename = href.evaluate(context, this).getString();
-            
-         StreamEmitter se = null;
-         try {
-            // TO DO: introduce OutputURIResolver and request
-            // a Result object
-            Writer osw = context.emitter.getResultWriter(
-                            filename, encoding, 
-                            publicId, systemId, lineNo, colNo, append);
+         
+         Properties props = 
+            (Properties)context.currentProcessor.outputProperties.clone();
+         props.setProperty(OutputKeys.ENCODING, encoding);
+         if (method != null)
+            props.setProperty(OutputKeys.METHOD, method);
 
-            Properties props = (Properties)context.currentProcessor
-                                                  .outputProperties.clone();
-            props.setProperty(OutputKeys.ENCODING, encoding);
-            if (method != null)
-               props.setProperty(OutputKeys.METHOD, method);
-            se = StreamEmitter.newEmitter(osw, encoding, props);
-            if (append)
-               se.setOmitXmlDeclaration(true);
-            localFieldStack.push(osw);
+         StxEmitter emitter = null;
+         try {
+            if (context.outputUriResolver != null) {
+               Result result = 
+                  context.outputUriResolver.resolve(filename, systemId, 
+                                                    props, append);
+               if (result != null) {
+                  emitter = TrAXHelper.initStxEmitter(result, 
+                                                      context.currentProcessor,
+                                                      props);
+                  if (emitter == null) {
+                     throw new SAXParseException("Unsupported Result type " 
+                                                 + result.getClass().getName(), 
+                                                 publicId, systemId, lineNo, colNo);
+                  }
+                  if (append && (emitter instanceof StreamEmitter)) {
+                     ((StreamEmitter) emitter).setOmitXmlDeclaration(true);
+                  }
+                  localFieldStack.push(result);
+               }
+            }
+
+            if (emitter == null) {
+               // either there's no outputUriResolver or it returned null
+               Writer osw = context.emitter.getResultWriter(
+                               filename, encoding, 
+                               publicId, systemId, lineNo, colNo, append);
+
+               StreamEmitter se = StreamEmitter.newEmitter(osw, encoding, props);
+               if (append)
+                  se.setOmitXmlDeclaration(true);
+               localFieldStack.push(osw);
+               emitter = se;
+            }
          }
          catch (java.io.IOException ex) {
             context.errorHandler.error(ex.toString(), 
@@ -160,9 +187,12 @@ final public class ResultDocumentFactory extends FactoryBase
                                        publicId, systemId, lineNo, colNo);
             return PR_CONTINUE; // if the errorHandler returns
          }
+         catch (TransformerException ex) {
+            context.errorHandler.error(ex);
+         }
          
 
-         context.pushEmitter(se);
+         context.pushEmitter(emitter);
          context.emitter.startDocument();
          return PR_CONTINUE;
       }
@@ -174,14 +204,23 @@ final public class ResultDocumentFactory extends FactoryBase
       {
          context.emitter.endDocument(nodeEnd);
          context.popEmitter();
+         Object object = localFieldStack.pop();
          try {
-            ((Writer)localFieldStack.pop()).close();
+            if (object instanceof Writer) {
+               ((Writer)object).close();
+            }
+            else {
+               // must be a Result from the OutputURIResolver
+               context.outputUriResolver.close((Result)object);
+            }
          }
          catch (java.io.IOException ex) {
             context.errorHandler.error(ex.toString(), 
                                        publicId, systemId, 
                                        nodeEnd.lineNo, nodeEnd.colNo);
-            return PR_CONTINUE; // if the errorHandler returns
+         }
+         catch (TransformerException ex) {
+            context.errorHandler.error(ex);
          }
 
          return super.processEnd(context);

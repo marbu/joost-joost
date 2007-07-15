@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXHelper.java,v 1.14 2005/03/13 16:10:54 obecker Exp $
+ * $Id: TrAXHelper.java,v 1.15 2007/07/15 15:20:41 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -35,6 +35,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.ErrorListener;
@@ -174,8 +175,12 @@ public class TrAXHelper implements TrAXConstants {
      * @return An <code>StxEmitter</code>.
      * @throws javax.xml.transform.TransformerException
      */
-    public static StxEmitter initStxEmitter(Result result, Processor processor)
+    public static StxEmitter initStxEmitter(Result result, Processor processor, 
+                                            Properties outputProperties)
         throws TransformerException {
+       
+        if (outputProperties == null)
+           outputProperties = processor.outputProperties;
 
         if (DEBUG)
             log.debug("init STXEmitter");
@@ -213,15 +218,14 @@ public class TrAXHelper implements TrAXConstants {
                     if (DEBUG)
                         log.debug("get a Writer object from Result object");
                     return StreamEmitter.newEmitter(writer, DEFAULT_ENCODING, 
-                                                    processor.outputProperties);
+                                                    outputProperties);
                 }
                 // or try to get an OutputStream from Result object
                 final OutputStream ostream = target.getOutputStream();
                 if (ostream != null) {
                     if (DEBUG)
                         log.debug("get an OutputStream from Result object");
-                    return StreamEmitter.newEmitter(ostream, 
-                                                    processor.outputProperties);
+                    return StreamEmitter.newEmitter(ostream, outputProperties);
                 }
                 // or try to get just a systemId string from Result object
                 String systemId = result.getSystemId();
@@ -240,23 +244,20 @@ public class TrAXHelper implements TrAXConstants {
                 if (systemId.startsWith("file:")) {
                     url = new URL(systemId);
                     os = new FileOutputStream(url.getFile());
-                    return StreamEmitter.newEmitter(os, 
-                                                    processor.outputProperties);
+                    return StreamEmitter.newEmitter(os, outputProperties);
                 }
                 else if (systemId.startsWith("http:")) {
                     url = new URL(systemId);
                     URLConnection connection = url.openConnection();
                     os = connection.getOutputStream();
-                    return StreamEmitter.newEmitter(os, 
-                                                    processor.outputProperties);
+                    return StreamEmitter.newEmitter(os, outputProperties);
                 }
                 else {
                     // system id is just a filename
                     File tmp    = new File(systemId);
                     url         = tmp.toURL();
                     os          = new FileOutputStream(url.getFile());
-                    return StreamEmitter.newEmitter(os, 
-                                                    processor.outputProperties);
+                    return StreamEmitter.newEmitter(os, outputProperties);
                 }
             }
          // If we cannot create the file specified by the SystemId

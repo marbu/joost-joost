@@ -1,5 +1,5 @@
 /*
- * $Id: Context.java,v 2.19 2006/01/24 08:55:07 obecker Exp $
+ * $Id: Context.java,v 2.20 2007/07/15 15:20:41 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -30,6 +30,7 @@ import java.util.Stack;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.sax.TransformerHandler;
 
+import net.sf.joost.OutputURIResolver;
 import net.sf.joost.emitter.StxEmitter;
 import net.sf.joost.instruction.GroupBase;
 import net.sf.joost.instruction.NodeBase;
@@ -41,7 +42,7 @@ import org.xml.sax.Locator;
 /**
  * Instances of this class provide context information while processing
  * an input document.
- * @version $Revision: 2.19 $ $Date: 2006/01/24 08:55:07 $
+ * @version $Revision: 2.20 $ $Date: 2007/07/15 15:20:41 $
  * @author Oliver Becker
  */
 public final class Context implements Cloneable
@@ -100,6 +101,9 @@ public final class Context implements Cloneable
 
    /** The URIResolver for <code>stx:process-document</code> */
    public URIResolver uriResolver;
+   
+   /** The OutputURIResolver for <code>stx:result-document</code> */
+   public OutputURIResolver outputUriResolver;
 
    /** 
     * The message emitter for <code>stx:message</code>,

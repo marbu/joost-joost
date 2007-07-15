@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.26 2006/08/11 17:29:19 obecker Exp $
+ * $Id: TemplatesImpl.java,v 1.27 2007/07/15 15:20:41 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -142,8 +142,8 @@ public class TemplatesImpl implements Templates, TrAXConstants {
             } else {
                 processor = new Processor(stxParser);
             }
-            if (factory.thResolver != null)
-                processor.setTransformerHandlerResolver(factory.thResolver);
+            processor.setTransformerHandlerResolver(factory.thResolver);
+            processor.setOutputURIResolver(factory.outputUriResolver);
         } catch (org.xml.sax.SAXException sE) {
             if (log != null)
                 log.fatal(sE);
@@ -192,8 +192,8 @@ public class TemplatesImpl implements Templates, TrAXConstants {
             } else {
                 processor = new Processor(reader, isource, pContext);
             }
-            if (factory.thResolver != null)
-                processor.setTransformerHandlerResolver(factory.thResolver);
+            processor.setTransformerHandlerResolver(factory.thResolver);
+            processor.setOutputURIResolver(factory.outputUriResolver);
         } catch (java.io.IOException iE) {
             if (DEBUG)
                 log.debug(iE);
