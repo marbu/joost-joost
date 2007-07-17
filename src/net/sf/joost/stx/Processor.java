@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.54 2007/07/15 15:20:42 obecker Exp $
+ * $Id: Processor.java,v 2.55 2007/07/17 19:31:52 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -70,7 +70,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.54 $ $Date: 2007/07/15 15:20:42 $
+ * @version $Revision: 2.55 $ $Date: 2007/07/17 19:31:52 $
  * @author Oliver Becker
  */
 
@@ -527,8 +527,7 @@ public class Processor extends XMLFilterImpl
       dataStack.push(new Data(context));
 
       // initialize namespaces
-      inScopeNamespaces = new Hashtable();
-      inScopeNamespaces.put("xml", NamespaceSupport.XMLNS);
+      initNamespaces();
 
       // array of global templates
       if (globalTemplates == null) {
@@ -541,16 +540,27 @@ public class Processor extends XMLFilterImpl
       initOutputProperties();
    }
 
-    /**
-     * The initialization of the emitter could be overriden
-     * for debug purpose.
-     * @param ctx The current context
-     * @param parser The stx-parser
-     * @return an emitter-instance
-     */
-    protected Emitter initializeEmitter(Context ctx, Parser parser) {
-        return new Emitter(ctx.errorHandler);
-    }
+
+   /**
+    * Create a fresh namespace hashtable
+    */
+   private void initNamespaces()
+   {
+      inScopeNamespaces = new Hashtable();
+      inScopeNamespaces.put("xml", NamespaceSupport.XMLNS);
+   }
+
+
+   /**
+    * The initialization of the emitter could be overriden
+    * for debug purpose.
+    * @param ctx The current context
+    * @param parser The stx-parser
+    * @return an emitter-instance
+    */
+   protected Emitter initializeEmitter(Context ctx, Parser parser) {
+      return new Emitter(ctx.errorHandler);
+   }
 
 
     /**
@@ -754,6 +764,8 @@ public class Processor extends XMLFilterImpl
       // there might be characters already read
       innerProcStack.push(collectedCharacters.toString());
       collectedCharacters.setLength(0);
+      innerProcStack.push(inScopeNamespaces);
+      initNamespaces();
       // possible jump to another group (changed visibleTemplates)
       dataStack.push(new Data(PR_BUFFER, null, null, null, context));
    }
@@ -777,6 +789,7 @@ public class Processor extends XMLFilterImpl
 
       // remove Data object from startInnerProcessing()
       context.localVars = dataStack.pop().localVars;
+      inScopeNamespaces = (Hashtable)innerProcStack.pop();
       collectedCharacters.append(innerProcStack.pop());
    }
 
