@@ -1,5 +1,5 @@
 /*
- * $Id: URIResolverTest.java,v 1.1 2007/07/15 15:32:29 obecker Exp $
+ * $Id: URIResolverTest.java,v 1.2 2007/07/18 05:40:28 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import org.w3c.dom.Element;
 
 /**
  * Example class that demonstrates the usage of URI resolvers in Joost.
- * @version $Revision: 1.1 $ $Date: 2007/07/15 15:32:29 $
+ * @version $Revision: 1.2 $ $Date: 2007/07/18 05:40:28 $
  * @author Oliver Becker
  */
 
@@ -68,8 +68,11 @@ public class URIResolverTest implements URIResolver
          // register the resolver for <stx:include>
          factory.setURIResolver(resolver);
 
-         Transformer transformer = factory.newTransformer(
-            new StreamSource(URIResolverTest.class.getResourceAsStream(testSTX)));
+         StreamSource stxSource =
+            new StreamSource(URIResolverTest.class.getResourceAsStream(testSTX));
+         stxSource.setSystemId(
+            URIResolverTest.class.getResource(testSTX).toExternalForm());
+         Transformer transformer = factory.newTransformer(stxSource);
 
          // register the same resolver for <stx:process-document>
          transformer.setURIResolver(resolver);
