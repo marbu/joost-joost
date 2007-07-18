@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.24 2007/07/18 20:50:01 obecker Exp $
+ | $Id: build.xml,v 1.25 2007/07/18 20:58:31 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -111,14 +111,14 @@
   
   <target name="maketests" depends="compile"
     description="compiles the java sources from the test subdirectory">
-    <javac debug="on" srcdir="${src.test}"
+    <javac debug="on" srcdir="${src.test}" source="1.4" target="1.4"
            destdir="${classes}" classpathref="cp" />
   </target>
 
   
   <target name="compile" depends="dep, mk.classes"
     description="compiles the java sources into the classes subdirectory (with debug information)"> 
-    <javac debug="on" srcdir="${src}"
+    <javac debug="on" srcdir="${src}" source="1.4" target="1.4"
            destdir="${classes}" classpathref="cp" />
     <antcall target="compile-non-java" />
   </target>
@@ -128,7 +128,8 @@
           description="creates joost.jar (without test classes and debug information)">
     <delete dir="${classes}" />
     <mkdir dir="${classes}" />
-    <javac srcdir="${src}" destdir="${classes}" classpathref="cp" optimize="true"/>
+    <javac srcdir="${src}" destdir="${classes}" classpathref="cp" 
+           source="1.4" target="1.4" optimize="true"/>
     <antcall target="compile-non-java" />
     <jar jarfile="${ant.project.name}.jar"
          basedir="${classes}"
