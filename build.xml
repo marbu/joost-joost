@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.23 2007/07/15 15:32:35 obecker Exp $
+ | $Id: build.xml,v 1.24 2007/07/18 20:50:01 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -160,7 +160,7 @@
   
   <target name="doc" depends="dep, mk.apidoc"
     description="creates the API documentation in the doc/api subdirectory">
-    <copy file="docsrc/index.html" tofile="doc/index.html" />
+    <copy file="docsrc/index.html" tofile="doc/index.html" overwrite="true" />
     <replace file="doc/index.html" token="@@@DATE@@@" value="${date.today}" />
     <javadoc sourcepath="${src}" destdir="${doc}/api"
              link="http://java.sun.com/j2se/1.4.2/docs/api"
