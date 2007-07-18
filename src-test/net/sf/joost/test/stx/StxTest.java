@@ -1,5 +1,5 @@
 /*
- * $Id: StxTest.java,v 1.1 2007/07/15 15:32:29 obecker Exp $
+ * $Id: StxTest.java,v 1.2 2007/07/18 19:07:10 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -43,7 +43,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 /**
- * @version $Revision: 1.1 $ $Date: 2007/07/15 15:32:29 $
+ * @version $Revision: 1.2 $ $Date: 2007/07/18 19:07:10 $
  * @author Oliver Becker
  */
 public class StxTest extends TestCase
@@ -54,6 +54,7 @@ public class StxTest extends TestCase
                          "net.sf.joost.trax.TransformerFactoryImpl");
       factory = TransformerFactory.newInstance();
       // The default Xalan of Java 1.4 doesn't work
+      // Requires Saxon to be in the classpath
       factory.setAttribute(net.sf.joost.trax.TrAXConstants.KEY_XSLT_FACTORY,
                            "net.sf.saxon.TransformerFactoryImpl");
    }
