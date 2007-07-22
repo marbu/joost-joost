@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.55 2007/07/17 19:31:52 obecker Exp $
+ * $Id: Processor.java,v 2.56 2007/07/22 12:56:46 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -70,7 +70,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.55 $ $Date: 2007/07/17 19:31:52 $
+ * @version $Revision: 2.56 $ $Date: 2007/07/22 12:56:46 $
  * @author Oliver Becker
  */
 
@@ -985,6 +985,7 @@ public class Processor extends XMLFilterImpl
                 event.type == SAXEvent.ROOT) {
                skipDepth = 1;
                collectedCharacters.setLength(0); // clear text
+               insideCDATA = false; // reset if there was a CDATA section
             }
             break;
 
