@@ -1,5 +1,5 @@
 Changes since 20070718
-- Bugfix: 1758424
+- Bugfixes: 1758424, 1810643
 
 Changes since 20070621
 - added interface OutputURIResolver (Feature request 1170466)
