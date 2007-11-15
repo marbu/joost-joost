@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEmitter.java,v 1.8 2005/03/13 17:12:49 obecker Exp $
+ * $Id: SAXEmitter.java,v 1.9 2007/11/15 13:29:51 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -31,13 +31,14 @@ import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+import org.xml.sax.ext.LexicalHandler;
 
 
 /**
  *  This class implements the common interface <code>StxEmitter</code>.
  *  Is is designed for using <code>SAXResult</code>.
  *  So this class outputs a SAX2-event-stream to the output target -
- *  {@link #saxSourceHandler} (e.g. the registered ContentHandler).
+ *  {@link #saxContentHandler} (e.g. the registered ContentHandler).
  *  @author Zubow
  */
 public class SAXEmitter extends StxEmitterBase {
@@ -51,10 +52,16 @@ public class SAXEmitter extends StxEmitterBase {
     }
 
     /**
-     * A SAXResult, so SAXEmitter acts as a proxy und propagates the events to
-     * the registered ContentHandler
+     * The {@link SAXEmitter} acts as a proxy und propagates SAX2 events to
+     * this handler.
      */
-    private ContentHandler saxSourceHandler = null;
+    private ContentHandler saxContentHandler = null;
+    
+    /**
+     * If present, the {@link SAXEmitter} propagates lexical SAX2 events this
+     * handler.
+     */
+    private LexicalHandler saxLexicalHandler = null;
 
 
     /**
@@ -65,182 +72,225 @@ public class SAXEmitter extends StxEmitterBase {
 
         if (DEBUG)
             log.debug("init SAXEmitter");
-        this.saxSourceHandler = saxSourceHandler;
+        this.saxContentHandler = saxSourceHandler;
+        if (saxSourceHandler instanceof LexicalHandler)
+        	saxLexicalHandler = (LexicalHandler) saxSourceHandler;
 
     }
 
 
     /**
      * SAX2-Callback - Simply propagates the Call to the registered output
-     * target - here the {@link #saxSourceHandler}
+     * target - here the {@link #saxContentHandler}
      */
     public void startDocument() throws SAXException {
 
         //act as proxy
-        saxSourceHandler.startDocument();
+        saxContentHandler.startDocument();
 
     }
 
 
     /**
      * SAX2-Callback - Simply propagates the Call to the registered output
-     * target - here the {@link #saxSourceHandler}
+     * target - here the {@link #saxContentHandler}
      */
     public void endDocument() throws SAXException {
 
         //act as proxy
-        saxSourceHandler.endDocument();
+        saxContentHandler.endDocument();
 
     }
 
 
     /**
      * SAX2-Callback - Simply propagates the Call to the registered output
-     * target - here the {@link #saxSourceHandler}
+     * target - here the {@link #saxContentHandler}
      */
     public void startElement(String uri, String local, String raw,
                             Attributes attrs)
         throws SAXException {
 
-        saxSourceHandler.startElement(uri, local, raw, attrs);
+        saxContentHandler.startElement(uri, local, raw, attrs);
 
     }
 
 
     /**
      * SAX2-Callback - Simply propagates the Call to the registered output
-     * target - here the {@link #saxSourceHandler}
+     * target - here the {@link #saxContentHandler}
      */
     public void endElement(String uri, String local, String raw)
         throws SAXException {
 
-        saxSourceHandler.endElement(uri, local, raw);
+        saxContentHandler.endElement(uri, local, raw);
 
     }
 
 
     /**
      * SAX2-Callback - Simply propagates the Call to the registered output
-     * target - here the {@link #saxSourceHandler}
+     * target - here the {@link #saxContentHandler}
      */
     public void characters(char[] ch, int start, int length)
         throws SAXException {
 
-        saxSourceHandler.characters(ch, start, length);
+        saxContentHandler.characters(ch, start, length);
 
     }
 
 
     /**
      * SAX2-Callback - Simply propagates the Call to the registered output
-     * target - here the {@link #saxSourceHandler}
+     * target - here the {@link #saxContentHandler}
      */
     public void startPrefixMapping(String prefix, String uri)
         throws SAXException {
 
-        saxSourceHandler.startPrefixMapping(prefix, uri);
+        saxContentHandler.startPrefixMapping(prefix, uri);
 
     }
 
 
     /**
      * SAX2-Callback - Simply propagates the Call to the registered output
-     * target - here the {@link #saxSourceHandler}
+     * target - here the {@link #saxContentHandler}
      */
     public void endPrefixMapping(String prefix) throws SAXException {
 
-        saxSourceHandler.endPrefixMapping(prefix);
+        saxContentHandler.endPrefixMapping(prefix);
 
     }
 
 
     /**
      * SAX2-Callback - Simply propagates the Call to the registered output
-     * target - here the {@link #saxSourceHandler}
+     * target - here the {@link #saxContentHandler}
      */
     public void processingInstruction(String target, String data)
         throws SAXException {
 
-        saxSourceHandler.processingInstruction(target, data);
+        saxContentHandler.processingInstruction(target, data);
 
     }
 
     /**
      * SAX2-Callback - Simply propagates the Call to the registered output
-     * target - here the {@link #saxSourceHandler}
+     * target - here the {@link #saxContentHandler}
      */
     public void skippedEntity(String value)
         throws SAXException {
 
-        saxSourceHandler.skippedEntity(value);
+        saxContentHandler.skippedEntity(value);
 
     }
 
 
     /**
      * SAX2-Callback - Simply propagates the Call to the registered output
-     * target - here the {@link #saxSourceHandler}
+     * target - here the {@link #saxContentHandler}
      */
     public void ignorableWhitespace(char[] p0, int p1, int p2)
         throws SAXException {
 
-        saxSourceHandler.ignorableWhitespace(p0, p1, p2);
+        saxContentHandler.ignorableWhitespace(p0, p1, p2);
 
     }
 
 
     /**
      * SAX2-Callback - Simply propagates the Call to the registered output
-     * target - here the {@link #saxSourceHandler}
+     * target - here the {@link #saxContentHandler}
      */
     public void setDocumentLocator(Locator locator) {
 
-        saxSourceHandler.setDocumentLocator(locator);
+        saxContentHandler.setDocumentLocator(locator);
 
     }
 
 
     /**
-     * SAX2-Callback - Is empty
+     * SAX2-Callback - Simply propagates the Call to the registered output
+     * target - here the {@link #saxLexicalHandler}
      */
     public void startDTD(String name, String publicId, String systemId)
-        throws SAXException { }
+        throws SAXException {
+
+    	if (saxLexicalHandler != null)
+    		saxLexicalHandler.startDTD(name, publicId, systemId);
+
+    }
 
 
     /**
-     * SAX2-Callback - Is empty
+     * SAX2-Callback - Simply propagates the Call to the registered output
+     * target - here the {@link #saxLexicalHandler}
      */
-    public void endDTD() throws SAXException { }
+    public void endDTD() throws SAXException {
+    	
+    	if (saxLexicalHandler != null)
+    		saxLexicalHandler.endDTD();
+    	
+    }
 
 
     /**
-     * SAX2-Callback - Is empty
+     * SAX2-Callback - Simply propagates the Call to the registered output
+     * target - here the {@link #saxLexicalHandler}
      */
-    public void startEntity(String name) throws SAXException { }
+    public void startEntity(String name) throws SAXException {
+    	
+    	if (saxLexicalHandler != null)
+    		saxLexicalHandler.startEntity(name);
+    	
+    }
 
 
     /**
-     * SAX2-Callback - Is empty
+     * SAX2-Callback - Simply propagates the Call to the registered output
+     * target - here the {@link #saxLexicalHandler}
      */
-    public void endEntity(String name) throws SAXException { }
+    public void endEntity(String name) throws SAXException {
+    	
+    	if (saxLexicalHandler != null)
+    		saxLexicalHandler.endEntity(name);
+    	
+    }
 
 
     /**
-     * SAX2-Callback - Is empty
+     * SAX2-Callback - Simply propagates the Call to the registered output
+     * target - here the {@link #saxLexicalHandler}
      */
-    public void startCDATA() throws SAXException { }
+    public void startCDATA() throws SAXException {
+    	
+    	if (saxLexicalHandler != null)
+    		saxLexicalHandler.startCDATA();
+    	
+    }
 
 
     /**
-     * SAX2-Callback - Is empty
+     * SAX2-Callback - Simply propagates the Call to the registered output
+     * target - here the {@link #saxLexicalHandler}
      */
-    public void endCDATA() throws SAXException { }
+    public void endCDATA() throws SAXException {
+    	
+    	if (saxLexicalHandler != null)
+    		saxLexicalHandler.endCDATA();
+    	
+    }
 
 
     /**
-     * SAX2-Callback - Is empty
+     * SAX2-Callback - Simply propagates the Call to the registered output
+     * target - here the {@link #saxLexicalHandler}
      */
     public void comment(char[] ch, int start, int length)
-        throws SAXException { }
+        throws SAXException {
+    	
+    	if (saxLexicalHandler != null)
+    		saxLexicalHandler.comment(ch, start, length);
+    	
+    }
 }
-
