@@ -1,5 +1,5 @@
 /*
- * $Id: VariableFactory.java,v 2.4 2004/11/06 13:07:32 obecker Exp $
+ * $Id: VariableFactory.java,v 2.5 2007/11/16 14:35:00 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>variable</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.4 $ $Date: 2004/11/06 13:07:32 $
+ * @version $Revision: 2.5 $ $Date: 2007/11/16 14:35:00 $
  * @author Oliver Becker
  */
 
@@ -97,6 +97,7 @@ final public class VariableFactory extends FactoryBase
       private String varName;
       private Tree select;
       private String errorMessage;
+      private final boolean isGroupVar;
 
 
       protected Instance(String qName, ParseContext context, String varName,
@@ -111,6 +112,7 @@ final public class VariableFactory extends FactoryBase
          this.keepValue = keepValue;
          this.errorMessage = 
             "(`" + qName + "' started in line " + lineNo + ")";
+         this.isGroupVar = parent instanceof GroupBase;
       }
 
 
@@ -153,11 +155,13 @@ final public class VariableFactory extends FactoryBase
       {
          // determine scope
          Hashtable varTable;
-         if (parent instanceof GroupBase) // group variable
+         if (isGroupVar)
             varTable = (Hashtable)((Stack)context.groupVars.get(parent))
                                           .peek();
-         else
+         else {
             varTable = context.localVars;
+            parent.declareVariable(expName);
+         }
 
          if (varTable.get(expName) != null) {
             context.errorHandler.error(
@@ -166,9 +170,6 @@ final public class VariableFactory extends FactoryBase
             return; // if the errorHandler returns
          }
          varTable.put(expName, v);
-
-         if (varTable == context.localVars)
-            parent.declareVariable(expName);
       }
    }
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: VarTree.java,v 1.2 2007/05/20 18:00:43 obecker Exp $
+ * $Id: VarTree.java,v 1.3 2007/11/16 14:35:00 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,11 +39,14 @@ import org.xml.sax.SAXParseException;
 /**
  * Objects of VarTree represent variable reference ('$var') nodes in the
  * syntax tree of a pattern or an STXPath expression.
- * @version $Revision: 1.2 $ $Date: 2007/05/20 18:00:43 $
+ * @version $Revision: 1.3 $ $Date: 2007/11/16 14:35:00 $
  * @author Oliver Becker
  */
 final public class VarTree extends Tree
 {
+   /** The expanded name of the variable */
+   private final String expName;
+
    /*
     * Constructs a Tree object with a String value. If the type is a
     * {@link #NAME_TEST} then {@link #uri} and
@@ -70,13 +73,13 @@ final public class VarTree extends Tree
          uri = "";
          lName = value;
       }
+      expName = "{" + uri + "}" + lName;
    }
 
    
    public Value evaluate(Context context, int top)
       throws SAXException
    {
-      String expName = "{" + uri + "}" + lName;
       // first: lookup local variables
       Value v1 = (Value)context.localVars.get(expName);
       if (v1 == null) {
