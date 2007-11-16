@@ -1,5 +1,5 @@
 /*
- * $Id: AssignFactory.java,v 2.8 2004/11/06 13:07:32 obecker Exp $
+ * $Id: AssignFactory.java,v 2.9 2007/11/16 17:35:07 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,6 +33,8 @@ import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Value;
+import net.sf.joost.util.VariableNotFoundException;
+import net.sf.joost.util.VariableUtils;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -42,7 +44,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>assign</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.8 $ $Date: 2004/11/06 13:07:32 $
+ * @version $Revision: 2.9 $ $Date: 2007/11/16 17:35:07 $
  * @author Oliver Becker
  */
 
@@ -86,6 +88,9 @@ final public class AssignFactory extends FactoryBase
       public String varName, expName;
       private Tree select;
       private String errorMessage;
+      
+      private boolean scopeDetermined = false;
+      private GroupBase groupScope = null;
 
       protected Instance(String qName, NodeBase parent, ParseContext context,
                          String varName, String expName, Tree select)
@@ -148,27 +153,22 @@ final public class AssignFactory extends FactoryBase
       private void processVar(Value v, Context context)
          throws SAXException
       {
-         // find variable
-         // TODO: this should be a static lookup
-         Hashtable vars = null;
-         Object obj = context.localVars.get(expName);
-         if (obj != null)
-            vars = context.localVars;
-         else {
-            GroupBase group = context.currentGroup;
-            while (obj == null && group != null) {
-               vars = (Hashtable)((Stack)context.groupVars.get(group)).peek();
-               obj = vars.get(expName);
-               group = group.parentGroup;
+         if (!scopeDetermined) {
+            try {
+               groupScope = VariableUtils.findVariableScope(context, expName);
             }
-
-            if (obj == null) {
-                context.errorHandler.error(
-                   "Can't assign to undeclared variable `" + varName + "'",
-                   publicId, systemId, lineNo, colNo);
-                return; // if the errorHandler returns
-             }
+            catch (VariableNotFoundException e) {
+               context.errorHandler.error(
+                  "Can't assign to undeclared variable `" + varName + "'",
+                  publicId, systemId, lineNo, colNo);
+               return; // if the errorHandler returns
+            }
+            scopeDetermined = true;
          }
+         
+         Hashtable vars = (groupScope == null) 
+            ? context.localVars 
+            : (Hashtable)((Stack)context.groupVars.get(groupScope)).peek();
 
          // assign new value
          vars.put(expName, v);

@@ -1,5 +1,5 @@
 /*
- * $Id: VarTree.java,v 1.3 2007/11/16 14:35:00 obecker Exp $
+ * $Id: VarTree.java,v 1.4 2007/11/16 17:35:07 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,6 +32,8 @@ import net.sf.joost.instruction.GroupBase;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Value;
+import net.sf.joost.util.VariableNotFoundException;
+import net.sf.joost.util.VariableUtils;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -39,13 +41,16 @@ import org.xml.sax.SAXParseException;
 /**
  * Objects of VarTree represent variable reference ('$var') nodes in the
  * syntax tree of a pattern or an STXPath expression.
- * @version $Revision: 1.3 $ $Date: 2007/11/16 14:35:00 $
+ * @version $Revision: 1.4 $ $Date: 2007/11/16 17:35:07 $
  * @author Oliver Becker
  */
 final public class VarTree extends Tree
 {
    /** The expanded name of the variable */
    private final String expName;
+   
+   private boolean scopeDetermined = false;
+   private GroupBase groupScope = null;
 
    /*
     * Constructs a Tree object with a String value. If the type is a
@@ -80,26 +85,27 @@ final public class VarTree extends Tree
    public Value evaluate(Context context, int top)
       throws SAXException
    {
-      // first: lookup local variables
-      Value v1 = (Value)context.localVars.get(expName);
-      if (v1 == null) {
-         // then: lookup the group hierarchy
-         GroupBase group = context.currentGroup;
-         while (v1 == null && group != null) {
-            v1 = (Value)((Hashtable)((Stack)context.groupVars.get(group))
-                                                   .peek()).get(expName);
-            group = group.parentGroup;
+      if (!scopeDetermined) {
+         try {
+            groupScope = VariableUtils.findVariableScope(context, expName);
          }
+         catch (VariableNotFoundException e) {
+            context.errorHandler.error("Undeclared variable `" + value + "'",
+                  context.currentInstruction.publicId,
+                  context.currentInstruction.systemId,
+                  context.currentInstruction.lineNo,
+                  context.currentInstruction.colNo);
+            // if the errorHandler decides to continue ...
+            return Value.VAL_EMPTY;
+         }
+         scopeDetermined = true;
       }
-      if (v1 == null) {
-         context.errorHandler.error("Undeclared variable `" + value + "'",
-                                    context.currentInstruction.publicId,
-                                    context.currentInstruction.systemId,
-                                    context.currentInstruction.lineNo,
-                                    context.currentInstruction.colNo);
-         // if the errorHandler decides to continue ...
-         return Value.VAL_EMPTY;
-      }
+
+      Hashtable vars = (groupScope == null) 
+         ? context.localVars 
+         : (Hashtable)((Stack)context.groupVars.get(groupScope)).peek();
+
+      Value v1 = (Value)vars.get(expName);
       // create a copy if the result is a sequence
       return v1.next == null ? v1 : v1.copy();
    }

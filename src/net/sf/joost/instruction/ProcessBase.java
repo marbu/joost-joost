@@ -1,5 +1,5 @@
 /*
- * $Id: ProcessBase.java,v 2.14 2006/02/27 19:47:18 obecker Exp $
+ * $Id: ProcessBase.java,v 2.15 2007/11/16 17:35:07 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -36,6 +36,8 @@ import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.BufferReader;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
+import net.sf.joost.util.VariableNotFoundException;
+import net.sf.joost.util.VariableUtils;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -43,7 +45,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Common base class for all <code>stx:process-<em>xxx</em></code>
  * instructions
- * @version $Revision: 2.14 $ $Date: 2006/02/27 19:47:18 $
+ * @version $Revision: 2.15 $ $Date: 2007/11/16 17:35:07 $
  * @author Oliver Becker
  */
 public class ProcessBase extends NodeBase
@@ -63,6 +65,8 @@ public class ProcessBase extends NodeBase
    protected String useBufQName, useBufExpName;
    protected Tree filter;
    private Tree hrefTree;
+   private boolean bufScopeDetermined = false;
+   private GroupBase bufGroupScope = null;
 
    private NodeBase me;
 
@@ -231,12 +235,16 @@ public class ProcessBase extends NodeBase
       TransformerHandler handler;
       try {
          if (useBufExpName != null) {
-            BufferReader ubr = 
-               new BufferReader(context, useBufQName, useBufExpName,
-                                publicId, systemId, lineNo, colNo);
+            if (!bufScopeDetermined) {
+               bufGroupScope = 
+                  VariableUtils.findVariableScope(context, useBufExpName);
+               bufScopeDetermined = true;
+            }
             handler = 
-               context.defaultTransformerHandlerResolver
-                      .resolve(filterMethod, ubr, context.passedParameters);
+               context.defaultTransformerHandlerResolver.resolve(
+                     filterMethod, 
+                     new BufferReader(context, useBufExpName, bufGroupScope), 
+                     context.passedParameters);
          }
          else {
             String href = (hrefTree != null)
@@ -264,6 +272,13 @@ public class ProcessBase extends NodeBase
          context.errorHandler.fatalError(e.getMessage(),
                                          publicId, systemId, 
                                          lineNo, colNo);
+         return null;
+      }
+      catch (VariableNotFoundException e) {
+         context.errorHandler.error(
+               "Can't process an undeclared buffer `" + useBufQName + "'",
+               publicId, systemId, lineNo, colNo);
+            // if the error handler returns
          return null;
       }
 

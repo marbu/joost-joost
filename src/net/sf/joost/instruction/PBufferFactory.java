@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 2.10 2005/05/14 09:39:32 obecker Exp $
+ * $Id: PBufferFactory.java,v 2.11 2007/11/16 17:35:07 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,6 +33,8 @@ import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Processor;
 import net.sf.joost.stx.SAXEvent;
+import net.sf.joost.util.VariableNotFoundException;
+import net.sf.joost.util.VariableUtils;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -42,7 +44,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.10 $ $Date: 2005/05/14 09:39:32 $
+ * @version $Revision: 2.11 $ $Date: 2007/11/16 17:35:07 $
  * @author Oliver Becker
  */
 
@@ -105,7 +107,9 @@ public class PBufferFactory extends FactoryBase
    /** The inner Instance class */
    public class Instance extends ProcessBase
    {
-      String bufName, expName;
+      private String bufName, expName;
+      private boolean scopeDetermined = false;
+      private GroupBase groupScope = null;
 
       // Constructor
       public Instance(String qName, NodeBase parent, ParseContext context,
@@ -126,9 +130,22 @@ public class PBufferFactory extends FactoryBase
          throws SAXException
       {
          context.currentInstruction = this;
-         BufferReader br = new BufferReader(context, bufName, expName,
-                                            publicId, systemId, 
-                                            lineNo, colNo);
+         
+         if (!scopeDetermined) {
+            try {
+               groupScope = VariableUtils.findVariableScope(context, expName);
+            }
+            catch (VariableNotFoundException e) {
+               context.errorHandler.error(
+                  "Can't process an undeclared buffer `" + bufName + "'",
+                  publicId, systemId, lineNo, colNo);
+               // if the error handler returns
+               return PR_ERROR;
+            }
+            scopeDetermined = true;
+         }
+
+         BufferReader br = new BufferReader(context, expName, groupScope);
 
          if (filter != null) {
             // use external SAX filter (TransformerHandler)
