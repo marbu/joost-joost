@@ -1,5 +1,5 @@
 /*
- * $Id: VariableNotFoundException.java,v 1.1 2007/11/16 17:35:07 obecker Exp $
+ * $Id: VariableNotFoundException.java,v 1.2 2007/11/16 17:40:19 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -27,7 +27,7 @@ package net.sf.joost.util;
 /**
  * Will be thrown if a variable is not declared.
  * @see VariableUtils#findVariableScope(net.sf.joost.stx.Context, String)
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $ $Date: 2007/11/16 17:40:19 $
  * @author Oliver Becker
  */
 public class VariableNotFoundException extends Exception

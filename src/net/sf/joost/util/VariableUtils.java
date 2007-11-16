@@ -1,5 +1,5 @@
 /*
- * $Id: VariableUtils.java,v 1.1 2007/11/16 17:35:07 obecker Exp $
+ * $Id: VariableUtils.java,v 1.2 2007/11/16 17:40:19 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -32,7 +32,7 @@ import net.sf.joost.stx.Context;
 
 /**
  * Provides static methods for the handling of variables.
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $ $Date: 2007/11/16 17:40:19 $
  * @author Oliver Becker
  */
 public abstract class VariableUtils
