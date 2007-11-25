@@ -1,5 +1,5 @@
 /*
- * $Id: ElementStartFactory.java,v 2.5 2004/11/06 13:07:32 obecker Exp $
+ * $Id: ElementStartFactory.java,v 2.6 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import org.xml.sax.helpers.AttributesImpl;
 /** 
  * Factory for <code>start-element</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.5 $ $Date: 2004/11/06 13:07:32 $
+ * @version $Revision: 2.6 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -108,7 +108,7 @@ final public class ElementStartFactory extends FactoryBase
                elUri = namespace.evaluate(context, this).getString();
                if (elUri.equals("")) {
                   context.errorHandler.fatalError(
-                     "Can't create element `" + elName + 
+                     "Can't create element '" + elName + 
                      "' in the null namespace",
                      publicId, systemId, lineNo, colNo);
                   return PR_CONTINUE; // if the errorHandler returns
@@ -120,8 +120,8 @@ final public class ElementStartFactory extends FactoryBase
                elUri = (String)nsSet.get(prefix);
                if (elUri == null) {
                   context.errorHandler.fatalError(
-                     "Attempt to create element `" + elName + 
-                     "' with undeclared prefix `" + prefix + "'",
+                     "Attempt to create element '" + elName + 
+                     "' with undeclared prefix '" + prefix + "'",
                      publicId, systemId, lineNo, colNo);
                   return PR_CONTINUE; // if the errorHandler returns
                }

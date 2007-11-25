@@ -1,5 +1,5 @@
 /*
- * $Id: HtmlEmitter.java,v 1.4 2006/01/12 19:28:02 obecker Exp $
+ * $Id: HtmlEmitter.java,v 1.5 2007/11/25 14:18:02 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -33,7 +33,7 @@ import org.xml.sax.SAXException;
 
 /**
  *  This class implements an emitter for html code.
- *  @version $Revision: 1.4 $ $Date: 2006/01/12 19:28:02 $
+ *  @version $Revision: 1.5 $ $Date: 2007/11/25 14:18:02 $
  *  @author Thomas Behrends
  */
 public class HtmlEmitter extends StreamEmitter 
@@ -194,7 +194,7 @@ public class HtmlEmitter extends StreamEmitter
                if (!charsetEncoder.canEncode(ch[start+i]))
                   throw new SAXException("Cannot output character with code "
                                          + (int)ch[start+i] 
-                                         + " in the encoding `" + encoding
+                                         + " in the encoding '" + encoding
                                          + "'");
             writer.write(ch, start, length);
          }

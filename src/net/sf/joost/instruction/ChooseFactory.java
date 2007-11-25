@@ -1,5 +1,5 @@
 /*
- * $Id: ChooseFactory.java,v 2.4 2006/02/27 19:47:18 obecker Exp $
+ * $Id: ChooseFactory.java,v 2.5 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,7 +33,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>choose</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.4 $ $Date: 2006/02/27 19:47:18 $
+ * @version $Revision: 2.5 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -79,7 +79,7 @@ final public class ChooseFactory extends FactoryBase
                return;
             else
                throw new SAXParseException(
-                  "`" + qName +
+                  "'" + qName +
                   "' may only contain stx:when and stx:otherwise children " +
                   "(encountered text)",
                   node.publicId, node.systemId, node.lineNo, node.colNo);
@@ -88,21 +88,21 @@ final public class ChooseFactory extends FactoryBase
          if (!(node instanceof WhenFactory.Instance || 
                node instanceof OtherwiseFactory.Instance))
             throw new SAXParseException(
-               "`" + qName + 
+               "'" + qName + 
                "' may only contain stx:when and stx:otherwise children " +
-               "(encountered `" + node.qName + "')",
+               "(encountered '" + node.qName + "')",
                node.publicId, node.systemId, node.lineNo, node.colNo);
 
          if (otherwisePresent)
             throw new SAXParseException(
-               "`" + qName + 
+               "'" + qName + 
                "' must not have more children after stx:otherwise",
                node.publicId, node.systemId, node.lineNo, node.colNo);
 
          if (node instanceof OtherwiseFactory.Instance) {
             if (lastChild == this) {
                throw new SAXParseException(
-                  "`" + qName + "' must have at least one stx:when child " +
+                  "'" + qName + "' must have at least one stx:when child " +
                   "before stx:otherwise",
                   node.publicId, node.systemId, node.lineNo, node.colNo);
             }
@@ -121,7 +121,7 @@ final public class ChooseFactory extends FactoryBase
       {
          if (lastChild == this)
             throw new SAXParseException(
-               "`" + qName + "' must have at least one stx:when child", 
+               "'" + qName + "' must have at least one stx:when child", 
                publicId, systemId, lineNo, colNo);
          return false;
       }

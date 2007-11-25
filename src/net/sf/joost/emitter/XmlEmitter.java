@@ -1,5 +1,5 @@
 /*
- * $Id: XmlEmitter.java,v 1.5 2007/11/25 13:32:23 obecker Exp $
+ * $Id: XmlEmitter.java,v 1.6 2007/11/25 14:18:02 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -39,7 +39,7 @@ import org.xml.sax.SAXException;
 /**
  * This class implements an emitter that uses the <code>xml</code> output
  * method for byte or character streams.
- * @version $Revision: 1.5 $ $Date: 2007/11/25 13:32:23 $
+ * @version $Revision: 1.6 $ $Date: 2007/11/25 14:18:02 $
  * @author Oliver Becker, Anatolij Zubow
  */
 public class XmlEmitter extends StreamEmitter 
@@ -262,7 +262,7 @@ public class XmlEmitter extends StreamEmitter
                if (!charsetEncoder.canEncode(ch[start+i]))
                   throw new SAXException(
                      "Cannot output character with code " +
-                     (int)ch[start+i] + " in the encoding `" + encoding +
+                     (int)ch[start+i] + " in the encoding '" + encoding +
                      "' within a CDATA section");
             writer.write(ch, start, length);
          } 
@@ -280,7 +280,7 @@ public class XmlEmitter extends StreamEmitter
             writer.write(out.toString());
          }
          if (DEBUG)
-            log.debug("`" + new String(ch, start, length) + "'");
+            log.debug("'" + new String(ch, start, length) + "'");
       } 
       catch (IOException ex) {
          if (log != null)

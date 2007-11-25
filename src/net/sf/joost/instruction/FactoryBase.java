@@ -1,5 +1,5 @@
 /*
- * $Id: FactoryBase.java,v 2.9 2004/11/06 13:07:32 obecker Exp $
+ * $Id: FactoryBase.java,v 2.10 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -46,7 +46,7 @@ import net.sf.joost.stx.ParseContext;
  * Abstract base class for all factory classes which produce nodes
  * ({@link NodeBase}) for the tree representation of an STX transformation
  * sheet.
- * @version $Revision: 2.9 $ $Date: 2004/11/06 13:07:32 $
+ * @version $Revision: 2.10 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -85,7 +85,7 @@ public abstract class FactoryBase implements Constants
    {
       String att = attrs.getValue(name);
       if (att == null)
-         throw new SAXParseException("`" + elementName + "' must have a `" +
+         throw new SAXParseException("'" + elementName + "' must have a '" +
                                      name + "' attribute", context.locator);
 
       return att;
@@ -133,15 +133,15 @@ public abstract class FactoryBase implements Constants
       // wrong attribute value
       if (enumValues.length == 2)
          throw new SAXParseException(
-            "Value of attribute `" + name + "' must be either `" +
-            enumValues[0] + "' or `" + enumValues[1] + "' (found `" +
+            "Value of attribute '" + name + "' must be either '" +
+            enumValues[0] + "' or '" + enumValues[1] + "' (found '" +
             value + "')",
             context.locator);
       else {
-         String msg = "Value of attribute `" + name + "' must be one of ";
+         String msg = "Value of attribute '" + name + "' must be one of ";
          for (int i=0; i<enumValues.length-1; i++)
-            msg += "`" + enumValues[i] + "', ";
-         msg += "or `" + enumValues[enumValues.length-1] + "' (found `" +
+            msg += "'" + enumValues[i] + "', ";
+         msg += "or '" + enumValues[enumValues.length-1] + "' (found '" +
                 value + "')";
          throw new SAXParseException(msg, context.locator);
       }
@@ -166,8 +166,8 @@ public abstract class FactoryBase implements Constants
       for (int i=0; i<len; i++)
          if ("".equals(attrs.getURI(i)) && 
              (attNames == null || !attNames.contains(attrs.getQName(i))))
-            throw new SAXParseException("`" + elementName + 
-                                        "' must not have a `" +
+            throw new SAXParseException("'" + elementName + 
+                                        "' must not have a '" +
                                         attrs.getQName(i) + "' attribute",
                                         context.locator);
    }
@@ -190,7 +190,7 @@ public abstract class FactoryBase implements Constants
          String prefix = qName.substring(0, colon);
          String uri = (String)context.nsSet.get(prefix);
          if (uri == null)
-            throw new SAXParseException("Undeclared prefix `" + prefix + "'",
+            throw new SAXParseException("Undeclared prefix '" + prefix + "'",
                                         context.locator);
          result.append(uri);
          qName = qName.substring(colon+1); // the local part
@@ -237,7 +237,7 @@ public abstract class FactoryBase implements Constants
                   context.locator);
             else if (lexer.last != null) 
                throw new SAXParseException(
-                  e.getMessage() + "Encountered end of pattern after `" + 
+                  e.getMessage() + "Encountered end of pattern after '" + 
                   lexer.last.value + "'.",
                   context.locator);
             else
@@ -247,7 +247,7 @@ public abstract class FactoryBase implements Constants
          }
          else
             throw new SAXParseException(
-               e.getMessage() + "Found `" + lexer.last.value + "'.",
+               e.getMessage() + "Found '" + lexer.last.value + "'.",
                context.locator);
       }
       return pattern;
@@ -292,7 +292,7 @@ public abstract class FactoryBase implements Constants
                   context.locator);
             else if (lexer.last != null) 
                throw new SAXParseException(
-                  e.getMessage() + "Encountered end of expression after `" + 
+                  e.getMessage() + "Encountered end of expression after '" + 
                   lexer.last.value + "'.",
                   context.locator);
             else
@@ -302,7 +302,7 @@ public abstract class FactoryBase implements Constants
          }
          else
             throw new SAXParseException(
-               e.getMessage() + "Found `" + lexer.last.value + "'.",
+               e.getMessage() + "Found '" + lexer.last.value + "'.",
                context.locator);
       }
       return expr;
@@ -379,7 +379,7 @@ public abstract class FactoryBase implements Constants
             }
             else
                throw new SAXParseException(
-                  "Invalid attribute value template: found unmatched `}' " +
+                  "Invalid attribute value template: found unmatched '}' " +
                   "at position " + index, 
                   context.locator);
          case EXPR_STATE:
@@ -410,7 +410,7 @@ public abstract class FactoryBase implements Constants
             context.locator);
       case RBRACE_STATE:
          throw new SAXParseException(
-            "Invalid attribute value template: found single `}' at the end.", 
+            "Invalid attribute value template: found single '}' at the end.", 
             context.locator);
       case STR_STATE:
          throw new SAXParseException(

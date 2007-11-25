@@ -1,5 +1,5 @@
 /*
- * $Id: MessageFactory.java,v 2.8 2004/11/06 13:05:56 obecker Exp $
+ * $Id: MessageFactory.java,v 2.9 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>message</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.8 $ $Date: 2004/11/06 13:05:56 $
+ * @version $Revision: 2.9 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -95,8 +95,8 @@ final public class MessageFactory extends FactoryBase
       if ((level != -1) ^ (loggerAtt != null))
          throw new SAXParseException(
             level != -1
-               ? "Missing `logger' attribute when `level' is present"
-               : "Missing `level' attribute when `logger' is present", 
+               ? "Missing 'logger' attribute when 'level' is present"
+               : "Missing 'level' attribute when 'logger' is present", 
             context.locator);
 
       checkAttributes(qName, attrs, attrNames, context);
@@ -245,8 +245,8 @@ final public class MessageFactory extends FactoryBase
 
          if (!terminateValue.equals("no"))
             context.errorHandler.fatalError(
-               "Attribute 'terminate' of `" + qName 
-               + "' must be `yes' or `no', found `" + terminateValue + "'",
+               "Attribute 'terminate' of '" + qName 
+               + "' must be 'yes' or 'no', found '" + terminateValue + "'",
                publicId, systemId, lineNo, colNo);
       }
    }

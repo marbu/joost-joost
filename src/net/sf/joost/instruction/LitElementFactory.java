@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 2.13 2007/05/20 18:00:44 obecker Exp $
+ * $Id: LitElementFactory.java,v 2.14 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.xml.sax.helpers.NamespaceSupport;
 /** 
  * Factory for literal result elements, which are represented by the
  * inner Instance class. 
- * @version $Revision: 2.13 $ $Date: 2007/05/20 18:00:44 $
+ * @version $Revision: 2.14 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
 */
 
@@ -56,8 +56,8 @@ final public class LitElementFactory
       if (parent == null) {
          if (lName.equals("transform"))
             throw new SAXParseException(
-               "File is not an STX transformation sheet, need namespace `" +
-               Constants.STX_NS + "' for the `transform' element",
+               "File is not an STX transformation sheet, need namespace '" +
+               Constants.STX_NS + "' for the 'transform' element",
                context.locator);
          else
             throw new SAXParseException(
@@ -66,7 +66,7 @@ final public class LitElementFactory
       }
 
       if (parent instanceof TransformFactory.Instance)
-         throw new SAXParseException("Literal result element `" + qName + 
+         throw new SAXParseException("Literal result element '" + qName + 
                                      "' may occur only within templates",
                                      context.locator);
 

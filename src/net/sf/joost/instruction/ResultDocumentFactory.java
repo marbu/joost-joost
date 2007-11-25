@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 2.19 2007/07/15 15:20:41 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 2.20 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -48,7 +48,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.19 $ $Date: 2007/07/15 15:20:41 $
+ * @version $Revision: 2.20 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -89,8 +89,8 @@ final public class ResultDocumentFactory extends FactoryBase
             methodAtt = getExpandedName(methodAtt, context);
          else if (!methodAtt.equals("text") && !methodAtt.equals("xml"))
             throw new SAXParseException(
-               "Value of attribute `output-method' must be `xml', `text', " + 
-               "or a qualified name. Found `" + methodAtt + "'",
+               "Value of attribute 'output-method' must be 'xml', 'text', " + 
+               "or a qualified name. Found '" + methodAtt + "'",
                context.locator);
       }
 

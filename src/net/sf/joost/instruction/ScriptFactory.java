@@ -1,5 +1,5 @@
 /*
- * $Id: ScriptFactory.java,v 2.4 2006/03/21 19:25:05 obecker Exp $
+ * $Id: ScriptFactory.java,v 2.5 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.xml.sax.SAXParseException;
  * inner Instance class. <code>script</code> is an extension element that
  * belongs to the Joost namespace {@link net.sf.joost.Constants#JOOST_EXT_NS}.
  * 
- * @version $Revision: 2.4 $ $Date: 2006/03/21 19:25:05 $
+ * @version $Revision: 2.5 $ $Date: 2007/11/25 14:18:01 $
  * @author Nikolay Fiykov, Oliver Becker
  */
 
@@ -71,22 +71,22 @@ final public class ScriptFactory extends FactoryBase
    {
       // check parent
       if (parent != null && !(parent instanceof GroupBase))
-         throw new SAXParseException("`" + qName
-               + "' not allowed as child of `" + parent.qName + "'",
+         throw new SAXParseException("'" + qName
+               + "' not allowed as child of '" + parent.qName + "'",
                context.locator);
 
       // check that prefix points to a declared namespace
       String prefixAtt = getAttribute(qName, attrs, "prefix", context);
       if (!context.nsSet.containsKey(prefixAtt)) {
-         throw new SAXParseException("Prefix `" + prefixAtt + 
-            "' must belong to a declared namespace in element `" + qName + "'",
+         throw new SAXParseException("Prefix '" + prefixAtt + 
+            "' must belong to a declared namespace in element '" + qName + "'",
             context.locator);
       }
       String scriptUri = (String) context.nsSet.get(prefixAtt);
 
       // check if the prefix has been already defined
       if (context.getFunctionFactory().isScriptPrefix(prefixAtt)) {
-         throw new SAXParseException("Prefix `" + prefixAtt + "' of `" + qName 
+         throw new SAXParseException("Prefix '" + prefixAtt + "' of '" + qName 
                + "' has been already defined by another script element",
                context.locator);
       }
@@ -146,15 +146,15 @@ final public class ScriptFactory extends FactoryBase
       {
          if (!(node instanceof TextNode)) {
             throw new SAXParseException(
-               "`" + qName + 
+               "'" + qName + 
                "' may only contain text (script code)" +
-               "(encountered `" + node.qName + "')",
+               "(encountered '" + node.qName + "')",
                node.publicId, node.systemId, node.lineNo, node.colNo);
          }
          
          if (src != null) {
-            throw new SAXParseException("`" + qName
-                  + "' may not contain text (script code) if the `src' " +
+            throw new SAXParseException("'" + qName
+                  + "' may not contain text (script code) if the 'src' " +
                         "attribute is used",
                   node.publicId, node.systemId, node.lineNo, node.colNo);
          }

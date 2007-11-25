@@ -1,5 +1,5 @@
 /*
- * $Id: AnalyzeTextFactory.java,v 1.8 2007/10/10 08:33:31 obecker Exp $
+ * $Id: AnalyzeTextFactory.java,v 1.9 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>analyze-text</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.8 $ $Date: 2007/10/10 08:33:31 $
+ * @version $Revision: 1.9 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -123,7 +123,7 @@ final public class AnalyzeTextFactory extends FactoryBase
                // this test is not really necessary for the implementation,
                // however, it is required by the specification
                throw new SAXParseException(
-                  "`" + qName + 
+                  "'" + qName + 
                   "' must not have more children after stx:no-match",
                   node.publicId, node.systemId, node.lineNo, node.colNo);
             }
@@ -132,7 +132,7 @@ final public class AnalyzeTextFactory extends FactoryBase
          else if (node instanceof NoMatchFactory.Instance) {
             if (noMatchChild != null)
                throw new SAXParseException(
-                  "`" + qName + "' must have at most one `"+ node.qName + 
+                  "'" + qName + "' must have at most one '"+ node.qName + 
                   "' child",
                   node.publicId, node.systemId, node.lineNo, node.colNo);
             noMatchChild = node;
@@ -142,16 +142,16 @@ final public class AnalyzeTextFactory extends FactoryBase
                return; // ignore white space nodes (from xml:space="preserve")
             else
                throw new SAXParseException(
-                  "`" + qName +
+                  "'" + qName +
                   "' may only contain stx:match and stx:no-match children " +
                   "(encountered text)",
                   node.publicId, node.systemId, node.lineNo, node.colNo);
          }
          else
             throw new SAXParseException(
-               "`" + qName + 
+               "'" + qName + 
                "' may only contain stx:match and stx:no-match children " +
-               "(encountered `" + node.qName + "')",
+               "(encountered '" + node.qName + "')",
                node.publicId, node.systemId, node.lineNo, node.colNo);
 
          // no invocation of super.insert(node) necessary
@@ -171,7 +171,7 @@ final public class AnalyzeTextFactory extends FactoryBase
 
          if (mVector.size() == 0)
             throw new SAXParseException(
-               "`" + qName + "' must have at least one stx:match child", 
+               "'" + qName + "' must have at least one stx:match child", 
                publicId, systemId, lineNo, colNo);
 
          // transform the Vector into an array

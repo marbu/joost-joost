@@ -1,5 +1,5 @@
 /*
- * $Id: PSelfFactory.java,v 2.3 2003/07/23 16:26:48 obecker Exp $
+ * $Id: PSelfFactory.java,v 2.4 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.stx.ParseContext;
 /**
  * Factory for <code>process-self</code> elements, which are represented by 
  * the inner Instance class.
- * @version $Revision: 2.3 $ $Date: 2003/07/23 16:26:48 $
+ * @version $Revision: 2.4 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -72,15 +72,15 @@ public class PSelfFactory extends FactoryBase
 
       if (groupAtt != null && filterMethodAtt != null)
          throw new SAXParseException(
-            "It's not allowed to use both `group' and `filter-method' attributes",
+            "It's not allowed to use both 'group' and 'filter-method' attributes",
             context.locator);
 
       String filterSrcAtt = attrs.getValue("filter-src");
 
       if (filterSrcAtt != null && filterMethodAtt == null)
          throw new SAXParseException(
-            "Missing `filter-method' attribute in `" + qName + 
-            "' (`filter-src' is present)",
+            "Missing 'filter-method' attribute in '" + qName + 
+            "' ('filter-src' is present)",
             context.locator);
 
       checkAttributes(qName, attrs, attrNames, context);

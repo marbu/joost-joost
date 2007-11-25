@@ -1,5 +1,5 @@
 /*
- * $Id: OtherwiseFactory.java,v 2.2 2004/09/17 18:45:23 obecker Exp $
+ * $Id: OtherwiseFactory.java,v 2.3 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,7 +33,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>otherwise</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.2 $ $Date: 2004/09/17 18:45:23 $
+ * @version $Revision: 2.3 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 public class OtherwiseFactory extends FactoryBase
@@ -50,7 +50,7 @@ public class OtherwiseFactory extends FactoryBase
    {
       if (!(parent instanceof ChooseFactory.Instance))
          throw new SAXParseException(
-            "`" + qName + "' must be child of stx:choose",
+            "'" + qName + "' must be child of stx:choose",
             context.locator);
 
       checkAttributes(qName, attrs, null, context);

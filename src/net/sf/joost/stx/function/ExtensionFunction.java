@@ -1,5 +1,5 @@
 /*
- * $Id: ExtensionFunction.java,v 1.3 2007/05/20 18:00:44 obecker Exp $
+ * $Id: ExtensionFunction.java,v 1.4 2007/11/25 14:18:00 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import org.xml.sax.SAXParseException;
  * An instance of this class represents a Java extension function. Parts of this
  * code are taken from Michael Kay's Saxon XSLT processor implementation.
  * 
- * @version $Revision: 1.3 $ $Date: 2007/05/20 18:00:44 $
+ * @version $Revision: 1.4 $ $Date: 2007/11/25 14:18:00 $
  * @author Oliver Becker
  */
 final public class ExtensionFunction implements Instance
@@ -178,7 +178,7 @@ final public class ExtensionFunction implements Instance
 
          if (candidateMethods.size() == 0)
             throw new SAXParseException(
-               "No function found matching `" + fName + "' " +
+               "No function found matching '" + fName + "' " +
                (lName.equals(fName) ? "" : "(" + lName + ") ") +
                "with " + paramCount + " parameter" + 
                (paramCount != 1 ? "s" : "") + 
@@ -237,12 +237,12 @@ final public class ExtensionFunction implements Instance
                throw new EvalException(
                   "None of the Java constructors in " + 
                   targetClass.getName() + 
-                  " matches this function call to `new'");
+                  " matches this function call to 'new'");
             if (ambigous)
                throw new EvalException(
                   "There are several Java constructors in " +
                   targetClass.getName() + 
-                  " that match the function call to `new' equally well ");
+                  " that match the function call to 'new' equally well ");
          } // end else (choose best constructor)
 
          // set current parameters
@@ -313,12 +313,12 @@ final public class ExtensionFunction implements Instance
                throw new EvalException(
                   "None of the Java methods in " + 
                   targetClass.getName() +
-                  " matches this function call to `" + 
+                  " matches this function call to '" + 
                   theMethod.getName() + "'");
             if (ambigous)
                throw new EvalException(
                   "There are several Java methods in " +
-                  targetClass.getName() + " that match function `" + 
+                  targetClass.getName() + " that match function '" + 
                   theMethod.getName() + "' equally well");
          } // end else (choose best method)
 
@@ -338,7 +338,7 @@ final public class ExtensionFunction implements Instance
                 values[0].getDistanceTo(targetClass) == 
                           Double.POSITIVE_INFINITY)
                throw new EvalException(
-                  "First parameter in the function call to `" + 
+                  "First parameter in the function call to '" + 
                   theMethod.getName() + "' must be the object instance");
 
             theInstance = values[0].toJavaObject(targetClass);
@@ -346,7 +346,7 @@ final public class ExtensionFunction implements Instance
             if (theInstance == null)
                throw new EvalException(
                   "Target object (first parameter) in the function call " +
-                  "to `" + theMethod.getName() + "' is null");
+                  "to '" + theMethod.getName() + "' is null");
 
             for (int i=0; i<formalParams.length; i++) {
                currentParams[i] = 
@@ -368,7 +368,7 @@ final public class ExtensionFunction implements Instance
          } 
          catch (InvocationTargetException err3) {
             throw new EvalException(
-               "Exception in extension method `" + 
+               "Exception in extension method '" + 
                theMethod.getName() + "': " + 
                err3.getTargetException().toString());
          }

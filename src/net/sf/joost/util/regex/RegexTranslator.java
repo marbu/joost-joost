@@ -1,5 +1,5 @@
 /*
- * $Id: RegexTranslator.java,v 1.1 2007/06/04 19:57:37 obecker Exp $
+ * $Id: RegexTranslator.java,v 1.2 2007/11/25 14:18:02 obecker Exp $
  *
  * Copied from Michael Kay's Saxon 8.9
  * Local changes (excluding package declarations and imports) marked as // OB
@@ -219,7 +219,7 @@ public abstract class RegexTranslator {
 //        return new RegexSyntaxException("Error at character " + (pos - 1) +
 //                " in regular expression " + Err.wrap(regExp, Err.VALUE) + ": " + key);
         return new RegexSyntaxException("Error at character " + (pos - 1) +
-                                        " in regular expression `" + regExp+ "' : " + key);
+                                        " in regular expression '" + regExp+ "' : " + key);
     }
 
     protected RegexSyntaxException makeException(String key, String arg) {
@@ -228,7 +228,7 @@ public abstract class RegexTranslator {
 //                " in regular expression " + Err.wrap(regExp, Err.VALUE) + ": " + key +
 //                " (" + arg + ')');
         return new RegexSyntaxException("Error at character " + (pos - 1) +
-                                        " in regular expression `" + regExp + "': " + key +
+                                        " in regular expression '" + regExp + "': " + key +
                                         " (" + arg + ')');
     }
 

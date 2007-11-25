@@ -1,5 +1,5 @@
 /*
- * $Id: TextEmitter.java,v 1.3 2004/10/25 20:39:33 obecker Exp $
+ * $Id: TextEmitter.java,v 1.4 2007/11/25 14:18:02 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -36,7 +36,7 @@ import org.xml.sax.SAXException;
 /**
  * This class implements an emitter that uses the <code>text</code> output
  * method for byte or character streams.
- * @version $Revision: 1.3 $ $Date: 2004/10/25 20:39:33 $
+ * @version $Revision: 1.4 $ $Date: 2007/11/25 14:18:02 $
  * @author Oliver Becker, Anatolij Zubow
  */
 public class TextEmitter extends StreamEmitter 
@@ -96,12 +96,12 @@ public class TextEmitter extends StreamEmitter
          if (!charsetEncoder.canEncode(ch[start+i]))
             throw new SAXException("Cannot output character with code " + 
                                    (int)ch[start+i] + 
-                                   " in the encoding `" + encoding + "'");
+                                   " in the encoding '" + encoding + "'");
          
       try {
          writer.write(ch, start, length);
          if (DEBUG)
-            log.debug("`" + new String(ch, start, length) + "'");
+            log.debug("'" + new String(ch, start, length) + "'");
       } 
       catch (IOException ex) {
          if (log != null)

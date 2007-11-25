@@ -1,5 +1,5 @@
 /*
- * $Id: WithParamFactory.java,v 2.5 2004/11/06 13:07:32 obecker Exp $
+ * $Id: WithParamFactory.java,v 2.6 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>with-param</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.5 $ $Date: 2004/11/06 13:07:32 $
+ * @version $Revision: 2.6 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -70,7 +70,7 @@ final public class WithParamFactory extends FactoryBase
    {
       if (parent == null || !(parent instanceof ProcessBase)) {
          throw new SAXParseException(
-            "`" + qName + "' must be used only as a child of " +
+            "'" + qName + "' must be used only as a child of " +
             "stx:call-procedure or an stx:process-... instruction",
             context.locator);
       }
@@ -84,7 +84,7 @@ final public class WithParamFactory extends FactoryBase
          for (int i=0; i<siblings.size(); i++)
             if (((Instance)siblings.elementAt(i)).expName.equals(expName))
                throw new SAXParseException(
-                  "Parameter `" + nameAtt + "' already passed in line " +
+                  "Parameter '" + nameAtt + "' already passed in line " +
                   ((NodeBase)siblings.elementAt(i)).lineNo,
                   context.locator);
 
@@ -111,7 +111,7 @@ final public class WithParamFactory extends FactoryBase
          this.expName = expName;
          this.select = select;
          this.errorMessage = 
-            "(`" + qName + "' started in line " + lineNo + ")";
+            "('" + qName + "' started in line " + lineNo + ")";
       }
 
 

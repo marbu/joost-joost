@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.56 2007/07/22 12:56:46 obecker Exp $
+ * $Id: Processor.java,v 2.57 2007/11/25 14:18:01 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -70,7 +70,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.56 $ $Date: 2007/07/22 12:56:46 $
+ * @version $Revision: 2.57 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -1086,7 +1086,7 @@ public class Processor extends XMLFilterImpl
                case PR_SELF:
                   NodeBase start = inst.getNode();
                   context.errorHandler.error(
-                     "Encountered `" + start.qName +
+                     "Encountered '" + start.qName +
                      "' after stx:process-self",
                      start.publicId, start.systemId,
                      start.lineNo, start.colNo);
@@ -1236,7 +1236,7 @@ public class Processor extends XMLFilterImpl
 
       if (DEBUG)
          if (log.isDebugEnabled())
-            log.debug("`" + s + "'");
+            log.debug("'" + s + "'");
 
       if (skipDepth > 0 && context.targetHandler != null) {
          if (insideCDATA) {
@@ -1404,7 +1404,7 @@ public class Processor extends XMLFilterImpl
             case PR_SELF:
                NodeBase start = inst.getNode();
                context.errorHandler.error(
-                 "Encountered `" + start.qName +
+                 "Encountered '" + start.qName +
                  "' after stx:process-siblings",
                  start.publicId, start.systemId, start.lineNo, start.colNo);
                // falls through, if the error handler returns
@@ -1604,7 +1604,7 @@ public class Processor extends XMLFilterImpl
             case PR_SELF:
                NodeBase start = inst.getNode();
                context.errorHandler.error(
-                 "Encountered `" + start.qName + "' after stx:process-" +
+                 "Encountered '" + start.qName + "' after stx:process-" +
                  // prStatus must be either PR_CHILDREN or PR_SELF, see above
                  (prStatus == PR_CHILDREN ? "children" : "self"),
                  start.publicId, start.systemId, start.lineNo, start.colNo);
@@ -1744,7 +1744,7 @@ public class Processor extends XMLFilterImpl
             case PR_SELF: {
                NodeBase start = inst.getNode();
                context.errorHandler.error(
-                 "Encountered `" + start.qName + "' after stx:process-" +
+                 "Encountered '" + start.qName + "' after stx:process-" +
                  // prStatus must be either PR_CHILDREN or PR_SELF, see above
                  (prStatus == PR_CHILDREN ? "children" : "self"),
                  start.publicId, start.systemId, start.lineNo, start.colNo);

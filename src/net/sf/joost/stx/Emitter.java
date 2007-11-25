@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.36 2007/11/25 13:32:23 obecker Exp $
+ * $Id: Emitter.java,v 1.37 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -53,7 +53,7 @@ import org.xml.sax.helpers.NamespaceSupport;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.36 $ $Date: 2007/11/25 13:32:23 $
+ * @version $Revision: 1.37 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -215,7 +215,7 @@ public class Emitter implements Constants
             processLastElement();
          if (!openedElements.isEmpty()) {
             errorHandler.fatalError(
-               "Missing end tag for `" + openedElements.pop() + 
+               "Missing end tag for '" + openedElements.pop() + 
                "' at the end of the " + 
                (contH instanceof BufferEmitter ? "buffer" : "document"), 
                instruction.getNode().publicId, instruction.getNode().systemId, 
@@ -316,7 +316,7 @@ public class Emitter implements Constants
          if (openedElements.isEmpty()) {
             errorHandler.fatalError(
                "Attempt to emit unmatched end tag " +
-               (qName != null ? "`" + qName + "' " : "") +
+               (qName != null ? "'" + qName + "' " : "") +
                "(no element opened)",
                instruction.getNode().publicId, instruction.getNode().systemId, 
                instruction.lineNo, instruction.colNo);
@@ -326,16 +326,16 @@ public class Emitter implements Constants
          String elUri = (String)openedElements.pop();
          if (!qName.equals(elQName)) {
             errorHandler.fatalError(
-               "Attempt to emit unmatched end tag `"+
-               qName + "' (`" + elQName + "' expected)",
+               "Attempt to emit unmatched end tag '"+
+               qName + "' ('" + elQName + "' expected)",
                instruction.getNode().publicId, instruction.getNode().systemId, 
                instruction.lineNo, instruction.colNo);
             return; // if #errorHandler returns
          }
          if (!uri.equals(elUri)) {
             errorHandler.fatalError(
-               "Attempt to emit unmatched end tag `{" + uri + "}" + qName + 
-               "' (`{" + elUri + "}" + elQName + "' expected)",
+               "Attempt to emit unmatched end tag '{" + uri + "}" + qName + 
+               "' ('{" + elUri + "}" + elQName + "' expected)",
                instruction.getNode().publicId, instruction.getNode().systemId, 
                instruction.lineNo, instruction.colNo);
             return; // if #errorHandler returns
@@ -488,7 +488,7 @@ public class Emitter implements Constants
       if (contH != null && lastAttrs != null)
          processLastElement();
       if (!dtdAllowed) {
-         errorHandler.error("Cannot create a document type declaration for `"
+         errorHandler.error("Cannot create a document type declaration for '"
                         + name + "' when an element or another DTD has already "
                         + "been output", 
                         instruction.publicId, instruction.systemId, 
@@ -573,7 +573,7 @@ public class Emitter implements Constants
       }
       catch (java.io.UnsupportedEncodingException e) {
          String msg = 
-            "Unsupported encoding `" + encoding + "', using " + 
+            "Unsupported encoding '" + encoding + "', using " + 
             DEFAULT_ENCODING;
          errorHandler.warning(
             msg, publicId, systemId, lineNo, colNo);

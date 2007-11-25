@@ -1,5 +1,5 @@
 /*
- * $Id: ForEachFactory.java,v 2.8 2006/02/27 19:47:18 obecker Exp $
+ * $Id: ForEachFactory.java,v 2.9 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>for-each-item</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.8 $ $Date: 2006/02/27 19:47:18 $
+ * @version $Revision: 2.9 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -153,7 +153,7 @@ final public class ForEachFactory extends FactoryBase
             // perform this check only once per for-each-item
             if (context.localVars.get(expName) != null) {
                context.errorHandler.fatalError(
-                  "Variable `" + varName + "' already declared",
+                  "Variable '" + varName + "' already declared",
                   publicId, systemId, lineNo, colNo);
                return PR_ERROR;// if the errorHandler returns
             }

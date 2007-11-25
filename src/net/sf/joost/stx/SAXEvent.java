@@ -1,5 +1,5 @@
 /*
- * $Id: SAXEvent.java,v 1.19 2004/09/29 06:04:58 obecker Exp $
+ * $Id: SAXEvent.java,v 1.20 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -36,7 +36,7 @@ import org.xml.sax.Attributes;
 /** 
  * SAXEvent stores all information attached to an incoming SAX event,
  * it is the representation of a node in STX.
- * @version $Revision: 1.19 $ $Date: 2004/09/29 06:04:58 $
+ * @version $Revision: 1.20 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 final public class SAXEvent
@@ -409,7 +409,7 @@ final public class SAXEvent
       case ELEMENT_END:
          return ret + "</" + qName + ">";
       case TEXT:
-         return ret + "`" + value + "'";
+         return ret + "'" + value + "'";
       case CDATA:
          return ret + "<![CDATA[" + value + "]]>";
       case COMMENT:

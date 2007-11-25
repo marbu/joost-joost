@@ -1,5 +1,5 @@
 /*
- * $Id: ProcessBase.java,v 2.15 2007/11/16 17:35:07 obecker Exp $
+ * $Id: ProcessBase.java,v 2.16 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Common base class for all <code>stx:process-<em>xxx</em></code>
  * instructions
- * @version $Revision: 2.15 $ $Date: 2007/11/16 17:35:07 $
+ * @version $Revision: 2.16 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 public class ProcessBase extends NodeBase
@@ -103,7 +103,7 @@ public class ProcessBase extends NodeBase
          src = src.trim();
          if (!src.endsWith(")"))
             throw new SAXParseException(
-               "Invalid filter-src value `" + src + 
+               "Invalid filter-src value '" + src + 
                "'. Expect url(...) or buffer(...) specification.",
                context.locator);
          if (src.startsWith("url(")) {
@@ -119,7 +119,7 @@ public class ProcessBase extends NodeBase
          }
          else
             throw new SAXParseException(
-               "Invalid filter-src value `" + src + 
+               "Invalid filter-src value '" + src + 
                "'. Expect url(...) or buffer(...) specification.",
                context.locator);
       }
@@ -137,12 +137,12 @@ public class ProcessBase extends NodeBase
          ancestor = ancestor.parent;
       if (ancestor == null)
          throw new SAXParseException(
-            "`" + qName + "' must be a descendant of stx:template or " + 
+            "'" + qName + "' must be a descendant of stx:template or " + 
             "stx:procedure",
             context.locator);
       if (ancestor instanceof WithParamFactory.Instance)
          throw new SAXParseException(
-            "`" + qName + "' must not be a descendant of `" +
+            "'" + qName + "' must not be a descendant of '" +
             ancestor.qName + "'",
             context.locator);
    }
@@ -159,15 +159,15 @@ public class ProcessBase extends NodeBase
             return;
          else
             throw new SAXParseException(
-               "`" + qName + "' must have only stx:with-param children " +
+               "'" + qName + "' must have only stx:with-param children " +
                "(encountered text)",
                node.publicId, node.systemId, node.lineNo, node.colNo);
       }
 
       if (!(node instanceof WithParamFactory.Instance))
          throw new SAXParseException(
-            "`" + qName + "' must have only stx:with-param children " +
-            "(encountered `" + node.qName + "')",
+            "'" + qName + "' must have only stx:with-param children " +
+            "(encountered '" + node.qName + "')",
             node.publicId, node.systemId, node.lineNo, node.colNo);
 
       children.addElement(node);
@@ -196,8 +196,8 @@ public class ProcessBase extends NodeBase
          targetGroup = (GroupBase)parentGroup.namedGroups.get(groupExpName);
          if (targetGroup == null)
             throw new SAXParseException(
-               "Unknown target group `" + groupQName + 
-               "' specified for `" + qName + "'", 
+               "Unknown target group '" + groupQName + 
+               "' specified for '" + qName + "'", 
                publicId, systemId, lineNo, colNo);
       }
       if (targetGroup == null) { // means: still null
@@ -258,7 +258,7 @@ public class ProcessBase extends NodeBase
          }
          if (handler == null) {
             context.errorHandler.fatalError(
-               "Filter `" + filterMethod + "' not available", 
+               "Filter '" + filterMethod + "' not available", 
                publicId, systemId, lineNo, colNo);
             return null;
          }
@@ -276,7 +276,7 @@ public class ProcessBase extends NodeBase
       }
       catch (VariableNotFoundException e) {
          context.errorHandler.error(
-               "Can't process an undeclared buffer `" + useBufQName + "'",
+               "Can't process an undeclared buffer '" + useBufQName + "'",
                publicId, systemId, lineNo, colNo);
             // if the error handler returns
          return null;

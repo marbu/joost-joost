@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 2.11 2006/02/27 19:47:18 obecker Exp $
+ * $Id: NodeBase.java,v 2.12 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Abstract base class for all instances of nodes in the STX transformation 
  * sheet
- * @version $Revision: 2.11 $ $Date: 2006/02/27 19:47:18 $
+ * @version $Revision: 2.12 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 public abstract class NodeBase 
@@ -198,7 +198,7 @@ public abstract class NodeBase
       throws SAXParseException
    {
       if (lastChild == null) 
-         throw new SAXParseException("`" + qName + "' must be empty", 
+         throw new SAXParseException("'" + qName + "' must be empty", 
                                      node.publicId, node.systemId, 
                                      node.lineNo, node.colNo);
 

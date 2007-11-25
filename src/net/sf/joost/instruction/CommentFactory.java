@@ -1,5 +1,5 @@
 /*
- * $Id: CommentFactory.java,v 2.5 2004/11/06 13:07:32 obecker Exp $
+ * $Id: CommentFactory.java,v 2.6 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>comment</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.5 $ $Date: 2004/11/06 13:07:32 $
+ * @version $Revision: 2.6 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -88,7 +88,7 @@ public class CommentFactory extends FactoryBase
          
          buffer = new StringBuffer();
          strEmitter = new StringEmitter(buffer,
-                         "(`" + qName + "' started in line " + lineNo + ")");
+                         "('" + qName + "' started in line " + lineNo + ")");
       }
 
 

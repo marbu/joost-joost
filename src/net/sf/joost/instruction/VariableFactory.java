@@ -1,5 +1,5 @@
 /*
- * $Id: VariableFactory.java,v 2.5 2007/11/16 14:35:00 obecker Exp $
+ * $Id: VariableFactory.java,v 2.6 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>variable</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.5 $ $Date: 2007/11/16 14:35:00 $
+ * @version $Revision: 2.6 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -79,7 +79,7 @@ final public class VariableFactory extends FactoryBase
                                            context);
       if (keepValueIndex != -1 && !(parent instanceof GroupBase))
          throw new SAXParseException(
-            "Attribute `keep-value' is not allowed for local variables",
+            "Attribute 'keep-value' is not allowed for local variables",
             context.locator);
 
       // default is "no" (false)
@@ -111,7 +111,7 @@ final public class VariableFactory extends FactoryBase
          this.select = select;
          this.keepValue = keepValue;
          this.errorMessage = 
-            "(`" + qName + "' started in line " + lineNo + ")";
+            "('" + qName + "' started in line " + lineNo + ")";
          this.isGroupVar = parent instanceof GroupBase;
       }
 
@@ -165,7 +165,7 @@ final public class VariableFactory extends FactoryBase
 
          if (varTable.get(expName) != null) {
             context.errorHandler.error(
-               "Variable `" + varName + "' already declared",
+               "Variable '" + varName + "' already declared",
                publicId, systemId, lineNo, colNo);
             return; // if the errorHandler returns
          }

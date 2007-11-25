@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 2.11 2007/11/16 17:35:07 obecker Exp $
+ * $Id: PBufferFactory.java,v 2.12 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.11 $ $Date: 2007/11/16 17:35:07 $
+ * @version $Revision: 2.12 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -86,15 +86,15 @@ public class PBufferFactory extends FactoryBase
 
       if (groupAtt != null && filterMethodAtt != null)
          throw new SAXParseException(
-            "It's not allowed to use both `group' and `filter-method' attributes",
+            "It's not allowed to use both 'group' and 'filter-method' attributes",
             context.locator);
 
       String filterSrcAtt = attrs.getValue("filter-src");
 
       if (filterSrcAtt != null && filterMethodAtt == null)
          throw new SAXParseException(
-            "Missing `filter-method' attribute in `" + qName + 
-            "' (`filter-src' is present)",
+            "Missing 'filter-method' attribute in '" + qName + 
+            "' ('filter-src' is present)",
             context.locator);
 
       checkAttributes(qName, attrs, attrNames, context);
@@ -137,7 +137,7 @@ public class PBufferFactory extends FactoryBase
             }
             catch (VariableNotFoundException e) {
                context.errorHandler.error(
-                  "Can't process an undeclared buffer `" + bufName + "'",
+                  "Can't process an undeclared buffer '" + bufName + "'",
                   publicId, systemId, lineNo, colNo);
                // if the error handler returns
                return PR_ERROR;

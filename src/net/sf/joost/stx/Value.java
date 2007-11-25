@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.23 2007/06/07 19:52:54 obecker Exp $
+ * $Id: Value.java,v 1.24 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -34,7 +34,7 @@ import net.sf.joost.grammar.EvalException;
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.23 $ $Date: 2007/06/07 19:52:54 $
+ * @version $Revision: 1.24 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -512,7 +512,7 @@ public class Value implements Cloneable
          if (string.length() == 1)
             return new Character(s.charAt(0));
          else
-            throw new EvalException("Cannot convert string `" + string + 
+            throw new EvalException("Cannot convert string '" + string + 
                                     "' to character (length is not 1)");
       }
       else

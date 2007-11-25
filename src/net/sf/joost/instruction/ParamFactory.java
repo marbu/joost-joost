@@ -1,5 +1,5 @@
 /*
- * $Id: ParamFactory.java,v 2.9 2006/02/27 19:47:18 obecker Exp $
+ * $Id: ParamFactory.java,v 2.10 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>params</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.9 $ $Date: 2006/02/27 19:47:18 $
+ * @version $Revision: 2.10 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -74,7 +74,7 @@ final public class ParamFactory extends FactoryBase
           !(parent instanceof GroupBase ||   // transform, group
             parent instanceof TemplateBase)) // template, procedure
          throw new SAXParseException(
-            "`" + qName + "' must be a top level element " +
+            "'" + qName + "' must be a top level element " +
             "or a child of stx:group, stx:template, or stx:procedure",
             context.locator);
 
@@ -88,7 +88,7 @@ final public class ParamFactory extends FactoryBase
       Tree selectExpr = parseExpr(attrs.getValue("select"), context);
       if (required && selectExpr != null)
          throw new SAXParseException(
-            "`" + qName + "' must not have a `select' attribute if it " +
+            "'" + qName + "' must not have a 'select' attribute if it " +
             "declares the parameter as required", context.locator);
 
       checkAttributes(qName, attrs, attrNames, context);
@@ -148,7 +148,7 @@ final public class ParamFactory extends FactoryBase
             // no parameter passed
             if (required) {
                context.errorHandler.error(
-                  "Missing value for required parameter `" + varName + "'",
+                  "Missing value for required parameter '" + varName + "'",
                   publicId, systemId, lineNo, colNo);
                return PR_CONTINUE; // if the errorHandler returns
             }
@@ -162,7 +162,7 @@ final public class ParamFactory extends FactoryBase
                super.process(context);
                context.pushEmitter(
                   new StringEmitter(new StringBuffer(),
-                     "(`" + qName + "' started in line " + lineNo + ")"));
+                     "('" + qName + "' started in line " + lineNo + ")"));
                return PR_CONTINUE;
             }
          }
@@ -200,7 +200,7 @@ final public class ParamFactory extends FactoryBase
 
          if (varTable.get(expName) != null) {
             context.errorHandler.error(
-               "Param `" + varName + "' already declared",
+               "Param '" + varName + "' already declared",
                publicId, systemId, lineNo, colNo);
             return; // if the errorHandler returns
          }

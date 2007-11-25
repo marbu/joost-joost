@@ -1,5 +1,5 @@
 /*
- * $Id: AssignFactory.java,v 2.9 2007/11/16 17:35:07 obecker Exp $
+ * $Id: AssignFactory.java,v 2.10 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>assign</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.9 $ $Date: 2007/11/16 17:35:07 $
+ * @version $Revision: 2.10 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -101,7 +101,7 @@ final public class AssignFactory extends FactoryBase
          this.varName = varName;
          this.expName = expName;
          this.select = select;
-         this.errorMessage = "(`" + qName + "' started in line " + lineNo + ")";
+         this.errorMessage = "('" + qName + "' started in line " + lineNo + ")";
       }
       
 
@@ -159,7 +159,7 @@ final public class AssignFactory extends FactoryBase
             }
             catch (VariableNotFoundException e) {
                context.errorHandler.error(
-                  "Can't assign to undeclared variable `" + varName + "'",
+                  "Can't assign to undeclared variable '" + varName + "'",
                   publicId, systemId, lineNo, colNo);
                return; // if the errorHandler returns
             }

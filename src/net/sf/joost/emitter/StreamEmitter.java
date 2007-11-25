@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.29 2007/11/25 13:32:23 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.30 2007/11/25 14:18:02 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -47,7 +47,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Base class for emitter classes that produce a character stream.
- * @version $Revision: 1.29 $ $Date: 2007/11/25 13:32:23 $
+ * @version $Revision: 1.30 $ $Date: 2007/11/25 14:18:02 $
  * @author Oliver Becker
  */
 public abstract class StreamEmitter extends StxEmitterBase implements Constants
@@ -106,8 +106,8 @@ public abstract class StreamEmitter extends StxEmitterBase implements Constants
             return new TextEmitter(writer, encoding);
          else if (outputMethod.equals(HTML_METHOD))
             return new HtmlEmitter(writer, encoding);
-         String msg = "Unsupported output method `" + outputMethod + 
-                      "', use default `xml' method instead"; 
+         String msg = "Unsupported output method '" + outputMethod + 
+                      "', use default 'xml' method instead"; 
          if (log != null)
             log.warn(msg);
          else

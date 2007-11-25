@@ -1,5 +1,5 @@
 /*
- * $Id: WhenFactory.java,v 2.6 2006/02/27 19:47:18 obecker Exp $
+ * $Id: WhenFactory.java,v 2.7 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>when</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.6 $ $Date: 2006/02/27 19:47:18 $
+ * @version $Revision: 2.7 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -69,7 +69,7 @@ final public class WhenFactory extends FactoryBase
    {
       if (!(parent instanceof ChooseFactory.Instance))
          throw new SAXParseException(
-            "`" + qName + "' must be child of stx:choose",
+            "'" + qName + "' must be child of stx:choose",
             context.locator);
 
       Tree testExpr = parseExpr(getAttribute(qName, attrs, "test", context), 
@@ -131,7 +131,7 @@ final public class WhenFactory extends FactoryBase
       //
       public String toString()
       {
-         return "stx:when test=`" + test + "'";
+         return "stx:when test='" + test + "'";
       }
    }
 }

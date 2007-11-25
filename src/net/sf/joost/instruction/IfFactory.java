@@ -1,5 +1,5 @@
 /*
- * $Id: IfFactory.java,v 2.5 2006/02/27 19:47:18 obecker Exp $
+ * $Id: IfFactory.java,v 2.6 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import net.sf.joost.grammar.Tree;
 /** 
  * Factory for <code>if</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.5 $ $Date: 2006/02/27 19:47:18 $
+ * @version $Revision: 2.6 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -136,7 +136,7 @@ final public class IfFactory extends FactoryBase
       //
       public String toString()
       {
-         return "stx:if test=`" + test + "'";
+         return "stx:if test='" + test + "'";
       }
    }
 }

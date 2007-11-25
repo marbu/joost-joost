@@ -1,5 +1,5 @@
 /*
- * $Id: TransformFactory.java,v 2.15 2006/02/27 19:47:18 obecker Exp $
+ * $Id: TransformFactory.java,v 2.16 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Factory for <code>transform</code> elements, which are represented
  * by the inner Instance class
- * @version $Revision: 2.15 $ $Date: 2006/02/27 19:47:18 $
+ * @version $Revision: 2.16 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -82,14 +82,14 @@ public class TransformFactory extends FactoryBase
    {
       if (parent != null && 
           parent.systemId.equals(context.locator.getSystemId()))
-         throw new SAXParseException("`" + qName + 
+         throw new SAXParseException("'" + qName + 
                                      "' is allowed only as root element",
                                      context.locator);
       // parent.systemId != locator.systemId means: it is included
 
       String version = getAttribute(qName, attrs, "version", context);
       if (!version.equals("1.0"))
-         throw new SAXParseException("Unknown STX version `" + version + 
+         throw new SAXParseException("Unknown STX version '" + version + 
                                      "'. The only supported version is 1.0.",
                                      context.locator); 
 
@@ -101,8 +101,8 @@ public class TransformFactory extends FactoryBase
             methodAtt = getExpandedName(methodAtt, context);
          else if (!methodAtt.equals("text") && !methodAtt.equals("xml"))
             throw new SAXParseException(
-               "Value of attribute `output-method' must be `xml', `text', " + 
-               "or a qualified name. Found `" + methodAtt + "'",
+               "Value of attribute 'output-method' must be 'xml', 'text', " + 
+               "or a qualified name. Found '" + methodAtt + "'",
                context.locator);
       }
 
@@ -144,7 +144,7 @@ public class TransformFactory extends FactoryBase
             if ("#all".equals(prefix)) {
                if (tokenNo != 1 || tokenizer.hasMoreTokens())
                   throw new SAXParseException(
-                     "The value `#all' must be used standalone in the `" +
+                     "The value '#all' must be used standalone in the '" +
                      EXCLUDE_RESULT_PREFIXES + "' attribute", 
                      context.locator);
                else
@@ -160,13 +160,13 @@ public class TransformFactory extends FactoryBase
                if (prefix == "") // #default
                   throw new SAXParseException(
                      "No default namespace declared to be excluded by " +
-                     "using the value `#default' in the `" +
+                     "using the value '#default' in the '" +
                      EXCLUDE_RESULT_PREFIXES + "' attribute",
                      context.locator);
                else
                   throw new SAXParseException(
-                     "No namespace declared for prefix `" + prefix + 
-                     "' in the `" + EXCLUDE_RESULT_PREFIXES + "' attribute", 
+                     "No namespace declared for prefix '" + prefix + 
+                     "' in the '" + EXCLUDE_RESULT_PREFIXES + "' attribute", 
                      context.locator);
 
          }
@@ -251,7 +251,7 @@ public class TransformFactory extends FactoryBase
          if (compilableNodes != null)
             // will only happen after this transform element was inserted by
             // an stx:include instruction
-            throw new SAXParseException("`" + qName + "' must be empty",
+            throw new SAXParseException("'" + qName + "' must be empty",
                                         node.publicId, node.systemId, 
                                         node.lineNo, node.colNo);
 
@@ -264,7 +264,7 @@ public class TransformFactory extends FactoryBase
             // nothing to do in this case
          }
          else
-            throw new SAXParseException("`" + node.qName + 
+            throw new SAXParseException("'" + node.qName + 
                                         "' not allowed as top level element", 
                                         node.publicId, node.systemId, 
                                         node.lineNo, node.colNo);

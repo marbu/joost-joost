@@ -1,5 +1,5 @@
 /*
- * $Id: AttrTree.java,v 1.2 2007/05/20 18:00:43 obecker Exp $
+ * $Id: AttrTree.java,v 1.3 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Objects of AttrTree represent attribute nodes in the syntax tree of a 
  * pattern or an STXPath expression.
- * @version $Revision: 1.2 $ $Date: 2007/05/20 18:00:43 $
+ * @version $Revision: 1.3 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 final public class AttrTree extends Tree
@@ -58,7 +58,7 @@ final public class AttrTree extends Tree
          uri = (String)context.nsSet.get(value.substring(0, colon));
          lName = value.substring(colon+1);
          if (uri == null) {
-            throw new SAXParseException("Undeclared prefix `" + 
+            throw new SAXParseException("Undeclared prefix '" + 
                                         value.substring(0, colon) + "'",
                                         context.locator);
          }
@@ -100,7 +100,7 @@ final public class AttrTree extends Tree
          while (v1 != null) {
             if (v1.type != Value.NODE) {
                context.errorHandler.error(
-                  "Current item for evaluating `@" + value +
+                  "Current item for evaluating '@" + value +
                   "' is not a node (got " + v1 + ")",
                   context.currentInstruction.publicId,
                   context.currentInstruction.systemId,

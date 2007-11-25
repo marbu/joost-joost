@@ -1,5 +1,5 @@
 /*
- * $Id: CallProcedureFactory.java,v 2.7 2006/02/27 19:47:18 obecker Exp $
+ * $Id: CallProcedureFactory.java,v 2.8 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.stx.ParseContext;
 /**
  * Factory for <code>call-procedure</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.7 $ $Date: 2006/02/27 19:47:18 $
+ * @version $Revision: 2.8 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -124,7 +124,7 @@ public class CallProcedureFactory extends FactoryBase
 
          if (procedure == null) {
             throw new SAXParseException(
-               "Unknown procedure `" + procQName + "' called with `" +
+               "Unknown procedure '" + procQName + "' called with '" +
                qName + "'",
                publicId, systemId, lineNo, colNo);
          }

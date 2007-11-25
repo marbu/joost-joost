@@ -1,5 +1,5 @@
 /*
- * $Id: ProcedureFactory.java,v 2.7 2005/01/23 19:47:27 obecker Exp $
+ * $Id: ProcedureFactory.java,v 2.8 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Factory for <code>procedure</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.7 $ $Date: 2005/01/23 19:47:27 $
+ * @version $Revision: 2.8 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -69,7 +69,7 @@ public final class ProcedureFactory extends FactoryBase
       throws SAXParseException
    {
       if (parent == null || !(parent instanceof GroupBase))
-         throw new SAXParseException("`" + qName + "' must be a top level " +
+         throw new SAXParseException("'" + qName + "' must be a top level " +
                                      "element or a child of stx:group",
                                      context.locator);
 

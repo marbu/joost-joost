@@ -1,5 +1,5 @@
 /*
- * $Id: GroupBase.java,v 2.15 2006/02/27 19:47:18 obecker Exp $
+ * $Id: GroupBase.java,v 2.16 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import org.xml.sax.SAXParseException;
  * and <code>stx:transform</code> 
  * (class <code>TransformFactory.Instance</code>) elements. 
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 2.15 $ $Date: 2006/02/27 19:47:18 $
+ * @version $Revision: 2.16 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -206,7 +206,7 @@ abstract public class GroupBase extends NodeBase
             NodeBase node = (NodeBase)visibleProcedures.get(p.expName);
             if (node != null) {
                throw new SAXParseException(
-                  "Procedure `" + p.procName + "' already defined in line " +
+                  "Procedure '" + p.procName + "' already defined in line " +
                   node.lineNo + 
                      (p.systemId.equals(node.systemId) 
                          ? (node.lineNo == p.lineNo 
@@ -225,7 +225,7 @@ abstract public class GroupBase extends NodeBase
                node = (NodeBase)globalProcedures.get(p.expName);
                if (node != null) {
                   throw new SAXParseException(
-                     "Global procedure `" + p.procName + 
+                     "Global procedure '" + p.procName + 
                      "' already defined in line " + node.lineNo +
                         (p.systemId.equals(node.systemId) 
                             ? (node.lineNo == p.lineNo 
@@ -261,7 +261,7 @@ abstract public class GroupBase extends NodeBase
                   (ProcedureFactory.Instance)pubProc.get(o);
                NodeBase p2 = (NodeBase)visibleProcedures.get(o);
                throw new SAXParseException(
-                  "Public procedure `" + p1.procName + 
+                  "Public procedure '" + p1.procName + 
                   "' conflicts with the procedure definition in line " +
                   p2.lineNo +
                   (p1.systemId.equals(p2.systemId) 
@@ -395,7 +395,7 @@ abstract public class GroupBase extends NodeBase
                (ProcedureFactory.Instance)pTable.get(key);
             NodeBase p2 = (NodeBase)groupProcedures.get(key);
             throw new SAXParseException(
-               "Group procedure `" + p1.procName + 
+               "Group procedure '" + p1.procName + 
                   "' conflicts with the procedure definition in line " +
                   p2.lineNo +
                   (p1.systemId.equals(p2.systemId) 

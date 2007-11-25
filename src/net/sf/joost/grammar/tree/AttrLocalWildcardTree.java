@@ -1,5 +1,5 @@
 /*
- * $Id: AttrLocalWildcardTree.java,v 1.2 2007/05/20 18:00:44 obecker Exp $
+ * $Id: AttrLocalWildcardTree.java,v 1.3 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -36,7 +36,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Objects of AttrLocalWildcardTree represent attribute tests nodes of the 
  * form '@ns:*' in the syntax tree of a pattern or an STXPath expression.
- * @version $Revision: 1.2 $ $Date: 2007/05/20 18:00:44 $
+ * @version $Revision: 1.3 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 final public class AttrLocalWildcardTree extends Tree
@@ -56,7 +56,7 @@ final public class AttrLocalWildcardTree extends Tree
       this.prefix = prefix;
       uri = (String)context.nsSet.get(prefix);
       if (uri == null) 
-         throw new SAXParseException("Undeclared prefix `" + prefix + "'",
+         throw new SAXParseException("Undeclared prefix '" + prefix + "'",
                                      context.locator);
    }
 
@@ -98,7 +98,7 @@ final public class AttrLocalWildcardTree extends Tree
          SAXEvent e = v1.getNode();
          if (e == null) {
             context.errorHandler.error(
-               "Current item for evaluating `@" + prefix + 
+               "Current item for evaluating '@" + prefix + 
                ":*' is not a node (got " + v1 + ")",
                context.currentInstruction.publicId,
                context.currentInstruction.systemId,

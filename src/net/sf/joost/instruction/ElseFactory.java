@@ -1,5 +1,5 @@
 /*
- * $Id: ElseFactory.java,v 2.2 2003/06/03 14:30:21 obecker Exp $
+ * $Id: ElseFactory.java,v 2.3 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -33,7 +33,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Factory for <code>else</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.2 $ $Date: 2003/06/03 14:30:21 $
+ * @version $Revision: 2.3 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -54,7 +54,7 @@ public class ElseFactory extends FactoryBase
 
       if (!(parent.lastChild.getNode() instanceof IfFactory.Instance))
          throw new SAXParseException(
-            "Found `" + qName + "' without stx:if", context.locator);
+            "Found '" + qName + "' without stx:if", context.locator);
 
       return new Instance(qName, parent, context);
    }

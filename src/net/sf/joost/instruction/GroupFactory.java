@@ -1,5 +1,5 @@
 /*
- * $Id: GroupFactory.java,v 2.7 2004/09/17 18:45:23 obecker Exp $
+ * $Id: GroupFactory.java,v 2.8 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>group</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.7 $ $Date: 2004/09/17 18:45:23 $
+ * @version $Revision: 2.8 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -78,8 +78,8 @@ final public class GroupFactory extends FactoryBase
    {
       // check parent
       if (parent != null && !(parent instanceof GroupBase))
-         throw new SAXParseException("`" + qName + 
-                                     "' not allowed as child of `" +
+         throw new SAXParseException("'" + qName + 
+                                     "' not allowed as child of '" +
                                      parent.qName + "'", context.locator);
 
       String groupName = null;
@@ -90,7 +90,7 @@ final public class GroupFactory extends FactoryBase
          Hashtable namedGroups = ((GroupBase)parent).namedGroups;
          if (namedGroups.get(groupName) != null) 
             throw new SAXParseException(
-               "Group name `" + nameAtt + "' already used", 
+               "Group name '" + nameAtt + "' already used", 
                context.locator);
          else
             namedGroups.put(groupName, groupName); 
@@ -181,7 +181,7 @@ final public class GroupFactory extends FactoryBase
             super.insert(node);
          else
             throw new SAXParseException(
-              "`" + node.qName + "' not allowed as child of `" + qName + "'", 
+              "'" + node.qName + "' not allowed as child of '" + qName + "'", 
               node.publicId, node.systemId, node.lineNo, node.colNo);
       }
 

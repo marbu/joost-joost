@@ -1,5 +1,5 @@
 /*
- * $Id: NSAliasFactory.java,v 2.4 2004/11/06 22:46:46 obecker Exp $
+ * $Id: NSAliasFactory.java,v 2.5 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.stx.ParseContext;
 
 /** 
  * Factory for <code>namespace-alias</code> elements
- * @version $Revision: 2.4 $ $Date: 2004/11/06 22:46:46 $
+ * @version $Revision: 2.5 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -67,8 +67,8 @@ final public class NSAliasFactory extends FactoryBase
    {
       // check parent
       if (parent != null && !(parent instanceof TransformFactory.Instance))
-         throw new SAXParseException("`" + qName + 
-                                     "' not allowed as child of `" +
+         throw new SAXParseException("'" + qName + 
+                                     "' not allowed as child of '" +
                                      parent.qName + "'", context.locator);
 
       String fromPrefix = getAttribute(qName, attrs, "sheet-prefix", 
@@ -77,8 +77,8 @@ final public class NSAliasFactory extends FactoryBase
       if ((fromPrefix.indexOf('#') != -1 && !fromPrefix.equals("#default")) ||
           fromPrefix.indexOf(':') != -1)
          throw new SAXParseException(
-            "The value of `sheet-prefix' must be either a NCName or " +
-            "the string `#default'. Found `" + fromPrefix + "'",
+            "The value of 'sheet-prefix' must be either a NCName or " +
+            "the string '#default'. Found '" + fromPrefix + "'",
             context.locator);
       // "#default" used?
       if (fromPrefix.equals("#default"))
@@ -88,8 +88,8 @@ final public class NSAliasFactory extends FactoryBase
       if (fromURI == null) {
          if (fromPrefix != "")
             throw new SAXParseException(
-               "Undeclared namespace prefix `" + fromPrefix + 
-               "' found in the `sheet-prefix' attribute",
+               "Undeclared namespace prefix '" + fromPrefix + 
+               "' found in the 'sheet-prefix' attribute",
                context.locator);
          else
             fromURI = "";
@@ -101,8 +101,8 @@ final public class NSAliasFactory extends FactoryBase
       if ((toPrefix.indexOf('#') != -1 && !toPrefix.equals("#default")) ||
           toPrefix.indexOf(':') != -1)
          throw new SAXParseException(
-            "The value of `result-prefix' must be either a NCName or " +
-            "the string `#default', found `" + toPrefix + "'",
+            "The value of 'result-prefix' must be either a NCName or " +
+            "the string '#default', found '" + toPrefix + "'",
             context.locator);
       if (toPrefix.equals("#default"))
          toPrefix = "";
@@ -110,8 +110,8 @@ final public class NSAliasFactory extends FactoryBase
       if (toURI == null) {
          if (toPrefix != "")
             throw new SAXParseException(
-               "Undeclared namespace prefix `" + toPrefix + 
-               "' found in the `result-prefix' attribute",
+               "Undeclared namespace prefix '" + toPrefix + 
+               "' found in the 'result-prefix' attribute",
                context.locator);
          else
             toURI = "";
@@ -123,9 +123,9 @@ final public class NSAliasFactory extends FactoryBase
       Object alias = namespaceAliases.get(fromURI);
       if (alias != null && !alias.equals(toURI)) {
          throw new SAXParseException(
-            "Namespace alias for prefix `" + 
+            "Namespace alias for prefix '" + 
             (fromPrefix == "" ? "#default" : fromPrefix) + 
-            "' already declared as `" + 
+            "' already declared as '" + 
             (alias == "" ? "#default" : alias) + "'",
             context.locator);
       }

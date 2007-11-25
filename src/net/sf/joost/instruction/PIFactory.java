@@ -1,5 +1,5 @@
 /*
- * $Id: PIFactory.java,v 2.6 2004/11/06 13:07:32 obecker Exp $
+ * $Id: PIFactory.java,v 2.7 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>processing-instruction</code> elements, which are 
  * represented by the inner Instance class. 
- * @version $Revision: 2.6 $ $Date: 2004/11/06 13:07:32 $
+ * @version $Revision: 2.7 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -97,7 +97,7 @@ final public class PIFactory extends FactoryBase
          this.select = select;
          buffer = new StringBuffer();
          strEmitter = new StringEmitter(buffer, 
-                         "(`" + qName + "' started in line " + lineNo + ")");
+                         "('" + qName + "' started in line " + lineNo + ")");
       }
 
 

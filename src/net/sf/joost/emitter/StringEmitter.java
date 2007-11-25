@@ -1,5 +1,5 @@
 /*
- * $Id: StringEmitter.java,v 1.8 2005/03/13 17:12:49 obecker Exp $
+ * $Id: StringEmitter.java,v 1.9 2007/11/25 14:18:02 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -31,7 +31,7 @@ import org.xml.sax.SAXException;
 
 /**
  * This class implements an emitter that collects characters events
- * @version $Revision: 1.8 $ $Date: 2005/03/13 17:12:49 $
+ * @version $Revision: 1.9 $ $Date: 2007/11/25 14:18:02 $
  * @author Oliver Becker
  */
 
@@ -103,7 +103,7 @@ final public class StringEmitter extends StxEmitterBase
       throws SAXException
    {
       if (errorInfo != null)
-         throw new SAXException("Can't create element `" + qName + "' here " +
+         throw new SAXException("Can't create element '" + qName + "' here " +
                                 errorInfo);
    }
 
@@ -135,7 +135,7 @@ final public class StringEmitter extends StxEmitterBase
       throws SAXException
    {
       if (errorInfo != null)
-         throw new SAXException("Can't create processing instruction `" + 
+         throw new SAXException("Can't create processing instruction '" + 
                                 target + "' here " + errorInfo);
    }
 

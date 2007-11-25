@@ -1,5 +1,5 @@
 /*
- * $Id: VarTree.java,v 1.4 2007/11/16 17:35:07 obecker Exp $
+ * $Id: VarTree.java,v 1.5 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Objects of VarTree represent variable reference ('$var') nodes in the
  * syntax tree of a pattern or an STXPath expression.
- * @version $Revision: 1.4 $ $Date: 2007/11/16 17:35:07 $
+ * @version $Revision: 1.5 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 final public class VarTree extends Tree
@@ -68,7 +68,7 @@ final public class VarTree extends Tree
       if (colon != -1) {
          uri = (String)context.nsSet.get(value.substring(0, colon));
          if (uri == null) {
-            throw new SAXParseException("Undeclared prefix `" + 
+            throw new SAXParseException("Undeclared prefix '" + 
                                         value.substring(0, colon) + "'",
                                         context.locator);
          }
@@ -90,7 +90,7 @@ final public class VarTree extends Tree
             groupScope = VariableUtils.findVariableScope(context, expName);
          }
          catch (VariableNotFoundException e) {
-            context.errorHandler.error("Undeclared variable `" + value + "'",
+            context.errorHandler.error("Undeclared variable '" + value + "'",
                   context.currentInstruction.publicId,
                   context.currentInstruction.systemId,
                   context.currentInstruction.lineNo,

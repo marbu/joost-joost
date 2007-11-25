@@ -1,5 +1,5 @@
 /*
- * $Id: TextFactory.java,v 2.6 2004/11/06 13:17:37 obecker Exp $
+ * $Id: TextFactory.java,v 2.7 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>text</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.6 $ $Date: 2004/11/06 13:17:37 $
+ * @version $Revision: 2.7 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -112,8 +112,8 @@ public class TextFactory extends FactoryBase
             stxEmitter = new StringEmitter(
                buffer, 
                markup == NO_MARKUP 
-                  ? "(`" + qName + 
-                    "' with the `markup' attribute set to `" + 
+                  ? "('" + qName + 
+                    "' with the 'markup' attribute set to '" + 
                     MARKUP_VALUES[NO_MARKUP] + "' started in line " + 
                     lineNo + ")"
                   : null);

@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 2.21 2007/11/25 13:32:23 obecker Exp $
+ * $Id: Parser.java,v 2.22 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -91,7 +91,7 @@ import org.xml.sax.helpers.NamespaceSupport;
 /** 
  * Creates the tree representation of an STX transformation sheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 2.21 $ $Date: 2007/11/25 13:32:23 $
+ * @version $Revision: 2.22 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -323,7 +323,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
          if (STX_NS.equals(uri)) {
             FactoryBase fac = (FactoryBase)stxFactories.get(lName);
             if (fac == null) 
-               throw new SAXParseException("Unknown statement `" + qName + 
+               throw new SAXParseException("Unknown statement '" + qName + 
                                            "'", pContext.locator);
             newNode = fac.createNode(currentNode != null 
                                         ? currentNode : includingGroup, 
@@ -334,7 +334,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
                }
                catch (ClassCastException cce) {
                   throw new SAXParseException(
-                     "Found `" + qName + "' as root element, " + 
+                     "Found '" + qName + "' as root element, " + 
                      "file is not an STX transformation sheet",
                      pContext.locator);
                }
@@ -348,7 +348,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
          else if (JOOST_EXT_NS.equals(uri)) {
             FactoryBase fac = (FactoryBase) joostFactories.get(lName);
             if (fac == null) 
-               throw new SAXParseException("Unknown statement `" + qName + 
+               throw new SAXParseException("Unknown statement '" + qName + 
                                            "'", pContext.locator);
             newNode = fac.createNode(currentNode != null 
                                         ? currentNode : includingGroup, 
@@ -370,8 +370,8 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
                newNode.preserveSpace = true;
             else if (!"default".equals(spaceAtt))
                throw new SAXParseException(
-                  "Value of attribute `" + attrs.getQName(spaceIndex) + 
-                  "' must be either `preserve' or `default' (found `" +
+                  "Value of attribute '" + attrs.getQName(spaceIndex) + 
+                  "' must be either 'preserve' or 'default' (found '" +
                   spaceAtt + "')", pContext.locator);
             // "default" means false -> nothing to do
          }

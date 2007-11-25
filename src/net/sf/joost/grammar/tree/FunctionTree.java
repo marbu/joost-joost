@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionTree.java,v 1.6 2007/05/20 18:00:43 obecker Exp $
+ * $Id: FunctionTree.java,v 1.7 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Objects of FunctionTree represent function calls in the syntax tree of a
  * pattern or an STXPath expression.
- * @version $Revision: 1.6 $ $Date: 2007/05/20 18:00:43 $
+ * @version $Revision: 1.7 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 final public class FunctionTree extends Tree
@@ -62,7 +62,7 @@ final public class FunctionTree extends Tree
       if (colon != -1) {
          uri = (String)context.nsSet.get(qName.substring(0, colon));
          if (uri == null) {
-            throw new SAXParseException("Undeclared prefix `" + 
+            throw new SAXParseException("Undeclared prefix '" + 
                                         qName.substring(0, colon) + "'",
                                         context.locator);
          }

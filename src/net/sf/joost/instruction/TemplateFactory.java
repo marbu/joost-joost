@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateFactory.java,v 2.8 2005/01/23 19:47:27 obecker Exp $
+ * $Id: TemplateFactory.java,v 2.9 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Factory for <code>template</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.8 $ $Date: 2005/01/23 19:47:27 $
+ * @version $Revision: 2.9 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -70,7 +70,7 @@ public final class TemplateFactory extends FactoryBase
       throws SAXParseException
    {
       if (parent == null || !(parent instanceof GroupBase))
-         throw new SAXParseException("`" + qName + "' must be a top level " +
+         throw new SAXParseException("'" + qName + "' must be a top level " +
                                      "element or a child of stx:group",
                                      context.locator);
 
@@ -84,7 +84,7 @@ public final class TemplateFactory extends FactoryBase
             priority = Double.parseDouble(priorityAtt);
          }
          catch (NumberFormatException ex) {
-            throw new SAXParseException("The priority value `" + 
+            throw new SAXParseException("The priority value '" + 
                                         priorityAtt + "' is not a number",
                                         context.locator);
          }

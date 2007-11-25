@@ -1,5 +1,5 @@
 /*
- * $Id: NoMatchFactory.java,v 1.1 2004/01/26 20:21:27 obecker Exp $
+ * $Id: NoMatchFactory.java,v 1.2 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Factory for <code>no-match</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.1 $ $Date: 2004/01/26 20:21:27 $
+ * @version $Revision: 1.2 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 public class NoMatchFactory extends FactoryBase
@@ -54,7 +54,7 @@ public class NoMatchFactory extends FactoryBase
    {
       if (!(parent instanceof AnalyzeTextFactory.Instance))
          throw new SAXParseException(
-            "`" + qName + "' must be child of stx:analyze-text",
+            "'" + qName + "' must be child of stx:analyze-text",
             context.locator);
 
       checkAttributes(qName, attrs, null, context);

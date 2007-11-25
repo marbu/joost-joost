@@ -1,5 +1,5 @@
 /*
- * $Id: MatchFactory.java,v 1.3 2007/05/29 20:49:32 obecker Exp $
+ * $Id: MatchFactory.java,v 1.4 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.grammar.Tree;
  * Factory for <code>match</code> elements, which are represented by the inner
  * Instance class.
  * 
- * @version $Revision: 1.3 $ $Date: 2007/05/29 20:49:32 $
+ * @version $Revision: 1.4 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -71,7 +71,7 @@ final public class MatchFactory extends FactoryBase
    {
       if (!(parent instanceof AnalyzeTextFactory.Instance))
          throw new SAXParseException(
-            "`" + qName + "' must be child of stx:analyze-text", 
+            "'" + qName + "' must be child of stx:analyze-text", 
             context.locator);
 
       String regexAtt = getAttribute(qName, attrs, "regex", context);
@@ -149,7 +149,7 @@ final public class MatchFactory extends FactoryBase
       //
       public String toString()
       {
-         return "stx:match regex=`" + regex + "'";
+         return "stx:match regex='" + regex + "'";
       }
    }
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: ResultBufferFactory.java,v 2.3 2005/05/03 18:17:00 obecker Exp $
+ * $Id: ResultBufferFactory.java,v 2.4 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>result-buffer</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.3 $ $Date: 2005/05/03 18:17:00 $
+ * @version $Revision: 2.4 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -117,7 +117,7 @@ final public class ResultBufferFactory extends FactoryBase
          }
          if (emitter == null) {
             context.errorHandler.error(
-               "Can't fill an undeclared buffer `" + bufName + "'",
+               "Can't fill an undeclared buffer '" + bufName + "'",
                publicId, systemId, lineNo, colNo);
             return PR_CONTINUE;
          }
@@ -125,7 +125,7 @@ final public class ResultBufferFactory extends FactoryBase
          BufferEmitter buffer = (BufferEmitter) ((Emitter)emitter).contH;
          if (context.emitter.isEmitterActive(buffer)) {
             context.errorHandler.error(
-               "Buffer `" + bufName + "' acts already as result buffer",
+               "Buffer '" + bufName + "' acts already as result buffer",
                publicId, systemId, lineNo, colNo);
             return PR_CONTINUE;
          }

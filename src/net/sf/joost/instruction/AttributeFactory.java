@@ -1,5 +1,5 @@
 /*
- * $Id: AttributeFactory.java,v 2.5 2004/11/06 13:07:32 obecker Exp $
+ * $Id: AttributeFactory.java,v 2.6 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>attribute</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.5 $ $Date: 2004/11/06 13:07:32 $
+ * @version $Revision: 2.6 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 
@@ -100,7 +100,7 @@ final public class AttributeFactory extends FactoryBase
          this.namespace = namespace;
          this.select = select;
          strEmitter = new StringEmitter(new StringBuffer(),
-                         "(`" + qName + "' started in line " + lineNo + ")");
+                         "('" + qName + "' started in line " + lineNo + ")");
       }
       
 
@@ -137,7 +137,7 @@ final public class AttributeFactory extends FactoryBase
                attUri = namespace.evaluate(context, this).getString();
                if (attUri.equals("")) {
                   context.errorHandler.error(
-                     "Can't put attribute `" + attName +
+                     "Can't put attribute '" + attName +
                      "' into the null namespace",
                      publicId, systemId, lineNo, colNo);
                   return PR_CONTINUE; // if the errorHandler returns
@@ -149,8 +149,8 @@ final public class AttributeFactory extends FactoryBase
                attUri = (String)nsSet.get(prefix);
                if (attUri == null) {
                   context.errorHandler.error(
-                     "Attempt to create attribute `" + attName + 
-                     "' with undeclared prefix `" + prefix + "'",
+                     "Attempt to create attribute '" + attName + 
+                     "' with undeclared prefix '" + prefix + "'",
                      publicId, systemId, lineNo, colNo);
                   return PR_CONTINUE; // if the errorHandler returns
                }
@@ -163,8 +163,8 @@ final public class AttributeFactory extends FactoryBase
                attUri = namespace.evaluate(context, this).getString();
                if (!attUri.equals("")) {
                   context.errorHandler.error(
-                     "Can't put attribute `" + attName + 
-                     "' into the non-null namespace `" + attUri + "'",
+                     "Can't put attribute '" + attName + 
+                     "' into the non-null namespace '" + attUri + "'",
                      publicId, systemId, lineNo, colNo);
                   return PR_CONTINUE; // if the errorHandler returns
                }

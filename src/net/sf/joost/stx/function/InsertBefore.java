@@ -1,5 +1,5 @@
 /*
- * $Id: InsertBefore.java,v 1.3 2007/05/20 18:00:44 obecker Exp $
+ * $Id: InsertBefore.java,v 1.4 2007/11/25 14:18:00 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import org.xml.sax.SAXException;
  * @see <a target="xq1xp2fo"
  *      href="http://www.w3.org/TR/xpath-functions/#func-insert-before">
  *      fn:insert-before in "XQuery 1.0 and XPath 2.0 Functions and Operators"</a>
- * @version $Revision: 1.3 $ $Date: 2007/05/20 18:00:44 $
+ * @version $Revision: 1.4 $ $Date: 2007/11/25 14:18:00 $
  * @author Oliver Becker
  */
 final public class InsertBefore implements Instance
@@ -66,9 +66,9 @@ final public class InsertBefore implements Instance
       // make sure that the second parameter is a valid number
       double dPos = arg2.getNumberValue();
       if (Double.isNaN(dPos))
-         throw new EvalException("Parameter `" + 
+         throw new EvalException("Parameter '" + 
                                  arg2.getStringValue() + 
-                                 "' is not a valid index for function `" + 
+                                 "' is not a valid index for function '" + 
                                  getName().substring(FunctionFactory.FNSP.length()) + "'");
       long position = Math.round(dPos);
 

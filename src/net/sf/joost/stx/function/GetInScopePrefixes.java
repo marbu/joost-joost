@@ -1,5 +1,5 @@
 /*
- * $Id: GetInScopePrefixes.java,v 1.3 2007/05/20 18:00:44 obecker Exp $
+ * $Id: GetInScopePrefixes.java,v 1.4 2007/11/25 14:18:00 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import org.xml.sax.SAXException;
  *      href="http://www.w3.org/TR/xpath-functions/#func-get-in-scope-prefixes">
  *      fn:get-in-scope-prefixes in "XQuery 1.0 and XPath 2.0 Functions and
  *      Operators"</a>
- * @version $Revision: 1.3 $ $Date: 2007/05/20 18:00:44 $
+ * @version $Revision: 1.4 $ $Date: 2007/11/25 14:18:00 $
  * @author Oliver Becker
  */
 final public class GetInScopePrefixes implements Instance
@@ -66,7 +66,7 @@ final public class GetInScopePrefixes implements Instance
       Value v = args.evaluate(context, top);
       SAXEvent e = v.getNode();
       if (e == null)
-         throw new EvalException("The parameter passed to the `" +
+         throw new EvalException("The parameter passed to the '" +
                getName().substring(FunctionFactory.FNSP.length()) + 
                "' function must be a node (got " + 
                v + ")");

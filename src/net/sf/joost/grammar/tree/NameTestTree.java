@@ -1,5 +1,5 @@
 /*
- * $Id: NameTestTree.java,v 1.2 2007/05/20 18:00:44 obecker Exp $
+ * $Id: NameTestTree.java,v 1.3 2007/11/25 14:18:01 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -35,7 +35,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Objects of NameTestTree represent element name test nodes in the syntax
  * tree of a pattern or an STXPath expression.
- * @version $Revision: 1.2 $ $Date: 2007/05/20 18:00:44 $
+ * @version $Revision: 1.3 $ $Date: 2007/11/25 14:18:01 $
  * @author Oliver Becker
  */
 final public class NameTestTree extends Tree
@@ -50,7 +50,7 @@ final public class NameTestTree extends Tree
       if (colon != -1) {
          uri = (String)context.nsSet.get(value.substring(0, colon));
          if (uri == null) {
-            throw new SAXParseException("Undeclared prefix `" + 
+            throw new SAXParseException("Undeclared prefix '" + 
                                         value.substring(0, colon) + "'",
                                         context.locator);
          }

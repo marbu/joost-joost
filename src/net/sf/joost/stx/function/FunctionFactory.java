@@ -1,5 +1,5 @@
 /*
- * $Id: FunctionFactory.java,v 1.5 2007/06/12 21:16:49 obecker Exp $
+ * $Id: FunctionFactory.java,v 1.6 2007/11/25 14:18:00 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * Factory for all STXPath function implementations.
- * @version $Revision: 1.5 $ $Date: 2007/06/12 21:16:49 $
+ * @version $Revision: 1.6 $ $Date: 2007/11/25 14:18:00 $
  * @author Oliver Becker, Nikolay Fiykov
  */
 final public class FunctionFactory implements Constants
@@ -194,7 +194,7 @@ final public class FunctionFactory implements Constants
                                          pContext.locator);
          else
             throw new SAXParseException(
-               "No permission to call extension function `" + qName + "'",
+               "No permission to call extension function '" + qName + "'",
                pContext.locator);
       }
 
@@ -205,13 +205,13 @@ final public class FunctionFactory implements Constants
          }
          else
             throw new SAXParseException(
-                  "No permission to call script function `" + qName + "'",
+                  "No permission to call script function '" + qName + "'",
                   pContext.locator);
       
       Instance function = 
          (Instance)functionHash.get("{" + uri + "}" + lName);
       if (function == null)
-         throw new SAXParseException("Unknown function `" + qName + "'", 
+         throw new SAXParseException("Unknown function '" + qName + "'", 
                                      pContext.locator);
 
       // Count parameters in args
@@ -225,12 +225,12 @@ final public class FunctionFactory implements Constants
       }
       if (argc < function.getMinParCount())
          throw new SAXParseException("Too few parameters in call of " +
-                                     "function `" + qName + "' (" + 
+                                     "function '" + qName + "' (" + 
                                      function.getMinParCount() + " needed)", 
                                      pContext.locator);
       if (argc > function.getMaxParCount())
          throw new SAXParseException("Too many parameters in call of " +
-                                     "function `" + qName + "' (" + 
+                                     "function '" + qName + "' (" + 
                                      function.getMaxParCount() + " allowed)",
                                      pContext.locator);
       return function;
@@ -311,7 +311,7 @@ final public class FunctionFactory implements Constants
       }
       catch (Exception e) {
          throw new SAXParseException("Exception while creating scripting "
-               + "engine for prefix ´" + nsPrefix + "' and language `"
+               + "engine for prefix ´" + nsPrefix + "' and language '"
                + scriptElement.getLang() + "'", scriptElement.publicId,
                scriptElement.systemId, scriptElement.lineNo,
                scriptElement.colNo, e);
@@ -322,7 +322,7 @@ final public class FunctionFactory implements Constants
       }
       catch (Exception e) {
          throw new SAXParseException("Exception while executing the script "
-               + "for prefix `" + nsPrefix + "'", scriptElement.publicId,
+               + "for prefix '" + nsPrefix + "'", scriptElement.publicId,
                scriptElement.systemId, scriptElement.lineNo,
                scriptElement.colNo, e);
       }
