@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXFilter.java,v 1.9 2007/06/04 19:52:25 obecker Exp $
+ * $Id: TrAXFilter.java,v 1.10 2007/11/25 15:03:01 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -117,19 +117,18 @@ public class TrAXFilter extends XMLFilterImpl implements Constants {
             }
             ContentHandler handler = this.getContentHandler();
 
-            if(handler == null) {
+            if (handler == null) {
                 handler = parent.getContentHandler();
             }
-            if(handler == null) {
+            if (handler == null) {
                 throw new SAXException("no ContentHandler registered");
             }
             //init StxEmitter
             StxEmitter out = null;
 
-            if (handler != null) {
-                //SAX specific Implementation
-                out = new SAXEmitter(handler);
-            }
+            //SAX specific Implementation
+            out = new SAXEmitter(handler);
+
             if (this.processor != null) {
                 this.processor.setContentHandler(out);
                 this.processor.setLexicalHandler(out);
