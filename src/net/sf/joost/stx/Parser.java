@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 2.20 2007/05/29 05:33:56 obecker Exp $
+ * $Id: Parser.java,v 2.21 2007/11/25 13:32:23 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -31,7 +31,54 @@ import java.util.Stack;
 import java.util.Vector;
 
 import net.sf.joost.Constants;
-import net.sf.joost.instruction.*;
+import net.sf.joost.instruction.AnalyzeTextFactory;
+import net.sf.joost.instruction.AssignFactory;
+import net.sf.joost.instruction.AttributeFactory;
+import net.sf.joost.instruction.BufferFactory;
+import net.sf.joost.instruction.CallProcedureFactory;
+import net.sf.joost.instruction.CdataFactory;
+import net.sf.joost.instruction.ChooseFactory;
+import net.sf.joost.instruction.CommentFactory;
+import net.sf.joost.instruction.CopyFactory;
+import net.sf.joost.instruction.DoctypeFactory;
+import net.sf.joost.instruction.ElementEndFactory;
+import net.sf.joost.instruction.ElementFactory;
+import net.sf.joost.instruction.ElementStartFactory;
+import net.sf.joost.instruction.ElseFactory;
+import net.sf.joost.instruction.FactoryBase;
+import net.sf.joost.instruction.ForEachFactory;
+import net.sf.joost.instruction.GroupBase;
+import net.sf.joost.instruction.GroupFactory;
+import net.sf.joost.instruction.IfFactory;
+import net.sf.joost.instruction.IncludeFactory;
+import net.sf.joost.instruction.LitElementFactory;
+import net.sf.joost.instruction.MatchFactory;
+import net.sf.joost.instruction.MessageFactory;
+import net.sf.joost.instruction.NSAliasFactory;
+import net.sf.joost.instruction.NoMatchFactory;
+import net.sf.joost.instruction.NodeBase;
+import net.sf.joost.instruction.OtherwiseFactory;
+import net.sf.joost.instruction.PAttributesFactory;
+import net.sf.joost.instruction.PBufferFactory;
+import net.sf.joost.instruction.PChildrenFactory;
+import net.sf.joost.instruction.PDocumentFactory;
+import net.sf.joost.instruction.PIFactory;
+import net.sf.joost.instruction.PSelfFactory;
+import net.sf.joost.instruction.PSiblingsFactory;
+import net.sf.joost.instruction.ParamFactory;
+import net.sf.joost.instruction.ProcedureFactory;
+import net.sf.joost.instruction.ResultBufferFactory;
+import net.sf.joost.instruction.ResultDocumentFactory;
+import net.sf.joost.instruction.ScriptFactory;
+import net.sf.joost.instruction.TemplateFactory;
+import net.sf.joost.instruction.TextFactory;
+import net.sf.joost.instruction.TextNode;
+import net.sf.joost.instruction.TransformFactory;
+import net.sf.joost.instruction.ValueOfFactory;
+import net.sf.joost.instruction.VariableFactory;
+import net.sf.joost.instruction.WhenFactory;
+import net.sf.joost.instruction.WhileFactory;
+import net.sf.joost.instruction.WithParamFactory;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -44,7 +91,7 @@ import org.xml.sax.helpers.NamespaceSupport;
 /** 
  * Creates the tree representation of an STX transformation sheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 2.20 $ $Date: 2007/05/29 05:33:56 $
+ * @version $Revision: 2.21 $ $Date: 2007/11/25 13:32:23 $
  * @author Oliver Becker
  */
 
@@ -138,7 +185,8 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
          new ChooseFactory(),
          new WhenFactory(),
          new OtherwiseFactory(),
-         new MessageFactory()
+         new MessageFactory(),
+         new DoctypeFactory()
       };
       stxFactories = createFactoryMap(stxFacs);
       

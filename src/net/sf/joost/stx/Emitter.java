@@ -1,5 +1,5 @@
 /*
- * $Id: Emitter.java,v 1.35 2006/02/03 19:04:46 obecker Exp $
+ * $Id: Emitter.java,v 1.36 2007/11/25 13:32:23 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -53,7 +53,7 @@ import org.xml.sax.helpers.NamespaceSupport;
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.35 $ $Date: 2006/02/03 19:04:46 $
+ * @version $Revision: 1.36 $ $Date: 2007/11/25 13:32:23 $
  * @author Oliver Becker
  */
 
@@ -81,6 +81,7 @@ public class Emitter implements Constants
    private NodeBase lastInstruction;
 
    private boolean insideCDATA = false;
+   private boolean dtdAllowed = true;
 
 
    public Emitter(ErrorHandlerImpl errorHandler)
@@ -138,6 +139,7 @@ public class Emitter implements Constants
    {
       try {
          contH.startElement(lastUri, lastLName, lastQName, lastAttrs);
+         dtdAllowed = false;
       }
       catch (SAXException se) {
          errorHandler.error(se.getMessage(),
@@ -475,6 +477,35 @@ public class Emitter implements Constants
       if (lexH != null) {
          lexH.endCDATA();
          insideCDATA = false;
+      }
+   }
+   
+   
+   public void createDTD(NodeBase instruction, String name, 
+                         String publicId, String systemId)
+      throws SAXException
+   {
+      if (contH != null && lastAttrs != null)
+         processLastElement();
+      if (!dtdAllowed) {
+         errorHandler.error("Cannot create a document type declaration for `"
+                        + name + "' when an element or another DTD has already "
+                        + "been output", 
+                        instruction.publicId, instruction.systemId, 
+                        instruction.lineNo, instruction.colNo);
+         return;
+      }
+      if (lexH != null) {
+         try {
+            lexH.startDTD(name, publicId, systemId);
+            lexH.endDTD();
+            dtdAllowed = false;
+         }
+         catch (SAXException se) {
+            errorHandler.error(se.getMessage(),
+                  instruction.publicId, instruction.systemId, 
+                  instruction.lineNo, instruction.colNo);
+         }
       }
    }
 

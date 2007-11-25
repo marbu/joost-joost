@@ -1,5 +1,5 @@
 /*
- * $Id: StreamEmitter.java,v 1.28 2006/01/13 09:21:28 obecker Exp $
+ * $Id: StreamEmitter.java,v 1.29 2007/11/25 13:32:23 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -47,7 +47,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Base class for emitter classes that produce a character stream.
- * @version $Revision: 1.28 $ $Date: 2006/01/13 09:21:28 $
+ * @version $Revision: 1.29 $ $Date: 2007/11/25 13:32:23 $
  * @author Oliver Becker
  */
 public abstract class StreamEmitter extends StxEmitterBase implements Constants
@@ -287,6 +287,7 @@ public abstract class StreamEmitter extends StxEmitterBase implements Constants
     * Does nothing
     */
    public void startDTD(String name, String publicId, String systemId)
+      throws SAXException 
    { }
 
    /** 

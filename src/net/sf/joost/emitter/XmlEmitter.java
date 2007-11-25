@@ -1,5 +1,5 @@
 /*
- * $Id: XmlEmitter.java,v 1.4 2006/01/12 19:28:02 obecker Exp $
+ * $Id: XmlEmitter.java,v 1.5 2007/11/25 13:32:23 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -39,7 +39,7 @@ import org.xml.sax.SAXException;
 /**
  * This class implements an emitter that uses the <code>xml</code> output
  * method for byte or character streams.
- * @version $Revision: 1.4 $ $Date: 2006/01/12 19:28:02 $
+ * @version $Revision: 1.5 $ $Date: 2007/11/25 13:32:23 $
  * @author Oliver Becker, Anatolij Zubow
  */
 public class XmlEmitter extends StreamEmitter 
@@ -384,6 +384,38 @@ public class XmlEmitter extends StreamEmitter
          writer.write("<!--");
          writer.write(ch, start, length);
          writer.write("-->");
+      }
+      catch (IOException ex) {
+         if (log != null)
+            log.error(ex);
+         throw new SAXException(ex);
+      }
+   }
+
+
+   public void startDTD(String name, String publicId, String systemId)
+      throws SAXException
+   {
+      try {
+         writer.write("<!DOCTYPE \"");
+         writer.write(name);
+         writer.write("\"");
+         if (publicId != null) {
+            writer.write(" PUBLIC \"");
+            writer.write(publicId);
+            writer.write("\" \"");
+            if (systemId != null) {
+               writer.write(systemId);
+            }
+            writer.write("\"");
+         }
+         else if (systemId != null) {
+            writer.write(" SYSTEM \"");
+            writer.write(systemId);
+            writer.write("\"");
+         }
+         // internal subset not supported yet
+         writer.write(">\n");
       }
       catch (IOException ex) {
          if (log != null)
