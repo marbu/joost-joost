@@ -1,5 +1,5 @@
 /*
- * $Id: DoctypeFactory.java,v 1.1 2007/11/25 13:32:23 obecker Exp $
+ * $Id: DoctypeFactory.java,v 1.2 2007/11/25 14:28:06 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>doctype</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.1 $ $Date: 2007/11/25 13:32:23 $
+ * @version $Revision: 1.2 $ $Date: 2007/11/25 14:28:06 $
  * @author Oliver Becker
  */
 
@@ -87,7 +87,7 @@ public class DoctypeFactory extends FactoryBase
       {
          super(qName, parent, context,
                // current restriction: this element must be empty
-               true);
+               false);
          this.nameAVT = nameAVT;
          this.publicAVT = publicAVT;
          this.systemAVT = systemAVT;
