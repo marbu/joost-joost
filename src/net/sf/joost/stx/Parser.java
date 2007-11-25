@@ -1,5 +1,5 @@
 /*
- * $Id: Parser.java,v 2.22 2007/11/25 14:18:01 obecker Exp $
+ * $Id: Parser.java,v 2.23 2007/11/25 19:33:34 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -91,7 +91,7 @@ import org.xml.sax.helpers.NamespaceSupport;
 /** 
  * Creates the tree representation of an STX transformation sheet.
  * The Parser object acts as a SAX ContentHandler.
- * @version $Revision: 2.22 $ $Date: 2007/11/25 14:18:01 $
+ * @version $Revision: 2.23 $ $Date: 2007/11/25 19:33:34 $
  * @author Oliver Becker
  */
 
@@ -416,7 +416,7 @@ public class Parser implements Constants, ContentHandler // , ErrorHandler
          // the including Parser will call it
          if (!(currentNode == pContext.transformNode && 
                includingGroup != null))
-            if ((currentNode).compile(0, pContext))
+            if (currentNode.compile(0, pContext))
                // need another invocation
                compilableNodes.addElement(currentNode); 
          // add the compilable nodes from an included stx:transform
