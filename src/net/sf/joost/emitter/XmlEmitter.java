@@ -1,5 +1,5 @@
 /*
- * $Id: XmlEmitter.java,v 1.7 2007/11/27 12:52:37 obecker Exp $
+ * $Id: XmlEmitter.java,v 1.8 2007/12/02 21:18:41 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -39,7 +39,7 @@ import org.xml.sax.SAXException;
 /**
  * This class implements an emitter that uses the <code>xml</code> output
  * method for byte or character streams.
- * @version $Revision: 1.7 $ $Date: 2007/11/27 12:52:37 $
+ * @version $Revision: 1.8 $ $Date: 2007/12/02 21:18:41 $
  * @author Oliver Becker, Anatolij Zubow
  */
 public class XmlEmitter extends StreamEmitter 
@@ -393,6 +393,9 @@ public class XmlEmitter extends StreamEmitter
    }
 
 
+   /**
+    * SAX2-Callback - Outputs a document type declaration
+    */
    public void startDTD(String name, String publicId, String systemId)
       throws SAXException
    {
