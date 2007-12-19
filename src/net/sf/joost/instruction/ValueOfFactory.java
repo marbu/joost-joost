@@ -1,5 +1,5 @@
 /*
- * $Id: ValueOfFactory.java,v 2.8 2004/11/06 13:07:32 obecker Exp $
+ * $Id: ValueOfFactory.java,v 2.9 2007/12/19 10:39:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,22 +24,22 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
 import java.util.HashSet;
 
+import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Value;
-import net.sf.joost.grammar.Tree;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 
 /** 
  * Factory for <code>value-of</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.8 $ $Date: 2004/11/06 13:07:32 $
+ * @version $Revision: 2.9 $ $Date: 2007/12/19 10:39:37 $
  * @author Oliver Becker
  */
 
@@ -66,9 +66,7 @@ final public class ValueOfFactory extends FactoryBase
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      Tree selectExpr = 
-         parseExpr(getAttribute(qName, attrs, "select", context), 
-                   context);
+      Tree selectExpr = parseRequiredExpr(qName, attrs, "select", context);
 
       Tree separatorAVT = parseAVT(attrs.getValue("separator"), context);
 

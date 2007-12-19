@@ -1,5 +1,5 @@
 /*
- * $Id: FactoryBase.java,v 2.10 2007/11/25 14:18:01 obecker Exp $
+ * $Id: FactoryBase.java,v 2.11 2007/12/19 10:39:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,29 +24,29 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
-import java.util.HashSet;
 import java.io.StringReader;
+import java.util.HashSet;
 
 import net.sf.joost.Constants;
+import net.sf.joost.grammar.ExprParser;
+import net.sf.joost.grammar.PatternParser;
 import net.sf.joost.grammar.Sym;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.grammar.Yylex;
-import net.sf.joost.grammar.ExprParser;
-import net.sf.joost.grammar.PatternParser;
 import net.sf.joost.grammar.tree.AvtTree;
 import net.sf.joost.grammar.tree.StringTree;
 import net.sf.joost.stx.ParseContext;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 
 /**
  * Abstract base class for all factory classes which produce nodes
  * ({@link NodeBase}) for the tree representation of an STX transformation
  * sheet.
- * @version $Revision: 2.10 $ $Date: 2007/11/25 14:18:01 $
+ * @version $Revision: 2.11 $ $Date: 2007/12/19 10:39:37 $
  * @author Oliver Becker
  */
 
@@ -71,7 +71,7 @@ public abstract class FactoryBase implements Constants
 
 
    /**
-    * Looks for the attribute <code>name</code> in <code>attrs</code>.
+    * Looks for the required attribute <code>name</code> in <code>attrs</code>.
     * @param elementName the name of the parent element
     * @param attrs the attribute set
     * @param name the name of the attribute to look for
@@ -79,8 +79,10 @@ public abstract class FactoryBase implements Constants
     * @return the attribute value as a String
     * @exception SAXParseException if this attribute is not present
     */
-   protected static String getAttribute(String elementName, Attributes attrs, 
-                                        String name, ParseContext context)
+   protected static String getRequiredAttribute(String elementName, 
+                                                Attributes attrs, 
+                                                String name, 
+                                                ParseContext context)
       throws SAXParseException
    {
       String att = attrs.getValue(name);
@@ -212,6 +214,9 @@ public abstract class FactoryBase implements Constants
    protected static Tree parsePattern(String string, ParseContext context)
       throws SAXParseException
    {
+      if (string == null)
+         return null;
+
       StringReader sr = new StringReader(string);
       Yylex lexer = new Yylex(sr);
       PatternParser parser = 
@@ -251,6 +256,20 @@ public abstract class FactoryBase implements Constants
                context.locator);
       }
       return pattern;
+   }
+
+
+   /**
+    * @see #getRequiredAttribute(String, Attributes, String, ParseContext)
+    * @see #parsePattern(String, ParseContext)
+    */
+   protected static Tree parseRequiredPattern(String elName, 
+                                              Attributes attrs, String attName,
+                                              ParseContext context)
+      throws SAXParseException
+   {
+      return parsePattern(getRequiredAttribute(elName, attrs, attName, context), 
+                          context);
    }
 
 
@@ -306,6 +325,19 @@ public abstract class FactoryBase implements Constants
                context.locator);
       }
       return expr;
+   }
+
+
+   /**
+    * @see #getRequiredAttribute(String, Attributes, String, ParseContext)
+    * @see #parseExpr(String, ParseContext)
+    */
+   protected static Tree parseRequiredExpr(String elName, Attributes attrs,
+                                           String attName, ParseContext context)
+         throws SAXParseException
+   {
+      return parseExpr(getRequiredAttribute(elName, attrs, attName, context),
+                       context);
    }
 
 
@@ -426,5 +458,18 @@ public abstract class FactoryBase implements Constants
       if (tree == null)
          tree = new StringTree("");
       return tree;
+   }
+
+
+   /**
+    * @see #getRequiredAttribute(String, Attributes, String, ParseContext)
+    * @see #parseAVT(String, ParseContext)
+    */
+   protected static Tree parseRequiredAVT(String elName, Attributes attrs,
+                                           String attName, ParseContext context)
+         throws SAXParseException
+   {
+      return parseAVT(getRequiredAttribute(elName, attrs, attName, context),
+                      context);
    }
 }

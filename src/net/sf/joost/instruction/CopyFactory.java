@@ -1,5 +1,5 @@
 /*
- * $Id: CopyFactory.java,v 2.11 2006/02/27 19:47:18 obecker Exp $
+ * $Id: CopyFactory.java,v 2.12 2007/12/19 10:39:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.xml.sax.helpers.AttributesImpl;
 /** 
  * Factory for <code>copy</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.11 $ $Date: 2006/02/27 19:47:18 $
+ * @version $Revision: 2.12 $ $Date: 2007/12/19 10:39:37 $
  * @author Oliver Becker
  */
 
@@ -75,10 +75,8 @@ final public class CopyFactory extends FactoryBase
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String attributesAtt = attrs.getValue("attributes");
-      Tree attributesPattern = (attributesAtt != null)
-         ? parsePattern(attributesAtt, context)
-         : null;
+      Tree attributesPattern = parsePattern(attrs.getValue("attributes"), 
+                                            context);
 
       checkAttributes(qName, attrs, attrNames, context);
       return new Instance(qName, parent, context, attributesPattern);

@@ -1,5 +1,5 @@
 /*
- * $Id: ParamFactory.java,v 2.10 2007/11/25 14:18:01 obecker Exp $
+ * $Id: ParamFactory.java,v 2.11 2007/12/19 10:39:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>params</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.10 $ $Date: 2007/11/25 14:18:01 $
+ * @version $Revision: 2.11 $ $Date: 2007/12/19 10:39:37 $
  * @author Oliver Becker
  */
 
@@ -78,7 +78,7 @@ final public class ParamFactory extends FactoryBase
             "or a child of stx:group, stx:template, or stx:procedure",
             context.locator);
 
-      String nameAtt = getAttribute(qName, attrs, "name", context);
+      String nameAtt = getRequiredAttribute(qName, attrs, "name", context);
       String parName = getExpandedName(nameAtt, context);
 
       // default is false

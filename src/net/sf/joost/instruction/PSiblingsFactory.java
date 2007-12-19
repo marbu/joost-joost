@@ -1,5 +1,5 @@
 /*
- * $Id: PSiblingsFactory.java,v 2.3 2003/06/03 14:30:24 obecker Exp $
+ * $Id: PSiblingsFactory.java,v 2.4 2007/12/19 10:39:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,10 +24,6 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
 import java.util.HashSet;
 
 import net.sf.joost.grammar.Tree;
@@ -35,11 +31,15 @@ import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.SAXEvent;
 
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+
 
 /** 
  * Factory for <code>process-siblings</code> elements, which are represented 
  * by the inner Instance class. 
- * @version $Revision: 2.3 $ $Date: 2003/06/03 14:30:24 $
+ * @version $Revision: 2.4 $ $Date: 2007/12/19 10:39:37 $
  * @author Oliver Becker
  */
 
@@ -70,15 +70,9 @@ public class PSiblingsFactory extends FactoryBase
    {
       String groupAtt = attrs.getValue("group");
 
-      String whileAtt = attrs.getValue("while");
-      Tree whilePattern = whileAtt != null
-         ? parsePattern(whileAtt, context)
-         : null;
+      Tree whilePattern = parsePattern(attrs.getValue("while"), context);
 
-      String untilAtt = attrs.getValue("until");
-      Tree untilPattern = untilAtt != null
-         ? parsePattern(untilAtt, context)
-         : null;
+      Tree untilPattern = parsePattern(attrs.getValue("until"), context);
 
       checkAttributes(qName, attrs, attrNames, context);
 

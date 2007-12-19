@@ -1,5 +1,5 @@
 /*
- * $Id: DoctypeFactory.java,v 1.2 2007/11/25 14:28:06 obecker Exp $
+ * $Id: DoctypeFactory.java,v 1.3 2007/12/19 10:39:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>doctype</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.2 $ $Date: 2007/11/25 14:28:06 $
+ * @version $Revision: 1.3 $ $Date: 2007/12/19 10:39:37 $
  * @author Oliver Becker
  */
 
@@ -65,8 +65,7 @@ public class DoctypeFactory extends FactoryBase
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String nameAtt = getAttribute(qName, attrs, "name", context); // required
-      Tree nameAVT = parseAVT(nameAtt, context);
+      Tree nameAVT = parseRequiredAVT(qName, attrs, "name", context);
       
       Tree publicAVT = parseAVT(attrs.getValue("public-id"), context);
       Tree systemAVT = parseAVT(attrs.getValue("system-id"), context);

@@ -1,5 +1,5 @@
 /*
- * $Id: WhenFactory.java,v 2.7 2007/11/25 14:18:01 obecker Exp $
+ * $Id: WhenFactory.java,v 2.8 2007/12/19 10:39:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,21 +24,21 @@
 
 package net.sf.joost.instruction;
 
+import java.util.HashSet;
+
+import net.sf.joost.grammar.Tree;
+import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-
-import java.util.HashSet;
-
-import net.sf.joost.stx.Context;
-import net.sf.joost.stx.ParseContext;
-import net.sf.joost.grammar.Tree;
 
 
 /** 
  * Factory for <code>when</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.7 $ $Date: 2007/11/25 14:18:01 $
+ * @version $Revision: 2.8 $ $Date: 2007/12/19 10:39:37 $
  * @author Oliver Becker
  */
 
@@ -72,8 +72,7 @@ final public class WhenFactory extends FactoryBase
             "'" + qName + "' must be child of stx:choose",
             context.locator);
 
-      Tree testExpr = parseExpr(getAttribute(qName, attrs, "test", context), 
-                                context);
+      Tree testExpr = parseRequiredExpr(qName, attrs, "test", context);
       
       checkAttributes(qName, attrs, attrNames, context);
       return new Instance(qName, parent, context, testExpr);

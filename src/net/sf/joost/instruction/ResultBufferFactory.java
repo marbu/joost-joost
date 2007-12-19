@@ -1,5 +1,5 @@
 /*
- * $Id: ResultBufferFactory.java,v 2.4 2007/11/25 14:18:01 obecker Exp $
+ * $Id: ResultBufferFactory.java,v 2.5 2007/12/19 10:39:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>result-buffer</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.4 $ $Date: 2007/11/25 14:18:01 $
+ * @version $Revision: 2.5 $ $Date: 2007/12/19 10:39:37 $
  * @author Oliver Becker
  */
 
@@ -69,7 +69,7 @@ final public class ResultBufferFactory extends FactoryBase
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String nameAtt = getAttribute(qName, attrs, "name", context);
+      String nameAtt = getRequiredAttribute(qName, attrs, "name", context);
       // buffers are special variables with an "@" prefix
       String bufName = "@" + getExpandedName(nameAtt, context);
 

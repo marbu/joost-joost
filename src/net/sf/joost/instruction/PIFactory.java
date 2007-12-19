@@ -1,5 +1,5 @@
 /*
- * $Id: PIFactory.java,v 2.7 2007/11/25 14:18:01 obecker Exp $
+ * $Id: PIFactory.java,v 2.8 2007/12/19 10:39:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -39,7 +39,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>processing-instruction</code> elements, which are 
  * represented by the inner Instance class. 
- * @version $Revision: 2.7 $ $Date: 2007/11/25 14:18:01 $
+ * @version $Revision: 2.8 $ $Date: 2007/12/19 10:39:37 $
  * @author Oliver Becker
  */
 
@@ -66,8 +66,7 @@ final public class PIFactory extends FactoryBase
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      Tree nameAVT = parseAVT(getAttribute(qName, attrs, "name", context), 
-                              context);
+      Tree nameAVT = parseRequiredAVT(qName, attrs, "name", context);
 
       Tree selectExpr = parseExpr(attrs.getValue("select"), context);
          

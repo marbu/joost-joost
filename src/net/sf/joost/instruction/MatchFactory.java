@@ -1,5 +1,5 @@
 /*
- * $Id: MatchFactory.java,v 1.5 2007/12/19 09:48:12 obecker Exp $
+ * $Id: MatchFactory.java,v 1.6 2007/12/19 10:39:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import org.xml.sax.SAXParseException;
  * Factory for <code>match</code> elements, which are represented by the inner
  * Instance class.
  * 
- * @version $Revision: 1.5 $ $Date: 2007/12/19 09:48:12 $
+ * @version $Revision: 1.6 $ $Date: 2007/12/19 10:39:37 $
  * @author Oliver Becker
  */
 
@@ -74,8 +74,7 @@ final public class MatchFactory extends FactoryBase
             "'" + qName + "' must be child of stx:analyze-text", 
             context.locator);
 
-      String regexAtt = getAttribute(qName, attrs, "regex", context);
-      Tree regexAVT = parseAVT(regexAtt, context);
+      Tree regexAVT = parseRequiredAVT(qName, attrs, "regex", context);
 
       Tree flagsAVT = parseAVT(attrs.getValue("flags"), context);
 

@@ -1,5 +1,5 @@
 /*
- * $Id: CallProcedureFactory.java,v 2.8 2007/11/25 14:18:01 obecker Exp $
+ * $Id: CallProcedureFactory.java,v 2.9 2007/12/19 10:39:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -37,7 +37,7 @@ import net.sf.joost.stx.ParseContext;
 /**
  * Factory for <code>call-procedure</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.8 $ $Date: 2007/11/25 14:18:01 $
+ * @version $Revision: 2.9 $ $Date: 2007/12/19 10:39:37 $
  * @author Oliver Becker
  */
 
@@ -67,7 +67,7 @@ public class CallProcedureFactory extends FactoryBase
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String nameAtt = getAttribute(qName, attrs, "name", context);
+      String nameAtt = getRequiredAttribute(qName, attrs, "name", context);
       String procName = getExpandedName(nameAtt, context);
 
       String groupAtt = attrs.getValue("group");

@@ -1,5 +1,5 @@
 /*
- * $Id: BufferFactory.java,v 2.5 2007/11/25 14:18:01 obecker Exp $
+ * $Id: BufferFactory.java,v 2.6 2007/12/19 10:39:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -40,7 +40,7 @@ import net.sf.joost.stx.ParseContext;
 /** 
  * Factory for <code>buffer</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.5 $ $Date: 2007/11/25 14:18:01 $
+ * @version $Revision: 2.6 $ $Date: 2007/12/19 10:39:37 $
  * @author Oliver Becker
  */
 
@@ -65,7 +65,7 @@ final public class BufferFactory extends FactoryBase
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String nameAtt = getAttribute(qName, attrs, "name", context);
+      String nameAtt = getRequiredAttribute(qName, attrs, "name", context);
 
       // Buffers will be treated as special variables -- the same scoping 
       // rules apply. To avoid name conflicts with variables the expanded 

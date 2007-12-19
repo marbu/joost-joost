@@ -1,5 +1,5 @@
 /*
- * $Id: IncludeFactory.java,v 2.11 2007/11/25 14:18:01 obecker Exp $
+ * $Id: IncludeFactory.java,v 2.12 2007/12/19 10:39:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -47,7 +47,7 @@ import org.xml.sax.XMLReader;
 /** 
  * Factory for <code>include</code> elements, which will be replaced by
  * groups for the included transformation sheet
- * @version $Revision: 2.11 $ $Date: 2007/11/25 14:18:01 $
+ * @version $Revision: 2.12 $ $Date: 2007/12/19 10:39:37 $
  * @author Oliver Becker
  */
 
@@ -80,7 +80,7 @@ final public class IncludeFactory extends FactoryBase
                                      "' not allowed as child of '" +
                                      parent.qName + "'", pContext.locator);
 
-      String hrefAtt = getAttribute(qName, attrs, "href", pContext);
+      String hrefAtt = getRequiredAttribute(qName, attrs, "href", pContext);
 
       checkAttributes(qName, attrs, attrNames, pContext);
 

@@ -1,5 +1,5 @@
 /*
- * $Id: NSAliasFactory.java,v 2.5 2007/11/25 14:18:01 obecker Exp $
+ * $Id: NSAliasFactory.java,v 2.6 2007/12/19 10:39:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,20 +24,20 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
 import java.util.HashSet;
 import java.util.Hashtable;
 
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+
 
 /** 
  * Factory for <code>namespace-alias</code> elements
- * @version $Revision: 2.5 $ $Date: 2007/11/25 14:18:01 $
+ * @version $Revision: 2.6 $ $Date: 2007/12/19 10:39:37 $
  * @author Oliver Becker
  */
 
@@ -71,8 +71,8 @@ final public class NSAliasFactory extends FactoryBase
                                      "' not allowed as child of '" +
                                      parent.qName + "'", context.locator);
 
-      String fromPrefix = getAttribute(qName, attrs, "sheet-prefix", 
-                                       context);
+      String fromPrefix = getRequiredAttribute(qName, attrs, "sheet-prefix", 
+                                               context);
       // check value syntax
       if ((fromPrefix.indexOf('#') != -1 && !fromPrefix.equals("#default")) ||
           fromPrefix.indexOf(':') != -1)
@@ -96,8 +96,8 @@ final public class NSAliasFactory extends FactoryBase
       }
 
       // dito for result-prefix:
-      String toPrefix = getAttribute(qName, attrs, "result-prefix", 
-                                     context);
+      String toPrefix = getRequiredAttribute(qName, attrs, "result-prefix", 
+                                             context);
       if ((toPrefix.indexOf('#') != -1 && !toPrefix.equals("#default")) ||
           toPrefix.indexOf(':') != -1)
          throw new SAXParseException(

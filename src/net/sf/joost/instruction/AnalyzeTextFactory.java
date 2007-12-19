@@ -1,5 +1,5 @@
 /*
- * $Id: AnalyzeTextFactory.java,v 1.10 2007/12/19 09:48:12 obecker Exp $
+ * $Id: AnalyzeTextFactory.java,v 1.11 2007/12/19 10:39:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -43,7 +43,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>analyze-text</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.10 $ $Date: 2007/12/19 09:48:12 $
+ * @version $Revision: 1.11 $ $Date: 2007/12/19 10:39:37 $
  * @author Oliver Becker
  */
 
@@ -80,8 +80,7 @@ final public class AnalyzeTextFactory extends FactoryBase
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      String selectAtt = getAttribute(qName, attrs, "select", context);
-      Tree selectExpr = parseExpr(selectAtt, context);
+      Tree selectExpr = parseRequiredExpr(qName, attrs, "select", context);
 
       checkAttributes(qName, attrs, attrNames, context);
       return new Instance(qName, parent, context, selectExpr);

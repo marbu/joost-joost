@@ -1,5 +1,5 @@
 /*
- * $Id: ScriptFactory.java,v 2.5 2007/11/25 14:18:01 obecker Exp $
+ * $Id: ScriptFactory.java,v 2.6 2007/12/19 10:39:37 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -42,7 +42,7 @@ import org.xml.sax.SAXParseException;
  * inner Instance class. <code>script</code> is an extension element that
  * belongs to the Joost namespace {@link net.sf.joost.Constants#JOOST_EXT_NS}.
  * 
- * @version $Revision: 2.5 $ $Date: 2007/11/25 14:18:01 $
+ * @version $Revision: 2.6 $ $Date: 2007/12/19 10:39:37 $
  * @author Nikolay Fiykov, Oliver Becker
  */
 
@@ -76,7 +76,7 @@ final public class ScriptFactory extends FactoryBase
                context.locator);
 
       // check that prefix points to a declared namespace
-      String prefixAtt = getAttribute(qName, attrs, "prefix", context);
+      String prefixAtt = getRequiredAttribute(qName, attrs, "prefix", context);
       if (!context.nsSet.containsKey(prefixAtt)) {
          throw new SAXParseException("Prefix '" + prefixAtt + 
             "' must belong to a declared namespace in element '" + qName + "'",
@@ -93,7 +93,7 @@ final public class ScriptFactory extends FactoryBase
 
       String srcAtt = attrs.getValue("src");
 
-      String langAtt = getAttribute(qName, attrs, "language", context);
+      String langAtt = getRequiredAttribute(qName, attrs, "language", context);
 
       checkAttributes(qName, attrs, attrNames, context);
 
