@@ -1,6 +1,9 @@
 Changes since 20070718
 - Bugfixes: 1758424, 1810643, 1824909
 - added stx:doctype
+- replaced attribute 'case' of stx:analyze-text with 'flags'
+   * case="insensitive" must be specified now using flags="i"
+   * multiline mode is now by default off and must be enabled via flags="m"
 
 Changes since 20070621
 - added interface OutputURIResolver (Feature request 1170466)

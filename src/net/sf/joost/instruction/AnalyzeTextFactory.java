@@ -1,5 +1,5 @@
 /*
- * $Id: AnalyzeTextFactory.java,v 1.9 2007/11/25 14:18:01 obecker Exp $
+ * $Id: AnalyzeTextFactory.java,v 1.10 2007/12/19 09:48:12 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -28,7 +28,6 @@ import java.util.HashSet;
 import java.util.Stack;
 import java.util.Vector;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import net.sf.joost.grammar.EvalException;
 import net.sf.joost.grammar.Tree;
@@ -44,7 +43,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>analyze-text</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 1.9 $ $Date: 2007/11/25 14:18:01 $
+ * @version $Revision: 1.10 $ $Date: 2007/12/19 09:48:12 $
  * @author Oliver Becker
  */
 
@@ -227,9 +226,10 @@ final public class AnalyzeTextFactory extends FactoryBase
                   matchChildren[i].regex.evaluate(context, 
                                                   matchChildren[i]).getString();
                
-               int flags = Pattern.MULTILINE;
-               if (matchChildren[i].insensitive)
-                  flags |= Pattern.CASE_INSENSITIVE;
+               String flags = matchChildren[i].flags != null 
+                  ? matchChildren[i].flags.evaluate(context, 
+                                                    matchChildren[i]).getString() 
+                  : "";
                try {
                   matchers[i] = 
                      new JRegularExpression(re, true, flags).matcher(text);
