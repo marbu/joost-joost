@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.24 2007/07/15 15:20:41 obecker Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.25 2007/12/20 11:13:11 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,8 +25,8 @@
 
 package net.sf.joost.trax;
 
-import java.io.IOException;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Source;
@@ -34,6 +34,7 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
@@ -106,10 +107,16 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
     /**
      * The default constructor.
      */
-    public TransformerFactoryImpl() throws IOException {
-        // initialize default messageEmitter
-        msgEmitter = StreamEmitter.newEmitter(System.err, null);
-        ((StreamEmitter)msgEmitter).setOmitXmlDeclaration(true);
+    public TransformerFactoryImpl() {
+        try {
+            // initialize default messageEmitter
+            msgEmitter = StreamEmitter.newEmitter(System.err, null);
+            ((StreamEmitter)msgEmitter).setOmitXmlDeclaration(true);
+        }
+        catch (UnsupportedEncodingException e) {
+            // must not and cannot happen since outputProperties was null
+            throw new TransformerFactoryConfigurationError(e);
+        }
     }
 
 

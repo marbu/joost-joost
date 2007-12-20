@@ -1,5 +1,5 @@
 /*
- * $Id: THResolver.java,v 1.7 2007/05/19 10:15:53 obecker Exp $
+ * $Id: THResolver.java,v 1.8 2007/12/20 11:13:11 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -23,7 +23,6 @@
  */
 package net.sf.joost.plugins.traxfilter;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
@@ -41,11 +40,6 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.commons.logging.Log;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-
 import net.sf.joost.Constants;
 import net.sf.joost.OptionalLog;
 import net.sf.joost.TransformerHandlerResolver;
@@ -54,6 +48,11 @@ import net.sf.joost.plugins.attributes.BooleanAttribute;
 import net.sf.joost.plugins.attributes.StringAttribute;
 import net.sf.joost.trax.TrAXConstants;
 import net.sf.joost.trax.TransformerFactoryImpl;
+
+import org.apache.commons.logging.Log;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /**
  * Implementation of Trax XSLT and STX filters.
@@ -109,7 +108,7 @@ import net.sf.joost.trax.TransformerFactoryImpl;
  * or
  * &lt;stx:with-param name="http://stx.sourceforge.net/2002/ns/trax-filter/attribute:http://apache.org/xalan/features/incremental" select="'true'" /&gt;
  * 
- * @version $Revision: 1.7 $ $Date: 2007/05/19 10:15:53 $
+ * @version $Revision: 1.8 $ $Date: 2007/12/20 11:13:11 $
  * @author fikin
  */
 public class THResolver implements TransformerHandlerResolver, Constants {
@@ -452,12 +451,7 @@ public class THResolver implements TransformerHandlerResolver, Constants {
       else if (STX_METHOD.equals(method)) {
          // create stx factory singleton if not done yet
          if (stxTraxFactory == null) {
-            try {
-               stxTraxFactory = new TransformerFactoryImpl();
-            }
-            catch (IOException ex) {
-               throw new SAXException(ex);
-            }
+            stxTraxFactory = new TransformerFactoryImpl();
          }
          saxtf = stxTraxFactory;
          if (DEBUG)
