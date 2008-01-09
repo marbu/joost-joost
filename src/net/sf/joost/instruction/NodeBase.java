@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 2.12 2007/11/25 14:18:01 obecker Exp $
+ * $Id: NodeBase.java,v 2.13 2008/01/09 11:16:06 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,21 +24,21 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
+import net.sf.joost.Constants;
+import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
 
 import java.util.Stack;
 import java.util.Vector;
 
-import net.sf.joost.Constants;
-import net.sf.joost.stx.Context;
-import net.sf.joost.stx.ParseContext;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 
 /** 
  * Abstract base class for all instances of nodes in the STX transformation 
  * sheet
- * @version $Revision: 2.12 $ $Date: 2007/11/25 14:18:01 $
+ * @version $Revision: 2.13 $ $Date: 2008/01/09 11:16:06 $
  * @author Oliver Becker
  */
 public abstract class NodeBase 
@@ -66,7 +66,7 @@ public abstract class NodeBase
          this.start = start;
       }
 
-      /*
+      /**
        * @return {@link #start}
        */
       public NodeBase getNode()
@@ -184,7 +184,7 @@ public abstract class NodeBase
 
 
 
-   public NodeBase getNode()
+   public final NodeBase getNode()
    {
       return this;
    }
@@ -224,7 +224,7 @@ public abstract class NodeBase
     * {@link ParseContext#locator} in the <code>context</code> parameter)
     * @param context the current parse context
     */
-   public void setEndLocation(ParseContext context)
+   public final void setEndLocation(ParseContext context)
    {
       if (nodeEnd != null && context.locator != null) {
          nodeEnd.lineNo = context.locator.getLineNumber();
@@ -254,11 +254,28 @@ public abstract class NodeBase
    }
 
 
+   /**
+    * Removes (if possible) the end node ({@link #nodeEnd}) of this instruction
+    * from the execution chain. May be invoked from 
+    * {@link #compile(int, ParseContext)} of concrete instructions only if
+    * {@link #processEnd(Context)} hasn't been overridden.
+    */
+   protected final void mayDropEnd()
+   {
+      if (scopedVariables == null) {
+         lastChild.next = nodeEnd.next;
+         if (parent.lastChild == nodeEnd)
+            parent.lastChild = lastChild;
+         nodeEnd = lastChild;
+      }
+   }
+
+
    /** 
     * Store the name of a variable as local for this node.
     * @param name the variable name
     */
-   protected void declareVariable(String name)
+   protected final void declareVariable(String name)
    {
       scopedVariables.addElement(name);
    }

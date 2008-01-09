@@ -1,5 +1,5 @@
 /*
- * $Id: WhenFactory.java,v 2.8 2007/12/19 10:39:37 obecker Exp $
+ * $Id: WhenFactory.java,v 2.9 2008/01/09 11:16:06 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -38,7 +38,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>when</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.8 $ $Date: 2007/12/19 10:39:37 $
+ * @version $Revision: 2.9 $ $Date: 2008/01/09 11:16:06 $
  * @author Oliver Becker
  */
 
@@ -101,6 +101,7 @@ final public class WhenFactory extends FactoryBase
          if (pass == 0) // nodeEnd.next not available yet
             return true;
 
+         mayDropEnd();
          trueNext = next;
          falseNext = nodeEnd.next;      // the sibling
          nodeEnd.next = parent.nodeEnd; // end of stx:choose

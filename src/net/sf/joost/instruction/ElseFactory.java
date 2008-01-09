@@ -1,5 +1,5 @@
 /*
- * $Id: ElseFactory.java,v 2.3 2007/11/25 14:18:01 obecker Exp $
+ * $Id: ElseFactory.java,v 2.4 2008/01/09 11:16:06 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,16 +24,17 @@
 
 package net.sf.joost.instruction;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXParseException;
-
 import net.sf.joost.stx.ParseContext;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 
 /** 
  * Factory for <code>else</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.3 $ $Date: 2007/11/25 14:18:01 $
+ * @version $Revision: 2.4 $ $Date: 2008/01/09 11:16:06 $
  * @author Oliver Becker
  */
 
@@ -68,6 +69,17 @@ public class ElseFactory extends FactoryBase
       public Instance(String qName, NodeBase parent, ParseContext context)
       {
          super(qName, parent, context, true);
+      }
+
+
+      public boolean compile(int pass, ParseContext context)
+            throws SAXException
+      {
+         if (pass == 0) // following sibling not available yet
+            return true;
+
+         mayDropEnd();
+         return false;
       }
 
 

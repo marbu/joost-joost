@@ -1,5 +1,5 @@
 /*
- * $Id: WhileFactory.java,v 2.8 2007/12/19 10:39:37 obecker Exp $
+ * $Id: WhileFactory.java,v 2.9 2008/01/09 11:16:06 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -24,11 +24,11 @@
 
 package net.sf.joost.instruction;
 
-import java.util.HashSet;
-
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
+
+import java.util.HashSet;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -38,7 +38,7 @@ import org.xml.sax.SAXParseException;
 /** 
  * Factory for <code>while</code> elements, which are represented by
  * the inner Instance class. 
- * @version $Revision: 2.8 $ $Date: 2007/12/19 10:39:37 $
+ * @version $Revision: 2.9 $ $Date: 2008/01/09 11:16:06 $
  * @author Oliver Becker
  */
 
@@ -93,6 +93,7 @@ final public class WhileFactory extends FactoryBase
          if (pass == 0) // successor not available yet
             return true;
 
+         mayDropEnd();
          contents = next;
          successor = nodeEnd.next;
          nodeEnd.next = this; // loop
