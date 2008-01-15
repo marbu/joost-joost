@@ -1,5 +1,5 @@
 /*
- * $Id: THResolver.java,v 1.8 2007/12/20 11:13:11 obecker Exp $
+ * $Id: THResolver.java,v 1.9 2008/01/15 20:46:39 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -23,6 +23,15 @@
  */
 package net.sf.joost.plugins.traxfilter;
 
+import net.sf.joost.Constants;
+import net.sf.joost.OptionalLog;
+import net.sf.joost.TransformerHandlerResolver;
+import net.sf.joost.plugins.attributes.Attribute;
+import net.sf.joost.plugins.attributes.BooleanAttribute;
+import net.sf.joost.plugins.attributes.StringAttribute;
+import net.sf.joost.trax.TrAXConstants;
+import net.sf.joost.trax.TransformerFactoryImpl;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
@@ -39,15 +48,6 @@ import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
-
-import net.sf.joost.Constants;
-import net.sf.joost.OptionalLog;
-import net.sf.joost.TransformerHandlerResolver;
-import net.sf.joost.plugins.attributes.Attribute;
-import net.sf.joost.plugins.attributes.BooleanAttribute;
-import net.sf.joost.plugins.attributes.StringAttribute;
-import net.sf.joost.trax.TrAXConstants;
-import net.sf.joost.trax.TransformerFactoryImpl;
 
 import org.apache.commons.logging.Log;
 import org.xml.sax.InputSource;
@@ -108,7 +108,7 @@ import org.xml.sax.XMLReader;
  * or
  * &lt;stx:with-param name="http://stx.sourceforge.net/2002/ns/trax-filter/attribute:http://apache.org/xalan/features/incremental" select="'true'" /&gt;
  * 
- * @version $Revision: 1.8 $ $Date: 2007/12/20 11:13:11 $
+ * @version $Revision: 1.9 $ $Date: 2008/01/15 20:46:39 $
  * @author fikin
  */
 public class THResolver implements TransformerHandlerResolver, Constants {
@@ -162,44 +162,8 @@ public class THResolver implements TransformerHandlerResolver, Constants {
       new BooleanAttribute("THREAT-URL-AS-SYSTEM_ID", 
          System.getProperty(FILTER_ATTR_NS + ":THREAT-URL-AS-SYSTEM_ID", "false"), 
          attrs);
-   
-   /**
-    * force usage of internal TH implementation for Xalan TH (so far Xalan TH
-    * are not reusable, see bug
-    * http://issues.apache.org/bugzilla/show_bug.cgi?id=1205) when this property
-    * is true (by default) then it will instantiate internal reusable version of
-    * TH, when false it will use default one created by TraX factory.
-    */
-   public static final BooleanAttribute USE_INTERNAL_XALAN_TH = 
-      new BooleanAttribute("USE-INTERNAL-XALAN-TH", "true", attrs);
-   
-   
-   /**
-    * Class instances for Xalan. Necessary to check whether the current
-    * TransformerHandler instance is from Xalan to prevent a Xalan bug,
-    * see {@link #USE_INTERNAL_XALAN_TH} above.
-    */
-   private static final Class XALAN_IMPL_CLASS, XALAN_XSLT_IMPL_CLASS;
-   static {
-      Class clazz;
-      try {
-         clazz = Class.forName("org.apache.xalan.processor.TransformerFactoryImpl");
-      }
-      catch (Throwable t) {
-         clazz = null;
-      }
-      XALAN_IMPL_CLASS = clazz;
-      try {
-         clazz = Class.forName("org.apache.xalan.xsltc.trax.TransformerFactoryImpl");
-      }
-      catch (Throwable t) {
-         clazz = null;
-      }
-      XALAN_XSLT_IMPL_CLASS = clazz;
-   }
-   
-   
-   
+
+
    /* local vars */
    
    /** all XMLReader-based TH are reused under this hashtable key */
@@ -502,28 +466,10 @@ public class THResolver implements TransformerHandlerResolver, Constants {
       setTraxFactoryAttributes( saxtf, params );
       
       try {
-         // bug fixing TH reuse in Xalan
-         // it is so that Xalan Transformers are reusable
-         // but TransformerHandlers are not
-         // see http://issues.apache.org/bugzilla/show_bug.cgi?id=1205 for more details
-         if (((XALAN_IMPL_CLASS != null 
-               && XALAN_IMPL_CLASS.isAssignableFrom(saxtf.getClass())) 
-           || (XALAN_XSLT_IMPL_CLASS != null 
-               && XALAN_XSLT_IMPL_CLASS.isAssignableFrom(saxtf.getClass())))
-           && USE_INTERNAL_XALAN_TH.booleanValue()) {
-
-            if (DEBUG)
-               log.debug("newTHOutOfTraX(): creating internal reusable Xalan TH");
-            // instantiate out custom TH wrapper on top of xalan's TR
-            Transformer xalanTr = saxtf.newTransformer(source);
-            return new XalanReusableTH(xalanTr);
-         }
-         else {
-            if (DEBUG)
-               log.debug("newTHOutOfTraX(): creating factory's reusable TH");
-            // TraX way to create TH
-            return saxtf.newTransformerHandler(source);
-         }
+         if (DEBUG)
+            log.debug("newTHOutOfTraX(): creating factory's reusable TH");
+         // TraX way to create TH
+         return saxtf.newTransformerHandler(source);
       }
       catch (TransformerConfigurationException ex) {
          throw new SAXException(ex);
