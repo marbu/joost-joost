@@ -4,8 +4,10 @@ Changes since 20070718
 - replaced attribute 'case' of stx:analyze-text with 'flags'
    * case="insensitive" must be specified now using flags="i"
    * multiline mode is now by default off and must be enabled via flags="m"
-- API: the default constructor of TransformerFactoryImpl does not longer throw 
-  an IOException
+- API: the default constructor of net.sf.joost.trax.TransformerFactoryImpl does
+  not longer throw an IOException
+- API: removed class net.sf.joost.plugins.traxfilter.XalanReusableTH 
+  and field net.sf.joost.plugins.traxfilter.THResolver.USE_INTERNAL_XALAN_TH
 
 Changes since 20070621
 - added interface OutputURIResolver (Feature request 1170466)
