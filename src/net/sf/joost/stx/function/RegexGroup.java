@@ -1,5 +1,5 @@
 /*
- * $Id: RegexGroup.java,v 1.4 2007/05/29 05:33:56 obecker Exp $
+ * $Id: RegexGroup.java,v 1.5 2008/02/20 10:04:25 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,7 +41,7 @@ import org.xml.sax.SAXException;
  * sub-expression of a regular expression from an <code>stx:match</code>
  * element.
  * 
- * @version $Revision: 1.4 $ $Date: 2007/05/29 05:33:56 $
+ * @version $Revision: 1.5 $ $Date: 2008/02/20 10:04:25 $
  * @author Oliver Becker
  */
 final public class RegexGroup implements Instance
@@ -74,6 +74,7 @@ final public class RegexGroup implements Instance
       if (no >= capSubstr.length)
          return Value.VAL_EMPTY_STRING;
 
-      return new Value(capSubstr[no]);
+      return capSubstr[no] == null ? Value.VAL_EMPTY_STRING 
+                                   : new Value(capSubstr[no]);
    }
 }
