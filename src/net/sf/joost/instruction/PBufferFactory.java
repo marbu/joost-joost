@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 2.13 2007/12/19 10:39:37 obecker Exp $
+ * $Id: PBufferFactory.java,v 2.14 2008/02/24 20:56:57 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.13 $ $Date: 2007/12/19 10:39:37 $
+ * @version $Revision: 2.14 $ $Date: 2008/02/24 20:56:57 $
  * @author Oliver Becker
  */
 
@@ -123,6 +123,13 @@ public class PBufferFactory extends FactoryBase
       }
 
 
+      public short process(Context context) throws SAXException
+      {
+         this.localFieldStack.push(context.targetGroup);
+         return super.process(context);
+      }
+
+
       /**
        * Processes a buffer.
        */
@@ -198,6 +205,7 @@ public class PBufferFactory extends FactoryBase
             // restore current group
             context.currentGroup = prevGroup;
          }
+         context.targetGroup = (GroupBase) localFieldStack.pop();
 
          return super.processEnd(context);
       }
