@@ -1,5 +1,5 @@
 Changes since 20070718
-- Bugfixes: 1758424, 1810643, 1824901, 1824909
+- Bugfixes: 1758424, 1810643, 1824901, 1824909, 1899453
 - added stx:doctype
 - replaced attribute 'case' of stx:analyze-text with 'flags'
    * case="insensitive" must be specified now using flags="i"
