@@ -1,5 +1,5 @@
 /*
- * $Id: BufferReader.java,v 1.6 2007/11/16 17:35:07 obecker Exp $
+ * $Id: BufferReader.java,v 1.7 2008/03/29 12:12:57 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -41,11 +41,12 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
+import org.xml.sax.helpers.LocatorImpl;
 
 
 /**
  * An XMLReader object that uses the events from a buffer.
- * @version $Revision: 1.6 $ $Date: 2007/11/16 17:35:07 $
+ * @version $Revision: 1.7 $ $Date: 2008/03/29 12:12:57 $
  * @author Oliver Becker
  */
 
@@ -59,16 +60,21 @@ public class BufferReader implements XMLReader, Constants
 
    /** the array of events to be feed into the external SAX processor */
    private SAXEvent[] events;
-
+   
+   private String publicId, systemId;
+   
 
    /**
     * Constructs a new <code>BufferReader</code> object.
     * @param context the current context
     * @param bufExpName the internal expanded name
     * @param groupScope the scope of the buffer
+    * @param publicId the public identifier to be used for the buffer
+    * @param systemId the system identifier to be used for the buffer
     * @exception SAXException if there's no such buffer
     */
-   public BufferReader(Context context, String bufExpName, GroupBase groupScope)
+   public BufferReader(Context context, String bufExpName, GroupBase groupScope,
+                       String publicId, String systemId)
       throws SAXException
    {
       Emitter emitter = (Emitter) ((groupScope == null) 
@@ -79,6 +85,8 @@ public class BufferReader implements XMLReader, Constants
       // However, it checks that the buffer contents is well-formed
       emitter.endDocument(context.currentInstruction);
       this.events = ((BufferEmitter) emitter.contH).getEvents();
+      this.publicId = publicId;
+      this.systemId = systemId;
    }
 
 
@@ -192,6 +200,10 @@ public class BufferReader implements XMLReader, Constants
          if (contH instanceof LexicalHandler)
             lexH = (LexicalHandler)contH;
       }
+      LocatorImpl locator = new LocatorImpl();
+      locator.setPublicId(publicId);
+      locator.setSystemId(systemId);
+      contH.setDocumentLocator(locator);
       // Note: call startDocument() and endDocument() only for external
       // processing (when parse() is invoked by someone else)
       contH.startDocument();

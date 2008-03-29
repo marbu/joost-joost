@@ -1,3 +1,6 @@
+Changes since 20080309
+- Bugfix: 1928572
+
 Changes since 20070718
 - Bugfixes: 1758424, 1810643, 1824901, 1824909, 1899453
 - added stx:doctype

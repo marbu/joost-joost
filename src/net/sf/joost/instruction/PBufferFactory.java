@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 2.14 2008/02/24 20:56:57 obecker Exp $
+ * $Id: PBufferFactory.java,v 2.15 2008/03/29 12:12:56 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -44,7 +44,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Factory for <code>process-buffer</code> elements, which are 
  * represented by the inner Instance class.
- * @version $Revision: 2.14 $ $Date: 2008/02/24 20:56:57 $
+ * @version $Revision: 2.15 $ $Date: 2008/03/29 12:12:56 $
  * @author Oliver Becker
  */
 
@@ -152,7 +152,8 @@ public class PBufferFactory extends FactoryBase
             scopeDetermined = true;
          }
 
-         BufferReader br = new BufferReader(context, expName, groupScope);
+         BufferReader br = new BufferReader(context, expName, groupScope, 
+                                            publicId, systemId);
 
          if (filter != null) {
             // use external SAX filter (TransformerHandler)

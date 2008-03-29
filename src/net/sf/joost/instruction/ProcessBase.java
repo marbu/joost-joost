@@ -1,5 +1,5 @@
 /*
- * $Id: ProcessBase.java,v 2.16 2007/11/25 14:18:01 obecker Exp $
+ * $Id: ProcessBase.java,v 2.17 2008/03/29 12:12:56 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -45,7 +45,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Common base class for all <code>stx:process-<em>xxx</em></code>
  * instructions
- * @version $Revision: 2.16 $ $Date: 2007/11/25 14:18:01 $
+ * @version $Revision: 2.17 $ $Date: 2008/03/29 12:12:56 $
  * @author Oliver Becker
  */
 public class ProcessBase extends NodeBase
@@ -243,7 +243,8 @@ public class ProcessBase extends NodeBase
             handler = 
                context.defaultTransformerHandlerResolver.resolve(
                      filterMethod, 
-                     new BufferReader(context, useBufExpName, bufGroupScope), 
+                     new BufferReader(context, useBufExpName, bufGroupScope, 
+                                      publicId, systemId), 
                      context.passedParameters);
          }
          else {
