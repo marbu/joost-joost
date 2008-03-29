@@ -1,5 +1,5 @@
 /*
- * $Id: IncludeFactory.java,v 2.12 2007/12/19 10:39:37 obecker Exp $
+ * $Id: IncludeFactory.java,v 2.13 2008/03/29 13:31:07 obecker Exp $
  * 
  * The contents of this file are subject to the Mozilla Public License 
  * Version 1.1 (the "License"); you may not use this file except in 
@@ -47,7 +47,7 @@ import org.xml.sax.XMLReader;
 /** 
  * Factory for <code>include</code> elements, which will be replaced by
  * groups for the included transformation sheet
- * @version $Revision: 2.12 $ $Date: 2007/12/19 10:39:37 $
+ * @version $Revision: 2.13 $ $Date: 2008/03/29 13:31:07 $
  * @author Oliver Becker
  */
 
@@ -75,7 +75,11 @@ final public class IncludeFactory extends FactoryBase
       throws SAXException
    {
       // check parent
-      if (parent != null && !(parent instanceof GroupBase))
+      if (parent == null)
+         throw new SAXParseException("'" + qName + 
+                                     "' not allowed as root element", 
+                                     pContext.locator);
+      if (!(parent instanceof GroupBase))
          throw new SAXParseException("'" + qName + 
                                      "' not allowed as child of '" +
                                      parent.qName + "'", pContext.locator);
