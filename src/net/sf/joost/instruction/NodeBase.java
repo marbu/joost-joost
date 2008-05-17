@@ -1,25 +1,25 @@
 /*
- * $Id: NodeBase.java,v 2.13 2008/01/09 11:16:06 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: NodeBase.java,v 2.14 2008/05/17 17:01:03 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.instruction;
@@ -35,28 +35,28 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 
-/** 
- * Abstract base class for all instances of nodes in the STX transformation 
+/**
+ * Abstract base class for all instances of nodes in the STX transformation
  * sheet
- * @version $Revision: 2.13 $ $Date: 2008/01/09 11:16:06 $
+ * @version $Revision: 2.14 $ $Date: 2008/05/17 17:01:03 $
  * @author Oliver Becker
  */
-public abstract class NodeBase 
+public abstract class NodeBase
    extends AbstractInstruction implements Constants
 {
    //
    // Inner classes
    //
 
-   /** 
+   /**
     * Generic class that represents the end of an element in the STX
     * transformation sheet (the end tag). Its {@link #process} method
-    * simply calls {@link #processEnd(Context context)} in the appropriate 
+    * simply calls {@link #processEnd(Context context)} in the appropriate
     * {@link NodeBase} object.
     */
    public final class End extends AbstractInstruction
    {
-      /** 
+      /**
        * The appropriate start tag.
        */
       private NodeBase start;
@@ -75,7 +75,7 @@ public abstract class NodeBase
       }
 
       /**
-       * Calls the {@link NodeBase#processEnd} method in its 
+       * Calls the {@link NodeBase#processEnd} method in its
        * {@link #start} object.
        */
       public short process(Context context)
@@ -111,8 +111,8 @@ public abstract class NodeBase
     * nodes while parsing the transformation sheet.
     */
    protected AbstractInstruction lastChild;
-   
-   /** 
+
+   /**
     * The reference to the end instruction.
     * <code>null</code> means: must be an empty element.
     */
@@ -124,9 +124,9 @@ public abstract class NodeBase
    /** The system identifier of the transformation sheet */
    public String systemId = "";
 
-   /** 
+   /**
     * <code>true</code> if the attribute <code>xml:space</code> on the
-    * nearest ancestor element was set to <code>preserve</code>, 
+    * nearest ancestor element was set to <code>preserve</code>,
     * <code>false</code> otherwise. This field is set in the
     * {@link net.sf.joost.stx.Parser} object.
     */
@@ -144,11 +144,11 @@ public abstract class NodeBase
    // ---------------------------------------------------------------------
 
    //
-   // Constructors   
+   // Constructors
    //
 
    /*
-    * Constructs a node. 
+    * Constructs a node.
     * @param qName the qualified name of this node
     * @param parent the parent of this node
     * @param context the current parse context
@@ -170,7 +170,7 @@ public abstract class NodeBase
       if (mayHaveChildren) {
          next = nodeEnd = new End(this);
          // indicates that children are allowed
-         lastChild = this; 
+         lastChild = this;
       }
    }
 
@@ -190,16 +190,16 @@ public abstract class NodeBase
    }
 
 
-   /** 
-    * Insert a new node as a child of this element 
+   /**
+    * Insert a new node as a child of this element
     * @param node the node to be inserted
     */
    public void insert(NodeBase node)
       throws SAXParseException
    {
-      if (lastChild == null) 
-         throw new SAXParseException("'" + qName + "' must be empty", 
-                                     node.publicId, node.systemId, 
+      if (lastChild == null)
+         throw new SAXParseException("'" + qName + "' must be empty",
+                                     node.publicId, node.systemId,
                                      node.lineNo, node.colNo);
 
       // append after lastChild
@@ -240,7 +240,7 @@ public abstract class NodeBase
     * parsing all children. The invocation with bigger <code>pass</code>
     * parameters happens not before the whole transformation sheet has been
     * completely parsed.
-    * 
+    *
     * @param pass the number of invocations already performed on this node
     * @param context the parse context
     * @return <code>true</code> if another invocation in the next pass is
@@ -250,13 +250,13 @@ public abstract class NodeBase
    public boolean compile(int pass, ParseContext context)
       throws SAXException
    {
-      return false; 
+      return false;
    }
 
 
    /**
     * Removes (if possible) the end node ({@link #nodeEnd}) of this instruction
-    * from the execution chain. May be invoked from 
+    * from the execution chain. May be invoked from
     * {@link #compile(int, ParseContext)} of concrete instructions only if
     * {@link #processEnd(Context)} hasn't been overridden.
     */
@@ -271,7 +271,7 @@ public abstract class NodeBase
    }
 
 
-   /** 
+   /**
     * Store the name of a variable as local for this node.
     * @param name the variable name
     */
@@ -281,9 +281,9 @@ public abstract class NodeBase
    }
 
 
-   /** 
-    * @return <code>true</code> if {@link #process} can be invoked on this 
-    *         node, and <code>false</code> otherwise 
+   /**
+    * @return <code>true</code> if {@link #process} can be invoked on this
+    *         node, and <code>false</code> otherwise
     */
    public boolean processable()
    {
@@ -307,7 +307,7 @@ public abstract class NodeBase
       return PR_CONTINUE;
    }
 
-   /** 
+   /**
     * Called when the end tag will be processed. This instance removes
     * local variables declared in this node.
     * @param context the current context
@@ -318,7 +318,7 @@ public abstract class NodeBase
       throws SAXException
    {
       if (scopedVariables != null) {
-         /** remove all local variables */
+         // remove all local variables
          Object[] objs = scopedVariables.toArray();
          for (int i=0; i<objs.length; i++)
             context.localVars.remove(objs[i]);
@@ -328,7 +328,7 @@ public abstract class NodeBase
    }
 
    /**
-    * Getter for {@link #nodeEnd} used by 
+    * Getter for {@link #nodeEnd} used by
     * {@link net.sf.joost.stx.Processor#processEvent}.
     * @return a final ref on <code>AbstractInstruction</code>
     */

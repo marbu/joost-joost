@@ -1,25 +1,25 @@
 /*
- * $Id: ChooseFactory.java,v 2.6 2008/01/09 11:16:06 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: ChooseFactory.java,v 2.7 2008/05/17 17:01:03 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.instruction;
@@ -30,10 +30,10 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXParseException;
 
 
-/** 
+/**
  * Factory for <code>choose</code> elements, which are represented by
- * the inner Instance class. 
- * @version $Revision: 2.6 $ $Date: 2008/01/09 11:16:06 $
+ * the inner Instance class.
+ * @version $Revision: 2.7 $ $Date: 2008/05/17 17:01:03 $
  * @author Oliver Becker
  */
 
@@ -45,7 +45,7 @@ final public class ChooseFactory extends FactoryBase
       return "choose";
    }
 
-   public NodeBase createNode(NodeBase parent, String qName, 
+   public NodeBase createNode(NodeBase parent, String qName,
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
@@ -68,7 +68,7 @@ final public class ChooseFactory extends FactoryBase
 
 
       /**
-       * Ensures that only <code>stx:when</code> and 
+       * Ensures that only <code>stx:when</code> and
        * <code>stx:otherwise</code> children will be inserted.
        */
       public void insert(NodeBase node)
@@ -85,17 +85,17 @@ final public class ChooseFactory extends FactoryBase
                   node.publicId, node.systemId, node.lineNo, node.colNo);
          }
 
-         if (!(node instanceof WhenFactory.Instance || 
+         if (!(node instanceof WhenFactory.Instance ||
                node instanceof OtherwiseFactory.Instance))
             throw new SAXParseException(
-               "'" + qName + 
+               "'" + qName +
                "' may only contain stx:when and stx:otherwise children " +
                "(encountered '" + node.qName + "')",
                node.publicId, node.systemId, node.lineNo, node.colNo);
 
          if (otherwisePresent)
             throw new SAXParseException(
-               "'" + qName + 
+               "'" + qName +
                "' must not have more children after stx:otherwise",
                node.publicId, node.systemId, node.lineNo, node.colNo);
 
@@ -121,9 +121,9 @@ final public class ChooseFactory extends FactoryBase
       {
          if (lastChild == this)
             throw new SAXParseException(
-               "'" + qName + "' must have at least one stx:when child", 
+               "'" + qName + "' must have at least one stx:when child",
                publicId, systemId, lineNo, colNo);
-         
+
          mayDropEnd();
          return false;
       }
