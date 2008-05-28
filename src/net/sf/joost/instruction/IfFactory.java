@@ -1,25 +1,25 @@
 /*
- * $Id: IfFactory.java,v 2.8 2008/01/09 11:16:06 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: IfFactory.java,v 2.9 2008/05/28 08:54:54 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.instruction;
@@ -35,10 +35,10 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 
-/** 
+/**
  * Factory for <code>if</code> elements, which are represented by
- * the inner Instance class. 
- * @version $Revision: 2.8 $ $Date: 2008/01/09 11:16:06 $
+ * the inner Instance class.
+ * @version $Revision: 2.9 $ $Date: 2008/05/28 08:54:54 $
  * @author Oliver Becker
  */
 
@@ -60,7 +60,7 @@ final public class IfFactory extends FactoryBase
       return "if";
    }
 
-   public NodeBase createNode(NodeBase parent, String qName, 
+   public NodeBase createNode(NodeBase parent, String qName,
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
@@ -89,7 +89,7 @@ final public class IfFactory extends FactoryBase
          super(qName, parent, context, true);
          this.test = test;
       }
-      
+
 
       /**
        * Assign {@link #trueNext} and {@link #falseNext}
@@ -100,12 +100,11 @@ final public class IfFactory extends FactoryBase
          if (pass == 0) // nodeEnd.next not available yet
             return true;
 
-         mayDropEnd();
          // adjust true and false branches
          trueNext = next;
          falseNext = nodeEnd.next;
          if (falseNext instanceof ElseFactory.Instance)
-            nodeEnd.next = 
+            nodeEnd.next =
                ((ElseFactory.Instance)falseNext).nodeEnd.next;
 
          return false; // done
