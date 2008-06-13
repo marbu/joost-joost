@@ -1,36 +1,36 @@
 /*
- * $Id: LitElementFactory.java,v 2.14 2007/11/25 14:18:01 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: LitElementFactory.java,v 2.15 2008/06/13 21:17:48 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.instruction;
-
-import java.util.Enumeration;
-import java.util.Hashtable;
 
 import net.sf.joost.Constants;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
+
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -39,17 +39,17 @@ import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.NamespaceSupport;
 
 
-/** 
+/**
  * Factory for literal result elements, which are represented by the
- * inner Instance class. 
- * @version $Revision: 2.14 $ $Date: 2007/11/25 14:18:01 $
+ * inner Instance class.
+ * @version $Revision: 2.15 $ $Date: 2008/06/13 21:17:48 $
  * @author Oliver Becker
 */
 
 final public class LitElementFactory
 {
-   public NodeBase createNode(NodeBase parent, String uri, String lName, 
-                              String qName, Attributes attrs, 
+   public NodeBase createNode(NodeBase parent, String uri, String lName,
+                              String qName, Attributes attrs,
                               ParseContext context, Hashtable newNamespaces)
       throws SAXParseException
    {
@@ -61,17 +61,17 @@ final public class LitElementFactory
                context.locator);
          else
             throw new SAXParseException(
-               "File is not an STX transformation sheet, found " + qName, 
+               "File is not an STX transformation sheet, found " + qName,
                context.locator);
       }
 
       if (parent instanceof TransformFactory.Instance)
-         throw new SAXParseException("Literal result element '" + qName + 
+         throw new SAXParseException("Literal result element '" + qName +
                                      "' may occur only within templates",
                                      context.locator);
 
       Tree[] avtList = new Tree[attrs.getLength()];
-      for (int i=0; i<avtList.length; i++) 
+      for (int i=0; i<avtList.length; i++)
          avtList[i] = FactoryBase.parseAVT(attrs.getValue(i), context);
 
       return new Instance(uri, lName, qName, attrs, avtList, parent, context,
@@ -90,9 +90,9 @@ final public class LitElementFactory
       // the namespaces that possibly need a declaration in the output
       private Hashtable namespaces;
       private Hashtable namespaceAliases;
-      
+
       protected Instance(String uri, String lName, String qName,
-                         Attributes attrs, Tree[] avtList, 
+                         Attributes attrs, Tree[] avtList,
                          NodeBase parent, ParseContext context,
                          Hashtable newNamespaces)
       {
@@ -115,7 +115,7 @@ final public class LitElementFactory
                // remove the namespace that belongs to this qName
                if (qName.startsWith(key) && uri.equals(namespaces.get(key)) &&
                    ((key.equals("") && qName.indexOf(':') == -1) ||
-                    (qName.charAt(key.length()) == ':')))
+                    (qName.indexOf(':') == key.length())))
                   namespaces.remove(key);
 
             }
@@ -129,7 +129,7 @@ final public class LitElementFactory
 
 
       /**
-       * Determine constant attribute values and apply all declared namespaces 
+       * Determine constant attribute values and apply all declared namespaces
        * aliases (<code>stx:namespace-alias</code>)
        */
       public boolean compile(int pass, ParseContext context)
@@ -150,7 +150,7 @@ final public class LitElementFactory
             if (allConstant) // no need to iterate over the array
                avtList = new Tree[0];
 
-            // For applying the declared namespaces we have to wait until the 
+            // For applying the declared namespaces we have to wait until the
             // whole STX sheet has been parsed
             return true;
          }
@@ -253,7 +253,7 @@ final public class LitElementFactory
          return namespaces != null ? (Hashtable)namespaces.clone()
                                    : new Hashtable();
       }
-      
+
 
       //
       // for debugging
