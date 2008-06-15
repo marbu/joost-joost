@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<stx:transform xmlns:stx="http://stx.sourceforge.net/2002/ns" version="1.0" output-method="xml">
+    <stx:template match="/">
+        <stx:process-children/>
+    </stx:template>
+
+    <stx:template match="*|text()">
+        <stx:copy attributes="@*">
+            <stx:process-children/>
+        </stx:copy>
+    </stx:template>
+</stx:transform>

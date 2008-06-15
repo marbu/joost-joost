@@ -1,5 +1,5 @@
 /*
- * $Id: AllTests.java,v 1.1 2007/07/18 19:07:12 obecker Exp $
+ * $Id: AllTests.java,v 1.2 2008/06/15 08:02:57 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,11 +24,13 @@
 package net.sf.joost.test;
 
 import net.sf.joost.test.stx.StxTest;
+import net.sf.joost.test.trax.thread.TemplateThreadSafetyTest;
+
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
 /**
- * @version $Revision: 1.1 $ $Date: 2007/07/18 19:07:12 $
+ * @version $Revision: 1.2 $ $Date: 2008/06/15 08:02:57 $
  * @author Oliver Becker
  */
 public class AllTests extends TestSuite
@@ -37,6 +39,7 @@ public class AllTests extends TestSuite
       TestSuite suite = new TestSuite();
       suite.addTest(StxTest.suite());
       suite.addTest(net.sf.joost.test.trax.AllTests.suite());
+      suite.addTestSuite(TemplateThreadSafetyTest.class);
       return suite;
    }
 }
