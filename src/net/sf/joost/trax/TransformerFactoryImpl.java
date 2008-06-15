@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerFactoryImpl.java,v 1.25 2007/12/20 11:13:11 obecker Exp $
+ * $Id: TransformerFactoryImpl.java,v 1.26 2008/06/15 08:11:22 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -22,8 +22,15 @@
  * Contributor(s): Oliver Becker.
  */
 
-
 package net.sf.joost.trax;
+
+import net.sf.joost.OptionalLog;
+import net.sf.joost.OutputURIResolver;
+import net.sf.joost.TransformerHandlerResolver;
+import net.sf.joost.emitter.StreamEmitter;
+import net.sf.joost.emitter.StxEmitter;
+import net.sf.joost.stx.Processor;
+import net.sf.joost.trace.ParserListenerMgr;
 
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
@@ -45,14 +52,6 @@ import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-
-import net.sf.joost.OptionalLog;
-import net.sf.joost.OutputURIResolver;
-import net.sf.joost.TransformerHandlerResolver;
-import net.sf.joost.emitter.StreamEmitter;
-import net.sf.joost.emitter.StxEmitter;
-import net.sf.joost.stx.Processor;
-import net.sf.joost.trace.ParserListenerMgr;
 
 import org.apache.commons.logging.Log;
 import org.xml.sax.SAXException;
@@ -286,7 +285,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         // TODO compare with xalan/saxon
         throw new IllegalArgumentException("Not yet implemented");
     }
-    
+
     /**
      * Supplied features.
      * @param name Name of the feature.
@@ -350,7 +349,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
             }
             try {
                 SAXSource saxSource = TrAXHelper.getSAXSource(source, errorListener);
-                Templates template = 
+                Templates template =
                     new TemplatesImpl(saxSource.getXMLReader(),
                                       saxSource.getInputSource(), this);
                 return template;
@@ -438,7 +437,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
 
         synchronized (reentryGuard) {
             if (DEBUG)
-                log.debug("get a TransformerHandler " + 
+                log.debug("get a TransformerHandler " +
                           "(identity transformation or copy)");
             StreamSource streamSrc =
                 new StreamSource(new StringReader(IDENTITY_TRANSFORM));
@@ -511,7 +510,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory
         try {
             Templates templates = newTemplates(src);
             //get a XMLReader
-            XMLReader parser = Processor.getXMLReader();
+            XMLReader parser = Processor.createXMLReader();
             xFilter = newXMLFilter(templates);
             xFilter.setParent(parser);
             return xFilter;

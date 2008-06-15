@@ -1,36 +1,28 @@
 /*
- * $Id: PDocumentFactory.java,v 2.17 2007/12/19 10:39:37 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: PDocumentFactory.java,v 2.18 2008/06/15 08:11:23 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.instruction;
-
-import java.net.URL;
-import java.util.HashSet;
-
-import javax.xml.transform.Source;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.sax.TransformerHandler;
 
 import net.sf.joost.OptionalLog;
 import net.sf.joost.grammar.Tree;
@@ -39,6 +31,14 @@ import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Processor;
 import net.sf.joost.stx.Value;
 import net.sf.joost.trax.TrAXHelper;
+
+import java.net.URL;
+import java.util.HashSet;
+
+import javax.xml.transform.Source;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.sax.TransformerHandler;
 
 import org.apache.commons.logging.Log;
 import org.xml.sax.Attributes;
@@ -52,9 +52,9 @@ import org.xml.sax.ext.LexicalHandler;
 
 
 /**
- * Factory for <code>process-document</code> elements, which are 
+ * Factory for <code>process-document</code> elements, which are
  * represented by the inner Instance class.
- * @version $Revision: 2.17 $ $Date: 2007/12/19 10:39:37 $
+ * @version $Revision: 2.18 $ $Date: 2008/06/15 08:11:23 $
  * @author Oliver Becker
  */
 
@@ -67,7 +67,7 @@ public class PDocumentFactory extends FactoryBase
    private static Log log = OptionalLog.getLog(PDocumentFactory.class);
 
 
-   // 
+   //
    // Constructor
    //
    public PDocumentFactory()
@@ -86,7 +86,7 @@ public class PDocumentFactory extends FactoryBase
       return "process-document";
    }
 
-   public NodeBase createNode(NodeBase parent, String qName, 
+   public NodeBase createNode(NodeBase parent, String qName,
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
@@ -100,7 +100,7 @@ public class PDocumentFactory extends FactoryBase
 
       if (groupAtt != null && filterMethodAtt != null)
          throw new SAXParseException(
-            "It's not allowed to use both 'group' and 'filter-method' " + 
+            "It's not allowed to use both 'group' and 'filter-method' " +
             "attributes",
             context.locator);
 
@@ -108,7 +108,7 @@ public class PDocumentFactory extends FactoryBase
 
       if (filterSrcAtt != null && filterMethodAtt == null)
          throw new SAXParseException(
-            "Missing 'filter-method' attribute in '" + qName + 
+            "Missing 'filter-method' attribute in '" + qName +
             "' ('filter-src' is present)",
             context.locator);
 
@@ -125,7 +125,7 @@ public class PDocumentFactory extends FactoryBase
 
       // Constructor
       public Instance(String qName, NodeBase parent, ParseContext context,
-                      Tree href, Tree baseUri, 
+                      Tree href, Tree baseUri,
                       String groupQName, String method, String src)
 
          throws SAXParseException
@@ -143,7 +143,7 @@ public class PDocumentFactory extends FactoryBase
          throws SAXException
       {
          Value v = href.evaluate(context, this);
-         if (v.type == Value.EMPTY) 
+         if (v.type == Value.EMPTY)
             return PR_CONTINUE; // nothing to do
 
          Processor proc = context.currentProcessor;
@@ -191,8 +191,8 @@ public class PDocumentFactory extends FactoryBase
                v.next = null;
                String hrefURI = v.getStringValue();
                // ask URI resolver if present
-               if (context.uriResolver != null && 
-                   (source = 
+               if (context.uriResolver != null &&
+                   (source =
                        context.uriResolver.resolve(hrefURI, base)) != null) {
                   SAXSource saxSource = TrAXHelper.getSAXSource(source, null);
                   reader = saxSource.getXMLReader();
@@ -201,7 +201,7 @@ public class PDocumentFactory extends FactoryBase
                      reader.setContentHandler(contH);
                      try {
                         reader.setProperty(
-                           "http://xml.org/sax/properties/lexical-handler", 
+                           "http://xml.org/sax/properties/lexical-handler",
                            lexH);
                      }
                      catch (SAXException ex) {
@@ -212,7 +212,7 @@ public class PDocumentFactory extends FactoryBase
                            publicId, systemId, lineNo, colNo);
                      }
                   }
-                  else 
+                  else
                      reader = defaultReader;
                   iSource = saxSource.getInputSource();
                }
@@ -227,12 +227,12 @@ public class PDocumentFactory extends FactoryBase
                if (reader == null) { // i.e. defaultReader == null
                   // construct a default XML reader,
                   // happens at most once per process-document invocation
-                  reader = defaultReader = Processor.getXMLReader();
+                  reader = defaultReader = Processor.createXMLReader();
                   reader.setErrorHandler(context.errorHandler);
                   reader.setContentHandler(contH);
                   try {
                      reader.setProperty(
-                        "http://xml.org/sax/properties/lexical-handler", 
+                        "http://xml.org/sax/properties/lexical-handler",
                         lexH);
                   }
                   catch (SAXException ex) {
@@ -251,7 +251,7 @@ public class PDocumentFactory extends FactoryBase
          catch (java.io.IOException ex) {
             // TODO: better error handling
             context.errorHandler.error(
-               new SAXParseException(ex.toString(), 
+               new SAXParseException(ex.toString(),
                                      publicId, systemId, lineNo, colNo));
          }
          catch (TransformerException te) {

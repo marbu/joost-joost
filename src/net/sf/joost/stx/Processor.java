@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.57 2007/11/25 14:18:01 obecker Exp $
+ * $Id: Processor.java,v 2.58 2008/06/15 08:11:22 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,18 +24,6 @@
 
 package net.sf.joost.stx;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Properties;
-import java.util.Stack;
-import java.util.Vector;
-
-import javax.xml.transform.ErrorListener;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.URIResolver;
-
 import net.sf.joost.Constants;
 import net.sf.joost.OptionalLog;
 import net.sf.joost.OutputURIResolver;
@@ -49,6 +37,18 @@ import net.sf.joost.instruction.PSiblingsFactory;
 import net.sf.joost.instruction.ProcessBase;
 import net.sf.joost.instruction.TemplateFactory;
 import net.sf.joost.instruction.TransformFactory;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Properties;
+import java.util.Stack;
+import java.util.Vector;
+
+import javax.xml.transform.ErrorListener;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.URIResolver;
 
 import org.apache.commons.logging.Log;
 import org.xml.sax.Attributes;
@@ -70,7 +70,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.57 $ $Date: 2007/11/25 14:18:01 $
+ * @version $Revision: 2.58 $ $Date: 2008/06/15 08:11:22 $
  * @author Oliver Becker
  */
 
@@ -161,7 +161,7 @@ public class Processor extends XMLFilterImpl
 
    public Properties outputProperties;
 
-   private final boolean isProcessorClass = 
+   private final boolean isProcessorClass =
       getClass().equals(Processor.class);
 
 
@@ -397,7 +397,7 @@ public class Processor extends XMLFilterImpl
       throws IOException, SAXException
    {
       if (reader == null)
-         reader = getXMLReader();
+         reader = createXMLReader();
 
       // create a Parser for parsing the STX transformation sheet
       stxParser = new Parser(pContext);
@@ -425,7 +425,7 @@ public class Processor extends XMLFilterImpl
    {
       this.stxParser = stxParser;
       init();
-      setParent(getXMLReader());
+      setParent(createXMLReader());
    }
 
 
@@ -439,11 +439,11 @@ public class Processor extends XMLFilterImpl
       stxParser = proc.stxParser;
       globalTemplates = proc.globalTemplates;
       init();
-      setParent(getXMLReader());
+      setParent(createXMLReader());
       setTransformerHandlerResolver(
          proc.context.defaultTransformerHandlerResolver.customResolver);
       setOutputURIResolver(proc.context.outputUriResolver);
-      
+
    }
 
    /**
@@ -463,7 +463,7 @@ public class Processor extends XMLFilterImpl
     * Create an <code>XMLReader</code> object (a SAX Parser)
     * @throws SAXException if a SAX Parser couldn't be created
     */
-   public static XMLReader getXMLReader()
+   public static XMLReader createXMLReader()
       throws SAXException
    {
       // Using pure SAX2, not JAXP
@@ -901,11 +901,11 @@ public class Processor extends XMLFilterImpl
          // check, if this is the original class: call process() directly
          if (isProcessorClass) {
             while (inst != null && processStatus == PR_CONTINUE) {
-               
+
                if (DEBUG)
                   if (log.isDebugEnabled())
                      log.debug(inst.lineNo + ": " + inst);
-               
+
                processStatus = inst.process(context);
                inst = inst.next;
             }
@@ -923,7 +923,7 @@ public class Processor extends XMLFilterImpl
          }
 
          if (processStatus == PR_ATTRIBUTES) {
-            // stx:process-attributes encountered 
+            // stx:process-attributes encountered
             // (i.e. the current node must be an element with attributes)
             processAttributes(event.attrs);
             processStatus = PR_CONTINUE;
@@ -934,7 +934,7 @@ public class Processor extends XMLFilterImpl
 
 
    /**
-    * Process an instruction. 
+    * Process an instruction.
     * This method should be overridden for debug purposes.
     * @param inst The instruction which should be processed
     * @param event The current event
@@ -1125,7 +1125,7 @@ public class Processor extends XMLFilterImpl
 
          default:
             // Mustn't happen
-            String msg = "Unexpected return value from process() " + 
+            String msg = "Unexpected return value from process() " +
                          processStatus;
             if (log != null)
                log.error(msg);
@@ -1449,7 +1449,7 @@ public class Processor extends XMLFilterImpl
          endElement(selfEvent.uri, selfEvent.lName, selfEvent.qName);
          collectedCharacters = postponedCharacters;
       }
-      
+
       // restore old event stack
       if (!clearLast)
          eventStack.push(topEvent);
@@ -1650,7 +1650,7 @@ public class Processor extends XMLFilterImpl
          if (log != null)
             log.error("skipDepth at document end: " + skipDepth);
          else
-            System.err.println("Error - skipDepth at document end: " + 
+            System.err.println("Error - skipDepth at document end: " +
                                skipDepth);
    }
 

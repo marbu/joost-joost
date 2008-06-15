@@ -1,5 +1,5 @@
 /*
- * $Id: SAXWrapperHandler.java,v 1.1 2005/11/06 21:22:21 obecker Exp $
+ * $Id: SAXWrapperHandler.java,v 1.2 2008/06/15 08:11:23 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,6 +24,8 @@
 
 package net.sf.joost.plugins.saxfilter;
 
+import net.sf.joost.stx.Processor;
+
 import java.io.IOException;
 import java.io.StringReader;
 
@@ -32,8 +34,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 
-import net.sf.joost.stx.Processor;
-
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -41,15 +41,15 @@ import org.xml.sax.helpers.DefaultHandler;
 
 
 /**
- * Wraps a SAX parser XMLReader in a TransformerHandler object. 
- * <p> Collects all character data reported by {@link #characters characters} 
- * and parses them afterwards with a SAX parser (which produces the result 
+ * Wraps a SAX parser XMLReader in a TransformerHandler object.
+ * <p> Collects all character data reported by {@link #characters characters}
+ * and parses them afterwards with a SAX parser (which produces the result
  * of this transformation). Other input events will be ignored.
- * @version $Revision: 1.1 $ $Date: 2005/11/06 21:22:21 $
+ * @version $Revision: 1.2 $ $Date: 2008/06/15 08:11:23 $
  * @author Oliver Becker
  */
 
-public class SAXWrapperHandler 
+public class SAXWrapperHandler
    extends DefaultHandler implements TransformerHandler
 {
    /** event sink for this transformer */
@@ -62,7 +62,7 @@ public class SAXWrapperHandler
    private StringBuffer buffer;
 
    //
-   // from interface LexicalHandler 
+   // from interface LexicalHandler
    // (not implemented by DefaultHandler; empty implementations)
    //
 
@@ -84,7 +84,7 @@ public class SAXWrapperHandler
    public void endCDATA()
    { }
 
-   public void comment(char[] ch, int start, int length) 
+   public void comment(char[] ch, int start, int length)
    { }
 
 
@@ -102,7 +102,7 @@ public class SAXWrapperHandler
       if (saxResult == null) // Shouldn't happen
          throw new SAXException("No result set");
 
-      parser = Processor.getXMLReader();
+      parser = Processor.createXMLReader();
       parser.setContentHandler(saxResult.getHandler());
       try {
          parser.setProperty("http://xml.org/sax/properties/lexical-handler",

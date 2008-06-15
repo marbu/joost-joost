@@ -1,28 +1,33 @@
 /*
- * $Id: IncludeFactory.java,v 2.13 2008/03/29 13:31:07 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: IncludeFactory.java,v 2.14 2008/06/15 08:11:23 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.instruction;
+
+import net.sf.joost.stx.ParseContext;
+import net.sf.joost.stx.Parser;
+import net.sf.joost.stx.Processor;
+import net.sf.joost.trax.TrAXHelper;
 
 import java.net.URL;
 import java.util.HashSet;
@@ -32,11 +37,6 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXSource;
 
-import net.sf.joost.stx.ParseContext;
-import net.sf.joost.stx.Parser;
-import net.sf.joost.stx.Processor;
-import net.sf.joost.trax.TrAXHelper;
-
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -44,10 +44,10 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
 
-/** 
+/**
  * Factory for <code>include</code> elements, which will be replaced by
  * groups for the included transformation sheet
- * @version $Revision: 2.13 $ $Date: 2008/03/29 13:31:07 $
+ * @version $Revision: 2.14 $ $Date: 2008/06/15 08:11:23 $
  * @author Oliver Becker
  */
 
@@ -70,17 +70,17 @@ final public class IncludeFactory extends FactoryBase
    }
 
    /** Returns an instance of {@link TransformFactory.Instance} */
-   public NodeBase createNode(NodeBase parent, String qName, 
+   public NodeBase createNode(NodeBase parent, String qName,
                               Attributes attrs, ParseContext pContext)
       throws SAXException
    {
       // check parent
       if (parent == null)
-         throw new SAXParseException("'" + qName + 
-                                     "' not allowed as root element", 
+         throw new SAXParseException("'" + qName +
+                                     "' not allowed as root element",
                                      pContext.locator);
       if (!(parent instanceof GroupBase))
-         throw new SAXParseException("'" + qName + 
+         throw new SAXParseException("'" + qName +
                                      "' not allowed as child of '" +
                                      parent.qName + "'", pContext.locator);
 
@@ -95,7 +95,7 @@ final public class IncludeFactory extends FactoryBase
       InputSource iSource;
       try {
          Source source;
-         if (pContext.uriResolver != null && 
+         if (pContext.uriResolver != null &&
              (source = pContext.uriResolver.resolve(
                 hrefAtt, pContext.locator.getSystemId())) != null) {
             SAXSource saxSource = TrAXHelper.getSAXSource(source, null);
@@ -108,7 +108,7 @@ final public class IncludeFactory extends FactoryBase
                   .toExternalForm());
          }
          if (reader == null)
-            reader = Processor.getXMLReader();
+            reader = Processor.createXMLReader();
          reader.setContentHandler(stxParser);
          reader.setErrorHandler(pContext.getErrorHandler());
          reader.parse(iSource);

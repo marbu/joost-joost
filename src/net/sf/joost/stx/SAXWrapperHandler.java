@@ -1,5 +1,5 @@
 /*
- * $Id: SAXWrapperHandler.java,v 1.1 2003/08/29 13:28:53 obecker Exp $
+ * $Id: SAXWrapperHandler.java,v 1.2 2008/06/15 08:11:22 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -41,14 +41,14 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * Wraps a SAX parser ({@link XMLReader}) in a {@link TransformerHandler}
  * object. <p>
- * Collects all character data reported by {@link #characters characters} 
- * and parses them afterwards with a SAX parser (which produces the result 
+ * Collects all character data reported by {@link #characters characters}
+ * and parses them afterwards with a SAX parser (which produces the result
  * of this transformation). Other input events will be ignored.
- * @version $Revision: 1.1 $ $Date: 2003/08/29 13:28:53 $
+ * @version $Revision: 1.2 $ $Date: 2008/06/15 08:11:22 $
  * @author Oliver Becker
  */
 
-public class SAXWrapperHandler 
+public class SAXWrapperHandler
    extends DefaultHandler implements TransformerHandler
 {
    /** event sink for this transformer */
@@ -61,7 +61,7 @@ public class SAXWrapperHandler
    private StringBuffer buffer;
 
    //
-   // from interface LexicalHandler 
+   // from interface LexicalHandler
    // (not implemented by DefaultHandler; empty implementations)
    //
 
@@ -83,7 +83,7 @@ public class SAXWrapperHandler
    public void endCDATA()
    { }
 
-   public void comment(char[] ch, int start, int length) 
+   public void comment(char[] ch, int start, int length)
    { }
 
 
@@ -101,7 +101,7 @@ public class SAXWrapperHandler
       if (saxResult == null) // Shouldn't happen
          throw new SAXException("No result set");
 
-      parser = Processor.getXMLReader();
+      parser = Processor.createXMLReader();
       parser.setContentHandler(saxResult.getHandler());
       try {
          parser.setProperty("http://xml.org/sax/properties/lexical-handler",

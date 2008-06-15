@@ -1,5 +1,5 @@
 /*
- * $Id: HttpPostHandler.java,v 2.2 2004/10/17 20:37:25 obecker Exp $
+ * $Id: HttpPostHandler.java,v 2.3 2008/06/15 08:11:22 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,13 +26,14 @@ package net.sf.joost.stx;
 
 import net.sf.joost.emitter.XmlEmitter;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
-import java.io.*;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
@@ -47,7 +48,7 @@ import org.xml.sax.XMLReader;
 /**
  * Implements an HTTP POST connection with a {@link TransformerHandler}
  * interface.
- * @version $Revision: 2.2 $ $Date: 2004/10/17 20:37:25 $
+ * @version $Revision: 2.3 $ $Date: 2008/06/15 08:11:22 $
  * @author Oliver Becker
  */
 
@@ -76,7 +77,7 @@ public class HttpPostHandler
 
    // ---------------------------------------------------------------------
 
-   // 
+   //
    // from interface DTDHandler (inherited in TransformerHandler)
    // (empty methods)
    //
@@ -84,7 +85,7 @@ public class HttpPostHandler
    public void notationDecl(String name, String publicId, String systemId)
    { }
 
-   public void unparsedEntityDecl(String name, 
+   public void unparsedEntityDecl(String name,
                                   String publicId, String systemId,
                                   String notationName)
    { }
@@ -124,12 +125,12 @@ public class HttpPostHandler
          conn.setRequestProperty("Content-Type", "text/xml");
          conn.connect();
 
-         PrintStream ps = 
+         PrintStream ps =
             new PrintStream(conn.getOutputStream(), false, "UTF-8");
          ps.print(buffer.toString());
          ps.close();
 
-         XMLReader parser = Processor.getXMLReader();
+         XMLReader parser = Processor.createXMLReader();
          parser.setContentHandler(saxResult.getHandler());
          try {
             parser.setProperty("http://xml.org/sax/properties/lexical-handler",
