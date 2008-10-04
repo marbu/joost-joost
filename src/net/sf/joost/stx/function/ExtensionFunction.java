@@ -1,40 +1,40 @@
 /*
- * $Id: ExtensionFunction.java,v 1.4 2007/11/25 14:18:00 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: ExtensionFunction.java,v 1.5 2008/10/04 17:20:48 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.stx.function;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 
 import net.sf.joost.grammar.EvalException;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Value;
 import net.sf.joost.stx.function.FunctionFactory.Instance;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
@@ -43,8 +43,8 @@ import org.xml.sax.SAXParseException;
 /**
  * An instance of this class represents a Java extension function. Parts of this
  * code are taken from Michael Kay's Saxon XSLT processor implementation.
- * 
- * @version $Revision: 1.4 $ $Date: 2007/11/25 14:18:00 $
+ *
+ * @version $Revision: 1.5 $ $Date: 2008/10/04 17:20:48 $
  * @author Oliver Becker
  */
 final public class ExtensionFunction implements Instance
@@ -58,7 +58,7 @@ final public class ExtensionFunction implements Instance
    /** the number of provided parameters in the function call */
    private int paramCount = 0;
 
-   /** 
+   /**
     * <code>true</code> if this function call is a constructor invocation
     */
    private boolean isConstructor;
@@ -68,19 +68,20 @@ final public class ExtensionFunction implements Instance
     * Constructs a Java extension function.
     * @param className the name of the Java class the function belongs to
     *        (taken from the namespace URI of the function call)
-    * @param lName the local name of the function call 
+    * @param lName the local name of the function call
     *        (may contain hyphens)
     * @param args the supplied function parameters
     * @param locator the Locator object
     * @exception SAXParseException if there's no proper function
     */
-   ExtensionFunction(String className, String lName, Tree args, 
+   ExtensionFunction(String className, String lName, Tree args,
                              Locator locator)
       throws SAXParseException
    {
       // identify the requested class
       try {
-         targetClass = Class.forName(className);
+         targetClass = Class.forName(className, true,
+               Thread.currentThread().getContextClassLoader());
       }
       catch (ClassNotFoundException ex) {
          throw new SAXParseException(
@@ -106,19 +107,19 @@ final public class ExtensionFunction implements Instance
          int mod = targetClass.getModifiers();
          if (Modifier.isAbstract(mod))
             throw new SAXParseException(
-               "Cannot create an object, class " + targetClass + 
+               "Cannot create an object, class " + targetClass +
                " is abstract", locator);
          else if (Modifier.isInterface(mod))
             throw new SAXParseException(
-               "Cannot create an object, " + targetClass + 
+               "Cannot create an object, " + targetClass +
                " is an interface", locator);
          else if (Modifier.isPrivate(mod))
             throw new SAXParseException(
-               "Cannot create an object, class " + targetClass + 
+               "Cannot create an object, class " + targetClass +
                " is private", locator);
          else if (Modifier.isProtected(mod))
             throw new SAXParseException(
-               "Cannot create an object, class " + targetClass + 
+               "Cannot create an object, class " + targetClass +
                " is protected", locator);
 
          // look for a matching constructor
@@ -134,8 +135,8 @@ final public class ExtensionFunction implements Instance
 
          if (candidateMethods.size() == 0)
             throw new SAXParseException(
-               "No constructor found with " + paramCount + 
-               " parameter" + (paramCount != 1 ? "s" : "") + 
+               "No constructor found with " + paramCount +
+               " parameter" + (paramCount != 1 ? "s" : "") +
                " in class " + className,
                locator);
       }
@@ -156,7 +157,7 @@ final public class ExtensionFunction implements Instance
                   afterHyphen = false;
                }
             }
-            fName = buff.toString();     
+            fName = buff.toString();
          }
 
          Method[] methods = targetClass.getMethods();
@@ -180,8 +181,8 @@ final public class ExtensionFunction implements Instance
             throw new SAXParseException(
                "No function found matching '" + fName + "' " +
                (lName.equals(fName) ? "" : "(" + lName + ") ") +
-               "with " + paramCount + " parameter" + 
-               (paramCount != 1 ? "s" : "") + 
+               "with " + paramCount + " parameter" +
+               (paramCount != 1 ? "s" : "") +
                " in class " + className,
                locator);
       }
@@ -235,13 +236,13 @@ final public class ExtensionFunction implements Instance
             }
             if (minDistance == Double.POSITIVE_INFINITY)
                throw new EvalException(
-                  "None of the Java constructors in " + 
-                  targetClass.getName() + 
+                  "None of the Java constructors in " +
+                  targetClass.getName() +
                   " matches this function call to 'new'");
             if (ambigous)
                throw new EvalException(
                   "There are several Java constructors in " +
-                  targetClass.getName() + 
+                  targetClass.getName() +
                   " that match the function call to 'new' equally well ");
          } // end else (choose best constructor)
 
@@ -257,20 +258,20 @@ final public class ExtensionFunction implements Instance
             return new Value(obj);
          }
          catch (InstantiationException err0) {
-            throw new EvalException("Cannot instantiate class " + 
+            throw new EvalException("Cannot instantiate class " +
                                     err0.getMessage());
          }
          catch (IllegalAccessException err1) {
             throw new EvalException("Constructor access is illegal " +
                                     err1.getMessage());
-         } 
+         }
          catch (IllegalArgumentException err2) {
-            throw new EvalException("Argument is of wrong type " + 
+            throw new EvalException("Argument is of wrong type " +
                                     err2.getMessage());
-         } 
+         }
          catch (InvocationTargetException err3) {
             throw new EvalException(
-               "Exception in extension constructor " + 
+               "Exception in extension constructor " +
                theConstructor.getName() +
                ": " + err3.getTargetException().toString());
          }
@@ -311,14 +312,14 @@ final public class ExtensionFunction implements Instance
             }
             if (minDistance == Double.POSITIVE_INFINITY)
                throw new EvalException(
-                  "None of the Java methods in " + 
+                  "None of the Java methods in " +
                   targetClass.getName() +
-                  " matches this function call to '" + 
+                  " matches this function call to '" +
                   theMethod.getName() + "'");
             if (ambigous)
                throw new EvalException(
                   "There are several Java methods in " +
-                  targetClass.getName() + " that match function '" + 
+                  targetClass.getName() + " that match function '" +
                   theMethod.getName() + "' equally well");
          } // end else (choose best method)
 
@@ -335,10 +336,10 @@ final public class ExtensionFunction implements Instance
             // because otherwise the error message is a little but
             // misleading ("Conversion to ... is not supported")
             if (methodNum == 1 && // haven't done this check in this case
-                values[0].getDistanceTo(targetClass) == 
+                values[0].getDistanceTo(targetClass) ==
                           Double.POSITIVE_INFINITY)
                throw new EvalException(
-                  "First parameter in the function call to '" + 
+                  "First parameter in the function call to '" +
                   theMethod.getName() + "' must be the object instance");
 
             theInstance = values[0].toJavaObject(targetClass);
@@ -349,7 +350,7 @@ final public class ExtensionFunction implements Instance
                   "to '" + theMethod.getName() + "' is null");
 
             for (int i=0; i<formalParams.length; i++) {
-               currentParams[i] = 
+               currentParams[i] =
                   values[i+1].toJavaObject(formalParams[i]);
             }
          }
@@ -361,22 +362,22 @@ final public class ExtensionFunction implements Instance
          catch (IllegalAccessException err1) {
             throw new EvalException("Method access is illegal " +
                                     err1.getMessage());
-         } 
+         }
          catch (IllegalArgumentException err2) {
-            throw new EvalException("Argument is of wrong type " + 
+            throw new EvalException("Argument is of wrong type " +
                                     err2.getMessage());
-         } 
+         }
          catch (InvocationTargetException err3) {
             throw new EvalException(
-               "Exception in extension method '" + 
-               theMethod.getName() + "': " + 
+               "Exception in extension method '" +
+               theMethod.getName() + "': " +
                err3.getTargetException().toString());
          }
       }
    }
 
 
-   // These functions will never be called. 
+   // These functions will never be called.
    // However, they are required by the Instance interface.
 
    /** Not called */
