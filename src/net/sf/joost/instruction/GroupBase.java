@@ -1,50 +1,51 @@
 /*
- * $Id: GroupBase.java,v 2.16 2007/11/25 14:18:01 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: GroupBase.java,v 2.17 2008/10/04 17:13:14 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.instruction;
-
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Stack;
-import java.util.Vector;
 
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Processor;
 
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Stack;
+import java.util.Vector;
+
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 
-/** 
- * Base class for <code>stx:group</code> 
+/**
+ * Base class for <code>stx:group</code>
  * (class <code>GroupFactory.Instance</code>)
- * and <code>stx:transform</code> 
- * (class <code>TransformFactory.Instance</code>) elements. 
+ * and <code>stx:transform</code>
+ * (class <code>TransformFactory.Instance</code>) elements.
  * The <code>stx:transform</code> root element is also a group.
- * @version $Revision: 2.16 $ $Date: 2007/11/25 14:18:01 $
+ * @version $Revision: 2.17 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
 
@@ -52,11 +53,11 @@ abstract public class GroupBase extends NodeBase
 {
    // attributes from stx:transform / stx:group
 
-   /** The rule how to process unmatched events 
+   /** The rule how to process unmatched events
        (from <code>stx:options' pass-through</code>) */
    public byte passThrough = Processor.PASS_THROUGH_NONE;
 
-   /** Should white-space only text nodes be stripped 
+   /** Should white-space only text nodes be stripped
        (from <code>stx:options' strip-space</code>)? */
    public boolean stripSpace = false;
 
@@ -66,33 +67,45 @@ abstract public class GroupBase extends NodeBase
 
 
 
-   /** Vector of all contained public templates in this group */
-   public Vector containedPublicTemplates;
+   /**
+    * Vector of all contained public templates in this group.
+    * Used only temporarily during compiling the transformation sheet.
+    */
+   private Vector containedPublicTemplates;
 
-   /** Vector of all contained group templates in this group */
+   /**
+    * Vector of all contained group templates in this group.
+    * Used only temporarily during compiling the transformation sheet.
+    */
    private Vector containedGroupTemplates;
-   
-   /** Vector of all contained global templates in this group */
+
+   /**
+    * Vector of all contained global templates in this group
+    * Used only temporarily during compiling the transformation sheet.
+    */
    private Vector containedGlobalTemplates;
-   
-   /** 
-    * Visible templates: 
+
+   /**
+    * Visible templates:
     * templates from this group and public templates from subgroups
     */
    public TemplateFactory.Instance[] visibleTemplates;
 
-   /* The templates from {@link #containedGroupTemplates} as array */
+   /** The templates from {@link #containedGroupTemplates} as array */
    public TemplateFactory.Instance[] groupTemplates;
 
-   /** Table of all contained public and global procedures in this group */
-   public Hashtable containedPublicProcedures;
+   /**
+    * Table of all contained public and global procedures in this group
+    * Used only temporarily during compiling the transformation sheet.
+    */
+   private Hashtable containedPublicProcedures;
 
    /** Table of the group procedures visible for this group */
-   public Hashtable groupProcedures;
+   Hashtable groupProcedures;
 
    /** Table of all global procedures in the transformation sheet,
        stems from the parent group */
-   public Hashtable globalProcedures;
+   Hashtable globalProcedures;
 
    /**
     * Visible procedures:
@@ -103,15 +116,15 @@ abstract public class GroupBase extends NodeBase
    /** Contained groups in this group */
    protected GroupBase[] containedGroups;
 
-   /** 
+   /**
     * Table of named groups: key = group name, value = group object.
-    * All groups will have a reference to the same object.
+    * All groups will have a reference to the same singleton Hashtable.
     */
    public Hashtable namedGroups;
 
    /** parent group */
    public GroupBase parentGroup;
-   
+
    /** Group variables  */
    private VariableBase[] groupVariables;
 
@@ -119,13 +132,13 @@ abstract public class GroupBase extends NodeBase
    public String groupName;
 
    /** Vector of the children */
-   public Vector children = new Vector();
+   protected Vector children = new Vector();
 
 
 
    // Constructor
    protected GroupBase(String qName, NodeBase parent, ParseContext context,
-                       byte passThrough, boolean stripSpace, 
+                       byte passThrough, boolean stripSpace,
                        boolean recognizeCdata)
    {
       super(qName, parent, context, true);
@@ -144,7 +157,7 @@ abstract public class GroupBase extends NodeBase
          globalProcedures = parentGroup.globalProcedures;
       }
    }
-   
+
 
    public void insert(NodeBase node)
       throws SAXParseException
@@ -152,7 +165,7 @@ abstract public class GroupBase extends NodeBase
       // no call of super.insert(node)
       children.addElement(node);
    }
-   
+
 
    /**
     * Determines the visible templates for this group in pass 0 and the
@@ -164,7 +177,7 @@ abstract public class GroupBase extends NodeBase
    {
       if (pass == 1) {
          // create the groupTemplates array
-         groupTemplates = 
+         groupTemplates =
             new TemplateFactory.Instance[containedGroupTemplates.size()];
          containedGroupTemplates.toArray(groupTemplates);
          Arrays.sort(groupTemplates);
@@ -207,16 +220,16 @@ abstract public class GroupBase extends NodeBase
             if (node != null) {
                throw new SAXParseException(
                   "Procedure '" + p.procName + "' already defined in line " +
-                  node.lineNo + 
-                     (p.systemId.equals(node.systemId) 
-                         ? (node.lineNo == p.lineNo 
+                  node.lineNo +
+                     (p.systemId.equals(node.systemId)
+                         ? (node.lineNo == p.lineNo
                             ? " (possibly several times included)" : "")
                          : (" of " + node.systemId)),
                   p.publicId, p.systemId, p.lineNo, p.colNo);
             }
             else
                visibleProcedures.put(p.expName, p);
-            if (p.isPublic) 
+            if (p.isPublic)
                containedPublicProcedures.put(p.expName, p);
             if (p.visibility == TemplateBase.GROUP_VISIBLE) {
                groupProcedures.put(p.expName, p);
@@ -225,10 +238,10 @@ abstract public class GroupBase extends NodeBase
                node = (NodeBase)globalProcedures.get(p.expName);
                if (node != null) {
                   throw new SAXParseException(
-                     "Global procedure '" + p.procName + 
+                     "Global procedure '" + p.procName +
                      "' already defined in line " + node.lineNo +
-                        (p.systemId.equals(node.systemId) 
-                            ? (node.lineNo == p.lineNo 
+                        (p.systemId.equals(node.systemId)
+                            ? (node.lineNo == p.lineNo
                                ? " (possibly several times included)" : "")
                             : (" of " + node.systemId)),
                      p.publicId, p.systemId, p.lineNo, p.colNo);
@@ -239,12 +252,12 @@ abstract public class GroupBase extends NodeBase
                groupProcedures.put(p.expName, p);
             }
          }
-         else if (objs[i] instanceof GroupBase) 
+         else if (objs[i] instanceof GroupBase)
             gvec.addElement(objs[i]);
-         else if (objs[i] instanceof VariableBase) 
+         else if (objs[i] instanceof VariableBase)
             vvec.addElement(objs[i]);
       }
-      
+
       // create group array
       containedGroups = new GroupBase[gvec.size()];
       gvec.toArray(containedGroups);
@@ -257,15 +270,15 @@ abstract public class GroupBase extends NodeBase
          for (Enumeration e=pubProc.keys(); e.hasMoreElements(); ) {
             Object o;
             if (visibleProcedures.containsKey(o = e.nextElement())) {
-               ProcedureFactory.Instance p1 = 
+               ProcedureFactory.Instance p1 =
                   (ProcedureFactory.Instance)pubProc.get(o);
                NodeBase p2 = (NodeBase)visibleProcedures.get(o);
                throw new SAXParseException(
-                  "Public procedure '" + p1.procName + 
+                  "Public procedure '" + p1.procName +
                   "' conflicts with the procedure definition in line " +
                   p2.lineNo +
-                  (p1.systemId.equals(p2.systemId) 
-                     ? (p1.lineNo == p2.lineNo 
+                  (p1.systemId.equals(p2.systemId)
+                     ? (p1.lineNo == p2.lineNo
                         ? " (possibly several times included)" : "")
                      : (" of " + p2.systemId)),
                   p1.publicId, p1.systemId, p1.lineNo, p1.colNo);
@@ -274,7 +287,7 @@ abstract public class GroupBase extends NodeBase
          visibleProcedures.putAll(
             containedGroups[i].containedPublicProcedures);
       }
-      
+
       // create sorted array of visible templates
       visibleTemplates = new TemplateFactory.Instance[tvec.size()];
       tvec.toArray(visibleTemplates);
@@ -345,7 +358,7 @@ abstract public class GroupBase extends NodeBase
       context.currentGroup = this;
       for (int i=0; i<groupVariables.length; i++)
          if (groupVariables[i].keepValue && shadowed !=null)
-            varTable.put(groupVariables[i].expName, 
+            varTable.put(groupVariables[i].expName,
                          shadowed.get(groupVariables[i].expName));
          else {
             for (AbstractInstruction inst = groupVariables[i];
@@ -395,11 +408,11 @@ abstract public class GroupBase extends NodeBase
                (ProcedureFactory.Instance)pTable.get(key);
             NodeBase p2 = (NodeBase)groupProcedures.get(key);
             throw new SAXParseException(
-               "Group procedure '" + p1.procName + 
+               "Group procedure '" + p1.procName +
                   "' conflicts with the procedure definition in line " +
                   p2.lineNo +
-                  (p1.systemId.equals(p2.systemId) 
-                     ? (p1.lineNo == p2.lineNo 
+                  (p1.systemId.equals(p2.systemId)
+                     ? (p1.lineNo == p2.lineNo
                         ? " (possibly several times included)" : "")
                      : (" of " + p2.systemId)),
                   p1.publicId, p1.systemId, p1.lineNo, p1.colNo);
@@ -414,9 +427,9 @@ abstract public class GroupBase extends NodeBase
    /**
     * Returns the globally visible templates in this group (and all
     * sub-groups). This method is called from {@link #compile} in the parent
-    * group, which adds in turn the returned vector to its vector of the 
+    * group, which adds in turn the returned vector to its vector of the
     * global templates.
-    * The field {@link #containedGlobalTemplates} will be set to 
+    * The field {@link #containedGlobalTemplates} will be set to
     * <code>null</code> afterwards to allow garbage collection.
     */
    public Vector getGlobalTemplates()
@@ -431,7 +444,7 @@ abstract public class GroupBase extends NodeBase
    {
       return false;
    }
-   
+
    // Shouldn't be called
    public short process(Context c)
       throws SAXException
@@ -444,5 +457,54 @@ abstract public class GroupBase extends NodeBase
    public TemplateFactory.Instance[] getVisibleTemplates()
    {
       return visibleTemplates;
+   }
+
+
+   protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+   {
+      super.onDeepCopy(copy, copies);
+      GroupBase theCopy = (GroupBase) copy;
+      if (containedGroups != null) {
+         theCopy.containedGroups = (GroupBase[]) copies.get(containedGroups);
+         if (theCopy.containedGroups == null) {
+            theCopy.containedGroups = new GroupBase[containedGroups.length];
+            for (int i=0; i<containedGroups.length; i++) {
+               theCopy.containedGroups[i] =
+                     (GroupBase) containedGroups[i].deepCopy(copies);
+            }
+         }
+      }
+      if (groupVariables != null) {
+         theCopy.groupVariables = (VariableBase[]) copies.get(groupVariables);
+         if (theCopy.groupVariables == null) {
+            theCopy.groupVariables = new VariableBase[groupVariables.length];
+            for (int i=0; i<groupVariables.length; i++) {
+               theCopy.groupVariables[i] =
+                     (VariableBase) groupVariables[i].deepCopy(copies);
+            }
+         }
+      }
+      if (groupTemplates != null) {
+         theCopy.groupTemplates = deepTemplateArrayCopy(groupTemplates, copies);
+      }
+      if (visibleTemplates != null) {
+         theCopy.visibleTemplates =
+            deepTemplateArrayCopy(visibleTemplates, copies);
+      }
+      if (parentGroup != null) {
+         theCopy.parentGroup = (GroupBase) parentGroup.deepCopy(copies);
+      }
+      if (namedGroups != null) {
+         theCopy.namedGroups = deepHashtableCopy(namedGroups, copies);
+      }
+      if (visibleProcedures != null) {
+         theCopy.visibleProcedures = deepHashtableCopy(visibleProcedures, copies);
+      }
+      if (globalProcedures != null) {
+         theCopy.globalProcedures = deepHashtableCopy(globalProcedures, copies);
+      }
+      if (groupProcedures != null) {
+         theCopy.groupProcedures = deepHashtableCopy(groupProcedures, copies);
+      }
    }
 }

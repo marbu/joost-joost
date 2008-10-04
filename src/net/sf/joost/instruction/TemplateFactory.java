@@ -1,34 +1,35 @@
 /*
- * $Id: TemplateFactory.java,v 2.10 2007/12/19 10:39:37 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: TemplateFactory.java,v 2.11 2008/10/04 17:13:14 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.instruction;
 
-import java.util.HashSet;
-
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
+
+import java.util.HashMap;
+import java.util.HashSet;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -38,7 +39,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Factory for <code>template</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.10 $ $Date: 2007/12/19 10:39:37 $
+ * @version $Revision: 2.11 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
 
@@ -65,7 +66,7 @@ public final class TemplateFactory extends FactoryBase
       return "template";
    }
 
-   public NodeBase createNode(NodeBase parent, String qName, 
+   public NodeBase createNode(NodeBase parent, String qName,
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
@@ -83,7 +84,7 @@ public final class TemplateFactory extends FactoryBase
             priority = Double.parseDouble(priorityAtt);
          }
          catch (NumberFormatException ex) {
-            throw new SAXParseException("The priority value '" + 
+            throw new SAXParseException("The priority value '" +
                                         priorityAtt + "' is not a number",
                                         context.locator);
          }
@@ -93,7 +94,7 @@ public final class TemplateFactory extends FactoryBase
       }
 
       int visibility = getEnumAttValue("visibility", attrs,
-                                       TemplateBase.VISIBILITY_VALUES, 
+                                       TemplateBase.VISIBILITY_VALUES,
                                        context);
       if (visibility == -1)
          visibility =  TemplateBase.LOCAL_VISIBLE; // default value
@@ -103,12 +104,12 @@ public final class TemplateFactory extends FactoryBase
       // default value depends on the parent:
       // "yes" (true) for top-level templates,
       // "no" (false) for others
-      boolean isPublic = parent instanceof TransformFactory.Instance 
+      boolean isPublic = parent instanceof TransformFactory.Instance
          ? (publicAttVal != NO_VALUE)   // default is true
          : (publicAttVal == YES_VALUE); // default is false
 
       // default is "no" (false)
-      boolean newScope = 
+      boolean newScope =
          getEnumAttValue("new-scope", attrs, YESNO_VALUES, context)
          == YES_VALUE;
 
@@ -124,9 +125,7 @@ public final class TemplateFactory extends FactoryBase
 
 
    /** The inner Instance class */
-   public final class Instance 
-      extends TemplateBase
-      implements Cloneable, Comparable
+   public final class Instance extends TemplateBase implements Comparable
    {
       /** The match pattern */
       private Tree match;
@@ -139,7 +138,7 @@ public final class TemplateFactory extends FactoryBase
       // Constructor
       //
       protected Instance(String qName, NodeBase parent, ParseContext context,
-                         Tree match, double priority, int visibility, 
+                         Tree match, double priority, int visibility,
                          boolean isPublic, boolean newScope)
       {
          super(qName, parent, context, visibility, isPublic, newScope);
@@ -148,10 +147,10 @@ public final class TemplateFactory extends FactoryBase
       }
 
 
-      /** 
+      /**
        * @param context the Context object
-       * @param setPosition <code>true</code> if the context position 
-       *        ({@link Context#position}) should be set in case the 
+       * @param setPosition <code>true</code> if the context position
+       *        ({@link Context#position}) should be set in case the
        *        event stack matches the pattern in {@link #match}.
        * @return true if the current event stack matches the pattern of
        *         this template
@@ -163,10 +162,10 @@ public final class TemplateFactory extends FactoryBase
       {
          context.currentInstruction = this;
          context.currentGroup = parentGroup;
-         return match.matches(context, context.ancestorStack.size(), 
+         return match.matches(context, context.ancestorStack.size(),
                               setPosition);
       }
-      
+
 
       /**
        * Splits a match pattern that is a union into several template
@@ -223,6 +222,15 @@ public final class TemplateFactory extends FactoryBase
       {
          double p = ((Instance)o).priority;
          return (p < priority) ? -1 : ((p > priority) ? 1 : 0);
+      }
+
+
+      protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+      {
+         super.onDeepCopy(copy, copies);
+         Instance theCopy = (Instance) copy;
+         if (match != null)
+            theCopy.match = match.deepCopy(copies);
       }
 
 

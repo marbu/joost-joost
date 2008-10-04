@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateThreadSafetyTest.java,v 1.1 2008/06/15 08:02:57 obecker Exp $
+ * $Id: TemplateThreadSafetyTest.java,v 1.2 2008/10/04 17:13:14 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -49,7 +49,7 @@ public class TemplateThreadSafetyTest extends TestCase
 {
    // raise this number if needed to reproduce the thread-safety problem more
    // reliably
-   private static final int MAX_THREADS = 300;
+   private static final int MAX_THREADS = 500;
 
    public TemplateThreadSafetyTest(String testName)
    {
@@ -74,7 +74,7 @@ public class TemplateThreadSafetyTest extends TestCase
       final StreamSource style =
          new StreamSource(getClass().getResourceAsStream("style.stx"));
       final Templates templates = factory.newTemplates(style);
-      Runnable tranformJob = new Runnable() {
+      Runnable transformJob = new Runnable() {
          public void run()
          {
             try {
@@ -93,11 +93,15 @@ public class TemplateThreadSafetyTest extends TestCase
                ex.printStackTrace();
                failed[0] = ex;
             }
+            catch (RuntimeException ex) {
+               ex.printStackTrace();
+               failed[0] = ex;
+            }
          }
       };
       Thread[] threads = new Thread[MAX_THREADS];
       for (int i = 0; i < threads.length; i++) {
-         threads[i] = new Thread(tranformJob, "Thread #" + i);
+         threads[i] = new Thread(transformJob, "Thread #" + i);
          threads[i].start();
       }
       for (int i = 0; i < threads.length; i++) {

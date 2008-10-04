@@ -1,32 +1,28 @@
 /*
- * $Id: PBufferFactory.java,v 2.15 2008/03/29 12:12:56 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: PBufferFactory.java,v 2.16 2008/10/04 17:13:14 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.instruction;
-
-import java.util.HashSet;
-
-import javax.xml.transform.sax.TransformerHandler;
 
 import net.sf.joost.stx.BufferReader;
 import net.sf.joost.stx.Context;
@@ -36,15 +32,20 @@ import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.util.VariableNotFoundException;
 import net.sf.joost.util.VariableUtils;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
+import javax.xml.transform.sax.TransformerHandler;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 
 /**
- * Factory for <code>process-buffer</code> elements, which are 
+ * Factory for <code>process-buffer</code> elements, which are
  * represented by the inner Instance class.
- * @version $Revision: 2.15 $ $Date: 2008/03/29 12:12:56 $
+ * @version $Revision: 2.16 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
 
@@ -54,7 +55,7 @@ public class PBufferFactory extends FactoryBase
    private HashSet attrNames;
 
 
-   // 
+   //
    // Constructor
    //
    public PBufferFactory()
@@ -72,7 +73,7 @@ public class PBufferFactory extends FactoryBase
       return "process-buffer";
    }
 
-   public NodeBase createNode(NodeBase parent, String qName, 
+   public NodeBase createNode(NodeBase parent, String qName,
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
@@ -93,12 +94,12 @@ public class PBufferFactory extends FactoryBase
 
       if (filterSrcAtt != null && filterMethodAtt == null)
          throw new SAXParseException(
-            "Missing 'filter-method' attribute in '" + qName + 
+            "Missing 'filter-method' attribute in '" + qName +
             "' ('filter-src' is present)",
             context.locator);
 
       checkAttributes(qName, attrs, attrNames, context);
-      return new Instance(qName, parent, context, nameAtt, bufName, 
+      return new Instance(qName, parent, context, nameAtt, bufName,
                           groupAtt, filterMethodAtt, filterSrcAtt);
    }
 
@@ -137,7 +138,7 @@ public class PBufferFactory extends FactoryBase
          throws SAXException
       {
          context.currentInstruction = this;
-         
+
          if (!scopeDetermined) {
             try {
                groupScope = VariableUtils.findVariableScope(context, expName);
@@ -152,7 +153,7 @@ public class PBufferFactory extends FactoryBase
             scopeDetermined = true;
          }
 
-         BufferReader br = new BufferReader(context, expName, groupScope, 
+         BufferReader br = new BufferReader(context, expName, groupScope,
                                             publicId, systemId);
 
          if (filter != null) {
@@ -169,7 +170,7 @@ public class PBufferFactory extends FactoryBase
             catch (SAXException e) {
                // add locator information
                context.errorHandler.fatalError(e.getMessage(),
-                                               publicId, systemId, 
+                                               publicId, systemId,
                                                lineNo, colNo);
                return PR_ERROR;
             }
@@ -210,5 +211,15 @@ public class PBufferFactory extends FactoryBase
 
          return super.processEnd(context);
       }
+
+
+      protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+      {
+         super.onDeepCopy(copy, copies);
+         Instance theCopy = (Instance) copy;
+         if (groupScope != null)
+            theCopy.groupScope = (GroupBase) groupScope.deepCopy(copies);
+      }
+
    }
 }

@@ -1,47 +1,48 @@
 /*
- * $Id: ForEachFactory.java,v 2.10 2007/12/19 10:39:37 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: ForEachFactory.java,v 2.11 2008/10/04 17:13:14 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.instruction;
-
-import java.util.HashSet;
-import java.util.Stack;
-import java.util.Vector;
 
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Value;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Stack;
+import java.util.Vector;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 
-/** 
+/**
  * Factory for <code>for-each-item</code> elements, which are represented by
- * the inner Instance class. 
- * @version $Revision: 2.10 $ $Date: 2007/12/19 10:39:37 $
+ * the inner Instance class.
+ * @version $Revision: 2.11 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
 
@@ -64,7 +65,7 @@ final public class ForEachFactory extends FactoryBase
       return "for-each-item";
    }
 
-   public NodeBase createNode(NodeBase parent, String qName, 
+   public NodeBase createNode(NodeBase parent, String qName,
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
@@ -85,9 +86,9 @@ final public class ForEachFactory extends FactoryBase
       private String varName, expName;
       private Tree select;
 
-      /** 
+      /**
        * Stack that stores the remaining sequence of the select attribute
-       * in case this for-each-item was interrupted via 
+       * in case this for-each-item was interrupted via
        * <code>stx:process-<em>xxx</em></code>
        */
       private Stack resultStack = new Stack();
@@ -98,15 +99,15 @@ final public class ForEachFactory extends FactoryBase
       /**
        * Determines whether this instruction is encountered the first time
        * (<code>false</code>; i.e. the <code>select</code> attribute needs
-       * to be evaluated) or during the processing (<code>true</code>; 
+       * to be evaluated) or during the processing (<code>true</code>;
        * i.e. this is part of the loop)
        */
       private boolean continued = false;
 
 
       // Constructor
-      protected Instance(final String qName, NodeBase parent, 
-                         ParseContext context, 
+      protected Instance(final String qName, NodeBase parent,
+                         ParseContext context,
                          String varName, String expName, Tree select)
       {
          super(qName, parent, context, true);
@@ -115,7 +116,7 @@ final public class ForEachFactory extends FactoryBase
          this.select = select;
 
          // this instruction declares a local variable
-         scopedVariables = new Vector(); 
+         scopedVariables = new Vector();
       }
 
 
@@ -136,7 +137,7 @@ final public class ForEachFactory extends FactoryBase
 
       /**
        * If {@link #continued} is <code>true</code> then take the next
-       * item from a previously computed sequence, otherwise evaluate 
+       * item from a previously computed sequence, otherwise evaluate
        * the <code>select</code> attribute and take the first item.
        */
       public short process(Context context)
@@ -176,7 +177,7 @@ final public class ForEachFactory extends FactoryBase
             return PR_CONTINUE;
          }
       }
-      
+
 
       /**
        * Sets {@link #continued} to <code>true</code> to signal the loop.
@@ -187,5 +188,21 @@ final public class ForEachFactory extends FactoryBase
          continued = true;
          return super.processEnd(context);
       }
+
+
+      protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+      {
+         super.onDeepCopy(copy, copies);
+         Instance theCopy = (Instance) copy;
+         if (contents != null)
+            theCopy.contents = contents.deepCopy(copies);
+         if (successor != null)
+            theCopy.successor = successor.deepCopy(copies);
+         if (select != null)
+            theCopy.select = select.deepCopy(copies);
+         theCopy.continued = false;
+         theCopy.resultStack = new Stack();
+      }
+
    }
 }

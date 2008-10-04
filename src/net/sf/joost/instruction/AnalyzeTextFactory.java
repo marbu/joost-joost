@@ -1,33 +1,28 @@
 /*
- * $Id: AnalyzeTextFactory.java,v 1.11 2007/12/19 10:39:37 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: AnalyzeTextFactory.java,v 1.12 2008/10/04 17:13:14 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.instruction;
-
-import java.util.HashSet;
-import java.util.Stack;
-import java.util.Vector;
-import java.util.regex.Matcher;
 
 import net.sf.joost.grammar.EvalException;
 import net.sf.joost.grammar.Tree;
@@ -35,25 +30,31 @@ import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.util.regex.JRegularExpression;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Stack;
+import java.util.Vector;
+import java.util.regex.Matcher;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 
-/** 
+/**
  * Factory for <code>analyze-text</code> elements, which are represented by
- * the inner Instance class. 
- * @version $Revision: 1.11 $ $Date: 2007/12/19 10:39:37 $
+ * the inner Instance class.
+ * @version $Revision: 1.12 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
 
 final public class AnalyzeTextFactory extends FactoryBase
 {
-   /** 
+   /**
     * Name of a special pseudo-variable that contains the values for
     * the regex-group function. (Note: "normal" variables start always
     * with a namespace in curly braces like '<code>{uri}name</code>')
-    * @see net.sf.joost.stx.function.RegexGroup 
+    * @see net.sf.joost.stx.function.RegexGroup
     */
    public static String REGEX_GROUP = "%REGEX-GROUP";
 
@@ -76,7 +77,7 @@ final public class AnalyzeTextFactory extends FactoryBase
       return "analyze-text";
    }
 
-   public NodeBase createNode(NodeBase parent, String qName, 
+   public NodeBase createNode(NodeBase parent, String qName,
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
@@ -101,7 +102,7 @@ final public class AnalyzeTextFactory extends FactoryBase
       private NodeBase noMatchChild;
 
       // Constructor
-      protected Instance(String qName, NodeBase parent, ParseContext context, 
+      protected Instance(String qName, NodeBase parent, ParseContext context,
                          Tree select)
       {
          super(qName, parent, context, true);
@@ -121,16 +122,16 @@ final public class AnalyzeTextFactory extends FactoryBase
                // this test is not really necessary for the implementation,
                // however, it is required by the specification
                throw new SAXParseException(
-                  "'" + qName + 
+                  "'" + qName +
                   "' must not have more children after stx:no-match",
                   node.publicId, node.systemId, node.lineNo, node.colNo);
             }
             mVector.add(node);
-         } 
+         }
          else if (node instanceof NoMatchFactory.Instance) {
             if (noMatchChild != null)
                throw new SAXParseException(
-                  "'" + qName + "' must have at most one '"+ node.qName + 
+                  "'" + qName + "' must have at most one '"+ node.qName +
                   "' child",
                   node.publicId, node.systemId, node.lineNo, node.colNo);
             noMatchChild = node;
@@ -147,7 +148,7 @@ final public class AnalyzeTextFactory extends FactoryBase
          }
          else
             throw new SAXParseException(
-               "'" + qName + 
+               "'" + qName +
                "' may only contain stx:match and stx:no-match children " +
                "(encountered '" + node.qName + "')",
                node.publicId, node.systemId, node.lineNo, node.colNo);
@@ -169,7 +170,7 @@ final public class AnalyzeTextFactory extends FactoryBase
 
          if (mVector.size() == 0)
             throw new SAXParseException(
-               "'" + qName + "' must have at least one stx:match child", 
+               "'" + qName + "' must have at least one stx:match child",
                publicId, systemId, lineNo, colNo);
 
          // transform the Vector into an array
@@ -187,13 +188,13 @@ final public class AnalyzeTextFactory extends FactoryBase
       // needed to detect recursive invocations
       private boolean continued = false;
 
-      /** 
+      /**
        * For the regex-group function (accessed from the stx:match and
        * stx:no-match children, so they cannot be private)
-       * @see net.sf.joost.stx.function.RegexGroup 
+       * @see net.sf.joost.stx.function.RegexGroup
        */
       protected String[] capSubstr, noMatchStr;
-      
+
 
       /**
        * Evaluate the expression given in the <code>select</code> attribute;
@@ -205,7 +206,7 @@ final public class AnalyzeTextFactory extends FactoryBase
          String text;
          int lastIndex;
          Matcher[] matchers;
-         
+
          if (continued) {
             // restore previous values
             text = (String)localFieldStack.pop();
@@ -221,21 +222,21 @@ final public class AnalyzeTextFactory extends FactoryBase
                context.localVars.put(REGEX_GROUP, new Stack());
             matchers = new Matcher[matchChildren.length];
             for (int i=0; i<matchChildren.length; i++) {
-               String re = 
-                  matchChildren[i].regex.evaluate(context, 
+               String re =
+                  matchChildren[i].regex.evaluate(context,
                                                   matchChildren[i]).getString();
-               
-               String flags = matchChildren[i].flags != null 
-                  ? matchChildren[i].flags.evaluate(context, 
-                                                    matchChildren[i]).getString() 
+
+               String flags = matchChildren[i].flags != null
+                  ? matchChildren[i].flags.evaluate(context,
+                                                    matchChildren[i]).getString()
                   : "";
                try {
-                  matchers[i] = 
+                  matchers[i] =
                      new JRegularExpression(re, true, flags).matcher(text);
                }
                catch (EvalException e) {
                   context.errorHandler.fatalError(e.getMessage(),
-                                                  publicId, systemId, 
+                                                  publicId, systemId,
                                                   lineNo, colNo);
                   return PR_ERROR;
                }
@@ -280,7 +281,7 @@ final public class AnalyzeTextFactory extends FactoryBase
                localFieldStack.push(matchers);
                localFieldStack.push(new Integer(newIndex + maxSubstringLength));
                localFieldStack.push(text);
-               if (noMatchChild != null && newIndex != lastIndex) { 
+               if (noMatchChild != null && newIndex != lastIndex) {
                   // invoke stx:no-match before stx:match
                   next = noMatchChild;
                   noMatchChild.nodeEnd.next = matchChildren[matchIndex];
@@ -293,7 +294,7 @@ final public class AnalyzeTextFactory extends FactoryBase
                   noMatchStr[0] = text.substring(lastIndex);
                   next = noMatchChild;
                   // leave stx:analyze-text after stx:no-match
-                  noMatchChild.nodeEnd.next = successor; 
+                  noMatchChild.nodeEnd.next = successor;
                }
                else
                   next = successor; // leave stx:analyze-text instantly
@@ -312,5 +313,29 @@ final public class AnalyzeTextFactory extends FactoryBase
          continued = true;
          return PR_CONTINUE;
       }
+
+
+      protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+      {
+         super.onDeepCopy(copy, copies);
+         Instance theCopy = (Instance) copy;
+         theCopy.continued = false;
+         theCopy.capSubstr = theCopy.noMatchStr = null;
+         if (matchChildren != null) {
+            theCopy.matchChildren =
+               new MatchFactory.Instance[matchChildren.length];
+            for (int i=0; i<matchChildren.length; i++) {
+               theCopy.matchChildren[i] =
+                  (MatchFactory.Instance) matchChildren[i].deepCopy(copies);
+            }
+         }
+         if (noMatchChild != null)
+            theCopy.noMatchChild = (NodeBase) noMatchChild.deepCopy(copies);
+         if (successor != null)
+            theCopy.successor = successor.deepCopy(copies);
+         if (select != null)
+            theCopy.select = select.deepCopy(copies);
+      }
+
    }
 }

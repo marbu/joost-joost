@@ -1,5 +1,5 @@
 /*
- * $Id: IfFactory.java,v 2.9 2008/05/28 08:54:54 obecker Exp $
+ * $Id: IfFactory.java,v 2.10 2008/10/04 17:13:14 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -28,6 +28,7 @@ import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 import org.xml.sax.Attributes;
@@ -38,7 +39,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Factory for <code>if</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.9 $ $Date: 2008/05/28 08:54:54 $
+ * @version $Revision: 2.10 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
 
@@ -127,6 +128,19 @@ final public class IfFactory extends FactoryBase
             next = falseNext;
          }
          return PR_CONTINUE;
+      }
+
+
+      protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+      {
+         super.onDeepCopy(copy, copies);
+         Instance theCopy = (Instance) copy;
+         if (test != null)
+            theCopy.test = test.deepCopy(copies);
+         if (trueNext != null)
+            theCopy.trueNext = trueNext.deepCopy(copies);
+         if (falseNext != null)
+            theCopy.falseNext = falseNext.deepCopy(copies);
       }
 
 

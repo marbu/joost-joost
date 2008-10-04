@@ -1,33 +1,28 @@
 /*
- * $Id: MessageFactory.java,v 2.9 2007/11/25 14:18:01 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: MessageFactory.java,v 2.10 2008/10/04 17:13:14 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.instruction;
-
-import java.io.StringWriter;
-import java.util.HashSet;
-
-import javax.xml.transform.TransformerException;
 
 import net.sf.joost.OptionalLog;
 import net.sf.joost.emitter.StreamEmitter;
@@ -37,15 +32,21 @@ import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.trax.SourceLocatorImpl;
 
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.HashSet;
+
+import javax.xml.transform.TransformerException;
+
 import org.apache.commons.logging.Log;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-/** 
+/**
  * Factory for <code>message</code> elements, which are represented by
- * the inner Instance class. 
- * @version $Revision: 2.9 $ $Date: 2007/11/25 14:18:01 $
+ * the inner Instance class.
+ * @version $Revision: 2.10 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
 
@@ -55,12 +56,12 @@ final public class MessageFactory extends FactoryBase
    private HashSet attrNames;
 
    /** enumerated values for the level attribute */
-   private static final String[] LEVEL_VALUES = 
+   private static final String[] LEVEL_VALUES =
    { "trace", "debug", "info", "warn", "error", "fatal" };
 
    /** index in {@link #LEVEL_VALUES} */
-   private static final int TRACE_LEVEL = 0, 
-                            DEBUG_LEVEL = 1, 
+   private static final int TRACE_LEVEL = 0,
+                            DEBUG_LEVEL = 1,
                             INFO_LEVEL  = 2,
                             WARN_LEVEL  = 3,
                             ERROR_LEVEL = 4,
@@ -81,7 +82,7 @@ final public class MessageFactory extends FactoryBase
       return "message";
    }
 
-   public NodeBase createNode(NodeBase parent, String qName, 
+   public NodeBase createNode(NodeBase parent, String qName,
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
@@ -96,11 +97,11 @@ final public class MessageFactory extends FactoryBase
          throw new SAXParseException(
             level != -1
                ? "Missing 'logger' attribute when 'level' is present"
-               : "Missing 'level' attribute when 'logger' is present", 
+               : "Missing 'level' attribute when 'logger' is present",
             context.locator);
 
       checkAttributes(qName, attrs, attrNames, context);
-      return new Instance(qName, parent, context, 
+      return new Instance(qName, parent, context,
                           selectExpr, terminateAVT, level, loggerAtt);
    }
 
@@ -130,13 +131,13 @@ final public class MessageFactory extends FactoryBase
          if (logger != null)
             log = OptionalLog.getLog(logger);
       }
-      
+
 
       /**
        * Activate the object {@link Context#messageEmitter} for the contents
        * of this element. If this object is <code>null</code> this method
        * first creates a {@link StreamEmitter} object that writes to stderr
-       * and saves it in {@link Context#messageEmitter} for other 
+       * and saves it in {@link Context#messageEmitter} for other
        * <code>stx:message</code> instructions.
        */
       public short process(Context context)
@@ -150,9 +151,9 @@ final public class MessageFactory extends FactoryBase
                   StringWriter writer = new StringWriter();
                   buffer = writer.getBuffer();
                   StreamEmitter se = StreamEmitter.newEmitter(
-                     writer, 
+                     writer,
                      // Note: encoding parameter is irrelevant here
-                     DEFAULT_ENCODING, 
+                     DEFAULT_ENCODING,
                      context.currentProcessor.outputProperties);
                   se.setOmitXmlDeclaration(true);
                   emitter = se;
@@ -169,8 +170,8 @@ final public class MessageFactory extends FactoryBase
                   emitter = context.messageEmitter;
             }
             catch (java.io.IOException ex) {
-               context.errorHandler.fatalError(ex.toString(), 
-                                               publicId, systemId, 
+               context.errorHandler.fatalError(ex.toString(),
+                                               publicId, systemId,
                                                lineNo, colNo);
                return PR_CONTINUE; // if the errorHandler returns
             }
@@ -184,7 +185,7 @@ final public class MessageFactory extends FactoryBase
          else {
             emitter.startDocument();
             String msg = select.evaluate(context, this).getStringValue();
-            emitter.characters(msg.toCharArray(), 
+            emitter.characters(msg.toCharArray(),
                                               0, msg.length());
             emitter.endDocument();
             processMessage(context);
@@ -218,7 +219,7 @@ final public class MessageFactory extends FactoryBase
       {
          if (log != null) {
             // include locator info for logging
-            StringBuffer sb = 
+            StringBuffer sb =
                new StringBuffer(systemId).append(':').append(lineNo)
                                          .append(':').append(colNo)
                                          .append(": ").append(buffer);
@@ -245,9 +246,23 @@ final public class MessageFactory extends FactoryBase
 
          if (!terminateValue.equals("no"))
             context.errorHandler.fatalError(
-               "Attribute 'terminate' of '" + qName 
+               "Attribute 'terminate' of '" + qName
                + "' must be 'yes' or 'no', found '" + terminateValue + "'",
                publicId, systemId, lineNo, colNo);
       }
+
+
+      protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+      {
+         super.onDeepCopy(copy, copies);
+         Instance theCopy = (Instance) copy;
+         theCopy.buffer = null;
+         theCopy.emitter = null;
+         if (select != null)
+            theCopy.select = select.deepCopy(copies);
+         if (terminate != null)
+            theCopy.terminate = terminate.deepCopy(copies);
+      }
+
    }
 }

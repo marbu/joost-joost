@@ -1,45 +1,46 @@
 /*
- * $Id: CommentFactory.java,v 2.6 2007/11/25 14:18:01 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: CommentFactory.java,v 2.7 2008/10/04 17:13:14 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.instruction;
 
+import net.sf.joost.emitter.StringEmitter;
+import net.sf.joost.grammar.Tree;
+import net.sf.joost.stx.Context;
+import net.sf.joost.stx.ParseContext;
+
+import java.util.HashMap;
 import java.util.HashSet;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import net.sf.joost.stx.Context;
-import net.sf.joost.stx.ParseContext;
-import net.sf.joost.emitter.StringEmitter;
-import net.sf.joost.grammar.Tree;
 
-
-/** 
+/**
  * Factory for <code>comment</code> elements, which are represented by
- * the inner Instance class. 
- * @version $Revision: 2.6 $ $Date: 2007/11/25 14:18:01 $
+ * the inner Instance class.
+ * @version $Revision: 2.7 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
 
@@ -60,12 +61,12 @@ public class CommentFactory extends FactoryBase
       return "comment";
    }
 
-   public NodeBase createNode(NodeBase parent, String qName, 
+   public NodeBase createNode(NodeBase parent, String qName,
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
       Tree selectExpr = parseExpr(attrs.getValue("select"), context);
-         
+
       checkAttributes(qName, attrs, attrNames, context);
       return new Instance(qName, parent, context, selectExpr);
    }
@@ -85,7 +86,12 @@ public class CommentFactory extends FactoryBase
                // this element must be empty if there is a select attribute
                select == null);
          this.select = select;
-         
+         init();
+      }
+
+
+      private void init()
+      {
          buffer = new StringBuffer();
          strEmitter = new StringEmitter(buffer,
                          "('" + qName + "' started in line " + lineNo + ")");
@@ -121,11 +127,11 @@ public class CommentFactory extends FactoryBase
                emitComment(new StringBuffer(comment), context);
             else
                // produce the comment immediately
-               context.emitter.comment(comment.toCharArray(), 
+               context.emitter.comment(comment.toCharArray(),
                                        0, comment.length(),
                                        this);
          }
-         
+
          return PR_CONTINUE;
       }
 
@@ -150,7 +156,7 @@ public class CommentFactory extends FactoryBase
       }
 
 
-      /** 
+      /**
        * Check the new comment for contained dashes and send it to the emitter.
        * @param comment the contents of the new comment
        * @param context the context
@@ -171,7 +177,7 @@ public class CommentFactory extends FactoryBase
 //                buffer.insert(index+1, ' ');
             // 1.0 solution:
             String str = comment.toString();
-            while ((index = str.lastIndexOf("--", --index)) != -1) 
+            while ((index = str.lastIndexOf("--", --index)) != -1)
                comment.insert(index+1, ' ');
 
             // does the new comment end with '-'?
@@ -179,8 +185,19 @@ public class CommentFactory extends FactoryBase
                comment.append(' ');
          }
 
-         context.emitter.comment(comment.toString().toCharArray(), 
+         context.emitter.comment(comment.toString().toCharArray(),
                                  0, comment.length(), this);
       }
+
+
+      protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+      {
+         super.onDeepCopy(copy, copies);
+         Instance theCopy = (Instance) copy;
+         theCopy.init();
+         if (select != null)
+            theCopy.select = select.deepCopy(copies);
+      }
+
    }
 }

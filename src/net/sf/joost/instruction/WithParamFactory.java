@@ -1,22 +1,22 @@
 /*
- * $Id: WithParamFactory.java,v 2.7 2007/12/19 10:39:37 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: WithParamFactory.java,v 2.8 2008/10/04 17:13:14 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
  * Contributor(s): Thomas Behrends.
@@ -24,24 +24,25 @@
 
 package net.sf.joost.instruction;
 
-import java.util.HashSet;
-import java.util.Vector;
-
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Value;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Vector;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 
-/** 
+/**
  * Factory for <code>with-param</code> elements, which are represented by
- * the inner Instance class. 
- * @version $Revision: 2.7 $ $Date: 2007/12/19 10:39:37 $
+ * the inner Instance class.
+ * @version $Revision: 2.8 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
 
@@ -64,7 +65,7 @@ final public class WithParamFactory extends FactoryBase
       return "with-param";
    }
 
-   public NodeBase createNode(NodeBase parent, String qName, 
+   public NodeBase createNode(NodeBase parent, String qName,
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
@@ -110,7 +111,7 @@ final public class WithParamFactory extends FactoryBase
                select == null);
          this.expName = expName;
          this.select = select;
-         this.errorMessage = 
+         this.errorMessage =
             "('" + qName + "' started in line " + lineNo + ")";
       }
 
@@ -138,11 +139,21 @@ final public class WithParamFactory extends FactoryBase
          throws SAXException
       {
          context.passedParameters.put(
-            expName, 
+            expName,
             new Value(((StringEmitter)context.popEmitter())
                                              .getBuffer().toString()));
 
          return super.processEnd(context);
       }
+
+
+      protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+      {
+         super.onDeepCopy(copy, copies);
+         Instance theCopy = (Instance) copy;
+         if (select != null)
+            theCopy.select = select.deepCopy(copies);
+      }
+
    }
 }

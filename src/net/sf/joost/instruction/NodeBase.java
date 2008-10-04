@@ -1,5 +1,5 @@
 /*
- * $Id: NodeBase.java,v 2.14 2008/05/17 17:01:03 obecker Exp $
+ * $Id: NodeBase.java,v 2.15 2008/10/04 17:13:14 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -28,6 +28,7 @@ import net.sf.joost.Constants;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 
+import java.util.HashMap;
 import java.util.Stack;
 import java.util.Vector;
 
@@ -38,7 +39,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Abstract base class for all instances of nodes in the STX transformation
  * sheet
- * @version $Revision: 2.14 $ $Date: 2008/05/17 17:01:03 $
+ * @version $Revision: 2.15 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
 public abstract class NodeBase
@@ -82,6 +83,14 @@ public abstract class NodeBase
          throws SAXException
       {
          return start.processEnd(context);
+      }
+
+      protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+      {
+         super.onDeepCopy(copy, copies);
+         End theCopy = (End) copy;
+         if (start != null)
+            theCopy.start = (NodeBase) start.deepCopy(copies);
       }
 
       // for debugging
@@ -335,6 +344,26 @@ public abstract class NodeBase
    public final AbstractInstruction getNodeEnd() {
        return this.nodeEnd;
    }
+
+   protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+   {
+      super.onDeepCopy(copy, copies);
+      NodeBase theCopy = (NodeBase) copy;
+      theCopy.localFieldStack = (Stack) copies.get(localFieldStack);
+      if (theCopy.localFieldStack == null) {
+         theCopy.localFieldStack = new Stack();
+         copies.put(localFieldStack, theCopy.localFieldStack);
+      }
+      if (lastChild != null)
+         theCopy.lastChild = lastChild.deepCopy(copies);
+      if (nodeEnd != null)
+         theCopy.nodeEnd = nodeEnd.deepCopy(copies);
+      if (parent != null)
+         theCopy.parent = (NodeBase) parent.deepCopy(copies);
+      if (scopedVariables != null)
+         theCopy.scopedVariables = new Vector();
+   }
+
 
    // for debugging
    public String toString()

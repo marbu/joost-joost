@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.58 2008/06/15 08:11:22 obecker Exp $
+ * $Id: Processor.java,v 2.59 2008/10/04 17:13:14 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -41,6 +41,7 @@ import net.sf.joost.instruction.TransformFactory;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Properties;
 import java.util.Stack;
@@ -70,7 +71,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.58 $ $Date: 2008/06/15 08:11:22 $
+ * @version $Revision: 2.59 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
 
@@ -101,9 +102,6 @@ public class Processor extends XMLFilterImpl
 
    /** The Context object */
    private Context context;
-
-   /** The STX Parser object */
-   private Parser stxParser;
 
    /**
     * Depth in the subtree to be skipped; increased by startElement
@@ -400,14 +398,14 @@ public class Processor extends XMLFilterImpl
          reader = createXMLReader();
 
       // create a Parser for parsing the STX transformation sheet
-      stxParser = new Parser(pContext);
+      Parser stxParser = new Parser(pContext);
       reader.setContentHandler(stxParser);
       reader.setErrorHandler(pContext.getErrorHandler());
 
       // parse the transformation sheet
       reader.parse(src);
 
-      init();
+      init(stxParser.getTransformNode());
 
       // re-use this XMLReader for processing
       setParent(reader);
@@ -416,15 +414,14 @@ public class Processor extends XMLFilterImpl
 
    /**
     * Constructs a new Processor instance from an existing Parser
-    * (Joost-Representation of an STX transformation sheet)
-    * @param stxParser the joost-Representation of a transformation sheet
+    * (Joost representation of an STX transformation sheet)
+    * @param stxParser the Joost representation of a transformation sheet
     * @throws SAXException if {@link #getXMLReader} fails
     */
    public Processor(Parser stxParser)
       throws SAXException
    {
-      this.stxParser = stxParser;
-      init();
+      init(stxParser.getTransformNode());
       setParent(createXMLReader());
    }
 
@@ -436,9 +433,10 @@ public class Processor extends XMLFilterImpl
     */
    public Processor(Processor proc) throws SAXException
    {
-      stxParser = proc.stxParser;
-      globalTemplates = proc.globalTemplates;
-      init();
+      HashMap copies = new HashMap();
+      globalTemplates =
+         AbstractInstruction.deepTemplateArrayCopy(proc.globalTemplates, copies);
+      init((TransformFactory.Instance) proc.transformNode.deepCopy(copies));
       setParent(createXMLReader());
       setTransformerHandlerResolver(
          proc.context.defaultTransformerHandlerResolver.customResolver);
@@ -509,11 +507,11 @@ public class Processor extends XMLFilterImpl
    /**
     * Initialize a <code>Processor</code> object
     */
-   private void init()
+   private void init(TransformFactory.Instance pTransformNode)
    {
       context = new Context();
 
-      context.emitter = initializeEmitter(context, stxParser);
+      context.emitter = initializeEmitter(context);
 
       eventStack = context.ancestorStack;
 
@@ -521,7 +519,7 @@ public class Processor extends XMLFilterImpl
 
       context.currentProcessor = this;
       context.currentGroup = context.targetGroup = transformNode =
-         stxParser.getTransformNode();
+         pTransformNode;
 
       // first Data frame; needed for the first target group
       dataStack.push(new Data(context));
@@ -555,10 +553,9 @@ public class Processor extends XMLFilterImpl
     * The initialization of the emitter could be overriden
     * for debug purpose.
     * @param ctx The current context
-    * @param parser The stx-parser
     * @return an emitter-instance
     */
-   protected Emitter initializeEmitter(Context ctx, Parser parser) {
+   protected Emitter initializeEmitter(Context ctx) {
       return new Emitter(ctx.errorHandler);
    }
 

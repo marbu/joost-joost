@@ -1,5 +1,5 @@
 /*
- * $Id: WhenFactory.java,v 2.12 2008/05/27 16:25:46 obecker Exp $
+ * $Id: WhenFactory.java,v 2.13 2008/10/04 17:13:14 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -28,6 +28,7 @@ import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 import org.xml.sax.Attributes;
@@ -38,7 +39,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Factory for <code>when</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.12 $ $Date: 2008/05/27 16:25:46 $
+ * @version $Revision: 2.13 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
 
@@ -125,6 +126,19 @@ final public class WhenFactory extends FactoryBase
          else
             next = falseNext;
          return PR_CONTINUE;
+      }
+
+
+      protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+      {
+         super.onDeepCopy(copy, copies);
+         Instance theCopy = (Instance) copy;
+         if (test != null)
+            theCopy.test = test.deepCopy(copies);
+         if (trueNext != null)
+            theCopy.trueNext = trueNext.deepCopy(copies);
+         if (falseNext != null)
+            theCopy.falseNext = falseNext.deepCopy(copies);
       }
 
 

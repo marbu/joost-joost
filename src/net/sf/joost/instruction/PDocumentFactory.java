@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 2.18 2008/06/15 08:11:23 obecker Exp $
+ * $Id: PDocumentFactory.java,v 2.19 2008/10/04 17:13:14 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -33,6 +33,7 @@ import net.sf.joost.stx.Value;
 import net.sf.joost.trax.TrAXHelper;
 
 import java.net.URL;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import javax.xml.transform.Source;
@@ -54,7 +55,7 @@ import org.xml.sax.ext.LexicalHandler;
 /**
  * Factory for <code>process-document</code> elements, which are
  * represented by the inner Instance class.
- * @version $Revision: 2.18 $ $Date: 2008/06/15 08:11:23 $
+ * @version $Revision: 2.19 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
 
@@ -121,7 +122,7 @@ public class PDocumentFactory extends FactoryBase
    /** The inner Instance class */
    public class Instance extends ProcessBase
    {
-      Tree href, baseUri;
+      private Tree href, baseUri;
 
       // Constructor
       public Instance(String qName, NodeBase parent, ParseContext context,
@@ -260,6 +261,17 @@ public class PDocumentFactory extends FactoryBase
          proc.endInnerProcessing();
          context.locator = prevLoc;
          return PR_CONTINUE;
+      }
+
+
+      protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+      {
+         super.onDeepCopy(copy, copies);
+         Instance theCopy = (Instance) copy;
+         if (baseUri != null)
+            theCopy.baseUri = baseUri.deepCopy(copies);
+         if (href != null)
+            theCopy.href = href.deepCopy(copies);
       }
    }
 }

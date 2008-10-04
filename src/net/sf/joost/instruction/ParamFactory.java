@@ -1,32 +1,28 @@
 /*
- * $Id: ParamFactory.java,v 2.11 2007/12/19 10:39:37 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: ParamFactory.java,v 2.12 2008/10/04 17:13:14 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.instruction;
-
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Stack;
 
 import net.sf.joost.emitter.StringEmitter;
 import net.sf.joost.grammar.Tree;
@@ -34,15 +30,20 @@ import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Value;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Stack;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 
-/** 
+/**
  * Factory for <code>params</code> elements, which are represented by
- * the inner Instance class. 
- * @version $Revision: 2.11 $ $Date: 2007/12/19 10:39:37 $
+ * the inner Instance class.
+ * @version $Revision: 2.12 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
 
@@ -66,11 +67,11 @@ final public class ParamFactory extends FactoryBase
       return "param";
    }
 
-   public NodeBase createNode(NodeBase parent, String qName, 
+   public NodeBase createNode(NodeBase parent, String qName,
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      if (parent == null || 
+      if (parent == null ||
           !(parent instanceof GroupBase ||   // transform, group
             parent instanceof TemplateBase)) // template, procedure
          throw new SAXParseException(
@@ -82,7 +83,7 @@ final public class ParamFactory extends FactoryBase
       String parName = getExpandedName(nameAtt, context);
 
       // default is false
-      boolean required = getEnumAttValue("required", attrs, YESNO_VALUES, 
+      boolean required = getEnumAttValue("required", attrs, YESNO_VALUES,
                                          context) == YES_VALUE;
 
       Tree selectExpr = parseExpr(attrs.getValue("select"), context);
@@ -110,7 +111,7 @@ final public class ParamFactory extends FactoryBase
                          String varName, String expName, Tree select,
                          boolean required)
       {
-         super(qName, parent, context, expName, 
+         super(qName, parent, context, expName,
                false, // keep-value has no meaning here
                // this element may have children if there is no select
                // attribute and the parameter is not required
@@ -156,7 +157,7 @@ final public class ParamFactory extends FactoryBase
                // select attribute present
                v = select.evaluate(context, this);
             }
-            else { 
+            else {
                // use contents
                next = contents;
                super.process(context);
@@ -210,5 +211,19 @@ final public class ParamFactory extends FactoryBase
          if (varTable == context.localVars)
             parent.declareVariable(expName);
       }
+
+
+      protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+      {
+         super.onDeepCopy(copy, copies);
+         Instance theCopy = (Instance) copy;
+         if (contents != null)
+            theCopy.contents = contents.deepCopy(copies);
+         if (successor != null)
+            theCopy.successor = successor.deepCopy(copies);
+         if (select != null)
+            theCopy.select = select.deepCopy(copies);
+      }
+
    }
 }

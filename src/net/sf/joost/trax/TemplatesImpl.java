@@ -1,5 +1,5 @@
 /*
- * $Id: TemplatesImpl.java,v 1.27 2007/07/15 15:20:41 obecker Exp $
+ * $Id: TemplatesImpl.java,v 1.28 2008/10/04 17:13:14 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,17 +25,17 @@
 
 package net.sf.joost.trax;
 
-import java.util.Properties;
-
-import javax.xml.transform.Templates;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-
 import net.sf.joost.OptionalLog;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.Parser;
 import net.sf.joost.stx.Processor;
 import net.sf.joost.trace.DebugProcessor;
+
+import java.util.Properties;
+
+import javax.xml.transform.Templates;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.logging.Log;
 import org.xml.sax.InputSource;
@@ -70,7 +70,7 @@ public class TemplatesImpl implements Templates, TrAXConstants {
      * Synch object to guard against setting values from the TrAX interface
      * or reentry while the transform is going on.
      */
-    private Boolean reentryGuard = new Boolean(true);
+    private Object reentryGuard = new Object();
 
 
     /**
@@ -102,12 +102,12 @@ public class TemplatesImpl implements Templates, TrAXConstants {
      * @param factory A reference on a <code>TransformerFactoryImpl</code>
      * @throws TransformerConfigurationException When an error occurs.
      */
-    protected TemplatesImpl(XMLReader reader, InputSource isource, 
+    protected TemplatesImpl(XMLReader reader, InputSource isource,
                             TransformerFactoryImpl factory)
         throws TransformerConfigurationException {
 
         if (DEBUG)
-            log.debug("calling constructor with SystemId " + 
+            log.debug("calling constructor with SystemId " +
                       isource.getSystemId());
         this.factory = factory;
         try {
@@ -164,7 +164,7 @@ public class TemplatesImpl implements Templates, TrAXConstants {
      * @throws TransformerConfigurationException When an error occurs while
      *  initializing the <code>Templates</code>.
      */
-    private void init(XMLReader reader, InputSource isource) 
+    private void init(XMLReader reader, InputSource isource)
         throws TransformerConfigurationException {
 
         if (DEBUG)
@@ -223,7 +223,7 @@ public class TemplatesImpl implements Templates, TrAXConstants {
 
         synchronized (reentryGuard) {
             if (DEBUG)
-                log.debug("calling newTransformer to get a " + 
+                log.debug("calling newTransformer to get a " +
                           "Transformer object for Transformation");
             try {
                // register the processor

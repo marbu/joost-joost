@@ -1,25 +1,25 @@
 /*
- * $Id: CdataFactory.java,v 2.4 2007/11/25 14:18:01 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: CdataFactory.java,v 2.5 2008/10/04 17:13:14 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.instruction;
@@ -29,15 +29,17 @@ import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Emitter;
 import net.sf.joost.stx.ParseContext;
 
+import java.util.HashMap;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 
-/** 
+/**
  * Factory for <code>cdata</code> elements, which are represented by
- * the inner Instance class. 
- * @version $Revision: 2.4 $ $Date: 2007/11/25 14:18:01 $
+ * the inner Instance class.
+ * @version $Revision: 2.5 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
 
@@ -49,7 +51,7 @@ final public class CdataFactory extends FactoryBase
       return "cdata";
    }
 
-   public NodeBase createNode(NodeBase parent, String qName, 
+   public NodeBase createNode(NodeBase parent, String qName,
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
@@ -67,8 +69,14 @@ final public class CdataFactory extends FactoryBase
       public Instance(String qName, NodeBase parent, ParseContext context)
       {
          super(qName, parent, context, true);
+         init();
+      }
+
+
+      private void init()
+      {
          buffer = new StringBuffer();
-         strEmitter = new StringEmitter(buffer, 
+         strEmitter = new StringEmitter(buffer,
                          "('" + qName + "' started in line " + lineNo + ")");
       }
 
@@ -106,5 +114,14 @@ final public class CdataFactory extends FactoryBase
          emitter.endCDATA();
          return super.processEnd(context);
       }
+
+
+      protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+      {
+         super.onDeepCopy(copy, copies);
+         Instance theCopy = (Instance) copy;
+         theCopy.init();
+      }
+
    }
 }

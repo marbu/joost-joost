@@ -1,35 +1,36 @@
 /*
- * $Id: MatchFactory.java,v 1.6 2007/12/19 10:39:37 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: MatchFactory.java,v 1.7 2008/10/04 17:13:14 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.instruction;
 
-import java.util.HashSet;
-import java.util.Stack;
-
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Stack;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -39,8 +40,8 @@ import org.xml.sax.SAXParseException;
 /**
  * Factory for <code>match</code> elements, which are represented by the inner
  * Instance class.
- * 
- * @version $Revision: 1.6 $ $Date: 2007/12/19 10:39:37 $
+ *
+ * @version $Revision: 1.7 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
 
@@ -66,12 +67,12 @@ final public class MatchFactory extends FactoryBase
 
 
    public NodeBase createNode(NodeBase parent, String qName, Attributes attrs,
-                              ParseContext context) 
+                              ParseContext context)
       throws SAXParseException
    {
       if (!(parent instanceof AnalyzeTextFactory.Instance))
          throw new SAXParseException(
-            "'" + qName + "' must be child of stx:analyze-text", 
+            "'" + qName + "' must be child of stx:analyze-text",
             context.locator);
 
       Tree regexAVT = parseRequiredAVT(qName, attrs, "regex", context);
@@ -88,16 +89,16 @@ final public class MatchFactory extends FactoryBase
    final public class Instance extends NodeBase
    {
       /**
-       * The AVT in the <code>regex</code> attribute; it will be evaluated in 
+       * The AVT in the <code>regex</code> attribute; it will be evaluated in
        * the <code>stx:analyze-text</code> parent
        */
-      protected final Tree regex;
-      
+      protected Tree regex;
+
       /**
-       * The AVT in the <code>flags</code> attribute; it will be evaluated in 
+       * The AVT in the <code>flags</code> attribute; it will be evaluated in
        * the <code>stx:analyze-text</code> parent
        */
-      protected final Tree flags;
+      protected Tree flags;
 
       /** The parent */
       private AnalyzeTextFactory.Instance analyzeText;
@@ -121,7 +122,7 @@ final public class MatchFactory extends FactoryBase
       }
 
 
-      public short process(Context context) 
+      public short process(Context context)
          throws SAXException
       {
          super.process(context);
@@ -132,11 +133,25 @@ final public class MatchFactory extends FactoryBase
       }
 
 
-      public short processEnd(Context context) 
+      public short processEnd(Context context)
          throws SAXException
       {
          ((Stack)context.localVars.get(AnalyzeTextFactory.REGEX_GROUP)).pop();
          return super.processEnd(context);
+      }
+
+
+      protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+      {
+         super.onDeepCopy(copy, copies);
+         Instance theCopy = (Instance) copy;
+         if (analyzeText != null)
+            theCopy.analyzeText =
+               (AnalyzeTextFactory.Instance) analyzeText.deepCopy(copies);
+         if (flags != null)
+            theCopy.flags = flags.deepCopy(copies);
+         if (regex != null)
+            theCopy.regex = regex.deepCopy(copies);
       }
 
 

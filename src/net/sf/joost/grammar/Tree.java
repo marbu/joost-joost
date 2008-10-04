@@ -1,22 +1,22 @@
 /*
- * $Id: Tree.java,v 2.13 2007/05/20 18:00:45 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: Tree.java,v 2.14 2008/10/04 17:13:14 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
  * Contributor(s): Thomas Behrends.
@@ -24,22 +24,25 @@
 
 package net.sf.joost.grammar;
 
+import net.sf.joost.instruction.AbstractInstruction;
 import net.sf.joost.instruction.NodeBase;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.Value;
+
+import java.util.HashMap;
 
 import org.xml.sax.SAXException;
 
 /**
  * Objects of Tree represent nodes in the syntax tree of a pattern or
  * an STXPath expression.
- * @version $Revision: 2.13 $ $Date: 2007/05/20 18:00:45 $
+ * @version $Revision: 2.14 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
-public abstract class Tree
+public abstract class Tree implements Cloneable
 {
    /** Node type constants for {@link #type} */
-   public static final int 
+   public static final int
       ROOT                = 1,   // root node
       CHILD               = 2,   // child axis "/"
       DESC                = 3,   // descendend axis "//"
@@ -141,20 +144,20 @@ public abstract class Tree
    /**
     * Determines if the event stack matches the pattern represented
     * by this Tree object.
-    *    
+    *
     * @param context the Context object
     * @param top the part of the stack to be considered while matching
     *        (the upper most element is at position top-1)
-    * @param setPosition <code>true</code> if the context position 
-    *        ({@link Context#position}) should be set in case the 
+    * @param setPosition <code>true</code> if the context position
+    *        ({@link Context#position}) should be set in case the
     *        event stack matches this pattern
-    * @return <code>true</code> if the stack matches the pattern represented 
+    * @return <code>true</code> if the stack matches the pattern represented
     *         by this Tree.
     */
    public boolean matches(Context context, int top, boolean setPosition)
       throws SAXException
    {
-      context.errorHandler.fatalError("Fatal: unprocessed type in matching: " + 
+      context.errorHandler.fatalError("Fatal: unprocessed type in matching: " +
                                       this,
                                       context.currentInstruction.publicId,
                                       context.currentInstruction.systemId,
@@ -164,8 +167,8 @@ public abstract class Tree
    }
 
 
-   /** 
-    * Evaluates the current Tree if it represents an expression. 
+   /**
+    * Evaluates the current Tree if it represents an expression.
     * @param context the current Context
     * @param instruction the current instruction, needed for providing
     *        locator information in the event of an error
@@ -173,14 +176,14 @@ public abstract class Tree
     */
    public Value evaluate(Context context, NodeBase instruction)
       throws SAXException
-   { 
+   {
       context.currentInstruction = instruction;
       return evaluate(context, context.ancestorStack.size());
    }
 
 
-   /** 
-    * Evaluates the current Tree if it represents an expression. 
+   /**
+    * Evaluates the current Tree if it represents an expression.
     * @param context the current Context
     * @param top the part of the stack to be considered for the evaluation
     *            (the upper most element is at position top-1)
@@ -189,7 +192,7 @@ public abstract class Tree
    public Value evaluate(Context context, int top)
       throws SAXException
    {
-      context.errorHandler.fatalError("Fatal: unprocessed type in evaluating: " + 
+      context.errorHandler.fatalError("Fatal: unprocessed type in evaluating: " +
                                       this,
                                       context.currentInstruction.publicId,
                                       context.currentInstruction.systemId,
@@ -214,8 +217,8 @@ public abstract class Tree
    {
       return 0.5;
    }
-   
-   
+
+
    /**
     * @return whether the expression represented by this tree is constant
     */
@@ -225,7 +228,33 @@ public abstract class Tree
                 && (left == null || left.isConstant());
    }
 
-   
+
+   /**
+    * Creates a deep copy of this Tree
+    * @param copies the map of already copied objects that need to be remembered
+    * (mainly of {@link AbstractInstruction})
+    * @return the created copy
+    */
+   public Tree deepCopy(HashMap copies) {
+      // no need to keep Tree instances in the copies map because there are
+      // no circular references of Trees
+      Tree copy;
+      try {
+         copy = (Tree) clone();
+      }
+      catch (CloneNotSupportedException e) {
+            // mustn't happen since this class implements Cloneable
+         throw new RuntimeException(e);
+      }
+      if (left != null)
+         copy.left = left.deepCopy(copies);
+      if (right != null)
+         copy.right = right.deepCopy(copies);
+      // note: cannot clone the value
+      return copy;
+   }
+
+
    // for debugging
    public String toString()
    {
@@ -247,8 +276,8 @@ public abstract class Tree
       default:           ret += type; break;
       }
       ret += "," + left + "," + right + "," + value;
-      if (type == NAME_TEST || type == URI_WILDCARD 
-                            || type == LOCAL_WILDCARD) 
+      if (type == NAME_TEST || type == URI_WILDCARD
+                            || type == LOCAL_WILDCARD)
          ret += "(" + uri + "|" + lName + ")";
       return ret + "}";
    }

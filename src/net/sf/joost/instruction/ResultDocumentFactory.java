@@ -1,37 +1,28 @@
 /*
- * $Id: ResultDocumentFactory.java,v 2.21 2007/12/19 10:39:37 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: ResultDocumentFactory.java,v 2.22 2008/10/04 17:13:14 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.instruction;
-
-import java.io.Writer;
-import java.net.URISyntaxException;
-import java.util.HashSet;
-import java.util.Properties;
-
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Result;
-import javax.xml.transform.TransformerException;
 
 import net.sf.joost.emitter.StreamEmitter;
 import net.sf.joost.emitter.StxEmitter;
@@ -40,15 +31,25 @@ import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.trax.TrAXHelper;
 
+import java.io.Writer;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Properties;
+
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.TransformerException;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 
-/** 
+/**
  * Factory for <code>result-document</code> elements, which are represented by
- * the inner Instance class. 
- * @version $Revision: 2.21 $ $Date: 2007/12/19 10:39:37 $
+ * the inner Instance class.
+ * @version $Revision: 2.22 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
 
@@ -74,7 +75,7 @@ final public class ResultDocumentFactory extends FactoryBase
       return "result-document";
    }
 
-   public NodeBase createNode(NodeBase parent, String qName, 
+   public NodeBase createNode(NodeBase parent, String qName,
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
@@ -88,7 +89,7 @@ final public class ResultDocumentFactory extends FactoryBase
             methodAtt = getExpandedName(methodAtt, context);
          else if (!methodAtt.equals("text") && !methodAtt.equals("xml"))
             throw new SAXParseException(
-               "Value of attribute 'output-method' must be 'xml', 'text', " + 
+               "Value of attribute 'output-method' must be 'xml', 'text', " +
                "or a qualified name. Found '" + methodAtt + "'",
                context.locator);
       }
@@ -98,7 +99,7 @@ final public class ResultDocumentFactory extends FactoryBase
          getEnumAttValue("append", attrs, YESNO_VALUES, context) == YES_VALUE;
 
       checkAttributes(qName, attrs, attrNames, context);
-      return new Instance(qName, parent, context, href, encodingAtt, 
+      return new Instance(qName, parent, context, href, encodingAtt,
                           methodAtt, append);
    }
 
@@ -111,7 +112,7 @@ final public class ResultDocumentFactory extends FactoryBase
       private boolean append;
 
       protected Instance(String qName, NodeBase parent, ParseContext context,
-                         Tree href, String encoding, String method, 
+                         Tree href, String encoding, String method,
                          boolean append)
       {
          super(qName, parent, context, true);
@@ -120,7 +121,7 @@ final public class ResultDocumentFactory extends FactoryBase
          this.method = method;
          this.append = append;
       }
-      
+
 
       /**
        * Redirects the result stream to the specified URI
@@ -134,8 +135,8 @@ final public class ResultDocumentFactory extends FactoryBase
             encoding = context.currentProcessor.getOutputEncoding();
 
          String filename = href.evaluate(context, this).getString();
-         
-         Properties props = 
+
+         Properties props =
             (Properties)context.currentProcessor.outputProperties.clone();
          props.setProperty(OutputKeys.ENCODING, encoding);
          if (method != null)
@@ -144,16 +145,16 @@ final public class ResultDocumentFactory extends FactoryBase
          StxEmitter emitter = null;
          try {
             if (context.outputUriResolver != null) {
-               Result result = 
-                  context.outputUriResolver.resolve(filename, systemId, 
+               Result result =
+                  context.outputUriResolver.resolve(filename, systemId,
                                                     props, append);
                if (result != null) {
-                  emitter = TrAXHelper.initStxEmitter(result, 
+                  emitter = TrAXHelper.initStxEmitter(result,
                                                       context.currentProcessor,
                                                       props);
                   if (emitter == null) {
-                     throw new SAXParseException("Unsupported Result type " 
-                                                 + result.getClass().getName(), 
+                     throw new SAXParseException("Unsupported Result type "
+                                                 + result.getClass().getName(),
                                                  publicId, systemId, lineNo, colNo);
                   }
                   if (append && (emitter instanceof StreamEmitter)) {
@@ -166,7 +167,7 @@ final public class ResultDocumentFactory extends FactoryBase
             if (emitter == null) {
                // either there's no outputUriResolver or it returned null
                Writer osw = context.emitter.getResultWriter(
-                               filename, encoding, 
+                               filename, encoding,
                                publicId, systemId, lineNo, colNo, append);
 
                StreamEmitter se = StreamEmitter.newEmitter(osw, encoding, props);
@@ -177,19 +178,19 @@ final public class ResultDocumentFactory extends FactoryBase
             }
          }
          catch (java.io.IOException ex) {
-            context.errorHandler.error(ex.toString(), 
+            context.errorHandler.error(ex.toString(),
                                        publicId, systemId, lineNo, colNo);
             return PR_CONTINUE; // if the errorHandler returns
          }
          catch (URISyntaxException ex) {
-            context.errorHandler.error(ex.toString(), 
+            context.errorHandler.error(ex.toString(),
                                        publicId, systemId, lineNo, colNo);
             return PR_CONTINUE; // if the errorHandler returns
          }
          catch (TransformerException ex) {
             context.errorHandler.error(ex);
          }
-         
+
 
          context.pushEmitter(emitter);
          context.emitter.startDocument();
@@ -214,8 +215,8 @@ final public class ResultDocumentFactory extends FactoryBase
             }
          }
          catch (java.io.IOException ex) {
-            context.errorHandler.error(ex.toString(), 
-                                       publicId, systemId, 
+            context.errorHandler.error(ex.toString(),
+                                       publicId, systemId,
                                        nodeEnd.lineNo, nodeEnd.colNo);
          }
          catch (TransformerException ex) {
@@ -224,5 +225,15 @@ final public class ResultDocumentFactory extends FactoryBase
 
          return super.processEnd(context);
       }
+
+
+      protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+      {
+         super.onDeepCopy(copy, copies);
+         Instance theCopy = (Instance) copy;
+         if (href != null)
+            theCopy.href = href.deepCopy(copies);
+      }
+
    }
 }

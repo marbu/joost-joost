@@ -1,5 +1,5 @@
 /*
- * $Id: DebugProcessor.java,v 1.21 2005/03/25 17:39:43 obecker Exp $
+ * $Id: DebugProcessor.java,v 1.22 2008/10/04 17:13:14 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,8 +24,6 @@
 
 package net.sf.joost.trace;
 
-import java.io.IOException;
-
 import net.sf.joost.Constants;
 import net.sf.joost.OptionalLog;
 import net.sf.joost.emitter.StxEmitter;
@@ -40,6 +38,8 @@ import net.sf.joost.stx.Processor;
 import net.sf.joost.stx.SAXEvent;
 import net.sf.joost.trax.TransformerImpl;
 
+import java.io.IOException;
+
 import org.apache.commons.logging.Log;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -49,7 +49,7 @@ import org.xml.sax.XMLReader;
 
 /**
  * Extends the {@link net.sf.joost.stx.Processor} with debug features.
- * @version $Revision: 1.21 $ $Date: 2005/03/25 17:39:43 $
+ * @version $Revision: 1.22 $ $Date: 2008/10/04 17:13:14 $
  * @author Zubow
  */
 public class DebugProcessor extends Processor {
@@ -60,8 +60,6 @@ public class DebugProcessor extends Processor {
     private TransformerImpl transformer;
     /** the ParserListener for static tracing */
     private ParserListener parserListener;
-    /** the Joost-transformation-sheet parser */
-    public Parser stxparser;
 
     private Locator locator;
 
@@ -95,7 +93,7 @@ public class DebugProcessor extends Processor {
     /**
      * See {@link net.sf.joost.stx.Processor#Processor(XMLReader, InputSource, ParseContext)}
      */
-    public DebugProcessor(XMLReader reader, InputSource src, 
+    public DebugProcessor(XMLReader reader, InputSource src,
                           ParseContext pContext,
                           StxEmitter messageEmitter)
             throws IOException, SAXException {
@@ -106,7 +104,7 @@ public class DebugProcessor extends Processor {
     /**
      * See {@link net.sf.joost.stx.Processor#Processor(XMLReader, InputSource, ParseContext)}
      */
-    public DebugProcessor(XMLReader reader, InputSource src, 
+    public DebugProcessor(XMLReader reader, InputSource src,
                           ParseContext pContext)
             throws IOException, SAXException {
         super(reader, src, pContext);
@@ -139,11 +137,9 @@ public class DebugProcessor extends Processor {
     /**
      * Overriden method for debug purpose
      */
-    protected Emitter initializeEmitter(Context ctx, Parser parser) {
+    protected Emitter initializeEmitter(Context ctx) {
         if (log != null)
             log.info("initialize DebugProcessor ...");
-        // save reference to stx-parser for nssupport, ...
-        this.stxparser = parser;
         return new DebugEmitter(ctx.errorHandler);
     }
 

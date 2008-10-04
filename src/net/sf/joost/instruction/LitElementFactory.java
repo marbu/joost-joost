@@ -1,5 +1,5 @@
 /*
- * $Id: LitElementFactory.java,v 2.15 2008/06/13 21:17:48 obecker Exp $
+ * $Id: LitElementFactory.java,v 2.16 2008/10/04 17:13:14 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -30,6 +30,7 @@ import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 
 import org.xml.sax.Attributes;
@@ -42,7 +43,7 @@ import org.xml.sax.helpers.NamespaceSupport;
 /**
  * Factory for literal result elements, which are represented by the
  * inner Instance class.
- * @version $Revision: 2.15 $ $Date: 2008/06/13 21:17:48 $
+ * @version $Revision: 2.16 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
 */
 
@@ -225,12 +226,16 @@ final public class LitElementFactory
          throws SAXException
       {
          super.process(context);
-         for (int i=0; i<avtList.length; i++)
-            if (avtList[i] != null)
-               attrs.setValue(i, avtList[i].evaluate(context, this)
-                                           .getString());
-         context.emitter.startElement(uri, lName, qName, attrs, namespaces,
-                                      this);
+         // attrs is not cloned at the moment (see onDeepCopy(..)), so a
+         // synchronization is necessary
+         synchronized (attrs) {
+            for (int i=0; i<avtList.length; i++)
+               if (avtList[i] != null)
+                  attrs.setValue(i, avtList[i].evaluate(context, this)
+                                              .getString());
+            context.emitter.startElement(uri, lName, qName, attrs, namespaces,
+                                         this);
+         }
          return PR_CONTINUE;
       }
 
@@ -252,6 +257,17 @@ final public class LitElementFactory
       {
          return namespaces != null ? (Hashtable)namespaces.clone()
                                    : new Hashtable();
+      }
+
+
+      protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+      {
+         super.onDeepCopy(copy, copies);
+         Instance theCopy = (Instance) copy;
+         theCopy.avtList = new Tree[avtList.length];
+         for (int i=0; i<avtList.length; i++)
+            if (avtList[i] != null)
+               theCopy.avtList[i] = avtList[i].deepCopy(copies);
       }
 
 

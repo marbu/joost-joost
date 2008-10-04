@@ -1,30 +1,28 @@
 /*
- * $Id: CopyFactory.java,v 2.12 2007/12/19 10:39:37 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: CopyFactory.java,v 2.13 2008/10/04 17:13:14 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.instruction;
-
-import java.util.HashSet;
 
 import net.sf.joost.OptionalLog;
 import net.sf.joost.grammar.Tree;
@@ -32,16 +30,19 @@ import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.SAXEvent;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import org.apache.commons.logging.Log;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
 
-/** 
+/**
  * Factory for <code>copy</code> elements, which are represented by
- * the inner Instance class. 
- * @version $Revision: 2.12 $ $Date: 2007/12/19 10:39:37 $
+ * the inner Instance class.
+ * @version $Revision: 2.13 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
 
@@ -71,11 +72,11 @@ final public class CopyFactory extends FactoryBase
       return "copy";
    }
 
-   public NodeBase createNode(NodeBase parent, String qName, 
+   public NodeBase createNode(NodeBase parent, String qName,
                               Attributes attrs, ParseContext context)
       throws SAXParseException
    {
-      Tree attributesPattern = parsePattern(attrs.getValue("attributes"), 
+      Tree attributesPattern = parsePattern(attrs.getValue("attributes"),
                                             context);
 
       checkAttributes(qName, attrs, attrNames, context);
@@ -88,14 +89,14 @@ final public class CopyFactory extends FactoryBase
    {
       /** the pattern in the <code>attributes</code> attribute,
           <code>null</code> if this attribute is missing */
-      Tree attPattern;
+      private Tree attPattern;
 
       /** <code>true</code> if {@link #attPattern} is a wildcard
           (<code>@*</code>) */
-      boolean attrWildcard = false;
+      private boolean attrWildcard = false;
 
       /** instruction pointers */
-      AbstractInstruction contents, successor;
+      private AbstractInstruction contents, successor;
 
       //
       // Constructor
@@ -147,10 +148,10 @@ final public class CopyFactory extends FactoryBase
                   // put attributes on the event stack for matching
                   context.ancestorStack.push(
                      SAXEvent.newAttribute(event.attrs, i));
-                  if (attPattern.matches(context, 
+                  if (attPattern.matches(context,
                                          context.ancestorStack.size(),
                                          false)) {
-                     SAXEvent attrEvent = 
+                     SAXEvent attrEvent =
                         (SAXEvent)context.ancestorStack.peek();
                      context.emitter.addAttribute(
                         attrEvent.uri, attrEvent.qName, attrEvent.lName,
@@ -164,13 +165,13 @@ final public class CopyFactory extends FactoryBase
             break;
          }
          case SAXEvent.TEXT:
-            context.emitter.characters(event.value.toCharArray(), 
+            context.emitter.characters(event.value.toCharArray(),
                                        0, event.value.length(), this);
             next = successor;
             break;
          case SAXEvent.CDATA:
             context.emitter.startCDATA(this);
-            context.emitter.characters(event.value.toCharArray(), 
+            context.emitter.characters(event.value.toCharArray(),
                                        0, event.value.length(), this);
             context.emitter.endCDATA();
             next = successor;
@@ -181,7 +182,7 @@ final public class CopyFactory extends FactoryBase
             next = successor;
             break;
          case SAXEvent.COMMENT:
-            context.emitter.comment(event.value.toCharArray(), 
+            context.emitter.comment(event.value.toCharArray(),
                                     0, event.value.length(), this);
             next = successor;
             break;
@@ -211,6 +212,19 @@ final public class CopyFactory extends FactoryBase
             context.emitter.endElement(event.uri, event.lName, event.qName,
                                        this);
          return super.processEnd(context);
+      }
+
+
+      protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+      {
+         super.onDeepCopy(copy, copies);
+         Instance theCopy = (Instance) copy;
+         if (contents != null)
+            theCopy.contents = contents.deepCopy(copies);
+         if (successor != null)
+            theCopy.successor = successor.deepCopy(copies);
+         if (attPattern != null)
+            theCopy.attPattern = attPattern.deepCopy(copies);
       }
    }
 }

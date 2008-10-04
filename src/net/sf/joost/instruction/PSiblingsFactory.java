@@ -1,45 +1,46 @@
 /*
- * $Id: PSiblingsFactory.java,v 2.4 2007/12/19 10:39:37 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: PSiblingsFactory.java,v 2.5 2008/10/04 17:13:14 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.instruction;
-
-import java.util.HashSet;
 
 import net.sf.joost.grammar.Tree;
 import net.sf.joost.stx.Context;
 import net.sf.joost.stx.ParseContext;
 import net.sf.joost.stx.SAXEvent;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 
-/** 
- * Factory for <code>process-siblings</code> elements, which are represented 
- * by the inner Instance class. 
- * @version $Revision: 2.4 $ $Date: 2007/12/19 10:39:37 $
+/**
+ * Factory for <code>process-siblings</code> elements, which are represented
+ * by the inner Instance class.
+ * @version $Revision: 2.5 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
 
@@ -84,12 +85,12 @@ public class PSiblingsFactory extends FactoryBase
    /** The inner Instance class */
    public class Instance extends ProcessBase
    {
-      Tree whilePattern, untilPattern;
-      GroupBase parentGroup;
+      private Tree whilePattern, untilPattern;
+      private GroupBase parentGroup;
 
-      public Instance(String qName, NodeBase parent, 
+      public Instance(String qName, NodeBase parent,
                       ParseContext context,
-                      String groupQName, 
+                      String groupQName,
                       Tree whilePattern, Tree untilPattern)
          throws SAXParseException
       {
@@ -105,7 +106,7 @@ public class PSiblingsFactory extends FactoryBase
       }
 
 
-      /** 
+      /**
        * @return {@link #PR_SELF} if the context node can have siblings
        */
       public short processEnd(Context context)
@@ -114,7 +115,7 @@ public class PSiblingsFactory extends FactoryBase
          // no need to call super.processEnd(), there are no local
          // variable declarations
          SAXEvent event = (SAXEvent)context.ancestorStack.peek();
-         if (event.type == SAXEvent.ATTRIBUTE || 
+         if (event.type == SAXEvent.ATTRIBUTE ||
              event.type == SAXEvent.ROOT) {
             // These nodes don't have siblings, keep processing.
             return PR_CONTINUE;
@@ -129,7 +130,7 @@ public class PSiblingsFactory extends FactoryBase
 
       /**
        * Tests if the current node matches the <code>while</code>
-       * and <code>until</code> conditions of this 
+       * and <code>until</code> conditions of this
        * <code>stx:process-siblings</code> instruction.
        * @return <code>true</code> if the current node matches the pattern
        *         in the <code>while</code> attribute and doesn't match the
@@ -141,13 +142,27 @@ public class PSiblingsFactory extends FactoryBase
       {
          context.currentInstruction = this;
          context.currentGroup = parentGroup;
-         return 
-            (whilePattern == null || 
+         return
+            (whilePattern == null ||
              whilePattern.matches(context, context.ancestorStack.size(),
                                   false)) &&
-            (untilPattern == null || 
+            (untilPattern == null ||
              !untilPattern.matches(context, context.ancestorStack.size(),
                                    false));
       }
+
+
+      protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+      {
+         super.onDeepCopy(copy, copies);
+         Instance theCopy = (Instance) copy;
+         if (parentGroup != null)
+            theCopy.parentGroup = (GroupBase) parentGroup.deepCopy(copies);
+         if (untilPattern != null)
+            theCopy.untilPattern = untilPattern.deepCopy(copies);
+         if (whilePattern != null)
+            theCopy.whilePattern = whilePattern.deepCopy(copies);
+      }
+
    }
 }

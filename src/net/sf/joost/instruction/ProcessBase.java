@@ -1,35 +1,28 @@
 /*
- * $Id: ProcessBase.java,v 2.17 2008/03/29 12:12:56 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: ProcessBase.java,v 2.18 2008/10/04 17:13:14 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.instruction;
-
-import java.util.Hashtable;
-import java.util.Stack;
-import java.util.Vector;
-
-import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.sax.TransformerHandler;
 
 import net.sf.joost.emitter.EmitterAdapter;
 import net.sf.joost.grammar.Tree;
@@ -39,17 +32,55 @@ import net.sf.joost.stx.ParseContext;
 import net.sf.joost.util.VariableNotFoundException;
 import net.sf.joost.util.VariableUtils;
 
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Stack;
+import java.util.Vector;
+
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.TransformerHandler;
+
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
  * Common base class for all <code>stx:process-<em>xxx</em></code>
  * instructions
- * @version $Revision: 2.17 $ $Date: 2008/03/29 12:12:56 $
+ * @version $Revision: 2.18 $ $Date: 2008/10/04 17:13:14 $
  * @author Oliver Becker
  */
 public class ProcessBase extends NodeBase
 {
+   /** Instruction the clears the parameter stack */
+   private class ProcessEnd extends AbstractInstruction {
+      private ProcessBase node;
+
+      public ProcessEnd(ProcessBase node)
+      {
+         this.node = node;
+      }
+
+      public NodeBase getNode()
+      {
+         return node;
+      }
+
+      public short process(Context ctx)
+      {
+         ctx.passedParameters = (Hashtable)node.paramStack.pop();
+         return PR_CONTINUE;
+      }
+
+      protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+      {
+         super.onDeepCopy(copy, copies);
+         ProcessEnd theCopy = (ProcessEnd) copy;
+         theCopy.node = (ProcessBase) node.deepCopy(copies);
+      }
+   }
+
+
+
    // stack for parameters, used in the subclasses
    private Stack paramStack = new Stack();
 
@@ -68,29 +99,18 @@ public class ProcessBase extends NodeBase
    private boolean bufScopeDetermined = false;
    private GroupBase bufGroupScope = null;
 
-   private NodeBase me;
-
    // Constructor
-   public ProcessBase(String qName, NodeBase parent, 
+   public ProcessBase(String qName, NodeBase parent,
                       ParseContext context,
-                      String groupQName, 
+                      String groupQName,
                       String method, String src)
       throws SAXParseException
    {
       super(qName, parent, context, true);
-      me = this;
 
       // insert instruction that clears the parameter stack when
       // continuing the processing
-      next.next = new AbstractInstruction() {
-         public NodeBase getNode() {
-            return me;
-         }
-         public short process(Context ctx) {
-            ctx.passedParameters = (Hashtable)paramStack.pop();
-            return PR_CONTINUE;
-         }
-      };
+      next.next = new ProcessEnd(this);
 
       this.groupQName = groupQName;
       if (groupQName != null)
@@ -103,28 +123,28 @@ public class ProcessBase extends NodeBase
          src = src.trim();
          if (!src.endsWith(")"))
             throw new SAXParseException(
-               "Invalid filter-src value '" + src + 
+               "Invalid filter-src value '" + src +
                "'. Expect url(...) or buffer(...) specification.",
                context.locator);
          if (src.startsWith("url(")) {
             // part between "url(" and ")" will be evaluated as an expression
-            hrefTree = 
-               FactoryBase.parseExpr(src.substring(4, src.length()-1).trim(), 
+            hrefTree =
+               FactoryBase.parseExpr(src.substring(4, src.length()-1).trim(),
                                      context);
          }
          else if (src.startsWith("buffer(")) {
             useBufQName = src.substring(7, src.length()-1).trim();
-            useBufExpName = "@" + 
+            useBufExpName = "@" +
                             FactoryBase.getExpandedName(useBufQName, context);
          }
          else
             throw new SAXParseException(
-               "Invalid filter-src value '" + src + 
+               "Invalid filter-src value '" + src +
                "'. Expect url(...) or buffer(...) specification.",
                context.locator);
       }
 
-      if (this instanceof PDocumentFactory.Instance || 
+      if (this instanceof PDocumentFactory.Instance ||
           this instanceof PBufferFactory.Instance)
          return;
 
@@ -137,7 +157,7 @@ public class ProcessBase extends NodeBase
          ancestor = ancestor.parent;
       if (ancestor == null)
          throw new SAXParseException(
-            "'" + qName + "' must be a descendant of stx:template or " + 
+            "'" + qName + "' must be a descendant of stx:template or " +
             "stx:procedure",
             context.locator);
       if (ancestor instanceof WithParamFactory.Instance)
@@ -148,10 +168,10 @@ public class ProcessBase extends NodeBase
    }
 
 
-   /** 
+   /**
     * Ensure that only stx:with-param children will be inserted
     */
-   public void insert(NodeBase node) 
+   public void insert(NodeBase node)
       throws SAXParseException
    {
       if (node instanceof TextNode) {
@@ -196,12 +216,12 @@ public class ProcessBase extends NodeBase
          targetGroup = (GroupBase)parentGroup.namedGroups.get(groupExpName);
          if (targetGroup == null)
             throw new SAXParseException(
-               "Unknown target group '" + groupQName + 
-               "' specified for '" + qName + "'", 
+               "Unknown target group '" + groupQName +
+               "' specified for '" + qName + "'",
                publicId, systemId, lineNo, colNo);
       }
       if (targetGroup == null) { // means: still null
-         // use current group 
+         // use current group
          targetGroup = parentGroup;
       }
       return false; // done
@@ -236,22 +256,22 @@ public class ProcessBase extends NodeBase
       try {
          if (useBufExpName != null) {
             if (!bufScopeDetermined) {
-               bufGroupScope = 
+               bufGroupScope =
                   VariableUtils.findVariableScope(context, useBufExpName);
                bufScopeDetermined = true;
             }
-            handler = 
+            handler =
                context.defaultTransformerHandlerResolver.resolve(
-                     filterMethod, 
-                     new BufferReader(context, useBufExpName, bufGroupScope, 
-                                      publicId, systemId), 
+                     filterMethod,
+                     new BufferReader(context, useBufExpName, bufGroupScope,
+                                      publicId, systemId),
                      context.passedParameters);
          }
          else {
             String href = (hrefTree != null)
-               ? hrefTree.evaluate(context, this).getStringValue() 
+               ? hrefTree.evaluate(context, this).getStringValue()
                : null;
-            handler = 
+            handler =
                context.defaultTransformerHandlerResolver
                       .resolve(filterMethod, href, systemId,
                                context.uriResolver,
@@ -259,7 +279,7 @@ public class ProcessBase extends NodeBase
          }
          if (handler == null) {
             context.errorHandler.fatalError(
-               "Filter '" + filterMethod + "' not available", 
+               "Filter '" + filterMethod + "' not available",
                publicId, systemId, lineNo, colNo);
             return null;
          }
@@ -271,7 +291,7 @@ public class ProcessBase extends NodeBase
       catch (SAXException e) {
          // add locator information
          context.errorHandler.fatalError(e.getMessage(),
-                                         publicId, systemId, 
+                                         publicId, systemId,
                                          lineNo, colNo);
          return null;
       }
@@ -287,4 +307,27 @@ public class ProcessBase extends NodeBase
       handler.setResult(new SAXResult(adapter));
       return handler;
    }
+
+
+   protected void onDeepCopy(AbstractInstruction copy, HashMap copies)
+   {
+      super.onDeepCopy(copy, copies);
+      ProcessBase theCopy = (ProcessBase) copy;
+      theCopy.paramStack = new Stack();
+      if (bufGroupScope != null)
+         theCopy.bufGroupScope = (GroupBase) bufGroupScope.deepCopy(copies);
+      if (targetGroup != null)
+         theCopy.targetGroup = (GroupBase) targetGroup.deepCopy(copies);
+      theCopy.children = new Vector();
+      for (int i=0; i<children.size(); i++) {
+         theCopy.children.add(
+               ((AbstractInstruction)children.get(i)).deepCopy(copies));
+      }
+      if (filter != null)
+         theCopy.filter = filter.deepCopy(copies);
+      if (hrefTree != null)
+         theCopy.hrefTree = hrefTree.deepCopy(copies);
+   }
+
+
 }
