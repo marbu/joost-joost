@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXHelper.java,v 1.15 2007/07/15 15:20:41 obecker Exp $
+ * $Id: TrAXHelper.java,v 1.16 2008/10/05 18:03:36 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -25,7 +25,13 @@
 
 package net.sf.joost.trax;
 
-//JAXP
+import net.sf.joost.OptionalLog;
+import net.sf.joost.emitter.DOMEmitter;
+import net.sf.joost.emitter.SAXEmitter;
+import net.sf.joost.emitter.StreamEmitter;
+import net.sf.joost.emitter.StxEmitter;
+import net.sf.joost.stx.Processor;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -37,6 +43,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Properties;
 
+//JAXP
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Result;
@@ -50,13 +57,6 @@ import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import net.sf.joost.OptionalLog;
-import net.sf.joost.emitter.DOMEmitter;
-import net.sf.joost.emitter.SAXEmitter;
-import net.sf.joost.emitter.StreamEmitter;
-import net.sf.joost.emitter.StxEmitter;
-import net.sf.joost.stx.Processor;
-
 import org.apache.commons.logging.Log;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -65,8 +65,8 @@ import org.xml.sax.InputSource;
 
 
 /**
- * This class provides TrAX
- * @author Zubow
+ * This class provides TrAX helper functions
+ * @author Anatolij Zubow, Oliver Becker
  */
 public class TrAXHelper implements TrAXConstants {
 
@@ -175,15 +175,15 @@ public class TrAXHelper implements TrAXConstants {
      * @return An <code>StxEmitter</code>.
      * @throws javax.xml.transform.TransformerException
      */
-    public static StxEmitter initStxEmitter(Result result, Processor processor, 
+    public static StxEmitter initStxEmitter(Result result, Processor processor,
                                             Properties outputProperties)
         throws TransformerException {
-       
+
         if (outputProperties == null)
            outputProperties = processor.outputProperties;
 
         if (DEBUG)
-            log.debug("init STXEmitter");
+            log.debug("init StxEmitter");
         // Return the content handler for this Result object
         try {
             // Result object could be SAXResult, DOMResult, or StreamResult
@@ -193,20 +193,20 @@ public class TrAXHelper implements TrAXConstants {
                 if (handler != null) {
                     if (DEBUG)
                         log.debug("return SAX specific Implementation for " +
-                                  "STXEmitter");
+                                  "StxEmitter");
                     //SAX specific Implementation
                     return new SAXEmitter(handler);
                 }
             } else if (result instanceof DOMResult) {
                 if (DEBUG)
-                   log.debug("return DOM specific Implementation for " + 
-                             "STXEmitter");
+                   log.debug("return DOM specific Implementation for " +
+                             "StxEmitter");
                 //DOM specific Implementation
                 return new DOMEmitter();
             } else if (result instanceof StreamResult) {
                 if (DEBUG)
-                   log.debug("return StreamResult specific Implementation " + 
-                             "for STXEmitter");
+                   log.debug("return StreamResult specific Implementation " +
+                             "for StxEmitter");
                 // Get StreamResult
                 final StreamResult target = (StreamResult)result;
                 // StreamResult may have been created with a java.io.File,
@@ -217,7 +217,7 @@ public class TrAXHelper implements TrAXConstants {
                 if (writer != null) {
                     if (DEBUG)
                         log.debug("get a Writer object from Result object");
-                    return StreamEmitter.newEmitter(writer, DEFAULT_ENCODING, 
+                    return StreamEmitter.newEmitter(writer, DEFAULT_ENCODING,
                                                     outputProperties);
                 }
                 // or try to get an OutputStream from Result object
