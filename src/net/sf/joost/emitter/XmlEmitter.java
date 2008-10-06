@@ -1,5 +1,5 @@
 /*
- * $Id: XmlEmitter.java,v 1.8 2007/12/02 21:18:41 obecker Exp $
+ * $Id: XmlEmitter.java,v 1.9 2008/10/06 13:31:41 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,13 +24,14 @@
 
 package net.sf.joost.emitter;
 
+import net.sf.joost.OptionalLog;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
-
-import net.sf.joost.OptionalLog;
+import javax.xml.transform.Result;
 
 import org.apache.commons.logging.Log;
 import org.xml.sax.Attributes;
@@ -39,10 +40,10 @@ import org.xml.sax.SAXException;
 /**
  * This class implements an emitter that uses the <code>xml</code> output
  * method for byte or character streams.
- * @version $Revision: 1.8 $ $Date: 2007/12/02 21:18:41 $
+ * @version $Revision: 1.9 $ $Date: 2008/10/06 13:31:41 $
  * @author Oliver Becker, Anatolij Zubow
  */
-public class XmlEmitter extends StreamEmitter 
+public class XmlEmitter extends StreamEmitter
 {
    // Log initialization
    private static Log log = OptionalLog.getLog(XmlEmitter.class);
@@ -68,13 +69,19 @@ public class XmlEmitter extends StreamEmitter
    /** flag indicating if we're within a CDATA section */
    private boolean insideCDATA = false;
 
+   /** flag indicating if disable output escaping will be supported */
+   private boolean supportDisableOutputEscaping = false;
+
+   /** flag indicating if disabled output escaping is active */
+   private boolean disabledOutputEscaping = false;
+
 
    /** Constructor */
-   public XmlEmitter(Writer writer, String encoding, 
+   public XmlEmitter(Writer writer, String encoding,
                      Properties outputProperties)
    {
       super(writer, encoding);
-      
+
       if (outputProperties != null) {
          String val;
          val = outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION);
@@ -103,6 +110,21 @@ public class XmlEmitter extends StreamEmitter
    public void setOmitXmlDeclaration(boolean flag)
    {
       propOmitXmlDeclaration = flag;
+   }
+
+
+   /**
+    * Defines whether disable-output-escaping will be supported
+    * (means whether the corresponding processing instructions
+    * {@link Result#PI_DISABLE_OUTPUT_ESCAPING} and
+    * {@link Result#PI_ENABLE_OUTPUT_ESCAPING} will be interpreted).
+    * The default is <code>false</code>
+    * @param flag <code>true</code> the PIs will be interpreted;
+    *             <code>false</code> the PIs will be written literally
+    */
+   public void setSupportDisableOutputEscaping(boolean flag)
+   {
+      this.supportDisableOutputEscaping = flag;
    }
 
 
@@ -152,7 +174,7 @@ public class XmlEmitter extends StreamEmitter
             writer.write(out.toString());
             if (DEBUG)
                log.debug(out);
-         } 
+         }
          catch (IOException ex) {
             if (log != null)
                log.error(ex);
@@ -164,12 +186,12 @@ public class XmlEmitter extends StreamEmitter
       }
       return false;
    }
- 
+
 
    /**
     * SAX2-Callback - Outputs XML-Deklaration with encoding.
     */
-   public void startDocument() throws SAXException 
+   public void startDocument() throws SAXException
    {
       if (propOmitXmlDeclaration)
          return;
@@ -182,7 +204,7 @@ public class XmlEmitter extends StreamEmitter
          if (propStandalone)
             writer.write("\" standalone=\"yes");
          writer.write("\"?>\n");
-      } 
+      }
       catch (IOException ex) {
          if (log != null)
             log.error(ex);
@@ -201,7 +223,7 @@ public class XmlEmitter extends StreamEmitter
       try {
          writer.write("\n");
          writer.flush();
-      } 
+      }
       catch (IOException ex) {
          if (log != null)
             log.error(ex);
@@ -215,7 +237,7 @@ public class XmlEmitter extends StreamEmitter
     */
    public void startElement(String uri, String lName, String qName,
                             Attributes attrs)
-      throws SAXException 
+      throws SAXException
    {
       processLastElement(false);
       this.lastQName = qName;
@@ -227,16 +249,16 @@ public class XmlEmitter extends StreamEmitter
     * SAX2-Callback - Outputs the element-tag.
     */
    public void endElement(String uri, String lName, String qName)
-      throws SAXException 
+      throws SAXException
    {
       // output end tag only if processLastElement didn't output
       // something (here: empty element tag)
       if (processLastElement(true) == false) {
          try {
-            writer.write("</");  
+            writer.write("</");
             writer.write(qName);
             writer.write(">");
-         } 
+         }
          catch (IOException ex) {
             if (log != null)
                log.error(ex);
@@ -255,8 +277,8 @@ public class XmlEmitter extends StreamEmitter
       processLastElement(false);
 
       try {
-         if (insideCDATA) {
-            // check that the characters can be represented in the current 
+         if (insideCDATA || disabledOutputEscaping) {
+            // check that the characters can be represented in the current
             // encoding (escaping not possible within CDATA)
             for (int i=0; i<length; i++)
                if (!charsetEncoder.canEncode(ch[start+i]))
@@ -265,7 +287,7 @@ public class XmlEmitter extends StreamEmitter
                      (int)ch[start+i] + " in the encoding '" + encoding +
                      "' within a CDATA section");
             writer.write(ch, start, length);
-         } 
+         }
          else {
             StringBuffer out = new StringBuffer(length);
             // output escaping
@@ -274,14 +296,14 @@ public class XmlEmitter extends StreamEmitter
                case '&': out.append("&amp;"); break;
                case '<': out.append("&lt;"); break;
                case '>': out.append("&gt;"); break;
-               default: 
+               default:
                   i = encodeCharacters(ch, start+i, out) - start;
                }
             writer.write(out.toString());
          }
          if (DEBUG)
             log.debug("'" + new String(ch, start, length) + "'");
-      } 
+      }
       catch (IOException ex) {
          if (log != null)
             log.error(ex);
@@ -294,7 +316,7 @@ public class XmlEmitter extends StreamEmitter
     * SAX2-Callback
     */
    public void startPrefixMapping(String prefix, String uri)
-      throws SAXException 
+      throws SAXException
    {
       processLastElement(false);
 
@@ -310,9 +332,20 @@ public class XmlEmitter extends StreamEmitter
     * SAX2-Callback - Outputs a PI
     */
    public void processingInstruction(String target, String data)
-      throws SAXException 
+      throws SAXException
    {
       processLastElement(false);
+
+      if (supportDisableOutputEscaping) {
+         if (Result.PI_DISABLE_OUTPUT_ESCAPING.equals(target)) {
+            disabledOutputEscaping = true;
+            return;
+         }
+         else if (Result.PI_ENABLE_OUTPUT_ESCAPING.equals(target)) {
+            disabledOutputEscaping = false;
+            return;
+         }
+      }
 
       try {
          writer.write("<?");
@@ -336,14 +369,14 @@ public class XmlEmitter extends StreamEmitter
    /**
     * SAX2-Callback - Notify the start of a CDATA section
     */
-   public void startCDATA() 
+   public void startCDATA()
       throws SAXException
-   { 
+   {
       processLastElement(false);
 
       try {
          writer.write("<![CDATA[");
-      } 
+      }
       catch (IOException ex) {
          if (log != null)
             log.error(ex);
@@ -357,9 +390,9 @@ public class XmlEmitter extends StreamEmitter
    /**
     * SAX2-Callback - Notify the end of a CDATA section
     */
-   public void endCDATA() 
+   public void endCDATA()
       throws SAXException
-   { 
+   {
       insideCDATA = false;
       try {
          writer.write("]]>");

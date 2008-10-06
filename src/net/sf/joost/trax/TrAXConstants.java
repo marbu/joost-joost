@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXConstants.java,v 1.14 2007/07/15 15:20:41 obecker Exp $
+ * $Id: TrAXConstants.java,v 1.15 2008/10/06 13:31:41 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -27,10 +27,12 @@ package net.sf.joost.trax;
 
 import net.sf.joost.Constants;
 
+import javax.xml.transform.Result;
+
 /**
  * Common interface for TrAX related constants.
- * @version $Revision: 1.14 $ $Date: 2007/07/15 15:20:41 $
- * @author Anatolij Zubow
+ * @version $Revision: 1.15 $ $Date: 2008/10/06 13:31:41 $
+ * @author Anatolij Zubow, Oliver Becker
  */
 public interface TrAXConstants extends Constants {
 
@@ -61,7 +63,7 @@ public interface TrAXConstants extends Constants {
         "http://joost.sf.net/attributes/output-uri-resolver";
 
 
-    /** 
+    /**
      * Key for the Joost XSLT factory property
      * @see javax.xml.transform.TransformerFactory#setAttribute
      */
@@ -85,12 +87,23 @@ public interface TrAXConstants extends Constants {
      */
     public final static String MESSAGE_EMITTER_CLASS =
         "http://joost.sf.net/attributes/messageEmitterClass";
-    
+
     /**
      * Key for a Joost property that determines whether calls to Java
-     * extension functions are allowed. It's property value must be a Boolean.
+     * extension functions are allowed. Its property value must be a Boolean.
      * @see javax.xml.transform.TransformerFactory#setAttribute
      */
     public final static String ALLOW_EXTERNAL_FUNCTIONS =
        "http://joost.sf.net/attributes/allow-external-functions";
+
+    /**
+     * Key for a Joost output property that determines whether the PIs for
+     * controlling disable-output-escaping
+     * ({@link Result#PI_DISABLE_OUTPUT_ESCAPING} and
+     * {@link Result#PI_ENABLE_OUTPUT_ESCAPING}) will be interpreted or not.
+     * Its property value must be a String, either "yes" or "no"
+     * @see javax.xml.transform.Transformer#setOutputProperty(String, String)
+     */
+    public final static String OUTPUT_KEY_SUPPORT_DISABLE_OUTPUT_ESCAPING =
+       "{" + JOOST_EXT_NS + "}support-disable-output-escaping";
 }

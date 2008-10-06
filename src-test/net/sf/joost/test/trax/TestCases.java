@@ -1,5 +1,5 @@
 /*
- * $Id: TestCases.java,v 1.1 2007/07/15 15:32:28 obecker Exp $
+ * $Id: TestCases.java,v 1.2 2008/10/06 13:31:41 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -23,6 +23,9 @@
  */
 
 package net.sf.joost.test.trax;
+
+import net.sf.joost.OutputURIResolver;
+import net.sf.joost.trax.TrAXConstants;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -61,8 +64,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import net.sf.joost.OutputURIResolver;
-import net.sf.joost.trax.TrAXConstants;
+import junit.framework.Assert;
 
 import org.apache.log4j.Logger;
 import org.apache.xml.serialize.DOMSerializerImpl;
@@ -586,7 +588,7 @@ public class TestCases
 
    /**
     * description : StreamSource to DomResult
-    * 
+    *
     * @param xmlsrc
     * @param stx
     * @return
@@ -612,7 +614,7 @@ public class TestCases
 
    /**
     * description : stylesheet-input as DOMSource
-    * 
+    *
     * @param xmlsrc
     * @param stx
     * @return
@@ -638,7 +640,7 @@ public class TestCases
 
    /**
     * description : stylesheet-input and xml-input as DOMSource
-    * 
+    *
     * @param xmlsrc
     * @param stx
     * @return
@@ -664,7 +666,7 @@ public class TestCases
 
    /**
     * description : using only DOMSource and DOMResult
-    * 
+    *
     * @param xmlsrc
     * @param stx
     * @return
@@ -690,7 +692,7 @@ public class TestCases
 
    /**
     * using SaxSource only
-    * 
+    *
     * @param xmlsrc
     * @param stx
     * @return
@@ -716,7 +718,7 @@ public class TestCases
 
    /**
     * using SaxSource and SaxResult only
-    * 
+    *
     * @param xmlsrc
     * @param stx
     * @return
@@ -742,7 +744,7 @@ public class TestCases
 
    /**
     * using SaxResult with ContentHandler
-    * 
+    *
     * @todo : find out why we must specify this key : "org.xml.sax.driver"
     * @param xmlsrc
     * @param stx
@@ -781,7 +783,7 @@ public class TestCases
 
    /**
     * using {@link TemplatesHandler}
-    * 
+    *
     * @param xmlsrc
     * @param stx
     * @return
@@ -819,7 +821,7 @@ public class TestCases
 
    /**
     * using {@link TemplatesHandler}
-    * 
+    *
     * @param xmlsrc
     * @param stx
     * @return
@@ -854,12 +856,12 @@ public class TestCases
          return false;
       }
    }
-   
+
    public static boolean runTests28(String xmlsrc)
    {
       if (xmlsrc == null)
          xmlsrc = DEFXML;
-      
+
       try {
          return exampleOutputURIResolver(xmlsrc);
       }
@@ -869,7 +871,21 @@ public class TestCases
       }
    }
 
-   
+   public static boolean runTests29(String xmlsrc)
+   {
+      if (xmlsrc == null)
+         xmlsrc = DEFXML;
+
+      try {
+         return exampleDisableOutputEscaping(xmlsrc);
+      }
+      catch (Exception e) {
+         handleException(e);
+         return false;
+      }
+   }
+
+
    /**
     * Show the Identity-transformation
     */
@@ -921,11 +937,11 @@ public class TestCases
    }
 
    /**
-    * 
+    *
     * Show the simplest possible transformation from File
-    * 
+    *
     * to a File.
-    * 
+    *
     */
 
    public static void exampleSimple2(String sourceID, String stxID, String dest)
@@ -1740,7 +1756,7 @@ public class TestCases
 
    /**
     * using DOMResult
-    * 
+    *
     * @throws Exception
     */
    public static String exampleStreamSourceToDomResult(String xmlId,
@@ -1790,7 +1806,7 @@ public class TestCases
 
    /**
     * using DOMSource for stylesheet (stx)
-    * 
+    *
     * @throws Exception
     */
    public static boolean exampleDomSourceStylesheetToStreamResult(String xmlId,
@@ -1842,7 +1858,7 @@ public class TestCases
 
    /**
     * using DOMSource for both inputs (xml and stx)
-    * 
+    *
     * @throws Exception
     */
    public static boolean exampleDomSourceForBoth(String xmlId, String stxId)
@@ -1900,7 +1916,7 @@ public class TestCases
 
    /**
     * using DOMSource and DOMResult only
-    * 
+    *
     * @throws Exception
     */
    public static boolean exampleDOMSourceAndDomResult(String xmlId, String stxId)
@@ -1965,7 +1981,7 @@ public class TestCases
 
    /**
     * using SAXSource for both inputs
-    * 
+    *
     * @throws Exception
     */
    public static boolean exampleSaxSourceForBoth(String xmlId, String stxId)
@@ -1996,7 +2012,7 @@ public class TestCases
 
    /**
     * using SAXSource und SAXResult only
-    * 
+    *
     * @throws Exception
     */
    public static boolean exampleSaxSourceAndSaxResult(String xmlId, String stxId)
@@ -2031,7 +2047,7 @@ public class TestCases
 
    /**
     * using SAXResult with ExampleContentHandler
-    * 
+    *
     * @throws Exception
     */
    public static boolean exampleSaxResultWithContentHandler(String xmlId,
@@ -2263,9 +2279,41 @@ public class TestCases
       return "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<bar baz=\"ä\" />\n".equals(string);
    }
 
+
+   public static boolean exampleDisableOutputEscaping(String sourceId)
+      throws TransformerException, UnsupportedEncodingException
+   {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+      TransformerFactory tfactory = TransformerFactory.newInstance();
+      Templates templates = tfactory.newTemplates(getSource("data/doe.stx"));
+
+      Transformer transformer = templates.newTransformer();
+      transformer.setOutputProperty(
+            TrAXConstants.OUTPUT_KEY_SUPPORT_DISABLE_OUTPUT_ESCAPING, "yes");
+      transformer.transform(getSource(sourceId), new StreamResult(baos));
+
+      String result = new String(baos.toByteArray(), "UTF-8");
+      Assert.assertTrue(result.contains("<>"));
+      Assert.assertFalse(result.contains(Result.PI_DISABLE_OUTPUT_ESCAPING));
+      Assert.assertFalse(result.contains(Result.PI_ENABLE_OUTPUT_ESCAPING));
+
+      baos.reset();
+
+      transformer = templates.newTransformer();
+      transformer.transform(getSource(sourceId), new StreamResult(baos));
+
+      result = new String(baos.toByteArray(), "UTF-8");
+      Assert.assertFalse(result.contains("<>"));
+      Assert.assertTrue(result.contains(Result.PI_DISABLE_OUTPUT_ESCAPING));
+      Assert.assertTrue(result.contains(Result.PI_ENABLE_OUTPUT_ESCAPING));
+
+      return true; // TODO rewrite these strange test architecture
+   }
+
    /**
     * Helpermethod to serialize a DOM-Node into a string.
-    * 
+    *
     * @param node a DOM-node
     * @return Serialized DOM-Document to String
     * @throws IOException
@@ -2280,7 +2328,7 @@ public class TestCases
 
    /**
     * Exceptionhandling
-    * 
+    *
     * @param ex
     */
    private static void handleException(Exception ex)

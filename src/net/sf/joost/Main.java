@@ -1,28 +1,34 @@
 /*
- * $Id: Main.java,v 1.30 2005/11/28 20:50:36 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: Main.java,v 1.31 2008/10/06 13:31:41 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
  * Contributor(s): Nikolay Fiykov
  */
 
 package net.sf.joost;
+
+import net.sf.joost.emitter.FOPEmitter;
+import net.sf.joost.emitter.StreamEmitter;
+import net.sf.joost.emitter.StxEmitter;
+import net.sf.joost.stx.ParseContext;
+import net.sf.joost.stx.Processor;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,12 +39,6 @@ import java.io.InputStreamReader;
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.TransformerException;
 
-import net.sf.joost.emitter.FOPEmitter;
-import net.sf.joost.emitter.StreamEmitter;
-import net.sf.joost.emitter.StxEmitter;
-import net.sf.joost.stx.ParseContext;
-import net.sf.joost.stx.Processor;
-
 import org.apache.commons.logging.Log;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -48,7 +48,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.30 $ $Date: 2005/11/28 20:50:36 $
+ * @version $Revision: 1.31 $ $Date: 2008/10/06 13:31:41 $
  * @author Oliver Becker
  */
 public class Main implements Constants
@@ -56,8 +56,8 @@ public class Main implements Constants
    // the logger object if available
    private static Log log = OptionalLog.getLog(Main.class);
 
-   /** 
-    * Entry point 
+   /**
+    * Entry point
     * @param args array of strings containing the parameter for Joost and
     * at least two URLs addressing xml-source and stx-sheet
     */
@@ -89,12 +89,15 @@ public class Main implements Constants
 
       // set to true if -pdf was specified on the command line
       boolean doFOP = false;
-      
+
       // set to true if -nodecl was specified on the command line
       boolean nodecl = false;
-      
+
       // set to true if -noext was specified on the command line
       boolean noext = false;
+
+      // set to true if -doe was specified on the command line
+      boolean doe = false;
 
       // debugging
       boolean dontexit = false;
@@ -117,7 +120,7 @@ public class Main implements Constants
          // parse command line argument list
          for (int i=0; i<args.length; i++) {
             if (args[i].trim().length() == 0) {
-               // empty parameter? ingore 
+               // empty parameter? ingore
             }
             // all options start with a '-', but a single '-' means stdin
             else if (args[i].charAt(0) == '-' && args[i].length() > 1) {
@@ -139,6 +142,10 @@ public class Main implements Constants
                }
                else if ("-noext".equals(args[i])) {
                   noext = true;
+                  continue;
+               }
+               else if ("-doe".equals(args[i])) {
+                  doe = true;
                   continue;
                }
                else if ("-wait".equals(args[i])) {
@@ -256,12 +263,12 @@ public class Main implements Constants
             }
             // command line argument is not an option with a leading '-'
             else if ((index = args[i].indexOf('=')) != -1) {
-               // parameter assignment 
+               // parameter assignment
                if (processor != null)
                   processor.setParameter(args[i].substring(0,index),
                                         args[i].substring(index+1));
                else {
-                  System.err.println("Assignment " + args[i] + 
+                  System.err.println("Assignment " + args[i] +
                                      " must follow an stx-sheet parameter");
                   wrongParameter = true;
                }
@@ -277,7 +284,7 @@ public class Main implements Constants
                pContext.allowExternalFunctions = !noext;
                if (measureTime)
                   timeStart = System.currentTimeMillis();
-               Processor proc = 
+               Processor proc =
                   new Processor(new InputSource(args[i]), pContext);
                if (measureTime) {
                   timeEnd = System.currentTimeMillis();
@@ -299,11 +306,11 @@ public class Main implements Constants
 
          // missing filenames
          if (!printHelp && processor == null) {
-            if (xmlFile == null) 
-               System.err.println("Missing filenames for XML source and " + 
+            if (xmlFile == null)
+               System.err.println("Missing filenames for XML source and " +
                                   "STX transformation sheet");
             else
-               System.err.println("Missing filename for STX transformation " + 
+               System.err.println("Missing filename for STX transformation " +
                                   "sheet");
             wrongParameter = true;
          }
@@ -312,11 +319,11 @@ public class Main implements Constants
             // create object
             StxEmitter messageEmitter = null;
             try {
-               messageEmitter = 
+               messageEmitter =
                   (StxEmitter)Class.forName(meClassname).newInstance();
             }
             catch (ClassNotFoundException ex) {
-               System.err.println("Class not found: " + 
+               System.err.println("Class not found: " +
                                   ex.getMessage());
                wrongParameter = true;
             }
@@ -326,7 +333,7 @@ public class Main implements Constants
                wrongParameter = true;
             }
             catch (IllegalAccessException ex) {
-               System.err.println("Illegal access: " + 
+               System.err.println("Illegal access: " +
                                   ex.getMessage());
                wrongParameter = true;
             }
@@ -372,9 +379,9 @@ public class Main implements Constants
          }
 
 
-         // The first processor re-uses its XMLReader for parsing the input 
+         // The first processor re-uses its XMLReader for parsing the input
          // xmlFile.
-         // For a real XMLFilter usage you have to call 
+         // For a real XMLFilter usage you have to call
          // processor.setParent(yourXMLReader)
 
          // Connect a SAX consumer
@@ -399,16 +406,16 @@ public class Main implements Constants
                emitter.setSystemId(new File(outFile).toURI().toString());
             }
             else
-               emitter = StreamEmitter.newEmitter(System.out, 
+               emitter = StreamEmitter.newEmitter(System.out,
                                                   processor.outputProperties);
             processor.setContentHandler(emitter);
             processor.setLexicalHandler(emitter);
-            // the last line is a short-cut for
+            // the previous line is a short-cut for
             // processor.setProperty(
             //    "http://xml.org/sax/properties/lexical-handler", emitter);
 
-            if (nodecl)
-               emitter.setOmitXmlDeclaration(true);
+            emitter.setOmitXmlDeclaration(nodecl);
+            emitter.setSupportDisableOutputEscaping(doe);
          }
 
          InputSource is;
@@ -428,7 +435,7 @@ public class Main implements Constants
 
          if (measureTime) {
             timeEnd = System.currentTimeMillis();
-            System.err.println("Processing " + xmlFile + ": " + 
+            System.err.println("Processing " + xmlFile + ": " +
                                (timeEnd - timeStart) + " ms");
          }
 
@@ -436,7 +443,7 @@ public class Main implements Constants
 //           Processor pr = new Processor(processor);
 //           java.util.Properties props = new java.util.Properties();
 //           props.put("encoding", "ISO-8859-2");
-//           StreamEmitter em = 
+//           StreamEmitter em =
 //              StreamEmitter.newEmitter(System.err, props);
 //           pr.setContentHandler(em);
 //           pr.setLexicalHandler(em);
@@ -479,8 +486,8 @@ public class Main implements Constants
                   else if (systemId.startsWith("file:"))
                      // bug in JDK 1.4 / Crimson? (see rfc1738)
                      systemId = systemId.substring(5);
-                  System.err.println(systemId + ":" + 
-                                     sl.getLineNumber() + ":" + 
+                  System.err.println(systemId + ":" +
+                                     sl.getLineNumber() + ":" +
                                      sl.getColumnNumber() + ": " +
                                      te.getMessage());
                }
@@ -540,9 +547,9 @@ public class Main implements Constants
     * Output logging availability info and exit Joost
     */
    private static void logInfoAndExit() {
-      System.err.println("Logging is " 
-                         + ((log != null) 
-                               ? "enabled using " + log.getClass().getName() 
+      System.err.println("Logging is "
+                         + ((log != null)
+                               ? "enabled using " + log.getClass().getName()
                                : "disabled"));
       System.exit(0);
    }

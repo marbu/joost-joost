@@ -1,5 +1,5 @@
 /*
- * $Id: TestTestCases.java,v 1.1 2007/07/15 15:32:28 obecker Exp $
+ * $Id: TestTestCases.java,v 1.2 2008/10/06 13:31:41 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,13 +24,13 @@
 
 package net.sf.joost.test.trax;
 
-import junit.framework.TestCase;
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
+
+import junit.framework.TestCase;
 
 /**
  * @author Zubow
@@ -369,7 +369,14 @@ public class TestTestCases extends TestCase {
        String xmlId    = "data/flat.xml";
 
        assertTrue(TestCases.runTests28(xmlId));
-   }
+    }
+
+    public void testRunTests29() {
+
+       String xmlId    = "data/flat.xml";
+
+       assertTrue(TestCases.runTests29(xmlId));
+    }
 
     private void init() {
 

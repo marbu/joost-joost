@@ -1,5 +1,5 @@
 /*
- * $Id: StxTest.java,v 1.2 2007/07/18 19:07:10 obecker Exp $
+ * $Id: StxTest.java,v 1.3 2008/10/06 13:31:42 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -23,6 +23,8 @@
  */
 package net.sf.joost.test.stx;
 
+import net.sf.joost.trax.TrAXConstants;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -43,14 +45,14 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 /**
- * @version $Revision: 1.2 $ $Date: 2007/07/18 19:07:10 $
+ * @version $Revision: 1.3 $ $Date: 2008/10/06 13:31:42 $
  * @author Oliver Becker
  */
 public class StxTest extends TestCase
 {
    private static TransformerFactory factory;
    static {
-      System.setProperty("javax.xml.transform.TransformerFactory", 
+      System.setProperty("javax.xml.transform.TransformerFactory",
                          "net.sf.joost.trax.TransformerFactoryImpl");
       factory = TransformerFactory.newInstance();
       // The default Xalan of Java 1.4 doesn't work
@@ -68,12 +70,12 @@ public class StxTest extends TestCase
    {
       return new TestSuite(StxTest.class);
    }
-   
-   public void testExamplesWithTrax() 
+
+   public void testExamplesWithTrax()
    {
       System.out.println("Start testExamplesWithTrax");
       boolean testResult = true;
-      
+
       File testDir = new File("../test");
       String[] resultFiles = testDir.list(
          new FilenameFilter() {
@@ -98,30 +100,36 @@ public class StxTest extends TestCase
                xmlFile = new File(testDir,
                                   fName.substring(0, hyphen) + ".xml");
          }
-  
+
          try {
             Transformer t = factory.newTransformer(new StreamSource(stxFile));
-            
+
             if (parFile.exists()) {
-               String params = 
+               String params =
                   (new BufferedReader(new FileReader(parFile))).readLine();
                StringTokenizer st1 = new StringTokenizer(params);
                while (st1.hasMoreTokens()) {
                   String parSpec = st1.nextToken();
                   int equalsIndex = parSpec.indexOf('=');
-                  t.setParameter(parSpec.substring(0, equalsIndex), 
-                                 parSpec.substring(equalsIndex+1));
+                  if (equalsIndex > 0)
+                     t.setParameter(parSpec.substring(0, equalsIndex),
+                                    parSpec.substring(equalsIndex+1));
+                  else if ("-doe".equals(parSpec)) {
+                     t.setOutputProperty(
+                        TrAXConstants.OUTPUT_KEY_SUPPORT_DISABLE_OUTPUT_ESCAPING,
+                        "yes");
+                  }
                }
             }
 
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();            
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
             t.transform(new StreamSource(xmlFile),
                         new StreamResult(baos));
-            BufferedReader brExpected = 
+            BufferedReader brExpected =
                new BufferedReader(new FileReader(resFile));
             BufferedReader brReceived =
                new BufferedReader(new StringReader(baos.toString()));
-            
+
             String lineExpected = brExpected.readLine();
             String lineReceived = brReceived.readLine();
             int lineno = 1;

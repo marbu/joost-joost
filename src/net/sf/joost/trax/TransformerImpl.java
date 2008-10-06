@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.29 2007/07/15 15:20:41 obecker Exp $
+ * $Id: TransformerImpl.java,v 1.30 2008/10/06 13:31:41 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,6 +24,15 @@
 
 package net.sf.joost.trax;
 
+import net.sf.joost.OptionalLog;
+import net.sf.joost.emitter.DOMEmitter;
+import net.sf.joost.emitter.StxEmitter;
+import net.sf.joost.stx.Emitter;
+import net.sf.joost.stx.Processor;
+import net.sf.joost.trace.DebugEmitter;
+import net.sf.joost.trace.DebugProcessor;
+import net.sf.joost.trace.TraceManager;
+
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -41,15 +50,6 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
-import net.sf.joost.OptionalLog;
-import net.sf.joost.emitter.DOMEmitter;
-import net.sf.joost.emitter.StxEmitter;
-import net.sf.joost.stx.Emitter;
-import net.sf.joost.stx.Processor;
-import net.sf.joost.trace.DebugEmitter;
-import net.sf.joost.trace.DebugProcessor;
-import net.sf.joost.trace.TraceManager;
-
 import org.apache.commons.logging.Log;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -60,7 +60,7 @@ import org.xml.sax.XMLReader;
  * This class implements the Transformer-Interface for TraX. With a
  * Transformer-object you can proceed transformations, but be careful, because a
  * Transformer-object is not thread- safe. For threads you should use Templates.
- * 
+ *
  * @author Zubow
  */
 public class TransformerImpl extends Transformer implements TrAXConstants
@@ -103,9 +103,10 @@ public class TransformerImpl extends Transformer implements TrAXConstants
     */
    private TraceManager traceManager = new TraceManager();
 
+
    /**
     * Constructor
-    * 
+    *
     * @param processor A <code>Processor</code> object.
     */
    protected TransformerImpl(Processor processor)
@@ -129,13 +130,15 @@ public class TransformerImpl extends Transformer implements TrAXConstants
       supportedProperties.add(OutputKeys.OMIT_XML_DECLARATION);
       supportedProperties.add(OutputKeys.STANDALONE);
       supportedProperties.add(OutputKeys.VERSION);
+      supportedProperties.add(
+            TrAXConstants.OUTPUT_KEY_SUPPORT_DISABLE_OUTPUT_ESCAPING);
    }
 
    /**
     * Get an instance of the tracemanager for this transformation. This object
     * can be used to set tracelisteners on various events during the
     * transformation.
-    * 
+    *
     * @return A reference to a tracemanager
     */
    public TraceManager getTraceManager()
@@ -146,7 +149,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants
    /**
     * Transforms a xml-source : SAXSource, DOMSource, StreamSource to SAXResult,
     * DOMResult and StreamResult
-    * 
+    *
     * @param xmlSource A <code>Source</code>
     * @param result A <code>Result</code>
     * @throws TransformerException
@@ -201,7 +204,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants
                       * parsers must support. Implementors are free to define
                       * new features and properties as needed, using URIs to
                       * identify them.
-                      * 
+                      *
                       * All XML readers are required to recognize the
                       * "http://xml.org/sax/features/namespaces" and the
                       * "http://xml.org/sax/features/namespace-prefixes"
@@ -214,7 +217,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants
                       * Schemas, and XLink. XML readers are not required to
                       * recognize or support any other features or any
                       * properties.
-                      * 
+                      *
                       * For the complete list of standard SAX2 features and
                       * properties, see the {@link org.xml.sax} Package
                       * Description.
@@ -275,7 +278,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants
 
    /**
     * Performs the <code>Result</code>.
-    * 
+    *
     * @param result A <code>Result</code>
     * @param out <code>StxEmitter</code>.
     */
@@ -309,7 +312,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants
 
    /**
     * Getter for an output property.
-    * 
+    *
     * @param name The key of the output property.
     * @return The value for that property, <code>null</code> if not set.
     * @throws IllegalArgumentException
@@ -328,7 +331,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants
 
    /**
     * Setter for an output property.
-    * 
+    *
     * @param name The key of the outputProperty.
     * @param value The value of the outputProperty.
     * @throws IllegalArgumentException
@@ -358,7 +361,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants
 
    /**
     * Getter for {@link Processor#outputProperties}
-    * 
+    *
     * @return a copy of the current output properties
     */
    public Properties getOutputProperties()
@@ -368,7 +371,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants
 
    /**
     * Setter for {@link Processor#outputProperties}
-    * 
+    *
     * @param oformat A <code>Properties</code> object, that replaces the
     *        current set of output properties.
     * @throws IllegalArgumentException
@@ -417,7 +420,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants
 
    /**
     * Getter for {@link #uriRes}
-    * 
+    *
     * @return <code>URIResolver</code>
     */
    public URIResolver getURIResolver()
@@ -427,7 +430,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants
 
    /**
     * Setter for {@link #uriRes}
-    * 
+    *
     * @param resolver A <code>URIResolver</code> object.
     */
    public void setURIResolver(URIResolver resolver)
@@ -448,7 +451,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants
 
    /**
     * Setter for parameters.
-    * 
+    *
     * @param name The key of the parameter.
     * @param value The value of the parameter.
     */
@@ -459,7 +462,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants
 
    /**
     * Getter for parameters.
-    * 
+    *
     * @param name The key-value of the parameter.
     * @return An <code>Object</code> according to the key-value or null.
     */
@@ -469,7 +472,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants
    }
 
    /**
-    * 
+    *
     * @param listener
     * @throws IllegalArgumentException
     */
@@ -484,7 +487,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants
 
    /**
     * Setter for {@link #errorListener}
-    * 
+    *
     * @return A <code>ErrorListener</code>
     */
    public ErrorListener getErrorListener()
@@ -494,7 +497,7 @@ public class TransformerImpl extends Transformer implements TrAXConstants
 
    /**
     * Getter for {@link #processor}
-    * 
+    *
     * @return A <code>Processor</code> object.
     */
    public Processor getStxProcessor()

@@ -1,5 +1,5 @@
 /*
- * $Id: HtmlEmitter.java,v 1.5 2007/11/25 14:18:02 obecker Exp $
+ * $Id: HtmlEmitter.java,v 1.6 2008/10/06 13:31:41 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -28,20 +28,26 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.HashSet;
 
+import javax.xml.transform.Result;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 /**
  *  This class implements an emitter for html code.
- *  @version $Revision: 1.5 $ $Date: 2007/11/25 14:18:02 $
+ *  @version $Revision: 1.6 $ $Date: 2008/10/06 13:31:41 $
  *  @author Thomas Behrends
  */
-public class HtmlEmitter extends StreamEmitter 
+public class HtmlEmitter extends StreamEmitter
 {
    /** output property: omit-xml-declaration */
    private boolean propOmitXmlDeclaration = false;
 
    private boolean insideCDATA = false;
+
+   private boolean supportDisableOutputEscaping = false;
+
+   private boolean disabledOutputEscaping = false;
 
    /** Empty HTML 4.01 elements according to
        http://www.w3.org/TR/1999/REC-html401-19991224/index/elements.html */
@@ -82,19 +88,25 @@ public class HtmlEmitter extends StreamEmitter
    }
 
 
+   public void setSupportDisableOutputEscaping(boolean flag)
+   {
+      supportDisableOutputEscaping = flag;
+   }
+
+
    /**
     * SAX2-Callback - Outputs XML-Deklaration with encoding.
     */
-   public void startDocument() 
-      throws SAXException 
+   public void startDocument()
+      throws SAXException
    {
       if (propOmitXmlDeclaration)
          return;
-        
+
       try {
-         writer.write("<!DOCTYPE HTML PUBLIC " + 
+         writer.write("<!DOCTYPE HTML PUBLIC " +
                       "\"-//W3C//DTD HTML 4.01 Transitional//EN\">\n" );
-      } 
+      }
       catch (IOException ex) {
          throw new SAXException(ex);
       }
@@ -104,13 +116,13 @@ public class HtmlEmitter extends StreamEmitter
    /**
     * SAX2-Callback - Closing OutputStream.
     */
-   public void endDocument() 
-      throws SAXException 
+   public void endDocument()
+      throws SAXException
    {
       try {
          writer.write("\n");
          writer.flush();
-      } 
+      }
       catch (IOException ex) {
          throw new SAXException(ex);
       }
@@ -122,7 +134,7 @@ public class HtmlEmitter extends StreamEmitter
     */
    public void startElement(String uri, String lName, String qName,
                             Attributes attrs)
-      throws SAXException 
+      throws SAXException
    {
       StringBuffer out = new StringBuffer("<");
       out.append(qName);
@@ -153,7 +165,7 @@ public class HtmlEmitter extends StreamEmitter
 
       try {
          writer.write(out.toString());
-      } 
+      }
       catch (IOException ex) {
          throw new SAXException(ex);
       }
@@ -164,12 +176,12 @@ public class HtmlEmitter extends StreamEmitter
     * SAX2-Callback - Outputs the element-tag.
     */
    public void endElement(String uri, String lName, String qName)
-      throws SAXException 
+      throws SAXException
    {
       // output end tag only if it is not an empty element in HTML
       if (!emptyHTMLElements.contains(qName.toUpperCase())) {
          try {
-            writer.write("</");  
+            writer.write("</");
             writer.write(qName);
             writer.write(">");
          }
@@ -184,16 +196,16 @@ public class HtmlEmitter extends StreamEmitter
     * SAX2-Callback - Constructs characters.
     */
    public void characters(char[] ch, int start, int length)
-      throws SAXException 
+      throws SAXException
    {
       try {
-         if (insideCDATA) {
-            // Check that the characters can be represented in the current 
+         if (insideCDATA || disabledOutputEscaping) {
+            // Check that the characters can be represented in the current
             // encoding
             for (int i=0; i<length; i++)
                if (!charsetEncoder.canEncode(ch[start+i]))
                   throw new SAXException("Cannot output character with code "
-                                         + (int)ch[start+i] 
+                                         + (int)ch[start+i]
                                          + " in the encoding '" + encoding
                                          + "'");
             writer.write(ch, start, length);
@@ -207,12 +219,12 @@ public class HtmlEmitter extends StreamEmitter
                case '<': out.append("&lt;");   break;
                case '>': out.append("&gt;");   break;
                case 160: out.append("&nbsp;"); break;
-               default: 
+               default:
                   i = encodeCharacters(ch, start+i, out) - start;
                }
             writer.write(out.toString());
          }
-      } 
+      }
       catch (IOException ex) {
          throw new SAXException(ex);
       }
@@ -223,28 +235,45 @@ public class HtmlEmitter extends StreamEmitter
     * SAX2-Callback - Outputs a comment
     */
    public void comment(char[] ch, int start, int length)
-      throws SAXException 
+      throws SAXException
    {
       try {
          writer.write("<!--");
          writer.write(ch, start, length);
          writer.write("-->");
-      } 
+      }
       catch (IOException ex) {
          throw new SAXException(ex);
       }
    }
-   
+
 
    /**
-    * CDATA sections act as "disable-otput-escaping" replacement in HTML
+    * SAX2-Callback - Handles a PI (cares about disable-output-escaping)
+    */
+   public void processingInstruction(String target, String data)
+      throws SAXException
+   {
+      if (supportDisableOutputEscaping) {
+         if (Result.PI_DISABLE_OUTPUT_ESCAPING.equals(target)) {
+            disabledOutputEscaping = true;
+         }
+         else if (Result.PI_ENABLE_OUTPUT_ESCAPING.equals(target)) {
+            disabledOutputEscaping = false;
+         }
+      }
+   }
+
+
+   /**
+    * CDATA sections will be handled like "disable-output-escaping" in HTML
     * (which is of course a kind of a "hack" ...)
     */
    public void startCDATA() throws SAXException
    {
       insideCDATA = true;
    }
-   
+
    public void endCDATA() throws SAXException
    {
       insideCDATA = false;

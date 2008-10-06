@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.97 2008/03/09 13:42:08 obecker Exp $ -->
+<!-- $Id: index.html,v 1.98 2008/10/06 13:31:41 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -109,9 +109,9 @@
       <p>The list of possible options includes</p>
       <table>
         <tr>
-          <td rowspan="8">&nbsp;&nbsp;&nbsp;</td>
+          <td rowspan="9">&nbsp;&nbsp;&nbsp;</td>
           <td valign="top"><strong><code>-help</code></strong></td>
-          <td rowspan="8">&nbsp;</td>
+          <td rowspan="9">&nbsp;</td>
           <td>print a help message</td>
         </tr>
         <tr>
@@ -138,6 +138,11 @@
         <tr>
           <td valign="top"><strong><code>-noext</code></strong></td>
           <td>prevent calls on Java extension functions and script functions</td>
+        </tr>
+        <tr>
+          <td valign="top"><strong><code>-doe</code></strong></td>
+          <td>enable <code>disable-output-encoding</code> support,
+              see <a href="#doe">below</a></td>
         </tr>
         <tr>
           <td valign="top"><strong><code>-time</code></strong></td>
@@ -421,16 +426,81 @@
       
       <hr>
           
+      <h5><a name="doe">Disable output escaping</a></h5>
+      <p>
+        Though both STX and <em>Joost</em> don't have a feature for disabling
+        output escaping in the language (unlike XSLT 1.0), it may happen that
+        an XSLT process invoked via a filter (<code>filter-method</code>)
+        produces output using the 
+        <code><a href="http://www.w3.org/TR/xslt#disable-output-escaping">disable-output-escaping</a></code>
+        attribute. As specified by the JAXP API, this information is passed
+        via corresponding processing instructions, see 
+        <code><a href="http://java.sun.com/j2se/1.4.2/docs/api/javax/xml/transform/Result.html#PI_DISABLE_OUTPUT_ESCAPING">PI_DISABLE_OUTPUT_ESCAPING</a></code> and
+        <code><a href="http://java.sun.com/j2se/1.4.2/docs/api/javax/xml/transform/Result.html#PI_ENABLE_OUTPUT_ESCAPING">PI_ENABLE_OUTPUT_ESCAPING</a></code> in
+        the API documentation of the
+        <a href="http://java.sun.com/j2se/1.4.2/docs/api/javax/xml/transform/Result.html">Result</a>
+        interface. By default, <em>Joost</em> will copy these processing 
+        instructions to the output without special treatment, i.e. normal 
+        output escaping will be applied.
+      </p>
+      <p>
+        However, <em>Joost</em> provides two ways to enable the handling of
+        <code>disable-output-escaping</code> related processing instructions 
+        in the XML and HTML serializer, i.e. output escaping can be switched 
+        off and on accordingly:
+      </p>
+      <ul>
+        <li>
+          on the command line by using the <code>-doe</code> parameter
+        </li>
+        <li>
+          in the API by setting an output property via
+          <code><a href="http://java.sun.com/j2se/1.4.2/docs/api/javax/xml/transform/Transformer.html#setOutputProperty(java.lang.String,%20java.lang.String)">setOutputProperty</a></code>
+          or
+          <code><a href="http://java.sun.com/j2se/1.4.2/docs/api/javax/xml/transform/Transformer.html#setOutputProperties(java.util.Properties)">setOutputProperties</a></code>
+          in the 
+          <code><a href="http://java.sun.com/j2se/1.4.2/docs/api/javax/xml/transform/Transformer.html">Transformer</a></code> 
+          class. 
+          <ul>
+          <li>The property key is the string 
+          <code>{http://joost.sf.net/extension}support-disable-output-escaping</code>
+          (which is <code>support-disable-output-escaping</code> in the
+          <em>Joost</em> extension namespace). 
+          </li>
+          <li>
+          The property value may be either
+          <code>yes</code> or <code>no</code>.
+          </li>
+          </ul>
+        </li>
+      </ul>
+      <p>
+        <em>Joost</em> cannot distinguish between "technical" processing
+        instructions that stem from an <code>disable-output-escaping</code>
+        attribute in an XSLT transformation and "real" processing instructions
+        that have been produced via an <code>stx:processing-instruction</code>
+        instruction. Therefore it is possible to imitate XSLT's 
+        <code>disable-output-escaping</code> via
+        <pre>
+  &lt;stx:processing-instruction name="javax.xml.transform.disable-output-escaping" />
+  ... some text that should be printed without output escaping
+  &lt;stx:processing-instruction name="javax.xml.transform.enable-output-escaping" />
+        </pre>
+        
+      </p>
+      
+      <hr>
+          
       <h5>HTML output</h5>
       <p>
         <em>Joost</em> provides an experimental HTML 4.01 output method that
         can be invoked by specifying <code>joost:html</code> in the
         <code>output-method</code> attribute. The prefix <code>joost</code>
-        must be bound to <em>Joost</em>'s extension namespace                  
+        must be bound to <em>Joost</em>'s extension namespace
         <code>http://joost.sf.net/extension</code>. CDATA boundaries will
-        not be printed in HTML. This means the beloved
-        <em>disable-output-escaping</em> feature of XSLT can be simulated
-        by using the <code>stx:cdata</code> instruction.
+        not be printed in HTML. This means for HTML output the
+        <code>disable-output-escaping</code> feature of XSLT can also be
+        simulated by using the <code>stx:cdata</code> instruction.
       </p>
           
       <hr>
