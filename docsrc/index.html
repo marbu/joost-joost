@@ -1,21 +1,76 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.98 2008/10/06 13:31:41 obecker Exp $ -->
+<!-- $Id: index.html,v 1.99 2008/10/11 20:51:20 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
       <title>Joost - The Streaming XML Transformer</title>
       <style type="text/css">
-        body { font-family: sans-serif; background-color: #eeeeff; }
-        h1 { color: yellow; background-color: #000066; text-align: center;
-             padding: 4pt;}
-        h3 { text-align: center; }
-        h4 { color: white; background-color: #006; padding: 3pt; }
+        body { 
+          font-family: sans-serif; 
+          background-color: #eeeeff; 
+        }
+        h1 { 
+          color: yellow; 
+          background-color: #000066; 
+          text-align: center;
+          padding: 4pt;
+        }
+        h2 { 
+          color: white; 
+          background-color: #000066; 
+          padding: 3pt; 
+          font-size: 105%; 
+        }
+        h3 {
+          color: #000066;
+          font-size: 100%; 
+          padding: 0px 10px 0px 10px;
+          margin: 10px 0px 0px 0px;
+        }
+        .contents {
+          float: right; 
+          width: 280px; 
+          background-color: #ffffff; 
+          padding: 5px; 
+          margin: 0 0 10px 10px;
+        }
+        .contents li {
+          line-height: 1.25em;
+        }
+        .contents li li {
+          font-size: 85%;
+        }
       </style>
    </head>
    <body link="#993333" vlink="#663333">
       <h1>Joost</h1>
 
-      <hr size="1" noshade>
+      <div class="contents">
+        <h3>Contents</h3>
+        <ul>
+          <li><a href="#gettingstarted">Getting started</a></li>
+          <li><a href="#features">Features</a>
+            <ul>
+              <li><a href="#stx-elements">Supported STX elements</a></li>
+              <li><a href="#stx-functions">Supported STXPath functions</a></li>
+            </ul>
+          </li>
+          <li><a href="#limitations">Limitations</a></li>
+          <li><a href="#extensions">Extensions</a>
+            <ul>
+              <li><a href="#scripting">Scripting</a></li>
+              <li><a href="#doe">Disable output escaping</a></li>
+              <li><a href="#html">HTML output</a></li>
+              <li><a href="#java">Invoking Java methods</a></li>
+              <li><a href="#filters">Using external SAX2 filters</a></li>
+              <li><a href="#outputuriresolver">OutputURIResolver</a></li>
+            </ul>
+          </li>
+          <li><a href="#examples">Examples</a></li>
+          <li><a href="#resources">Resources</a></li>
+          <li><a href="#contributors">Contributors</a></li>
+        </ul>
+      </div>
     
       <p>
       This page contains information about the world's first prototypic
@@ -55,6 +110,9 @@
          href="http://lists.sourceforge.net/lists/listinfo/joost-help">joost-help</a>
       mailing list.
       </p>
+      
+      <h2><a name="gettingstarted">Getting started</a></h2>
+      
       <p>
       In order to run <em>Joost</em> you need additionally
       <ul>
@@ -187,8 +245,8 @@
       which appeared at the end of 2006.
       </span>
       
-      <h4>Features</h4>
-      <p>
+      <h2><a name="features">Features</a></h2>
+      <p><a name="stx-elements"></a>
       <strong><em>Supported stx elements</em></strong> (and their attributes)
       in the namespace <code>http://stx.sourceforge.net/2002/ns</code> in
       alphabetical order
@@ -284,7 +342,7 @@
       
       <hr>
 
-      <p>
+      <p><a name="stx-functions"></a>
       <strong><em>Supported STXPath functions</em></strong> in alphabetical
       order
       <ul>
@@ -348,7 +406,7 @@
           the <em>Extensions</em> section below.</li>
       </ul> 
 
-      <h4>Limitations</h4>
+      <h2><a name="limitations">Limitations</a></h2>
       <ul>
          <li>no full Unicode support
              (missing check for well-formedness of created XML names)</li>
@@ -360,7 +418,7 @@
          <li>...</li>
       </ul>
 
-      <h4>Extensions</h4>
+      <h2><a name="extensions">Extensions</a></h2>
       
       <h5><a name="scripting">Scripting</a></h5>
       <p>
@@ -491,7 +549,7 @@
       
       <hr>
           
-      <h5>HTML output</h5>
+      <h5><a name="html">HTML output</a></h5>
       <p>
         <em>Joost</em> provides an experimental HTML 4.01 output method that
         can be invoked by specifying <code>joost:html</code> in the
@@ -505,7 +563,7 @@
           
       <hr>
               
-      <h5>Invoking Java methods</h5>
+      <h5><a name="java">Invoking Java methods</a></h5>
       <p>
         <em>Joost</em> allows the use of extension functions written in Java.
         An extension function is invoked using the notation
@@ -750,11 +808,12 @@
 
       <hr>
       
-      <h5>Using external SAX2 filters</h5>
+      <h5><a name="filters">Using external SAX2 filters</a></h5>
       <p>
         <em>Joost</em> implements the usage of external SAX2 filters as
-        described in the WD of the STX specification section 4.19
-        (CVS version Jul 23 2003). 
+        described in the 
+        <a href="http://stx.sourceforge.net/documents/spec-stx-20070427.html#external-filters">STX 
+        specification section 5.18</a>.
         <em>Joost</em> uses the TrAX API to instantiate an XSLT transformer
         object. The actual XSLT implementation (i.e. the
         <code>javax.xml.transform.TransformerFactory</code>) to be used may
@@ -800,7 +859,7 @@
       
       <hr>
       
-      <h5>OutputURIResolver</h5>
+      <h5><a name="outputuriresolver">OutputURIResolver</a></h5>
       <p><em>Joost</em> provides the interface <code>OutputURIResolver</code>
         that acts as the counterpart to the JAXP <code>URIResolver</code>. With
         the help of this interface the user can define what kind of result
@@ -817,7 +876,7 @@
         <code>net.sf.joost.stx.Processor</code> object.</p>
         
         
-      <h4>Examples</h4>
+      <h2><a name="examples">Examples</a></h2>
       <p>
         The current release contains an <code>example</code> directory with a
         set of selected STX examples. In addition you may browse
@@ -826,7 +885,7 @@
         directory as well as the <a target="_top"
         href="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/stx/stx/examples/">examples</a> directory from the STX CVS tree.
       </p>
-      <h4>Resources</h4>
+      <h2><a name="resources">Resources</a></h2>
       <ul>
         <li>This release implements (partly) the 
             <a href="http://stx.cvs.sourceforge.net/*checkout*/stx/specs/spec-stx.html?revision=1.64">STX Working Draft, 02 March 2008</a>
@@ -845,7 +904,7 @@
             Markup Languages, Montr&eacute;al, 4-8 August 2003</li>
       </ul>
 
-      <h4>Contributors</h4>
+      <h2><a name="contributors">Contributors</a></h2>
       <ul>
         <li><a href="http://instantolap.net/">Thomas Behrends</a></li>
         <li>Nikolay Fiykov</li>
