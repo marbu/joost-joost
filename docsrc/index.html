@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.99 2008/10/11 20:51:20 obecker Exp $ -->
+<!-- $Id: index.html,v 1.100 2008/10/11 21:05:34 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -58,9 +58,9 @@
           <li><a href="#limitations">Limitations</a></li>
           <li><a href="#extensions">Extensions</a>
             <ul>
-              <li><a href="#scripting">Scripting</a></li>
-              <li><a href="#doe">Disable output escaping</a></li>
               <li><a href="#html">HTML output</a></li>
+              <li><a href="#doe">Disable output escaping</a></li>
+              <li><a href="#scripting">Scripting</a></li>
               <li><a href="#java">Invoking Java methods</a></li>
               <li><a href="#filters">Using external SAX2 filters</a></li>
               <li><a href="#outputuriresolver">OutputURIResolver</a></li>
@@ -110,9 +110,10 @@
          href="http://lists.sourceforge.net/lists/listinfo/joost-help">joost-help</a>
       mailing list.
       </p>
-      
+
+
       <h2><a name="gettingstarted">Getting started</a></h2>
-      
+
       <p>
       In order to run <em>Joost</em> you need additionally
       <ul>
@@ -244,7 +245,8 @@
       The work on this tool started in 2002. It is not related to joost.com 
       which appeared at the end of 2006.
       </span>
-      
+
+
       <h2><a name="features">Features</a></h2>
       <p><a name="stx-elements"></a>
       <strong><em>Supported stx elements</em></strong> (and their attributes)
@@ -406,6 +408,7 @@
           the <em>Extensions</em> section below.</li>
       </ul> 
 
+
       <h2><a name="limitations">Limitations</a></h2>
       <ul>
          <li>no full Unicode support
@@ -418,72 +421,23 @@
          <li>...</li>
       </ul>
 
+
       <h2><a name="extensions">Extensions</a></h2>
       
-      <h5><a name="scripting">Scripting</a></h5>
+      <h5><a name="html">HTML output</a></h5>
       <p>
-        This release of <em>Joost</em> introduces experimental support for 
-        scripting languages. It uses the bean scripting framework BSF (see 
-        above) as a bridge to concrete scripting engines.
+        <em>Joost</em> provides an experimental HTML 4.01 output method that
+        can be invoked by specifying <code>joost:html</code> in the
+        <code>output-method</code> attribute. The prefix <code>joost</code>
+        must be bound to <em>Joost</em>'s extension namespace
+        <code>http://joost.sf.net/extension</code>. CDATA boundaries will
+        not be printed in HTML. This means for HTML output the
+        <code>disable-output-escaping</code> feature of XSLT may be
+        simulated by using the <code>stx:cdata</code> instruction.
       </p>
-      <p>
-        The new element <code>joost:script</code> defines a script. The prefix 
-        (in this case <code>joost</code>) must be bound to <em>Joost</em>'s 
-        extension namespace <code>http://joost.sf.net/extension</code>. 
-        The element <code>joost:script</code> must be a child of 
-        <code>stx:transform</code> or <code>stx:group</code> and allows only 
-        text contents. It has the following attributes:
-      </p>
-      <ul>
-        <li>
-          <code>prefix</code>: the namespace prefix that defines the functions
-          of this script. The namespace must be in scope for the 
-          <code>script</code> element. The invocation of script functions
-          requires the use of this prefix.
-        </li>
-        <li>
-          <code>language</code>: the language identifier, that is used by BSF 
-          to find the proper scripting engine.
-        </li>
-        <li>
-          <code>url</code> (optional): the URL of an external script
-        </li>
-      </ul>
-      <p><strong>Example</strong> that uses Javascript 
-      (<a href="http://www.mozilla.org/rhino/">Rhino</a>):</p>
-      <pre>&lt;stx:transform xmlns:stx="http://stx.sourceforge.net/2002/ns" 
-               <strong>xmlns:joost="http://joost.sf.net/extension"
-               xmlns:js="urn:javascript"</strong>
-               version="1.0">
-
-  <strong>&lt;joost:script prefix="js" language="javascript">
-  &lt;![CDATA[
-    function fac(n) {
-      var res = 1;
-      while (n > 1) {
-        res = res * n;
-        n--;
-      }
-      return res;
-    }
-  ]]>
-  &lt;/joost:script></strong>
-
-  &lt;stx:template match="/">
-    &lt;stx:value-of select="concat('5! = ', <strong>js:fac(5)</strong>)" />
-  &lt;/stx:template>
-
-&lt;/stx:transform></pre>
-      <p>This "transformation" will output<br>
-      5! = 120</p>
-      <p>
-        <em>Note</em>: global script variables will be initialized only once at 
-        the moment. This is important for re-used transformation sheets via
-        JAXP <code>Templates</code> objects.
-      </p>
-      
-      <hr>
           
+      <hr>
+
       <h5><a name="doe">Disable output escaping</a></h5>
       <p>
         Though both STX and <em>Joost</em> don't have a feature for disabling
@@ -548,21 +502,71 @@
       </p>
       
       <hr>
-          
-      <h5><a name="html">HTML output</a></h5>
+
+      <h5><a name="scripting">Scripting</a></h5>
       <p>
-        <em>Joost</em> provides an experimental HTML 4.01 output method that
-        can be invoked by specifying <code>joost:html</code> in the
-        <code>output-method</code> attribute. The prefix <code>joost</code>
-        must be bound to <em>Joost</em>'s extension namespace
-        <code>http://joost.sf.net/extension</code>. CDATA boundaries will
-        not be printed in HTML. This means for HTML output the
-        <code>disable-output-escaping</code> feature of XSLT can also be
-        simulated by using the <code>stx:cdata</code> instruction.
+        This release of <em>Joost</em> introduces experimental support for 
+        scripting languages. It uses the bean scripting framework BSF (see 
+        above) as a bridge to concrete scripting engines.
       </p>
-          
+      <p>
+        The new element <code>joost:script</code> defines a script. The prefix 
+        (in this case <code>joost</code>) must be bound to <em>Joost</em>'s 
+        extension namespace <code>http://joost.sf.net/extension</code>. 
+        The element <code>joost:script</code> must be a child of 
+        <code>stx:transform</code> or <code>stx:group</code> and allows only 
+        text contents. It has the following attributes:
+      </p>
+      <ul>
+        <li>
+          <code>prefix</code>: the namespace prefix that defines the functions
+          of this script. The namespace must be in scope for the 
+          <code>script</code> element. The invocation of script functions
+          requires the use of this prefix.
+        </li>
+        <li>
+          <code>language</code>: the language identifier, that is used by BSF 
+          to find the proper scripting engine.
+        </li>
+        <li>
+          <code>url</code> (optional): the URL of an external script
+        </li>
+      </ul>
+      <p><strong>Example</strong> that uses Javascript 
+      (<a href="http://www.mozilla.org/rhino/">Rhino</a>):</p>
+      <pre>&lt;stx:transform xmlns:stx="http://stx.sourceforge.net/2002/ns" 
+               <strong>xmlns:joost="http://joost.sf.net/extension"
+               xmlns:js="urn:javascript"</strong>
+               version="1.0">
+
+  <strong>&lt;joost:script prefix="js" language="javascript">
+  &lt;![CDATA[
+    function fac(n) {
+      var res = 1;
+      while (n > 1) {
+        res = res * n;
+        n--;
+      }
+      return res;
+    }
+  ]]>
+  &lt;/joost:script></strong>
+
+  &lt;stx:template match="/">
+    &lt;stx:value-of select="concat('5! = ', <strong>js:fac(5)</strong>)" />
+  &lt;/stx:template>
+
+&lt;/stx:transform></pre>
+      <p>This "transformation" will output<br>
+      5! = 120</p>
+      <p>
+        <em>Note</em>: global script variables will be initialized only once at 
+        the moment. This is important for re-used transformation sheets via
+        JAXP <code>Templates</code> objects.
+      </p>
+      
       <hr>
-              
+
       <h5><a name="java">Invoking Java methods</a></h5>
       <p>
         <em>Joost</em> allows the use of extension functions written in Java.
@@ -730,8 +734,7 @@
           <td>the object itself</td>
         </tr>
       </table>
-              
-                
+
       <p>
         The result of a function call will be converted as follows:
       </p>
@@ -807,7 +810,7 @@
       </p>
 
       <hr>
-      
+
       <h5><a name="filters">Using external SAX2 filters</a></h5>
       <p>
         <em>Joost</em> implements the usage of external SAX2 filters as
@@ -856,9 +859,9 @@
         <code>src-samples</code> directory
         (shipped with the source release only).
       </p>
-      
+
       <hr>
-      
+
       <h5><a name="outputuriresolver">OutputURIResolver</a></h5>
       <p><em>Joost</em> provides the interface <code>OutputURIResolver</code>
         that acts as the counterpart to the JAXP <code>URIResolver</code>. With
@@ -874,8 +877,8 @@
         in the <code>TransformerFactory.setAttribute</code> method, or
         by invoking <code>setOutputURIResolver</code> on a
         <code>net.sf.joost.stx.Processor</code> object.</p>
-        
-        
+
+
       <h2><a name="examples">Examples</a></h2>
       <p>
         The current release contains an <code>example</code> directory with a
@@ -885,6 +888,8 @@
         directory as well as the <a target="_top"
         href="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/stx/stx/examples/">examples</a> directory from the STX CVS tree.
       </p>
+
+
       <h2><a name="resources">Resources</a></h2>
       <ul>
         <li>This release implements (partly) the 
@@ -904,6 +909,7 @@
             Markup Languages, Montr&eacute;al, 4-8 August 2003</li>
       </ul>
 
+
       <h2><a name="contributors">Contributors</a></h2>
       <ul>
         <li><a href="http://instantolap.net/">Thomas Behrends</a></li>
@@ -918,7 +924,7 @@
       </ul>
 
       <hr size="1" noshade>
-                  
+
       <p>
         <a target="_top" href="http://sourceforge.net">
         <img src="http://sflogo.sourceforge.net/sflogo.php?group_id=55258&amp;type=5"
