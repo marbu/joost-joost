@@ -1,5 +1,5 @@
 /*
- * $Id: TestCases.java,v 1.2 2008/10/06 13:31:41 obecker Exp $
+ * $Id: TestCases.java,v 1.3 2008/10/12 16:45:02 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -68,6 +68,7 @@ import junit.framework.Assert;
 
 import org.apache.log4j.Logger;
 import org.apache.xml.serialize.DOMSerializerImpl;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -1923,44 +1924,43 @@ public class TestCases
          throws Exception
    {
 
-      TransformerFactory tfactory = TransformerFactory.newInstance();
-
       DocumentBuilderFactory dfactory = DocumentBuilderFactory.newInstance();
-
       // Note you must always setNamespaceAware when building .stx stylesheets
       dfactory.setNamespaceAware(true);
 
-      DocumentBuilder docBuilder = dfactory.newDocumentBuilder();
+      DocumentBuilder docBuilder;
+      Document doc;
 
-      // test
+      // create the transformer from a DOMSource
 
-      InputSource is = getInputSource(stxId);
+      docBuilder = dfactory.newDocumentBuilder();
 
-      Node doc = docBuilder.parse(is);
-
+      doc = docBuilder.parse(getInputSource(stxId));
       DOMSource domSource = new DOMSource(doc);
-
       domSource.setSystemId(getSystemId(stxId));
 
       log.debug("id = " + domSource.getSystemId());
 
       // Create a transformer for the stylesheet.
+      TransformerFactory tfactory = TransformerFactory.newInstance();
       Templates templates = tfactory.newTemplates(domSource);
-
       Transformer transformer = templates.newTransformer();
-      // DOMResult myDomResult = new DOMResult(outNode);
 
       // get DOMSource for xml -instance
 
-      DOMSource docInSource = new DOMSource(doc);
+      docBuilder = dfactory.newDocumentBuilder();
 
+      doc = docBuilder.parse(getInputSource(xmlId));
+      DOMSource docInSource = new DOMSource(doc);
       docInSource.setSystemId(getSystemId(xmlId));
 
-      org.w3c.dom.Document outNodeResult = docBuilder.newDocument();
+      // construct a DOMResult
 
-      DOMResult myDomResult = new DOMResult(outNodeResult);
+      Document newDoc = docBuilder.newDocument();
+      DOMResult myDomResult = new DOMResult(newDoc);
 
       transformer.transform(docInSource, myDomResult);
+      Assert.assertEquals(newDoc, myDomResult.getNode());
 
       // print DOMResult
       Node nodeResult = myDomResult.getNode();

@@ -1,5 +1,5 @@
 /*
- * $Id: TrAXHelper.java,v 1.16 2008/10/05 18:03:36 obecker Exp $
+ * $Id: TrAXHelper.java,v 1.17 2008/10/12 16:45:01 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -43,7 +43,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Properties;
 
-//JAXP
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Result;
@@ -202,7 +201,7 @@ public class TrAXHelper implements TrAXConstants {
                    log.debug("return DOM specific Implementation for " +
                              "StxEmitter");
                 //DOM specific Implementation
-                return new DOMEmitter();
+                return new DOMEmitter((DOMResult) result);
             } else if (result instanceof StreamResult) {
                 if (DEBUG)
                    log.debug("return StreamResult specific Implementation " +

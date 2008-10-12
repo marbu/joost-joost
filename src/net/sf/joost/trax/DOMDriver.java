@@ -1,16 +1,33 @@
 // taken from Michael Kay's Saxon, see http://saxon.sourceforge.net
 package net.sf.joost.trax;
 
-import org.w3c.dom.*;
-import org.xml.sax.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Locale;
+
+import org.w3c.dom.Attr;
+import org.w3c.dom.CharacterData;
+import org.w3c.dom.Comment;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.ProcessingInstruction;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.DTDHandler;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.NamespaceSupport;
-
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Locale;
 
 /**
 * DOMDriver.java: (pseudo-)SAX driver for DOM.<BR>
@@ -207,7 +224,7 @@ public class DOMDriver implements Locator, XMLReader
                         		String prefix = element.getPrefix();
                         		String uri = element.getNamespaceURI();
                         		//System.err.println("Implicit Namespace: " + prefix + "=" + uri);
-                        		if (nsDeclarations.get(prefix)==null) {
+                        		if (prefix != null && nsDeclarations.get(prefix)==null) {
                         		    nsSupport.declarePrefix(prefix, uri);
                         		    contentHandler.startPrefixMapping(prefix, uri);
                         		    nsDeclarations.put(prefix, uri);

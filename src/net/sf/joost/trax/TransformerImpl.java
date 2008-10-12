@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.30 2008/10/06 13:31:41 obecker Exp $
+ * $Id: TransformerImpl.java,v 1.31 2008/10/12 16:45:01 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -240,9 +240,9 @@ public class TransformerImpl extends Transformer implements TrAXConstants
                                                 .getMessage(), sE));
                         }
                      }
-                     // set the the SAXSource as the parent of the STX-Processor
-                     this.processor.setParent(saxSource.getXMLReader());
                   }
+                  // set the the SAXSource as the parent of the STX-Processor
+                  this.processor.setParent(saxSource.getXMLReader());
                }
 
                // perform transformation

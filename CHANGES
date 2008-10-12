@@ -1,5 +1,5 @@
 Changes since 20080528
-- Bugfixes: 1993357, 1993925, 1994290, 2144242
+- Bugfixes: 1993357, 1993925, 1994290, 2144242, 2157146
 - added disable-output-escaping support (mainly for XSLT filter processes)
 
 Changes since 20080309
