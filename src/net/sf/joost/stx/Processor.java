@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.59 2008/10/04 17:13:14 obecker Exp $
+ * $Id: Processor.java,v 2.60 2008/10/12 17:29:12 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -71,7 +71,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.59 $ $Date: 2008/10/04 17:13:14 $
+ * @version $Revision: 2.60 $ $Date: 2008/10/12 17:29:12 $
  * @author Oliver Becker
  */
 
@@ -416,7 +416,7 @@ public class Processor extends XMLFilterImpl
     * Constructs a new Processor instance from an existing Parser
     * (Joost representation of an STX transformation sheet)
     * @param stxParser the Joost representation of a transformation sheet
-    * @throws SAXException if {@link #getXMLReader} fails
+    * @throws SAXException if {@link #createXMLReader} fails
     */
    public Processor(Parser stxParser)
       throws SAXException
