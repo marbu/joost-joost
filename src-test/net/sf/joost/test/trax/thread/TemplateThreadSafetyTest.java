@@ -1,5 +1,5 @@
 /*
- * $Id: TemplateThreadSafetyTest.java,v 1.2 2008/10/04 17:13:14 obecker Exp $
+ * $Id: TemplateThreadSafetyTest.java,v 1.3 2008/12/07 19:14:49 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -27,11 +27,13 @@ package net.sf.joost.test.trax.thread;
 import java.io.IOException;
 import java.io.StringWriter;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.URIResolver;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
@@ -71,8 +73,17 @@ public class TemplateThreadSafetyTest extends TestCase
    {
       final Exception[] failed = new Exception[1];
       final TransformerFactory factory = new net.sf.joost.trax.TransformerFactoryImpl();
-      final StreamSource style =
-         new StreamSource(getClass().getResourceAsStream("style.stx"));
+      factory.setURIResolver(new URIResolver() {
+
+         public Source resolve(String href, String base)
+               throws TransformerException
+         {
+            return new StreamSource(
+                  TemplateThreadSafetyTest.class.getResourceAsStream(href));
+         }
+      });
+      final StreamSource style = new StreamSource(getClass()
+            .getResourceAsStream("style.stx"));
       final Templates templates = factory.newTemplates(style);
       Runnable transformJob = new Runnable() {
          public void run()

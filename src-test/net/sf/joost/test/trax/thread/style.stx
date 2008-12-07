@@ -4,9 +4,19 @@
         <stx:process-children/>
     </stx:template>
 
-    <stx:template match="*|text()">
+    <stx:template match="text()">
+        <stx:copy />
+    </stx:template>
+
+    <stx:template match="*">
         <stx:copy attributes="@*">
-            <stx:process-children/>
+            <stx:process-self/>
         </stx:copy>
     </stx:template>
+    
+    <stx:template match="order[2]" priority="3">
+      <stx:process-self filter-method="http://www.w3.org/1999/XSL/Transform"
+                        filter-src="url('external.xsl')"/>
+    </stx:template>
+    
 </stx:transform>
