@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerResolverImpl.java,v 2.16 2007/05/19 10:15:53 obecker Exp $
+ * $Id: TransformerHandlerResolverImpl.java,v 2.17 2008/12/07 19:14:05 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,15 +24,15 @@
 
 package net.sf.joost.stx;
 
+import net.sf.joost.Constants;
+import net.sf.joost.OptionalLog;
+import net.sf.joost.TransformerHandlerResolver;
+
 import java.util.Enumeration;
 import java.util.Hashtable;
 
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.sax.TransformerHandler;
-
-import net.sf.joost.Constants;
-import net.sf.joost.OptionalLog;
-import net.sf.joost.TransformerHandlerResolver;
 
 import org.apache.commons.discovery.tools.Service;
 import org.apache.commons.logging.Log;
@@ -41,26 +41,26 @@ import org.xml.sax.XMLReader;
 
 /**
  * The default implementation of an {@link TransformerHandlerResolver}.
- * 
+ *
  * It supports pluggable {@link TransformerHandlerResolver} implementations.
  * Plugin mechanism is based on Jakarta's Discovery library.
- * 
+ *
  * During instantiation it will scan for available handlers and cache them.
  * Upon call to {@link #resolve(String, String, String, URIResolver, Hashtable)}
- * or {@link #resolve(String, XMLReader, Hashtable)} it will look for a handler 
+ * or {@link #resolve(String, XMLReader, Hashtable)} it will look for a handler
  * supporting the given method URI and will delegate the call to it.
- * 
- * @version $Revision: 2.16 $ $Date: 2007/05/19 10:15:53 $
+ *
+ * @version $Revision: 2.17 $ $Date: 2008/12/07 19:14:05 $
  * @author fikin
  */
 
-public final class TransformerHandlerResolverImpl 
-    implements TransformerHandlerResolver, Constants 
+public final class TransformerHandlerResolverImpl
+    implements TransformerHandlerResolver, Constants
 {
    /** logging object */
-   private static Log log = 
+   private static Log log =
       OptionalLog.getLog(TransformerHandlerResolverImpl.class);
-   
+
    /** hashtable with available methods and their plugin implementations */
    private static Hashtable plugins = new Hashtable();
 
@@ -68,7 +68,7 @@ public final class TransformerHandlerResolverImpl
     * Defines plugin factory behaviour when duplicated method implementations
     * are discovered. One of following values:
     * <dl>
-    * <dt>(undefined)</dt> <dd>use last found implementation and print 
+    * <dt>(undefined)</dt> <dd>use last found implementation and print
     *                          warning messages each time</dd>
     * <dt>replace</dt>     <dd>see (undefined)</dd>
     * <dt>fail</dt>        <dd>throw exception if duplicate encountered</dd>
@@ -77,17 +77,17 @@ public final class TransformerHandlerResolverImpl
     * </dl>
     */
    private static final String flgName = "net.sf.joost.THResolver.duplicates";
-   
+
    private static final int FLAG_FAIL = 1, FLAG_IGNORE = 2, FLAG_REPLACE = 3;
-   
+
+   /** indicate whether {@link #plugins} has been initialized or not */
+   private static boolean notInitializedYet = true;
+
    /**
     * Custom handler provided via {link @Processor} interface
     */
    public TransformerHandlerResolver customResolver = null;
-   
-   /** indicate whether {@link #plugins} has been initialized or not */
-   private static boolean notInitializedYet = true;
-   
+
 
    /**
     * Initialize the object
@@ -98,13 +98,14 @@ public final class TransformerHandlerResolverImpl
     * @throws SAXException when duplicated method implementation is found
     * and has been asked to raise an exception
     */
-   private void init() throws SAXException {
+   private static synchronized void init() throws SAXException {
+
+      // check again, in case this method has been called twice
+      if (!notInitializedYet)
+         return;
 
       if (DEBUG)
          log.debug("init() : entering");
-
-      // revert init() flag
-      notInitializedYet = false;
 
       // system property which says what to do in case of
       // duplicated method implementations
@@ -128,16 +129,16 @@ public final class TransformerHandlerResolverImpl
 
       // loop over founded classes
       while (clss.hasMoreElements()) {
-         TransformerHandlerResolver plg = 
+         TransformerHandlerResolver plg =
             (TransformerHandlerResolver) clss.nextElement();
          if (DEBUG)
-            log.debug("scanning implemented stx-filter-methods of class" 
+            log.debug("scanning implemented stx-filter-methods of class"
                       + plg.getClass());
 
          // lookup over implemented methods
          String[] uriMethods = plg.resolves();
          for (int i = 0; i < uriMethods.length; i++) {
-            
+
             // method name (url)
             String mt = uriMethods[i];
 
@@ -145,7 +146,7 @@ public final class TransformerHandlerResolverImpl
                log.debug("stx-filter-method found : " + mt);
 
             // see if method is already defined by some other plugin ?
-            TransformerHandlerResolver firstPlg = 
+            TransformerHandlerResolver firstPlg =
                (TransformerHandlerResolver) plugins.get(mt);
 
             if (null != firstPlg) {
@@ -178,6 +179,9 @@ public final class TransformerHandlerResolverImpl
 
       }
 
+      // revert init() flag
+      notInitializedYet = false;
+
       if (DEBUG)
          log.debug("init() : exiting");
    }
@@ -192,7 +196,7 @@ public final class TransformerHandlerResolverImpl
          // remove preceding "{}" if present
          String name = key.startsWith("{}") ? key.substring(2) : key;
          Value val = ((Value) (params.get(key)));
-         result.put(name, val.type == Value.OBJECT ? val.getObject() 
+         result.put(name, val.type == Value.OBJECT ? val.getObject()
                                                    : val.getStringValue());
       }
       return result;
@@ -200,7 +204,7 @@ public final class TransformerHandlerResolverImpl
 
     /**
      * Resolve given method via searching for a plugin providing implementation
-     * for it. 
+     * for it.
      * @return TransformerHandler for that method or throws exception.
      */
    public TransformerHandler resolve(String method, String href, String base,
@@ -209,7 +213,7 @@ public final class TransformerHandlerResolverImpl
    {
       Hashtable externalParams = createExternalParameters(params);
       if (customResolver != null) {
-         TransformerHandler handler = 
+         TransformerHandler handler =
             customResolver.resolve(method, href, base, uriResolver,
                                    externalParams);
          if (handler != null)
@@ -219,7 +223,7 @@ public final class TransformerHandlerResolverImpl
       if (notInitializedYet)
          init();
 
-      TransformerHandlerResolver impl = 
+      TransformerHandlerResolver impl =
          (TransformerHandlerResolver) plugins.get(method);
       if (impl == null)
          throw new SAXException("Undefined filter implementation for method '"
@@ -228,7 +232,7 @@ public final class TransformerHandlerResolverImpl
    }
 
    /**
-    * This is essentially same method as common resolve 
+    * This is essentially same method as common resolve
     * but it assumes that params are already "parsed" via
     * {@link #createExternalParameters(Hashtable)}
     */
@@ -237,7 +241,7 @@ public final class TransformerHandlerResolverImpl
    {
       Hashtable externalParams = createExternalParameters(params);
       if (customResolver != null) {
-         TransformerHandler handler = 
+         TransformerHandler handler =
             customResolver.resolve(method, reader, externalParams);
          if (handler != null)
             return handler;
@@ -246,7 +250,7 @@ public final class TransformerHandlerResolverImpl
       if (notInitializedYet)
          init();
 
-      TransformerHandlerResolver impl = 
+      TransformerHandlerResolver impl =
          (TransformerHandlerResolver) plugins.get(method);
       if (impl == null)
          throw new SAXException("Undefined filter implementation for method '"
@@ -258,7 +262,7 @@ public final class TransformerHandlerResolverImpl
     * Lookup given method via searching for a plugin providing implementation for it.
     * Returns TransformerHandler for that method or throws exception.
     */
-   public boolean available(String method) 
+   public boolean available(String method)
    {
       if (notInitializedYet) {
          try {
@@ -269,8 +273,8 @@ public final class TransformerHandlerResolverImpl
                log.error("Error while initializing the plugins", e);
          }
       }
-      
-      return (customResolver != null && customResolver.available(method)) 
+
+      return (customResolver != null && customResolver.available(method))
              || plugins.get(method) != null;
    }
 
@@ -279,7 +283,7 @@ public final class TransformerHandlerResolverImpl
     * Each one must return true when checked against {@link #available(String)}.
     * @return array of supported URIs
     */
-   public String[] resolves() 
+   public String[] resolves()
    {
       if (notInitializedYet) {
          try {
