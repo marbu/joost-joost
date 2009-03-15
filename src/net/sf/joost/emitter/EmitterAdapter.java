@@ -1,33 +1,37 @@
 /*
- * $Id: EmitterAdapter.java,v 1.2 2004/10/30 11:23:50 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: EmitterAdapter.java,v 1.3 2009/03/15 13:21:48 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.emitter;
 
-import java.util.Hashtable;
-
 import net.sf.joost.instruction.NodeBase;
 import net.sf.joost.stx.Emitter;
+import net.sf.joost.stx.helpers.MutableAttributes;
+import net.sf.joost.stx.helpers.MutableAttributesImpl;
+
+import java.util.Hashtable;
+
+import javax.xml.XMLConstants;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -41,7 +45,7 @@ import org.xml.sax.ext.LexicalHandler;
  * <code>LexicalHandler</code> to {@link Emitter}. Such an intermediate
  * object is needed because {@link Emitter} itself doesn't implement
  * these interfaces.
- * @version $Revision: 1.2 $ $Date: 2004/10/30 11:23:50 $
+ * @version $Revision: 1.3 $ $Date: 2009/03/15 13:21:48 $
  * @author Oliver Becker
  */
 
@@ -49,9 +53,9 @@ public class EmitterAdapter implements ContentHandler, LexicalHandler
 {
    private Emitter emitter;
    private Hashtable nsTable = new Hashtable();
-   
+
    private NodeBase instruction;
-   
+
    public EmitterAdapter(Emitter emitter, NodeBase instruction)
    {
       this.emitter = emitter;
@@ -84,7 +88,17 @@ public class EmitterAdapter implements ContentHandler, LexicalHandler
                             Attributes atts)
       throws SAXException
    {
-      emitter.startElement(uri, lName, qName, atts, nsTable, 
+      // remove namespace declarations that might appear in the attributes
+      MutableAttributes filteredAtts =
+         new MutableAttributesImpl(null, 0);
+      for (int i=0; i< atts.getLength(); i++) {
+         if (!XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(atts.getURI(i)))
+               filteredAtts.addAttribute(atts.getURI(i), atts.getLocalName(i),
+                                         atts.getQName(i), atts.getType(i),
+                                         atts.getValue(i));
+      }
+
+      emitter.startElement(uri, lName, qName, filteredAtts, nsTable,
                            instruction);
       nsTable.clear();
    }
@@ -142,7 +156,7 @@ public class EmitterAdapter implements ContentHandler, LexicalHandler
    public void endCDATA()
       throws SAXException
    {
-      emitter.endCDATA(); 
+      emitter.endCDATA();
    }
 
    public void comment(char[] ch, int start, int length)
