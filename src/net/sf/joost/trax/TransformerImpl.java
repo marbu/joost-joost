@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerImpl.java,v 1.31 2008/10/12 16:45:01 obecker Exp $
+ * $Id: TransformerImpl.java,v 1.32 2009/03/15 14:01:22 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -77,7 +77,9 @@ public class TransformerImpl extends Transformer implements TrAXConstants
    // init with default errorlistener
    private ErrorListener errorListener = new TransformationErrListener();
 
+   // output properties
    private HashSet supportedProperties = new HashSet();
+   private HashSet ignoredProperties = new HashSet();
 
    /**
     * Synch object to gaurd against setting values from the TrAX interface or
@@ -132,6 +134,11 @@ public class TransformerImpl extends Transformer implements TrAXConstants
       supportedProperties.add(OutputKeys.VERSION);
       supportedProperties.add(
             TrAXConstants.OUTPUT_KEY_SUPPORT_DISABLE_OUTPUT_ESCAPING);
+
+      ignoredProperties.add(OutputKeys.CDATA_SECTION_ELEMENTS);
+      ignoredProperties.add(OutputKeys.DOCTYPE_PUBLIC);
+      ignoredProperties.add(OutputKeys.DOCTYPE_SYSTEM);
+      ignoredProperties.add(OutputKeys.INDENT);
    }
 
    /**
@@ -322,6 +329,8 @@ public class TransformerImpl extends Transformer implements TrAXConstants
 
       if (supportedProperties.contains(name))
          return processor.outputProperties.getProperty(name);
+      if (ignoredProperties.contains(name))
+         return null;
       IllegalArgumentException iE = new IllegalArgumentException(
             "Unsupported property " + name);
       if (log != null)
@@ -351,8 +360,14 @@ public class TransformerImpl extends Transformer implements TrAXConstants
          }
          processor.outputProperties.setProperty(name, value);
       }
+      else if (ignoredProperties.contains(name)) {
+         if (log != null)
+            log.warn("Output property '" + name
+                  + "' is not supported and will be ignored");
+      }
       else {
-         iE = new IllegalArgumentException("Unsupported property " + name);
+         iE = new IllegalArgumentException("Invalid output property '" + name
+               + "'");
          if (log != null)
             log.error(iE.getMessage(), iE);
          throw iE;
@@ -387,9 +402,15 @@ public class TransformerImpl extends Transformer implements TrAXConstants
          // check properties in oformat
          for (Enumeration e = oformat.keys(); e.hasMoreElements();) {
             Object propKey = e.nextElement();
+            if (ignoredProperties.contains(propKey)) {
+               if (log != null)
+                  log.warn("Output property '" + propKey
+                        + "' is not supported and will be ignored");
+               continue;
+            }
             if (!supportedProperties.contains(propKey)) {
-               iE = new IllegalArgumentException("Unsupported property "
-                     + propKey);
+               iE = new IllegalArgumentException("Invalid output property '"
+                     + propKey + "'");
                if (log != null)
                   log.error(iE);
                throw iE;

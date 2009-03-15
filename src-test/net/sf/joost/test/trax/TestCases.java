@@ -1,5 +1,5 @@
 /*
- * $Id: TestCases.java,v 1.3 2008/10/12 16:45:02 obecker Exp $
+ * $Id: TestCases.java,v 1.4 2009/03/15 14:01:19 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -1579,6 +1579,16 @@ public class TestCases
       transformer.setOutputProperties(oprops);
 
       transformer.transform(getSource(sourceID), new StreamResult(System.out));
+
+      // to be ignored
+      transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+
+      try {
+         transformer.setOutputProperty("foobar", "yes");
+         return false;
+      }
+      catch (IllegalArgumentException expectedException) {
+      }
 
       return true;
    }
