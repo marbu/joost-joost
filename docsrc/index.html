@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.100 2008/10/11 21:05:34 obecker Exp $ -->
+<!-- $Id: index.html,v 1.101 2009/03/15 15:41:18 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -75,11 +75,13 @@
       <p>
       This page contains information about the world's first prototypic
       Java implementation of the
-      <strong><a target="_top"
+      <strong><a target="_blank"
       href="http://stx.sourceforge.net">Streaming Transformations
       for XML (STX)</a></strong> language.
       It is intended as a reference implementation which
-      demonstrates the functionality of STX.
+      demonstrates the functionality of STX. 
+      <em>Joost</em> is developed and maintained by
+      <a target="_blank" href="http://www.obqo.de/">Oliver Becker</a>.
       </p>
 
       <!-- Have to make the StDB working again!
@@ -96,17 +98,17 @@
 
         
       <p>The latest version was created <strong>@@@DATE@@@</strong>
-      and may be <strong><a target="_top"
+      and may be <strong><a target="_blank"
          href="https://sourceforge.net/project/showfiles.php?group_id=55258">
       downloaded here</a></strong>.</p>
       <p>
       <em>Joost</em> is released under the Mozilla Public License 1.1.
       Have a look at the
-      <a target="_top"
+      <a target="_blank"
          href="https://sourceforge.net/projects/joost">project page</a>
       for further information. Any questions concerning <em>Joost</em> may be
       asked on the
-      <a target="_top"
+      <a target="_blank"
          href="http://lists.sourceforge.net/lists/listinfo/joost-help">joost-help</a>
       mailing list.
       </p>
@@ -120,29 +122,29 @@
          <li>
             a SAX2 Parser, for example Crimson (already included in
             Java 1.4 or downloadable separately on
-            <a target="_top"
+            <a target="_blank"
                href="http://java.sun.com/xml/downloads/javaxmlpack.html">Sun's
             Java XML Pack page</a>),
-            <a target="_top"
+            <a target="_blank"
                href="http://xml.apache.org/xerces2-j/">Xerces</a>
             from Apache XML, or &#xC6;lfred2 from the
-            <a target="_top"
+            <a target="_blank"
                href="http://www.gnu.org/software/classpathx/jaxp/">GNU JAXP
             Project</a>
          </li>
          <li>
-           <a target="_top" 
+           <a target="_blank" 
            href="http://jakarta.apache.org/commons/discovery/">Commons 
            Discovery</a> from Apache Jakarta, if you want to use external
            filters such as XSLT transformations
          </li>
          <li>
-           the <a target="_top" href="http://jakarta.apache.org/bsf/">Bean 
+           the <a target="_blank" href="http://jakarta.apache.org/bsf/">Bean 
            Scripting Framework</a> from Apache Jakarta and a proper scripting
            engine, if you want to use the experimental Script support
          </li>
          <li>
-            optionally (see below) the <a target="_top"
+            optionally (see below) the <a target="_blank"
             href="http://jakarta.apache.org/commons/logging/">Commons Logging
             Component</a> from Apache Jakarta</li>
          <li>and of course a Java platform, at least version 1.4</li>
@@ -221,7 +223,7 @@
       <em>Joost</em> with the <code>-help</code> or <code>-version</code>
       command line options.</p>
         
-      <p><em>Joost</em> is able to pass its output to <a target="_top"
+      <p><em>Joost</em> is able to pass its output to <a target="_blank"
       href="http://xml.apache.org/fop/">FOP</a> for producing PDF output
       from a stream of XSLFO SAX events. To use this function you
       have to add fop.jar, batik.jar and avalon.jar (FOP 0.20.5 comes
@@ -415,7 +417,7 @@
              (missing check for well-formedness of created XML names)</li>
          <li>the STXPath implemented in this release obeys still the
              productions of the grammar in the former STX draft
-             (<a href="http://stx.sourceforge.net/documents/spec-stx-20030505.html#stxpath">5 May 2003</a>)</li>
+             (<a target="_blank" href="http://stx.sourceforge.net/documents/spec-stx-20030505.html#stxpath">5 May 2003</a>)</li>
          <li>all STX elements and functions not explicitely mentioned
              on this page wait for an implementation</li>
          <li>...</li>
@@ -444,13 +446,13 @@
         output escaping in the language (unlike XSLT 1.0), it may happen that
         an XSLT process invoked via a filter (<code>filter-method</code>)
         produces output using the 
-        <code><a href="http://www.w3.org/TR/xslt#disable-output-escaping">disable-output-escaping</a></code>
+        <code><a target="_blank" href="http://www.w3.org/TR/xslt#disable-output-escaping">disable-output-escaping</a></code>
         attribute. As specified by the JAXP API, this information is passed
         via corresponding processing instructions, see 
-        <code><a href="http://java.sun.com/j2se/1.4.2/docs/api/javax/xml/transform/Result.html#PI_DISABLE_OUTPUT_ESCAPING">PI_DISABLE_OUTPUT_ESCAPING</a></code> and
-        <code><a href="http://java.sun.com/j2se/1.4.2/docs/api/javax/xml/transform/Result.html#PI_ENABLE_OUTPUT_ESCAPING">PI_ENABLE_OUTPUT_ESCAPING</a></code> in
+        <code><a target="_blank" href="http://java.sun.com/j2se/1.4.2/docs/api/javax/xml/transform/Result.html#PI_DISABLE_OUTPUT_ESCAPING">PI_DISABLE_OUTPUT_ESCAPING</a></code> and
+        <code><a target="_blank" href="http://java.sun.com/j2se/1.4.2/docs/api/javax/xml/transform/Result.html#PI_ENABLE_OUTPUT_ESCAPING">PI_ENABLE_OUTPUT_ESCAPING</a></code> in
         the API documentation of the
-        <a href="http://java.sun.com/j2se/1.4.2/docs/api/javax/xml/transform/Result.html">Result</a>
+        <a target="_blank" href="http://java.sun.com/j2se/1.4.2/docs/api/javax/xml/transform/Result.html">Result</a>
         interface. By default, <em>Joost</em> will copy these processing 
         instructions to the output without special treatment, i.e. normal 
         output escaping will be applied.
@@ -467,11 +469,11 @@
         </li>
         <li>
           in the API by setting an output property via
-          <code><a href="http://java.sun.com/j2se/1.4.2/docs/api/javax/xml/transform/Transformer.html#setOutputProperty(java.lang.String,%20java.lang.String)">setOutputProperty</a></code>
+          <code><a target="_blank" href="http://java.sun.com/j2se/1.4.2/docs/api/javax/xml/transform/Transformer.html#setOutputProperty(java.lang.String,%20java.lang.String)">setOutputProperty</a></code>
           or
-          <code><a href="http://java.sun.com/j2se/1.4.2/docs/api/javax/xml/transform/Transformer.html#setOutputProperties(java.util.Properties)">setOutputProperties</a></code>
+          <code><a target="_blank" href="http://java.sun.com/j2se/1.4.2/docs/api/javax/xml/transform/Transformer.html#setOutputProperties(java.util.Properties)">setOutputProperties</a></code>
           in the 
-          <code><a href="http://java.sun.com/j2se/1.4.2/docs/api/javax/xml/transform/Transformer.html">Transformer</a></code> 
+          <code><a target="_blank" href="http://java.sun.com/j2se/1.4.2/docs/api/javax/xml/transform/Transformer.html">Transformer</a></code> 
           class. 
           <ul>
           <li>The property key is the string 
@@ -533,7 +535,7 @@
         </li>
       </ul>
       <p><strong>Example</strong> that uses Javascript 
-      (<a href="http://www.mozilla.org/rhino/">Rhino</a>):</p>
+      (<a target="_blank" href="http://www.mozilla.org/rhino/">Rhino</a>):</p>
       <pre>&lt;stx:transform xmlns:stx="http://stx.sourceforge.net/2002/ns" 
                <strong>xmlns:joost="http://joost.sf.net/extension"
                xmlns:js="urn:javascript"</strong>
@@ -815,7 +817,7 @@
       <p>
         <em>Joost</em> implements the usage of external SAX2 filters as
         described in the 
-        <a href="http://stx.sourceforge.net/documents/spec-stx-20070427.html#external-filters">STX 
+        <a target="_blank" href="http://stx.sourceforge.net/documents/spec-stx-20070427.html#external-filters">STX 
         specification section 5.18</a>.
         <em>Joost</em> uses the TrAX API to instantiate an XSLT transformer
         object. The actual XSLT implementation (i.e. the
@@ -883,9 +885,9 @@
       <p>
         The current release contains an <code>example</code> directory with a
         set of selected STX examples. In addition you may browse
-        <em>Joost</em>'s CVS <a target="_top"
+        <em>Joost</em>'s CVS <a target="_blank"
         href="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/joost/test/">test</a>
-        directory as well as the <a target="_top"
+        directory as well as the <a target="_blank"
         href="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/stx/stx/examples/">examples</a> directory from the STX CVS tree.
       </p>
 
@@ -893,49 +895,62 @@
       <h2><a name="resources">Resources</a></h2>
       <ul>
         <li>This release implements (partly) the 
-            <a href="http://stx.cvs.sourceforge.net/*checkout*/stx/specs/spec-stx.html?revision=1.64">STX Working Draft, 02 March 2008</a>
+            <a target="_blank" href="http://stx.cvs.sourceforge.net/*checkout*/stx/specs/spec-stx.html?revision=1.64">STX Working Draft, 02 March 2008</a>
             (<b>Note:</b> this version hasn't been released yet)</li>
         <li>The functions taken from the W3C spec are defined in
-         <a href="http://www.w3.org/TR/2003/WD-xpath-functions-20031112/">XQuery 1.0 and XPath 2.0 Functions and Operators, W3C Working Draft 12 November 2003</a></li>
+         <a target="_blank" href="http://www.w3.org/TR/2003/WD-xpath-functions-20031112/">XQuery 1.0 and XPath 2.0 Functions and Operators, W3C Working Draft 12 November 2003</a></li>
       </ul>
       <ul>
-        <li><a href="http://www.xml.com/pub/a/2003/02/26/stx.html">An
+        <li><a target="_blank" href="http://www.xml.com/pub/a/2003/02/26/stx.html">An
             Introduction to Streaming Transformations for XML</a>,
-            Article on <a href="http://xml.com/">xml.com</a>,
+            Article on <a target="_blank" href="http://xml.com/">xml.com</a>,
             26 February 2003</li>
-        <li><a href="http://www.idealliance.org/papers/dx_xmle03/papers/04-02-02/04-02-02.html">Transforming XML on the Fly</a>, Presentation at
+        <li><a target="_blank" href="http://www.idealliance.org/papers/dx_xmle03/papers/04-02-02/04-02-02.html">Transforming XML on the Fly</a>, Presentation at
             XML Europe 2003, London, 5-8 May 2003</li>
-        <li><a href="http://www.informatik.hu-berlin.de/~obecker/Docs/EML2003/">Extended SAX Filter Processing with STX</a>, Presentation at Extreme
+        <li><a target="_blank" href="http://www.informatik.hu-berlin.de/~obecker/Docs/EML2003/">Extended SAX Filter Processing with STX</a>, Presentation at Extreme
             Markup Languages, Montr&eacute;al, 4-8 August 2003</li>
       </ul>
 
 
       <h2><a name="contributors">Contributors</a></h2>
       <ul>
-        <li><a href="http://instantolap.net/">Thomas Behrends</a></li>
+        <li><a target="_blank" href="http://instantolap.net/">Thomas Behrends</a></li>
         <li>Nikolay Fiykov</li>
-        <li><a href="http://www.informatik.hu-berlin.de/~zubow/">Anatolij
+        <li><a target="_blank" href="http://www.informatik.hu-berlin.de/~zubow/">Anatolij
             Zubow</a></li>
       </ul>
       <ul>
         <li><em>Joost</em> is supported by the <strong>
-            <a href="http://www.yourkit.com/">YourKit Java Profiler</a>
+            <a target="_blank" href="http://www.yourkit.com/">YourKit Java Profiler</a>
             </strong></li>
       </ul>
 
       <hr size="1" noshade>
 
       <p>
-        <a target="_top" href="http://sourceforge.net">
-        <img src="http://sflogo.sourceforge.net/sflogo.php?group_id=55258&amp;type=5"
-             width="210" height="62" border="0" alt="SourceForge Logo"
-             align="right" style="margin-bottom: 5pt;"></a>
+        <span style="float: right;">
+          <a target="_blank" href="http://sourceforge.net/projects/joost"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=55258&type=16" width="150" height="40" border="0" alt="Get Joost STX processor at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+        </span>
         <strong>Have fun!</strong>
         <br><br>
         <span style="font-size: small">
-          <a target="_top"
+          <a target="_blank"
              href="http://www.obqo.de/">ob</a> / @@@DATE@@@
         </span>
       </p>
+      
+      <!-- Piwik -->
+      <script type="text/javascript">
+        var pkBaseURL = (("https:" == document.location.protocol) ? "https://apps.sourceforge.net/piwik/joost/" : "http://apps.sourceforge.net/piwik/joost/");
+        document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/javascript'%3E%3C/script%3E"));
+      </script>
+      <script type="text/javascript">
+        piwik_action_name = '';
+        piwik_idsite = 1;
+        piwik_url = pkBaseURL + "piwik.php";
+        piwik_log(piwik_action_name, piwik_idsite, piwik_url);
+      </script>
+      <object><noscript><p><img src="http://apps.sourceforge.net/piwik/joost/piwik.php?idsite=1" alt="piwik"/></p></noscript></object>
+      <!-- End Piwik Tag --> 
    </body>
 </html>
