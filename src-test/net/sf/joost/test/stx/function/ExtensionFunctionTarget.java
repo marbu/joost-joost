@@ -1,5 +1,5 @@
 /*
- * $Id: AllTests.java,v 1.3 2009/08/21 12:47:26 obecker Exp $
+ * $Id: ExtensionFunctionTarget.java,v 1.1 2009/08/21 12:47:25 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -21,27 +21,38 @@
  *
  * Contributor(s): ______________________________________.
  */
-package net.sf.joost.test;
-
-import net.sf.joost.test.stx.StxTest;
-import net.sf.joost.test.stx.function.ExtensionFunctionTest;
-import net.sf.joost.test.trax.thread.TemplateThreadSafetyTest;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
+package net.sf.joost.test.stx.function;
 
 /**
- * @version $Revision: 1.3 $ $Date: 2009/08/21 12:47:26 $
+ * @version $Revision: 1.1 $ $Date: 2009/08/21 12:47:25 $
  * @author Oliver Becker
  */
-public class AllTests extends TestSuite
-{
-   public static Test suite() {
-      TestSuite suite = new TestSuite();
-      suite.addTest(StxTest.suite());
-      suite.addTest(net.sf.joost.test.trax.AllTests.suite());
-      suite.addTestSuite(ExtensionFunctionTest.class);
-      suite.addTestSuite(TemplateThreadSafetyTest.class);
-      return suite;
+public class ExtensionFunctionTarget {
+
+   private int intValue = -1;
+   private Integer integerValue = new Integer(-1);
+
+   public int getIntValue()
+   {
+      return intValue;
+   }
+
+   public void setIntValue(int intValue)
+   {
+      this.intValue = intValue;
+   }
+
+   public Integer getIntegerValue()
+   {
+      return integerValue;
+   }
+
+   public void setIntegerValue(Integer integerValue)
+   {
+      this.integerValue = integerValue;
+   }
+
+   public void exc() {
+      throw new ExtensionFunctionException();
    }
 }
