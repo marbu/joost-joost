@@ -1,28 +1,36 @@
 /*
- * $Id: Emitter.java,v 1.37 2007/11/25 14:18:01 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: Emitter.java,v 1.38 2009/08/21 12:46:17 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
  * Contributor(s): Thomas Behrends.
  */
 
 package net.sf.joost.stx;
+
+import net.sf.joost.Constants;
+import net.sf.joost.emitter.BufferEmitter;
+import net.sf.joost.emitter.StxEmitter;
+import net.sf.joost.instruction.AbstractInstruction;
+import net.sf.joost.instruction.NodeBase;
+import net.sf.joost.stx.helpers.MutableAttributes;
+import net.sf.joost.stx.helpers.MutableAttributesImpl;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -34,14 +42,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Stack;
 
-import net.sf.joost.Constants;
-import net.sf.joost.emitter.BufferEmitter;
-import net.sf.joost.emitter.StxEmitter;
-import net.sf.joost.instruction.AbstractInstruction;
-import net.sf.joost.instruction.NodeBase;
-import net.sf.joost.stx.helpers.MutableAttributes;
-import net.sf.joost.stx.helpers.MutableAttributesImpl;
-
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -49,11 +49,11 @@ import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.NamespaceSupport;
 
 
-/** 
+/**
  * Emitter acts as a filter between the Processor and the real SAX
  * output handler. It maintains a stack of in-scope namespaces and
  * sends corresponding events to the real output handler.
- * @version $Revision: 1.37 $ $Date: 2007/11/25 14:18:01 $
+ * @version $Revision: 1.38 $ $Date: 2009/08/21 12:46:17 $
  * @author Oliver Becker
  */
 
@@ -71,11 +71,11 @@ public class Emitter implements Constants
    /** Stack for emitted start events, allows well-formedness check */
    private Stack openedElements;
 
-   /** Previous emitter. 
+   /** Previous emitter.
        A new one will be created for each new result event stream. */
    public Emitter prev;
-   
-   // properties of the last element 
+
+   // properties of the last element
    private String lastUri, lastLName, lastQName;
    private MutableAttributes lastAttrs;
    private NodeBase lastInstruction;
@@ -103,10 +103,10 @@ public class Emitter implements Constants
       this.contH = handler;
       this.lexH = handler;
    }
-   
-   
+
+
    /**
-    * Put the current emitter object on a stack and return a new emitter, 
+    * Put the current emitter object on a stack and return a new emitter,
     * which uses the given handler. This method may be overridden.
     * @param handler the STX handler for the new emitter
     * @return a new emitter object
@@ -144,9 +144,10 @@ public class Emitter implements Constants
       catch (SAXException se) {
          errorHandler.error(se.getMessage(),
                             lastInstruction.publicId,
-                            lastInstruction.systemId, 
-                            lastInstruction.lineNo, 
-                            lastInstruction.colNo);
+                            lastInstruction.systemId,
+                            lastInstruction.lineNo,
+                            lastInstruction.colNo,
+                            se);
       }
 
       openedElements.push(lastUri);
@@ -160,13 +161,13 @@ public class Emitter implements Constants
     * Adds a dynamic created attribute (via <code>stx:attribute</code>)
     * @param instruction the instruction that causes this method invocation
     */
-   public void addAttribute(String uri, String qName, String lName, 
+   public void addAttribute(String uri, String qName, String lName,
                             String value, NodeBase instruction)
       throws SAXException
    {
       if (lastAttrs == null) {
          errorHandler.error("Can't create an attribute if there's " +
-                            "no opened element", 
+                            "no opened element",
                             instruction.publicId, instruction.systemId,
                             instruction.lineNo, instruction.colNo);
          return; // if #errorHandler returns
@@ -198,7 +199,7 @@ public class Emitter implements Constants
 
    public void startDocument() throws SAXException
    {
-      if (contH != null) 
+      if (contH != null)
          contH.startDocument();
    }
 
@@ -215,10 +216,10 @@ public class Emitter implements Constants
             processLastElement();
          if (!openedElements.isEmpty()) {
             errorHandler.fatalError(
-               "Missing end tag for '" + openedElements.pop() + 
-               "' at the end of the " + 
-               (contH instanceof BufferEmitter ? "buffer" : "document"), 
-               instruction.getNode().publicId, instruction.getNode().systemId, 
+               "Missing end tag for '" + openedElements.pop() +
+               "' at the end of the " +
+               (contH instanceof BufferEmitter ? "buffer" : "document"),
+               instruction.getNode().publicId, instruction.getNode().systemId,
                instruction.lineNo, instruction.colNo);
          }
          contH.endDocument();
@@ -318,7 +319,7 @@ public class Emitter implements Constants
                "Attempt to emit unmatched end tag " +
                (qName != null ? "'" + qName + "' " : "") +
                "(no element opened)",
-               instruction.getNode().publicId, instruction.getNode().systemId, 
+               instruction.getNode().publicId, instruction.getNode().systemId,
                instruction.lineNo, instruction.colNo);
             return; // if #errorHandler returns
          }
@@ -328,15 +329,15 @@ public class Emitter implements Constants
             errorHandler.fatalError(
                "Attempt to emit unmatched end tag '"+
                qName + "' ('" + elQName + "' expected)",
-               instruction.getNode().publicId, instruction.getNode().systemId, 
+               instruction.getNode().publicId, instruction.getNode().systemId,
                instruction.lineNo, instruction.colNo);
             return; // if #errorHandler returns
          }
          if (!uri.equals(elUri)) {
             errorHandler.fatalError(
-               "Attempt to emit unmatched end tag '{" + uri + "}" + qName + 
+               "Attempt to emit unmatched end tag '{" + uri + "}" + qName +
                "' ('{" + elUri + "}" + elQName + "' expected)",
-               instruction.getNode().publicId, instruction.getNode().systemId, 
+               instruction.getNode().publicId, instruction.getNode().systemId,
                instruction.lineNo, instruction.colNo);
             return; // if #errorHandler returns
          }
@@ -394,9 +395,10 @@ public class Emitter implements Constants
          catch (SAXException ex) {
             errorHandler.fatalError(ex.getMessage(),
                                     instruction.publicId,
-                                    instruction.systemId, 
-                                    instruction.lineNo, 
-                                    instruction.colNo);
+                                    instruction.systemId,
+                                    instruction.lineNo,
+                                    instruction.colNo,
+                                    ex);
          }
       }
    }
@@ -408,7 +410,7 @@ public class Emitter implements Constants
     */
    public void processingInstruction(String target, String data,
                                      NodeBase instruction)
-      throws SAXException 
+      throws SAXException
    {
       if (contH != null) {
          if (lastAttrs != null)
@@ -418,13 +420,14 @@ public class Emitter implements Constants
          }
          catch (SAXException se) {
             errorHandler.error(se.getMessage(),
-                               instruction.publicId, instruction.systemId, 
-                               instruction.lineNo, instruction.colNo);
+                               instruction.publicId, instruction.systemId,
+                               instruction.lineNo, instruction.colNo,
+                               se);
          }
       }
    }
 
-   
+
    /**
     * Creates a comment.
     * @param instruction the instruction that causes this method invocation
@@ -441,8 +444,9 @@ public class Emitter implements Constants
          }
          catch (SAXException se) {
             errorHandler.error(se.getMessage(),
-                               instruction.publicId, instruction.systemId, 
-                               instruction.lineNo, instruction.colNo);
+                               instruction.publicId, instruction.systemId,
+                               instruction.lineNo, instruction.colNo,
+                               se);
          }
       }
    }
@@ -463,8 +467,9 @@ public class Emitter implements Constants
          }
          catch (SAXException se) {
             errorHandler.error(se.getMessage(),
-                               instruction.publicId, instruction.systemId, 
-                               instruction.lineNo, instruction.colNo);
+                               instruction.publicId, instruction.systemId,
+                               instruction.lineNo, instruction.colNo,
+                               se);
          }
          insideCDATA = true;
       }
@@ -479,9 +484,9 @@ public class Emitter implements Constants
          insideCDATA = false;
       }
    }
-   
-   
-   public void createDTD(NodeBase instruction, String name, 
+
+
+   public void createDTD(NodeBase instruction, String name,
                          String publicId, String systemId)
       throws SAXException
    {
@@ -490,8 +495,8 @@ public class Emitter implements Constants
       if (!dtdAllowed) {
          errorHandler.error("Cannot create a document type declaration for '"
                         + name + "' when an element or another DTD has already "
-                        + "been output", 
-                        instruction.publicId, instruction.systemId, 
+                        + "been output",
+                        instruction.publicId, instruction.systemId,
                         instruction.lineNo, instruction.colNo);
          return;
       }
@@ -503,8 +508,9 @@ public class Emitter implements Constants
          }
          catch (SAXException se) {
             errorHandler.error(se.getMessage(),
-                  instruction.publicId, instruction.systemId, 
-                  instruction.lineNo, instruction.colNo);
+                  instruction.publicId, instruction.systemId,
+                  instruction.lineNo, instruction.colNo,
+                  se);
          }
       }
    }
@@ -538,7 +544,7 @@ public class Emitter implements Constants
     *               appended to an existing file
     */
    public Writer getResultWriter(String href, String encoding,
-                                 String publicId, String systemId, 
+                                 String publicId, String systemId,
                                  int lineNo, int colNo, boolean append)
       throws java.io.IOException, SAXException, URISyntaxException
    {
@@ -546,8 +552,8 @@ public class Emitter implements Constants
       // Opening a file twice may lead to unexpected results.
 
       File hrefFile = null; // the file object representing href
-      
-      if (contH instanceof StxEmitter) { // we may extract a base URI 
+
+      if (contH instanceof StxEmitter) { // we may extract a base URI
          String base = ((StxEmitter) contH).getSystemId();
          if (base != null)
             hrefFile = new File(new URI(base).resolve(href));
@@ -557,9 +563,9 @@ public class Emitter implements Constants
             hrefFile = new File(new URI(href));
          else // href is just a path
             hrefFile = new File(href);
-      }      
-      
-      // create missing directories 
+      }
+
+      // create missing directories
       // (say: simply create them, don't check if there are really missing)
       String absFilename = hrefFile.getAbsolutePath();
       int dirPos = absFilename.lastIndexOf(File.separator);
@@ -572,11 +578,11 @@ public class Emitter implements Constants
          osw = new OutputStreamWriter(fos, encoding);
       }
       catch (java.io.UnsupportedEncodingException e) {
-         String msg = 
-            "Unsupported encoding '" + encoding + "', using " + 
+         String msg =
+            "Unsupported encoding '" + encoding + "', using " +
             DEFAULT_ENCODING;
          errorHandler.warning(
-            msg, publicId, systemId, lineNo, colNo);
+            msg, publicId, systemId, lineNo, colNo, e);
          osw = new OutputStreamWriter(fos, encoding = DEFAULT_ENCODING);
       }
       return osw;

@@ -1,5 +1,5 @@
 /*
- * $Id: ProcessBase.java,v 2.18 2008/10/04 17:13:14 obecker Exp $
+ * $Id: ProcessBase.java,v 2.19 2009/08/21 12:46:17 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -46,7 +46,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Common base class for all <code>stx:process-<em>xxx</em></code>
  * instructions
- * @version $Revision: 2.18 $ $Date: 2008/10/04 17:13:14 $
+ * @version $Revision: 2.19 $ $Date: 2009/08/21 12:46:17 $
  * @author Oliver Becker
  */
 public class ProcessBase extends NodeBase
@@ -291,8 +291,8 @@ public class ProcessBase extends NodeBase
       catch (SAXException e) {
          // add locator information
          context.errorHandler.fatalError(e.getMessage(),
-                                         publicId, systemId,
-                                         lineNo, colNo);
+                                         publicId, systemId, lineNo, colNo,
+                                         e);
          return null;
       }
       catch (VariableNotFoundException e) {

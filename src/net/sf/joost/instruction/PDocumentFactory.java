@@ -1,5 +1,5 @@
 /*
- * $Id: PDocumentFactory.java,v 2.19 2008/10/04 17:13:14 obecker Exp $
+ * $Id: PDocumentFactory.java,v 2.20 2009/08/21 12:46:17 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -55,7 +55,7 @@ import org.xml.sax.ext.LexicalHandler;
 /**
  * Factory for <code>process-document</code> elements, which are
  * represented by the inner Instance class.
- * @version $Revision: 2.19 $ $Date: 2008/10/04 17:13:14 $
+ * @version $Revision: 2.20 $ $Date: 2009/08/21 12:46:17 $
  * @author Oliver Becker
  */
 
@@ -210,7 +210,7 @@ public class PDocumentFactory extends FactoryBase
                            log.warn("Accessing " + reader + ": " + ex);
                         context.errorHandler.warning(
                            "Accessing " + reader + ": " + ex,
-                           publicId, systemId, lineNo, colNo);
+                           publicId, systemId, lineNo, colNo, ex);
                      }
                   }
                   else
@@ -241,7 +241,7 @@ public class PDocumentFactory extends FactoryBase
                         log.warn("Accessing " + reader + ": " + ex);
                      context.errorHandler.warning(
                         "Accessing " + reader + ": " + ex,
-                        publicId, systemId, lineNo, colNo);
+                        publicId, systemId, lineNo, colNo, ex);
                   }
                }
 

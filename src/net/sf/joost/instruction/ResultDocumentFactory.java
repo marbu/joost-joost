@@ -1,5 +1,5 @@
 /*
- * $Id: ResultDocumentFactory.java,v 2.22 2008/10/04 17:13:14 obecker Exp $
+ * $Id: ResultDocumentFactory.java,v 2.23 2009/08/21 12:46:17 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -49,7 +49,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Factory for <code>result-document</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.22 $ $Date: 2008/10/04 17:13:14 $
+ * @version $Revision: 2.23 $ $Date: 2009/08/21 12:46:17 $
  * @author Oliver Becker
  */
 
@@ -179,12 +179,12 @@ final public class ResultDocumentFactory extends FactoryBase
          }
          catch (java.io.IOException ex) {
             context.errorHandler.error(ex.toString(),
-                                       publicId, systemId, lineNo, colNo);
+                                       publicId, systemId, lineNo, colNo, ex);
             return PR_CONTINUE; // if the errorHandler returns
          }
          catch (URISyntaxException ex) {
             context.errorHandler.error(ex.toString(),
-                                       publicId, systemId, lineNo, colNo);
+                                       publicId, systemId, lineNo, colNo, ex);
             return PR_CONTINUE; // if the errorHandler returns
          }
          catch (TransformerException ex) {
@@ -217,7 +217,8 @@ final public class ResultDocumentFactory extends FactoryBase
          catch (java.io.IOException ex) {
             context.errorHandler.error(ex.toString(),
                                        publicId, systemId,
-                                       nodeEnd.lineNo, nodeEnd.colNo);
+                                       nodeEnd.lineNo, nodeEnd.colNo,
+                                       ex);
          }
          catch (TransformerException ex) {
             context.errorHandler.error(ex);

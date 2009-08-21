@@ -1,5 +1,5 @@
 /*
- * $Id: AnalyzeTextFactory.java,v 1.12 2008/10/04 17:13:14 obecker Exp $
+ * $Id: AnalyzeTextFactory.java,v 1.13 2009/08/21 12:46:17 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -44,7 +44,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Factory for <code>analyze-text</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 1.12 $ $Date: 2008/10/04 17:13:14 $
+ * @version $Revision: 1.13 $ $Date: 2009/08/21 12:46:17 $
  * @author Oliver Becker
  */
 
@@ -237,7 +237,7 @@ final public class AnalyzeTextFactory extends FactoryBase
                catch (EvalException e) {
                   context.errorHandler.fatalError(e.getMessage(),
                                                   publicId, systemId,
-                                                  lineNo, colNo);
+                                                  lineNo, colNo, e);
                   return PR_ERROR;
                }
             }

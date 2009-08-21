@@ -1,5 +1,5 @@
 /*
- * $Id: PBufferFactory.java,v 2.16 2008/10/04 17:13:14 obecker Exp $
+ * $Id: PBufferFactory.java,v 2.17 2009/08/21 12:46:17 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -45,7 +45,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Factory for <code>process-buffer</code> elements, which are
  * represented by the inner Instance class.
- * @version $Revision: 2.16 $ $Date: 2008/10/04 17:13:14 $
+ * @version $Revision: 2.17 $ $Date: 2009/08/21 12:46:17 $
  * @author Oliver Becker
  */
 
@@ -171,7 +171,8 @@ public class PBufferFactory extends FactoryBase
                // add locator information
                context.errorHandler.fatalError(e.getMessage(),
                                                publicId, systemId,
-                                               lineNo, colNo);
+                                               lineNo, colNo,
+                                               e);
                return PR_ERROR;
             }
             // catch any unchecked exception
@@ -182,7 +183,7 @@ public class PBufferFactory extends FactoryBase
                e.printStackTrace(new java.io.PrintWriter(sw));
                context.errorHandler.fatalError(
                   "External processing failed: " + sw,
-                  publicId, systemId, lineNo, colNo);
+                  publicId, systemId, lineNo, colNo, e);
                return PR_ERROR;
             }
          }

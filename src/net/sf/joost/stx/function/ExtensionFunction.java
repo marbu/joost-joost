@@ -1,5 +1,5 @@
 /*
- * $Id: ExtensionFunction.java,v 1.5 2008/10/04 17:20:48 obecker Exp $
+ * $Id: ExtensionFunction.java,v 1.6 2009/08/21 12:46:17 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -44,7 +44,7 @@ import org.xml.sax.SAXParseException;
  * An instance of this class represents a Java extension function. Parts of this
  * code are taken from Michael Kay's Saxon XSLT processor implementation.
  *
- * @version $Revision: 1.5 $ $Date: 2008/10/04 17:20:48 $
+ * @version $Revision: 1.6 $ $Date: 2009/08/21 12:46:17 $
  * @author Oliver Becker
  */
 final public class ExtensionFunction implements Instance
@@ -361,17 +361,17 @@ final public class ExtensionFunction implements Instance
          }
          catch (IllegalAccessException err1) {
             throw new EvalException("Method access is illegal " +
-                                    err1.getMessage());
+                                    err1.getMessage(), err1);
          }
          catch (IllegalArgumentException err2) {
             throw new EvalException("Argument is of wrong type " +
-                                    err2.getMessage());
+                                    err2.getMessage(), err2);
          }
          catch (InvocationTargetException err3) {
             throw new EvalException(
                "Exception in extension method '" +
                theMethod.getName() + "': " +
-               err3.getTargetException().toString());
+               err3.getTargetException().toString(), err3);
          }
       }
    }

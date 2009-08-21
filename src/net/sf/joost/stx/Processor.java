@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.60 2008/10/12 17:29:12 obecker Exp $
+ * $Id: Processor.java,v 2.61 2009/08/21 12:46:17 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -71,7 +71,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.60 $ $Date: 2008/10/12 17:29:12 $
+ * @version $Revision: 2.61 $ $Date: 2009/08/21 12:46:17 $
  * @author Oliver Becker
  */
 
@@ -1493,7 +1493,7 @@ public class Processor extends XMLFilterImpl
          NodeBase nb = context.currentInstruction;
          context.errorHandler.fatalError(
            "External processing failed: " + sw,
-           nb.publicId, nb.systemId, nb.lineNo, nb.colNo);
+           nb.publicId, nb.systemId, nb.lineNo, nb.colNo, e);
       }
    }
 
@@ -1536,7 +1536,7 @@ public class Processor extends XMLFilterImpl
          NodeBase nb = context.currentInstruction;
          context.errorHandler.fatalError(
            "External processing failed: " + sw,
-           nb.publicId, nb.systemId, nb.lineNo, nb.colNo);
+           nb.publicId, nb.systemId, nb.lineNo, nb.colNo, e);
       }
    }
 

@@ -1,5 +1,5 @@
 /*
- * $Id: MessageFactory.java,v 2.10 2008/10/04 17:13:14 obecker Exp $
+ * $Id: MessageFactory.java,v 2.11 2009/08/21 12:46:17 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -46,7 +46,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Factory for <code>message</code> elements, which are represented by
  * the inner Instance class.
- * @version $Revision: 2.10 $ $Date: 2008/10/04 17:13:14 $
+ * @version $Revision: 2.11 $ $Date: 2009/08/21 12:46:17 $
  * @author Oliver Becker
  */
 
@@ -172,7 +172,8 @@ final public class MessageFactory extends FactoryBase
             catch (java.io.IOException ex) {
                context.errorHandler.fatalError(ex.toString(),
                                                publicId, systemId,
-                                               lineNo, colNo);
+                                               lineNo, colNo,
+                                               ex);
                return PR_CONTINUE; // if the errorHandler returns
             }
          }
