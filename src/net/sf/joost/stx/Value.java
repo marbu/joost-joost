@@ -1,22 +1,22 @@
 /*
- * $Id: Value.java,v 1.24 2007/11/25 14:18:01 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: Value.java,v 1.25 2009/08/21 12:39:43 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
  * Contributor(s): Thomas Behrends, Charles Brown.
@@ -24,17 +24,17 @@
 
 package net.sf.joost.stx;
 
+import net.sf.joost.grammar.EvalException;
+
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import net.sf.joost.grammar.EvalException;
-
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.24 $ $Date: 2007/11/25 14:18:01 $
+ * @version $Revision: 1.25 $ $Date: 2009/08/21 12:39:43 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -46,10 +46,10 @@ public class Value implements Cloneable
       numberFormat.setGroupingUsed(false);
       numberFormat.setMinimumFractionDigits(0);
       numberFormat.setMaximumFractionDigits(325);
-      // The smallest double is 2^-1074, that is 4.9E-324, 
+      // The smallest double is 2^-1074, that is 4.9E-324,
       // so 325 digits should be enough
    }
-   
+
    // value constants
    public final static Value VAL_TRUE = new Value(true);
    public final static Value VAL_FALSE = new Value(false);
@@ -60,7 +60,7 @@ public class Value implements Cloneable
 
 
    /** type constant */
-   public static final int 
+   public static final int
       EMPTY   = 0,
       NODE    = 1,
       BOOLEAN = 2,
@@ -87,10 +87,10 @@ public class Value implements Cloneable
    private Object object;
 
 
-   /** 
+   /**
     * The next value of the sequence. A sequence is simply a chained list
-    * of Value objects. The empty sequence is represented by a 
-    * {@link #type} set to {@link #NODE} and {@link #event} set to 
+    * of Value objects. The empty sequence is represented by a
+    * {@link #type} set to {@link #NODE} and {@link #event} set to
     * <code>null</code> (<code>next</code> must be <code>null</code> in
     * this case, too).
     */
@@ -118,7 +118,7 @@ public class Value implements Cloneable
    {
       return b ? VAL_TRUE : VAL_FALSE;
    }
-   
+
    /** Constructs a <code>Value</code> containing a boolean */
    private Value(boolean b)
    {
@@ -134,7 +134,7 @@ public class Value implements Cloneable
    }
 
    /**
-    * Constructs a <code>Value</code> containing a node 
+    * Constructs a <code>Value</code> containing a node
     * (<code>{@link SAXEvent}</code>).
     * @param e the event
     */
@@ -213,7 +213,7 @@ public class Value implements Cloneable
          return Double.NaN;
       case BOOLEAN:
          return (bool ? 1.0 : 0.0);
-      case NODE: 
+      case NODE:
       case OBJECT:
          try {
             return Double.parseDouble(getStringValue());
@@ -231,7 +231,7 @@ public class Value implements Cloneable
          }
       default:
          // Mustn't happen
-         throw new RuntimeException("Don't know how to convert " + type + 
+         throw new RuntimeException("Don't know how to convert " + type +
                                     " to number");
       }
    }
@@ -266,7 +266,7 @@ public class Value implements Cloneable
          return object != null ? object.toString() : "";
       default:
          // Mustn't happen
-         throw new RuntimeException("Don't know how to convert " + type + 
+         throw new RuntimeException("Don't know how to convert " + type +
                                     " to string");
       }
    }
@@ -289,7 +289,7 @@ public class Value implements Cloneable
          return object == null ? false : !object.toString().equals("");
       default:
          // Mustn't happen
-         throw new RuntimeException("Don't know how to convert " + type + 
+         throw new RuntimeException("Don't know how to convert " + type +
                                     " to boolean");
       }
    }
@@ -297,7 +297,7 @@ public class Value implements Cloneable
 
    // Misc
 
-   /** 
+   /**
     * Creates a full copy of the sequence represented by this value.
     */
    public Value copy()
@@ -309,13 +309,13 @@ public class Value implements Cloneable
    	ret.object = object;
    	ret.string = string;
    	ret.type = type;
-   	if (next != null) 
+   	if (next != null)
            ret.next = next.copy();
    	return ret;
    }
 
-   /** 
-    * Returns a single value that is a copy of this value 
+   /**
+    * Returns a single value that is a copy of this value
     */
    public Value singleCopy()
    {
@@ -329,7 +329,7 @@ public class Value implements Cloneable
       return VAL_EMPTY;
    }
 
-   /** 
+   /**
     * Creates a sequence by concatenating two values (which are possibly
     * already sequences
     * @param v1 first value (first part of the resulting sequence)
@@ -363,14 +363,14 @@ public class Value implements Cloneable
     * Determines the conversion distance of the contained value to the
     * specified target Java class. Lower results indicate higher preferences.
     * @param target the class to which a conversion is desired
-    * @return an individual distance value, or 
+    * @return an individual distance value, or
     * {@link Double#POSITIVE_INFINITY} if a conversion is not possible
     */
    public double getDistanceTo(Class target)
    {
       if (type == OBJECT) {
          if (object == null || target == Object.class)   return 2;
-         if (target == object.getClass())                return 0; 
+         if (target == object.getClass())                return 0;
          if (target.isAssignableFrom(object.getClass())) return 1;
          if (target == String.class)                     return 100;
       }
@@ -388,7 +388,7 @@ public class Value implements Cloneable
          if (target == boolean.class)   return 0;
          if (target == Boolean.class)   return 1;
          if (target == byte.class)      return 10;
-         if (target == Byte.class)      return 11; 
+         if (target == Byte.class)      return 11;
          if (target == short.class)     return 12;
          if (target == Short.class)     return 13;
          if (target == int.class)       return 14;
@@ -415,7 +415,7 @@ public class Value implements Cloneable
          if (target == short.class)     return 8;
          if (target == Short.class)     return 9;
          if (target == byte.class)      return 10;
-         if (target == Byte.class)      return 11; 
+         if (target == Byte.class)      return 11;
          if (target == String.class)    return 20;
          if (target == char.class)      return 31;
          if (target == Character.class) return 32;
@@ -423,7 +423,7 @@ public class Value implements Cloneable
          if (target == Boolean.class)   return 34;
          break;
       case NODE: // treat NODE and STRING equal
-      case STRING: 
+      case STRING:
          if (target == String.class)    return 0;
          if (target == char.class)      return 1;
          if (target == Character.class) return 2;
@@ -438,7 +438,7 @@ public class Value implements Cloneable
          if (target == short.class)     return 18;
          if (target == Short.class)     return 19;
          if (target == byte.class)      return 20;
-         if (target == Byte.class)      return 21; 
+         if (target == Byte.class)      return 21;
          if (target == boolean.class)   return 30;
          if (target == Boolean.class)   return 31;
          break;
@@ -466,7 +466,7 @@ public class Value implements Cloneable
             throw new RuntimeException("Fatal: unexpected type " + type);
          }
       }
-      else if (type == OBJECT && 
+      else if (type == OBJECT &&
             (object == null || target.isAssignableFrom(object.getClass()))) {
          // target is a superclass of object's class (or they are the same)
          return object;
@@ -485,6 +485,10 @@ public class Value implements Cloneable
       }
       else if (target == String.class) {
          return getStringValue();
+      }
+      else if (type == STRING && "".equals(string) && !target.isPrimitive()) {
+         // convert the "" to null if the target is a non-string reference type
+         return null;
       }
       else if (target == boolean.class || target == Boolean.class) {
          return new Boolean(getBooleanValue());
@@ -512,11 +516,11 @@ public class Value implements Cloneable
          if (string.length() == 1)
             return new Character(s.charAt(0));
          else
-            throw new EvalException("Cannot convert string '" + string + 
+            throw new EvalException("Cannot convert string '" + string +
                                     "' to character (length is not 1)");
       }
       else
-         throw new EvalException("Conversion to " + target.getName() + 
+         throw new EvalException("Conversion to " + target.getName() +
                                  " is not supported");
    }
 
