@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.25 2009/08/21 12:39:43 obecker Exp $
+ * $Id: Value.java,v 1.26 2009/08/21 14:58:42 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -34,7 +34,7 @@ import java.util.Locale;
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.25 $ $Date: 2009/08/21 12:39:43 $
+ * @version $Revision: 1.26 $ $Date: 2009/08/21 14:58:42 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -166,7 +166,9 @@ public class Value implements Cloneable
          bool = ((Boolean)obj).booleanValue();
          return;
       }
-      else if (obj instanceof Number) {
+      else if (obj instanceof Number
+            && obj.getClass().getPackage().getName().equals("java.lang")) {
+         // convert only base Number values
          type = NUMBER;
          number = ((Number) obj).doubleValue();
          return;

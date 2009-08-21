@@ -1,5 +1,5 @@
 /*
- * $Id: ExtensionFunctionTarget.java,v 1.1 2009/08/21 12:47:25 obecker Exp $
+ * $Id: ExtensionFunctionTarget.java,v 1.2 2009/08/21 14:58:41 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -23,14 +23,17 @@
  */
 package net.sf.joost.test.stx.function;
 
+import java.math.BigInteger;
+
 /**
- * @version $Revision: 1.1 $ $Date: 2009/08/21 12:47:25 $
+ * @version $Revision: 1.2 $ $Date: 2009/08/21 14:58:41 $
  * @author Oliver Becker
  */
 public class ExtensionFunctionTarget {
 
-   private int intValue = -1;
-   private Integer integerValue = new Integer(-1);
+   private int intValue = Integer.MIN_VALUE;
+   private Integer integerValue = new Integer(Integer.MIN_VALUE);
+   private BigInteger bigIntegerValue = BigInteger.ZERO;
 
    public int getIntValue()
    {
@@ -50,6 +53,20 @@ public class ExtensionFunctionTarget {
    public void setIntegerValue(Integer integerValue)
    {
       this.integerValue = integerValue;
+   }
+
+   public BigInteger getBigIntegerValue()
+   {
+      return bigIntegerValue;
+   }
+
+   public void setBigIntegerValue(BigInteger bigIntegerValue)
+   {
+      this.bigIntegerValue = bigIntegerValue;
+   }
+
+   public static BigInteger parseBigInt(long value) {
+      return BigInteger.valueOf(value);
    }
 
    public void exc() {

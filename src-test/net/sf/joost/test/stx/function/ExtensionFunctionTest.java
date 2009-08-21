@@ -1,5 +1,5 @@
 /*
- * $Id: ExtensionFunctionTest.java,v 1.1 2009/08/21 12:47:25 obecker Exp $
+ * $Id: ExtensionFunctionTest.java,v 1.2 2009/08/21 14:58:41 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -26,8 +26,9 @@ package net.sf.joost.test.stx.function;
 import net.sf.joost.trax.TransformerFactoryImpl;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -39,7 +40,7 @@ import javax.xml.transform.stream.StreamSource;
 import junit.framework.TestCase;
 
 /**
- * @version $Revision: 1.1 $ $Date: 2009/08/21 12:47:25 $
+ * @version $Revision: 1.2 $ $Date: 2009/08/21 14:58:41 $
  * @author Oliver Becker
  */
 public class ExtensionFunctionTest extends TestCase
@@ -55,7 +56,10 @@ public class ExtensionFunctionTest extends TestCase
       transformer.setParameter("target", target);
       transformer.transform(
             new StreamSource(new ByteArrayInputStream("<x/>".getBytes())),
-            new StreamResult(new ByteArrayOutputStream()));
+            new StreamResult(new OutputStream() {
+               public void write(int b) throws IOException
+               { }
+            }));
    }
 
    public void testIntegerValues() throws TransformerException
@@ -74,6 +78,14 @@ public class ExtensionFunctionTest extends TestCase
 
       assertEquals(0, target.getIntValue());
       assertNull(target.getIntegerValue());
+   }
+
+   public void testBigIntegerValue() throws TransformerException
+   {
+      ExtensionFunctionTarget target = new ExtensionFunctionTarget();
+      doTransform(target, "extensionFunctionBigInt.stx");
+
+      assertEquals(42, target.getBigIntegerValue().intValue());
    }
 
    public void testException()
