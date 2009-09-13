@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.25 2007/07/18 20:58:31 obecker Exp $
+ | $Id: build.xml,v 1.26 2009/09/13 20:29:55 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -12,9 +12,12 @@
   <property name="src.samples" value="src-samples" />
   <property name="classes" value="classes" />
   <property name="doc" value="doc" />
-  <property name="grammar.dir" value="${src}/net/sf/joost/grammar" />
+  <property name="pkg.dir" value="/net/sf/joost" />
+  <property name="grammar.dir" value="${src}${pkg.dir}/grammar" />
   <property name="grammar.package" value="net.sf.joost.grammar" />
   <property name="genHelper" value="joostGen.jar" />
+  
+  <property file="${src}${pkg.dir}/version.properties" />
   
   <taskdef name="preprocess" classname="net.sf.joost.helper.ant.Preprocess"
            classpath="lib/${genHelper}" />
@@ -125,11 +128,11 @@
 
   
   <target name="jar" depends="dep, mk.classes"
-          description="creates joost.jar (without test classes and debug information)">
+          description="creates joost.jar (without test classes)">
     <delete dir="${classes}" />
     <mkdir dir="${classes}" />
     <javac srcdir="${src}" destdir="${classes}" classpathref="cp" 
-           source="1.4" target="1.4" optimize="true"/>
+           source="1.4" target="1.4" optimize="true" debug="on" />
     <antcall target="compile-non-java" />
     <jar jarfile="${ant.project.name}.jar"
          basedir="${classes}"
@@ -148,9 +151,10 @@
       </fileset>
     </copy>
     <!-- update version file -->
-    <property name="version" location="${classes}/net/sf/joost/version.txt" />
-    <replace file="${version}" token="@@@DATE@@@" value="${date.today}" />
-    <replace file="${version}" token="@@@USER@@@" value="${user.name}" />
+    <property name="version-file" location="${classes}${pkg.dir}/version.txt" />
+    <replace file="${version-file}" token="@@@DATE@@@" value="${date.today}" />
+    <replace file="${version-file}" token="@@@USER@@@" value="${user.name}" />
+    <replace file="${version-file}" token="@@@VERSION@@@" value="${joost.version}" />
   </target>
 
 
@@ -163,6 +167,7 @@
     description="creates the API documentation in the doc/api subdirectory">
     <copy file="docsrc/index.html" tofile="doc/index.html" overwrite="true" />
     <replace file="doc/index.html" token="@@@DATE@@@" value="${date.today}" />
+    <replace file="doc/index.html" token="@@@VERSION@@@" value="${joost.version}" />
     <javadoc sourcepath="${src}" destdir="${doc}/api"
              link="http://java.sun.com/j2se/1.4.2/docs/api"
              packagenames="net.sf.joost, net.sf.joost.instruction,
@@ -205,12 +210,8 @@
     <cvs cvsRoot=":pserver:anonymous@joost.cvs.sourceforge.net:/cvsroot/joost"
          command="export" dest="${dist}" date="today"
          package="${ant.project.name}" />
-    <!-- rename the directory name from "joost" to something like
-         "joost-20020401" -->
-    <tstamp>
-      <format property="date.version" pattern="yyyyMMdd" />
-    </tstamp>
-    <property name="dist.name" value="${ant.project.name}-${date.version}" />
+    <!-- rename the directory name from "joost" to "joost-{version}" -->
+    <property name="dist.name" value="${ant.project.name}-${joost.version}" />
     <move todir="${dist}/${dist.name}">
       <fileset dir="${dist}/${ant.project.name}" />
     </move>
@@ -236,7 +237,11 @@
       <fileset dir="../test"
                includesfile="conf/examples.inc" excludes="*.res"/>
     </copy>
-    <!-- first: source distribution -->
+    <!-- first: create files for the maven repository -->
+    <copy file="${dist}/${dist.name}/joost.jar" tofile="${dist.name}.jar" />
+    <jar basedir="${dist}/${dist.name}/${src}"
+         destfile="${dist.name}-sources.jar" />
+    <!-- second: assemble source distribution -->
     <!-- create .tar.gz -->
     <tar tarfile="${ant.project.name}-src.tar">
       <tarfileset dir="${dist}">
@@ -261,7 +266,7 @@
     <!-- create .zip -->
     <zip basedir="${dist}"
          destfile="${dist.name}-src.zip" />
-    <!-- second: binary distribution -->
+    <!-- third: assemble binary distribution -->
     <!-- remove sources and apidoc -->
     <delete includeEmptyDirs="true">
       <fileset dir="${dist}/${dist.name}">
@@ -270,7 +275,7 @@
         <include name="ISSUES" />
         <include name="build.xml" />
         <include name="${src}/**" />
-        <include name="${src.text}/**" />
+        <include name="${src.test}/**" />
         <include name="${src.samples}/**" />
         <include name="conf/**" />
         <include name="lib/**" />
