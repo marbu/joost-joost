@@ -1,5 +1,5 @@
 /*
- * $Id: THResolver.java,v 1.4 2007/05/19 10:15:52 obecker Exp $
+ * $Id: THResolver.java,v 1.5 2009/09/22 21:13:43 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,8 +24,13 @@
 
 package net.sf.joost.plugins.httppostfilter;
 
+import net.sf.joost.Constants;
+import net.sf.joost.OptionalLog;
+import net.sf.joost.TransformerHandlerResolver;
+
 import java.util.Hashtable;
 
+import javax.xml.transform.ErrorListener;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.sax.TransformerHandler;
 
@@ -33,25 +38,21 @@ import org.apache.commons.logging.Log;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-import net.sf.joost.Constants;
-import net.sf.joost.OptionalLog;
-import net.sf.joost.TransformerHandlerResolver;
-
 /**
  * Implementation of HTTP-Post filter.
- * 
+ *
  * Filter URI: http://www.ietf.org/rfc/rfc2616.txt#POST
- * 
+ *
  * Example:
  *    ...
- *    <stx:process-self 
+ *    <stx:process-self
  *        filter-method="http://www.ietf.org/rfc/rfc2616.txt#POST"
  *    >
  *       <stx:with-param name="target" select="http://myWebServerIP" />
  *    </stx:process-self>
  *    ...
- * 
- * @version $Revision: 1.4 $ $Date: 2007/05/19 10:15:52 $
+ *
+ * @version $Revision: 1.5 $ $Date: 2009/09/22 21:13:43 $
  * @author Oliver Becker
  */
 
@@ -60,10 +61,10 @@ public final class THResolver
 {
    /** The URI identifying an STX transformation */
    public static final String HTTP_POST_METHOD = "http://www.ietf.org/rfc/rfc2616.txt#POST";
-   
+
    /** logging object */
    private static Log log = OptionalLog.getLog(THResolver.class);
-   
+
    /**
     * It return supported URIs, in this case @HTTP_POST_METHOD
     */
@@ -71,65 +72,67 @@ public final class THResolver
        final String[] uris = { HTTP_POST_METHOD };
        return uris;
    }
-   
+
    /**
     * If given method is {@link #HTTP_POST_METHOD} return cached (or new)
     * Trax compatible instance.
-    * otherwise return <code>null</code>. 
+    * otherwise return <code>null</code>.
     */
    public TransformerHandler resolve(
-       String method, 
-       String href, 
+       String method,
+       String href,
        String base,
        URIResolver uriResolver,
+       ErrorListener errorListener,
        Hashtable params
    ) throws SAXException
    {
-      return resolve(method, href, base, uriResolver, null, params );
+      return resolve(method, href, base, null, params );
    }
 
 
    /**
     * If given method is {@link #HTTP_POST_METHOD} return cached (or new)
     * Trax compatible instance.
-    * otherwise return <code>null</code>. 
+    * otherwise return <code>null</code>.
     */
    public TransformerHandler resolve(
-       String method, 
-       XMLReader reader, 
+       String method,
+       XMLReader reader,
+       URIResolver uriResolver,
+       ErrorListener errorListener,
        Hashtable params
    ) throws SAXException
    {
-      return resolve(method, null, null, null, reader, params );
+      return resolve(method, null, null, reader, params );
    }
 
 
    /**
     * actual business logic related to POST. Used by both resolve methods.
     */
-   protected TransformerHandler resolve(
-       String method, 
-       String href, 
+   private TransformerHandler resolve(
+       String method,
+       String href,
        String base,
-       URIResolver uriResolver,
-       XMLReader reader, 
+       XMLReader reader,
        Hashtable params
    ) throws SAXException
    {
        if (Constants.DEBUG)
           log.debug("hppt-post-filter : resolve '" + method + "'");
-       
+
        if ( ! available(method) )
            throw new SAXException("Not supported filter-method!");
-        
+
        if ( (reader != null) || (href != null) )
            throw new SAXException("Attribute 'filter-src' not allowed for method '" + method + "'");
-        
+
        String v = String.valueOf(params.get("target"));
        if (v == null)
-          throw new SAXException("Missing parameter 'target' for filter " + 
+          throw new SAXException("Missing parameter 'target' for filter " +
                                  "method '" + method + "'");
-       
+
        return new HttpPostHandler( v );
    }
 

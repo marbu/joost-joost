@@ -1,31 +1,35 @@
 /*
- * $Id: NSFilter.java,v 1.1 2007/07/15 15:32:29 obecker Exp $
- * 
- * The contents of this file are subject to the Mozilla Public License 
- * Version 1.1 (the "License"); you may not use this file except in 
+ * $Id: NSFilter.java,v 1.2 2009/09/22 21:13:44 obecker Exp $
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the 
+ * for the specific language governing rights and limitations under the
  * License.
  *
  * The Original Code is: this file
  *
  * The Initial Developer of the Original Code is Oliver Becker.
  *
- * Portions created by  ______________________ 
- * are Copyright (C) ______ _______________________. 
+ * Portions created by  ______________________
+ * are Copyright (C) ______ _______________________.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________. 
+ * Contributor(s): ______________________________________.
  */
 
 package net.sf.joost.samples;
 
+import net.sf.joost.TransformerHandlerResolver;
+import net.sf.joost.trax.TrAXConstants;
+
 import java.util.Hashtable;
 
+import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Result;
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.Transformer;
@@ -37,9 +41,6 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import net.sf.joost.TransformerHandlerResolver;
-import net.sf.joost.trax.TrAXConstants;
-
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -50,7 +51,7 @@ import org.xml.sax.helpers.XMLFilterImpl;
 /**
  * Example class that demonstrates the usage of external filters in Joost.
  * <p>
- * For simplicity this example comprises three tasks within one class: 
+ * For simplicity this example comprises three tasks within one class:
  * <ul>
  * <li>starting the application in the main method, registering an object
  *     as a resolver for TransformerHandler objects</li>
@@ -58,19 +59,19 @@ import org.xml.sax.helpers.XMLFilterImpl;
  * <li>acting as a TransformerHandler, that removes all elements in a
  *     given namespace (passed as a parameter)</li>
  * </ul>
- * @version $Revision: 1.1 $ $Date: 2007/07/15 15:32:29 $
+ * @version $Revision: 1.2 $ $Date: 2009/09/22 21:13:44 $
  * @author Oliver Becker
  */
 
-public class NSFilter 
-   extends XMLFilterImpl 
+public class NSFilter
+   extends XMLFilterImpl
    implements TransformerHandler, TransformerHandlerResolver
 {
    public static void main(String[] args)
    {
       // example transformation
       String testSTX = "NSFilter.stx";
-      
+
       // use Joost as transformation engine
       System.setProperty("javax.xml.transform.TransformerFactory",
                          "net.sf.joost.trax.TransformerFactoryImpl");
@@ -111,21 +112,22 @@ public class NSFilter
    //
 
 
-   /** 
+   /**
     * The filter-method attribute value to be used in the STX transformation
     * sheet
     */
-   private static final String METHOD = 
+   private static final String METHOD =
       "http://joost.sf.net/samples/NSFilter";
 
    public TransformerHandler resolve(String method, String href, String base,
                                      URIResolver uriResolver,
+                                     ErrorListener errorListener,
                                      Hashtable params)
       throws SAXException
    {
       if (METHOD.equals(method)) {
          if (href != null)
-            throw new SAXException("Specification of an external source '" + 
+            throw new SAXException("Specification of an external source '" +
                                    href + "' not allowed for " + method);
          skipUri = String.valueOf(params.get("uri"));
          return this;
@@ -135,10 +137,12 @@ public class NSFilter
    }
 
    public TransformerHandler resolve(String method, XMLReader reader,
+                                     URIResolver uriResolver,
+                                     ErrorListener errorListener,
                                      Hashtable params)
       throws SAXException
    {
-      if (METHOD.equals(method)) 
+      if (METHOD.equals(method))
          throw new SAXException("Provision of internal code not allowed for "
                                 + method);
       else
@@ -232,7 +236,7 @@ public class NSFilter
       throws SAXException
    {
       if (skipDepth == 0 && lexH != null)
-         lexH.endCDATA(); 
+         lexH.endCDATA();
    }
 
    public void comment(char[] ch, int start, int length)
@@ -254,7 +258,7 @@ public class NSFilter
       if (result instanceof SAXResult) {
          SAXResult sresult = (SAXResult)result;
          // to be used by XMLFilterImpl
-         setContentHandler(sresult.getHandler()); 
+         setContentHandler(sresult.getHandler());
          lexH = sresult.getLexicalHandler();
       }
       else {

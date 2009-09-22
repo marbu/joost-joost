@@ -1,5 +1,5 @@
 /*
- * $Id: THResolver.java,v 1.3 2006/04/09 21:36:44 obecker Exp $
+ * $Id: THResolver.java,v 1.4 2009/09/22 21:13:44 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -24,8 +24,13 @@
 
 package net.sf.joost.plugins.saxfilter;
 
+import net.sf.joost.Constants;
+import net.sf.joost.OptionalLog;
+import net.sf.joost.TransformerHandlerResolver;
+
 import java.util.Hashtable;
 
+import javax.xml.transform.ErrorListener;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.sax.TransformerHandler;
 
@@ -33,26 +38,22 @@ import org.apache.commons.logging.Log;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-import net.sf.joost.Constants;
-import net.sf.joost.OptionalLog;
-import net.sf.joost.TransformerHandlerResolver;
-
 
 /**
  * Implementation of SAX as Trax filter.
- * 
+ *
  * Filter URI: http://xml.org/sax
- * 
+ *
  * Example:
  *    ...
- *    <stx:process-self 
+ *    <stx:process-self
  *        filter-method="http://xml.org/sax"
- *           filter-src="url('your-file.stx')" 
+ *           filter-src="url('your-file.stx')"
  *    />
  *    ...
- * 
- * @version $Revision: 1.3 $ $Date: 2006/04/09 21:36:44 $
- * @author Oliver Becker
+ *
+ * @version $Revision: 1.4 $ $Date: 2009/09/22 21:13:44 $
+ * @author Oliver Becker, Nikolay Fiykov
  */
 
 public final class THResolver
@@ -60,10 +61,10 @@ public final class THResolver
 {
    /** The URI identifying an STX transformation */
    public static final String SAX_METHOD = "http://xml.org/sax";
-   
+
    /** logging object */
    private static Log log = OptionalLog.getLog(THResolver.class);
-   
+
    /**
     * It return supported URIs, in this case @SAX_METHOD
     */
@@ -71,62 +72,64 @@ public final class THResolver
        final String[] uris = { SAX_METHOD };
        return uris;
    }
-   
+
    /**
     * If given method is {@link #SAX_METHOD} return cached (or new)
     * Trax compatible instance.
-    * otherwise return <code>null</code>. 
+    * otherwise return <code>null</code>.
     */
    public TransformerHandler resolve(
-       String method, 
-       String href, 
+       String method,
+       String href,
        String base,
        URIResolver uriResolver,
+       ErrorListener errorListener,
        Hashtable params
    ) throws SAXException
    {
-      return resolve(method, href, base, uriResolver, null, params);
+      return resolve(method, href, base, null, params);
    }
 
 
    /**
     * If given method is {@link #SAX_METHOD} return cached (or new)
     * Trax compatible instance.
-    * otherwise return <code>null</code>. 
+    * otherwise return <code>null</code>.
     */
    public TransformerHandler resolve(
-       String method, 
-       XMLReader reader, 
+       String method,
+       XMLReader reader,
+       URIResolver uriResolver,
+       ErrorListener errorListener,
        Hashtable params
    ) throws SAXException
    {
-      return resolve(method, null, null, null, reader, params);
+      return resolve(method, null, null, reader, params);
    }
 
 
    /**
     * If given method is @SAX_METHOD return cached (or new)
     * Trax compatible instance.
-    * otherwise return null. 
+    * otherwise return null.
     */
-   protected TransformerHandler resolve(
-       String method, 
-       String href, 
+   private TransformerHandler resolve(
+       String method,
+       String href,
        String base,
-       URIResolver uriResolver,
-       XMLReader reader, 
+       XMLReader reader,
        Hashtable params
    ) throws SAXException
    {
        if (Constants.DEBUG)
            log.debug("sax-filter : resolve '"+method+"'");
-       
+
        if ( ! available(method) )
            throw new SAXException("Not supported filter-method!");
-        
+
        if ( (reader != null) || (href != null) )
            throw new SAXException("Attribute 'filter-src' not allowed for method '" + method + "'");
-        
+
        return new SAXWrapperHandler();
    }
 

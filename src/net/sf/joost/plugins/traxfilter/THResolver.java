@@ -1,5 +1,5 @@
 /*
- * $Id: THResolver.java,v 1.10 2009/03/15 13:51:37 obecker Exp $
+ * $Id: THResolver.java,v 1.11 2009/09/22 21:13:44 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -38,6 +38,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Properties;
 
+import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -55,15 +56,15 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 /**
- * Implementation of Trax XSLT and STX filters.
+ * Implementation of TrAX XSLT and STX filters.
  *
  * Filter URIs: http://www.w3.org/1999/XSL/Transform
  * http://stx.sourceforge.net/2002/ns
  *
- * It works by instantiating a TraX SAX TransformerHandler and delegating the
+ * It works by instantiating a TrAX SAX TransformerHandler and delegating the
  * execution to it.
  *
- * Particual Trax transformer can be specified by system property
+ * Particual TrAX transformer can be specified by system property
  * javax.xml.transform.TransformerFactory.
  *
  * Examples: ... <stx:process-self
@@ -91,24 +92,24 @@ import org.xml.sax.XMLReader;
  * Possible values are true or false, false by default.</li>
  *
  * <li>http://stx.sourceforge.net/2002/ns/trax-filter:FACTORY
- * Specifies what Trax factory is to be used. This is necessary when you want to
+ * Specifies what TrAX factory is to be used. This is necessary when you want to
  * specify factory different than build-in ones such as Xalan's XTLTC for instance.
  * Possible values are fully classified java class name, by default not specified.</li>
  *
  * <li>http://stx.sourceforge.net/2002/ns/trax-filter:THREAT-URL-AS-SYSTEM_ID
- * Indicate that what is passed in filter-src=url(...) is in fact Trax SYSTEM_ID
- * instead of an actual URL. This is required when having using custom Trax factories
+ * Indicate that what is passed in filter-src=url(...) is in fact TrAX SYSTEM_ID
+ * instead of an actual URL. This is required when having using custom TrAX factories
  * like Xalan's XSLTC which expects complied XSLT class name unstead of valid file URL.</li>
  *
  * <p>The namespace http://stx.sourceforge.net/2002/ns/trax-filter/attribute
- * designates attributes passed to underlying Trax factory.
+ * designates attributes passed to underlying TrAX factory.
  * This is useful when one desires to instrument in the factory a particular way.
  * For example setting Xalan's incremental parsing feature is done:
  * -Dhttp://stx.sourceforge.net/2002/ns/trax-filter/attribute:http://apache.org/xalan/features/incremental=true
  * or
  * &lt;stx:with-param name="http://stx.sourceforge.net/2002/ns/trax-filter/attribute:http://apache.org/xalan/features/incremental" select="'true'" /&gt;
  *
- * @version $Revision: 1.10 $ $Date: 2009/03/15 13:51:37 $
+ * @version $Revision: 1.11 $ $Date: 2009/09/22 21:13:44 $
  * @author fikin
  */
 public class THResolver implements TransformerHandlerResolver, Constants {
@@ -121,7 +122,7 @@ public class THResolver implements TransformerHandlerResolver, Constants {
    /* supported parameter prefixes */
    /** namespace for filter's own attributes */
    public static final String FILTER_ATTR_NS = STX_NS + "/trax-filter";
-   /** namespace for attributes provided to underlying Trax object */
+   /** namespace for attributes provided to underlying TrAX object */
    public static final String TRAX_ATTR_NS   = STX_NS + "/trax-filter/attribute";
 
    /** internal representation of parameters namespaces */
@@ -131,7 +132,7 @@ public class THResolver implements TransformerHandlerResolver, Constants {
    /** supported filter attributes */
    private static Hashtable attrs = new Hashtable();
 
-   /** indicate if to cache TraX TH and reuse them across calls */
+   /** indicate if to cache TrAX TH and reuse them across calls */
    public static final BooleanAttribute REUSE_TH_URL =
       new BooleanAttribute("REUSE-TH-URL",
          System.getProperty(FILTER_ATTR_NS + ":REUSE-TH-URL", "false"),
@@ -166,11 +167,8 @@ public class THResolver implements TransformerHandlerResolver, Constants {
    /** all XMLReader-based TH are reused under this hashtable key */
    private static final String XMLREADER_KEY = "_XMLREADER";
 
-   /** cached TraX TH */
+   /** cached TrAX TH */
    private static Hashtable cachedTH = new Hashtable(5);
-
-   /** stx trax factory singleton */
-   private static TransformerFactoryImpl stxTraxFactory = null;
 
    /** supported URI methods */
    private static final String[] METHODS = { STX_METHOD, XSLT_METHOD, TRAX_METHOD };
@@ -193,15 +191,14 @@ public class THResolver implements TransformerHandlerResolver, Constants {
       return METHODS;
    }
 
-   /*
-    * (non-Javadoc)
-    *
+   /**
     * @see net.sf.joost.TransformerHandlerResolver#resolve(java.lang.String,
     *      java.lang.String, java.lang.String, javax.xml.transform.URIResolver,
-    *      java.util.Hashtable)
+    *      javax.xml.transform.ErrorListener, java.util.Hashtable)
     */
    public TransformerHandler resolve(String method, String href, String base,
                                      URIResolver uriResolver,
+                                     ErrorListener errorListener,
                                      Hashtable params) throws SAXException
    {
       if (!available(method))
@@ -254,7 +251,7 @@ public class THResolver implements TransformerHandlerResolver, Constants {
             throw new SAXException(tex);
          }
 
-         th = newTHOutOfTraX(method, source, params);
+         th = newTHOutOfTrAX(method, source, params, errorListener, uriResolver);
 
          // cache the instance if required
          cacheHrefTH(method, href, th);
@@ -264,13 +261,14 @@ public class THResolver implements TransformerHandlerResolver, Constants {
       return th;
    }
 
-   /*
-    * (non-Javadoc)
-    *
+   /**
     * @see net.sf.joost.TransformerHandlerResolver#resolve(java.lang.String,
-    *      org.xml.sax.XMLReader, java.util.Hashtable)
+    *      org.xml.sax.XMLReader, javax.xml.transform.URIResolver,
+    *      javax.xml.transform.ErrorListener, java.util.Hashtable)
     */
    public TransformerHandler resolve(String method, XMLReader reader,
+                                     URIResolver uriResolver,
+                                     ErrorListener errorListener,
                                      Hashtable params) throws SAXException
    {
       if (!available(method))
@@ -296,7 +294,7 @@ public class THResolver implements TransformerHandlerResolver, Constants {
             log.debug("resolve(buffer): new source out of buffer");
          Source source = new SAXSource(reader, new InputSource());
 
-         th = newTHOutOfTraX(method, source, params);
+         th = newTHOutOfTrAX(method, source, params, errorListener, uriResolver);
 
          // cache the instance if required
          cacheBufferTH( method, th );
@@ -306,9 +304,7 @@ public class THResolver implements TransformerHandlerResolver, Constants {
       return th;
    }
 
-   /*
-    * (non-Javadoc)
-    *
+   /**
     * @see net.sf.joost.TransformerHandlerResolver#available(java.lang.String)
     */
    public boolean available(String method) {
@@ -378,17 +374,19 @@ public class THResolver implements TransformerHandlerResolver, Constants {
    }
 
    /**
-    * Creates new TH instance out of TraX factory
+    * Creates new TH instance out of TrAX factory
     * @param method
     * @param source
     * @return TH
     */
-   protected TransformerHandler newTHOutOfTraX(String method, Source source,
-                                               Hashtable params)
+   protected TransformerHandler newTHOutOfTrAX(String method, Source source,
+                                               Hashtable params,
+                                               ErrorListener errorListener,
+                                               URIResolver uriResolver)
       throws SAXException
    {
       if (DEBUG)
-         log.debug("newTHOutOfTraX()");
+         log.debug("newTHOutOfTrAX()");
 
       SAXTransformerFactory saxtf;
 
@@ -398,7 +396,7 @@ public class THResolver implements TransformerHandlerResolver, Constants {
             saxtf = (SAXTransformerFactory) (Class.forName(FACTORY
                   .getValueStr())).newInstance();
             if (DEBUG)
-               log.debug("newTHOutOfTraX(): use custom TraX factory "
+               log.debug("newTHOutOfTrAX(): use custom TrAX factory "
                      + FACTORY.getValueStr());
          }
          catch (InstantiationException e) {
@@ -413,13 +411,9 @@ public class THResolver implements TransformerHandlerResolver, Constants {
 
       }
       else if (STX_METHOD.equals(method)) {
-         // create stx factory singleton if not done yet
-         if (stxTraxFactory == null) {
-            stxTraxFactory = new TransformerFactoryImpl();
-         }
-         saxtf = stxTraxFactory;
+         saxtf = new TransformerFactoryImpl();
          if (DEBUG)
-            log.debug("newTHOutOfTraX(): use default Joost factory "
+            log.debug("newTHOutOfTrAX(): use default Joost factory "
                   + saxtf.getClass().toString());
       }
       else {
@@ -462,18 +456,21 @@ public class THResolver implements TransformerHandlerResolver, Constants {
 
 
          if (DEBUG)
-            log.debug("newTHOutOfTraX(): use default TraX factory "+
+            log.debug("newTHOutOfTrAX(): use default TrAX factory "+
                       saxtf.getClass().toString());
       }
 
       // set factory attributes
       setTraxFactoryAttributes( saxtf, params );
+      setupTransformerFactory(saxtf, errorListener, uriResolver);
 
       try {
          if (DEBUG)
-            log.debug("newTHOutOfTraX(): creating factory's reusable TH");
-         // TraX way to create TH
-         return saxtf.newTransformerHandler(source);
+            log.debug("newTHOutOfTrAX(): creating factory's reusable TH");
+         // TrAX way to create TH
+         TransformerHandler th = saxtf.newTransformerHandler(source);
+         setupTransformer(th.getTransformer(), errorListener, uriResolver);
+         return th;
       }
       catch (TransformerConfigurationException ex) {
          throw new SAXException(ex);
@@ -481,9 +478,29 @@ public class THResolver implements TransformerHandlerResolver, Constants {
 
    }
 
+   private void setupTransformerFactory(TransformerFactory factory,
+                                        ErrorListener errorListener,
+                                        URIResolver uriResolver)
+   {
+      if (errorListener != null)
+         factory.setErrorListener(errorListener);
+      if (uriResolver != null)
+         factory.setURIResolver(uriResolver);
+   }
+
+   private void setupTransformer(Transformer transformer,
+                                 ErrorListener errorListener,
+                                 URIResolver uriResolver)
+   {
+      if (errorListener != null)
+         transformer.setErrorListener(errorListener);
+      if (uriResolver != null)
+         transformer.setURIResolver(uriResolver);
+   }
+
    /**
-    * Set to the SAX Trax Factory attributes by inspecting the given parameters
-    * for those which are from Trax namespace
+    * Set to the SAX TrAX Factory attributes by inspecting the given parameters
+    * for those which are from TrAX namespace
     *
     */
    protected void setTraxFactoryAttributes(SAXTransformerFactory saxtf,
@@ -494,14 +511,14 @@ public class THResolver implements TransformerHandlerResolver, Constants {
       while (e.hasMoreElements()) {
          String key = (String)e.nextElement();
 
-         // is this one from Trax namespace?
+         // is this one from TrAX namespace?
          if ( key.startsWith( tmp_TRAX_ATTR_NS ) ) {
 
             // it is, remove the namespace prefix and set it to the factory
             String    name = key.substring(tmp_TRAX_ATTR_NS.length()).toLowerCase();
             saxtf.setAttribute( name, params.get( key ) );
             if (DEBUG)
-               log.debug("newTHOutOfTraX(): set factory attribute "+name+"="+params.get(key));
+               log.debug("newTHOutOfTrAX(): set factory attribute "+name+"="+params.get(key));
          }
       }
 
@@ -510,7 +527,7 @@ public class THResolver implements TransformerHandlerResolver, Constants {
    /**
     * Prepare TH instance for work
     *
-    * This involves setting Trax parameters and all other stuff if needed
+    * This involves setting TrAX parameters and all other stuff if needed
     *
     * @param th
     * @param params
@@ -535,7 +552,7 @@ public class THResolver implements TransformerHandlerResolver, Constants {
             if ( !key.startsWith( tmp_TRAX_ATTR_NS ) &&
                   !key.startsWith( tmp_FILTER_ATTR_NS ) )
             {
-               // ordinary parameter, set it to the Trax object
+               // ordinary parameter, set it to the TrAX object
                tr.setParameter(key, params.get(key) );
             }
          }

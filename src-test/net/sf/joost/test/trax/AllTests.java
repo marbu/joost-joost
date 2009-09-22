@@ -1,5 +1,5 @@
 /*
- * $Id: AllTests.java,v 1.2 2008/06/15 08:02:57 obecker Exp $
+ * $Id: AllTests.java,v 1.3 2009/09/22 21:13:44 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -33,7 +33,7 @@ import org.apache.log4j.PropertyConfigurator;
 /*
  *	Datei: $RCSfile: AllTests.java,v $
  *	JUnit-Test-Suite for TraX-Transformers
- *	$Id: AllTests.java,v 1.2 2008/06/15 08:02:57 obecker Exp $
+ *	$Id: AllTests.java,v 1.3 2009/09/22 21:13:44 obecker Exp $
  */
 public class AllTests extends TestSuite {
 
@@ -54,6 +54,7 @@ public class AllTests extends TestSuite {
     public static Test suite() {
         TestSuite suite = new TestSuite(AllTests.class.getName());
         suite.addTestSuite(net.sf.joost.test.trax.TestTestCases.class);
+        suite.addTest(ExternalErrorListenerTest.suite());
         return suite;
     }
 }

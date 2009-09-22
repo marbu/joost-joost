@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerResolverImpl.java,v 2.17 2008/12/07 19:14:05 obecker Exp $
+ * $Id: TransformerHandlerResolverImpl.java,v 2.18 2009/09/22 21:13:44 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -31,6 +31,7 @@ import net.sf.joost.TransformerHandlerResolver;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import javax.xml.transform.ErrorListener;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.sax.TransformerHandler;
 
@@ -50,7 +51,7 @@ import org.xml.sax.XMLReader;
  * or {@link #resolve(String, XMLReader, Hashtable)} it will look for a handler
  * supporting the given method URI and will delegate the call to it.
  *
- * @version $Revision: 2.17 $ $Date: 2008/12/07 19:14:05 $
+ * @version $Revision: 2.18 $ $Date: 2009/09/22 21:13:44 $
  * @author fikin
  */
 
@@ -202,19 +203,50 @@ public final class TransformerHandlerResolverImpl
       return result;
    }
 
-    /**
-     * Resolve given method via searching for a plugin providing implementation
-     * for it.
-     * @return TransformerHandler for that method or throws exception.
-     */
+   /**
+    * Resolve given method via searching for a plugin providing implementation
+    * for it.
+    * @return TransformerHandler for that method or throws exception.
+    */
    public TransformerHandler resolve(String method, String href, String base,
-                                     URIResolver uriResolver,
-                                     Hashtable params) throws SAXException
+         URIResolver uriResolver, ErrorListener errorListener, Hashtable params)
+         throws SAXException
    {
       Hashtable externalParams = createExternalParameters(params);
       if (customResolver != null) {
          TransformerHandler handler =
             customResolver.resolve(method, href, base, uriResolver,
+                                   errorListener, externalParams);
+         if (handler != null)
+            return handler;
+      }
+
+      if (notInitializedYet)
+         init();
+
+      TransformerHandlerResolver impl =
+         (TransformerHandlerResolver) plugins.get(method);
+      if (impl == null)
+         throw new SAXException("Undefined filter implementation for method '"
+               + method + "'");
+      return impl.resolve(method, href, base, uriResolver, errorListener,
+                          externalParams);
+   }
+
+   /**
+    * This is essentially same method as common resolve
+    * but it assumes that params are already "parsed" via
+    * {@link #createExternalParameters(Hashtable)}
+    */
+   public TransformerHandler resolve(String method, XMLReader reader,
+                                     URIResolver uriResolver,
+                                     ErrorListener errorListener,
+                                     Hashtable params) throws SAXException
+   {
+      Hashtable externalParams = createExternalParameters(params);
+      if (customResolver != null) {
+         TransformerHandler handler =
+            customResolver.resolve(method, reader, uriResolver, errorListener,
                                    externalParams);
          if (handler != null)
             return handler;
@@ -228,35 +260,10 @@ public final class TransformerHandlerResolverImpl
       if (impl == null)
          throw new SAXException("Undefined filter implementation for method '"
                + method + "'");
-      return impl.resolve(method, href, base, uriResolver, externalParams);
+      return impl.resolve(method, reader, uriResolver, errorListener,
+                          externalParams);
    }
 
-   /**
-    * This is essentially same method as common resolve
-    * but it assumes that params are already "parsed" via
-    * {@link #createExternalParameters(Hashtable)}
-    */
-   public TransformerHandler resolve(String method, XMLReader reader,
-                                     Hashtable params) throws SAXException
-   {
-      Hashtable externalParams = createExternalParameters(params);
-      if (customResolver != null) {
-         TransformerHandler handler =
-            customResolver.resolve(method, reader, externalParams);
-         if (handler != null)
-            return handler;
-      }
-
-      if (notInitializedYet)
-         init();
-
-      TransformerHandlerResolver impl =
-         (TransformerHandlerResolver) plugins.get(method);
-      if (impl == null)
-         throw new SAXException("Undefined filter implementation for method '"
-               + method + "'");
-      return impl.resolve(method, reader, externalParams);
-   }
 
    /**
     * Lookup given method via searching for a plugin providing implementation for it.
