@@ -1,0 +1,30 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>net.sf.joost</groupId>
+  <artifactId>joost</artifactId>
+  <packaging>jar</packaging>
+  <name>Joost</name>
+  <version>0.9.1</version>
+  <description>Joost STX processor</description>
+  <url>http://joost.sourceforge.net/</url>
+  <licenses>
+    <license>
+      <name>Mozilla Public License 1.1</name>
+      <url>http://www.mozilla.org/MPL/MPL-1.1.html</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>obecker</id>
+      <name>Oliver Becker</name>
+      <email>obecker@users.sourceforge.net</email>
+      <roles>
+        <role>Admin</role>
+        <role>Developer</role>
+      </roles>
+    </developer>
+  </developers>
+  <scm>
+    <url>joost.cvs.sourceforge.net:/cvsroot/joost</url>
+  </scm>
+</project>
