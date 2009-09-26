@@ -1,5 +1,5 @@
 /*
- * $Id: TransformerHandlerResolverImpl.java,v 2.18 2009/09/22 21:13:44 obecker Exp $
+ * $Id: TransformerHandlerResolverImpl.java,v 2.19 2009/09/26 13:48:04 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -46,12 +46,14 @@ import org.xml.sax.XMLReader;
  * It supports pluggable {@link TransformerHandlerResolver} implementations.
  * Plugin mechanism is based on Jakarta's Discovery library.
  *
- * During instantiation it will scan for available handlers and cache them.
- * Upon call to {@link #resolve(String, String, String, URIResolver, Hashtable)}
- * or {@link #resolve(String, XMLReader, Hashtable)} it will look for a handler
- * supporting the given method URI and will delegate the call to it.
+ * During instantiation it will scan for available handlers and cache them if
+ * this was behavior was configured. Upon calling
+ * {@link #resolve(String, String, String, URIResolver, ErrorListener, Hashtable)}
+ * or {@link #resolve(String, XMLReader, URIResolver, ErrorListener, Hashtable)}
+ * it will look for a handler supporting the given method URI and will delegate
+ * the call to it.
  *
- * @version $Revision: 2.18 $ $Date: 2009/09/22 21:13:44 $
+ * @version $Revision: 2.19 $ $Date: 2009/09/26 13:48:04 $
  * @author fikin
  */
 
