@@ -4,7 +4,7 @@
   <artifactId>joost</artifactId>
   <packaging>jar</packaging>
   <name>Joost</name>
-  <version>0.9.1</version>
+  <version>@@@VERSION@@@</version>
   <description>Joost STX processor</description>
   <url>http://joost.sourceforge.net/</url>
   <licenses>

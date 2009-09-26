@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
- | $Id: build.xml,v 1.26 2009/09/13 20:29:55 obecker Exp $
+ | $Id: build.xml,v 1.27 2009/09/26 13:48:59 obecker Exp $
  |
  | Ant build file
  | Author: Oliver Becker
@@ -241,6 +241,8 @@
     <copy file="${dist}/${dist.name}/joost.jar" tofile="${dist.name}.jar" />
     <jar basedir="${dist}/${dist.name}/${src}"
          destfile="${dist.name}-sources.jar" />
+    <copy file="${dist}/${dist.name}/conf/pom.xml" tofile="${dist.name}.pom" />
+    <replace file="${dist.name}.pom" token="@@@VERSION@@@" value="${joost.version}" />
     <!-- second: assemble source distribution -->
     <!-- create .tar.gz -->
     <tar tarfile="${ant.project.name}-src.tar">
