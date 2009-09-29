@@ -25,6 +25,6 @@
     </developer>
   </developers>
   <scm>
-    <url>joost.cvs.sourceforge.net:/cvsroot/joost</url>
+    <url>http://joost.cvs.sourceforge.net/viewvc/joost/</url>
   </scm>
 </project>
