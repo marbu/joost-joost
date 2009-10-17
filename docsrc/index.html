@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.102 2009/09/13 20:29:56 obecker Exp $ -->
+<!-- $Id: index.html,v 1.103 2009/10/17 10:19:23 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -48,7 +48,12 @@
       <div class="contents">
         <h3>Contents</h3>
         <ul>
-          <li><a href="#gettingstarted">Getting started</a></li>
+          <li><a href="#gettingstarted">Getting started</a>
+            <ul>
+              <li><a href="#run-standalone">As a standalone application</a></li>
+              <li><a href="#run-library">As a library</a></li>
+            </ul>
+          </li>
           <li><a href="#features">Features</a>
             <ul>
               <li><a href="#stx-elements">Supported STX elements</a></li>
@@ -149,6 +154,8 @@
             Component</a> from Apache Jakarta</li>
          <li>and of course a Java platform, at least version 1.4</li>
       </ul>
+      <p><a name="run-standalone"></a>
+      <strong><em>As a standalone application</em></strong></p>
       <p>
       Run <em>Joost</em> with<br>
       <strong><code>java net.sf.joost.Main [opts] <em>xml-source stx-sheet</em>
@@ -232,11 +239,23 @@
       line at the moment (<em>Joost</em> sets it to <code>warn</code>).
       </p>
 
+      <p><a name="run-library"></a>
+      <strong><em>As a library</em></strong></p>
       <p><em>Joost</em> implements the TrAX interfaces from JAXP 1.1.
       In order to create a <em>Joost</em> transformer you have to set the Java
       property <code>javax.xml.transform.TransformerFactory</code>
       to the value <code>net.sf.joost.trax.TransformerFactoryImpl</code>.
+      Alternatively it is possible to create an <code>TransformerFactoryImpl</code>
+      instance simply by calling its constructor.
       </p>
+      
+      <p>Maven projects can use the current <code>joost.jar</code> by adding
+      the following dependency into the <code>pom.xml</code>:</p>
+      <pre>&lt;dependency>
+  &lt;groupId>net.sf.joost&lt;/groupId>
+  &lt;artifactId>joost&lt;/artifactId>
+  &lt;version>@@@VERSION@@@&lt;/version>
+&lt;/dependency></pre>
 
       <hr width="25%" align="left" size="1" noshade>
       <span style="font-size: small">
