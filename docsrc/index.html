@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.103 2009/10/17 10:19:23 obecker Exp $ -->
+<!-- $Id: index.html,v 1.104 2009/10/17 10:39:02 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -514,13 +514,12 @@
         that have been produced via an <code>stx:processing-instruction</code>
         instruction. Therefore it is possible to imitate XSLT's 
         <code>disable-output-escaping</code> via
-        <pre>
+      </p>
+      <pre>
   &lt;stx:processing-instruction name="javax.xml.transform.disable-output-escaping" />
   ... some text that should be printed without output escaping
   &lt;stx:processing-instruction name="javax.xml.transform.enable-output-escaping" />
-        </pre>
-        
-      </p>
+      </pre>
       
       <hr>
 
@@ -570,7 +569,7 @@
       }
       return res;
     }
-  ]]>
+  ]]&gt;
   &lt;/joost:script></strong>
 
   &lt;stx:template match="/">
@@ -948,7 +947,7 @@
 
       <p>
         <span style="float: right;">
-          <a target="_blank" href="http://sourceforge.net/projects/joost"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=55258&type=16" width="150" height="40" border="0" alt="Get Joost STX processor at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+          <a target="_blank" href="http://sourceforge.net/projects/joost"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=55258&amp;type=16" width="150" height="40" border="0" alt="Get Joost STX processor at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
         </span>
         <strong>Have fun!</strong>
         <br><br>
