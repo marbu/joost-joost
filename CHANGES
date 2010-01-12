@@ -1,3 +1,6 @@
+Changes since 0.9.1
+- Bugfix: 2930934
+
 Changes since 20090315
 - Bugfixes: 2840109, 2840121, 2840583, 2843559
 - changed the net.sf.joost.TransformerHandlerResolver interface such that both

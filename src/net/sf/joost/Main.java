@@ -1,5 +1,5 @@
 /*
- * $Id: Main.java,v 1.31 2008/10/06 13:31:41 obecker Exp $
+ * $Id: Main.java,v 1.32 2010/01/12 22:29:28 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.TransformerException;
 
@@ -48,7 +49,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Command line interface for Joost.
- * @version $Revision: 1.31 $ $Date: 2008/10/06 13:31:41 $
+ * @version $Revision: 1.32 $ $Date: 2010/01/12 22:29:28 $
  * @author Oliver Becker
  */
 public class Main implements Constants
@@ -286,6 +287,9 @@ public class Main implements Constants
                   timeStart = System.currentTimeMillis();
                Processor proc =
                   new Processor(new InputSource(args[i]), pContext);
+               if (nodecl)
+                  proc.outputProperties.setProperty(
+                        OutputKeys.OMIT_XML_DECLARATION, "yes");
                if (measureTime) {
                   timeEnd = System.currentTimeMillis();
                   System.err.println("Parsing " + args[i] + ": " +
@@ -414,7 +418,6 @@ public class Main implements Constants
             // processor.setProperty(
             //    "http://xml.org/sax/properties/lexical-handler", emitter);
 
-            emitter.setOmitXmlDeclaration(nodecl);
             emitter.setSupportDisableOutputEscaping(doe);
          }
 
