@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java,v 1.26 2009/08/21 14:58:42 obecker Exp $
+ * $Id: Value.java,v 1.27 2010/01/24 20:27:13 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -34,7 +34,7 @@ import java.util.Locale;
 
 /**
  * Container class for concrete values (of XPath types)
- * @version $Revision: 1.26 $ $Date: 2009/08/21 14:58:42 $
+ * @version $Revision: 1.27 $ $Date: 2010/01/24 20:27:13 $
  * @author Oliver Becker
  */
 public class Value implements Cloneable
@@ -488,7 +488,7 @@ public class Value implements Cloneable
       else if (target == String.class) {
          return getStringValue();
       }
-      else if (type == STRING && "".equals(string) && !target.isPrimitive()) {
+      else if (!target.isPrimitive() && getStringValue().equals("")) {
          // convert the "" to null if the target is a non-string reference type
          return null;
       }

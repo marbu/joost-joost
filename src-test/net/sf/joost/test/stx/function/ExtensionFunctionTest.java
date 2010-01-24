@@ -1,5 +1,5 @@
 /*
- * $Id: ExtensionFunctionTest.java,v 1.2 2009/08/21 14:58:41 obecker Exp $
+ * $Id: ExtensionFunctionTest.java,v 1.3 2010/01/24 20:27:12 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -40,7 +40,7 @@ import javax.xml.transform.stream.StreamSource;
 import junit.framework.TestCase;
 
 /**
- * @version $Revision: 1.2 $ $Date: 2009/08/21 14:58:41 $
+ * @version $Revision: 1.3 $ $Date: 2010/01/24 20:27:12 $
  * @author Oliver Becker
  */
 public class ExtensionFunctionTest extends TestCase
@@ -75,6 +75,15 @@ public class ExtensionFunctionTest extends TestCase
    {
       ExtensionFunctionTarget target = new ExtensionFunctionTarget();
       doTransform(target, "extensionFunctionNull.stx");
+
+      assertEquals(0, target.getIntValue());
+      assertNull(target.getIntegerValue());
+   }
+
+   public void testEmptyNodeIntegerValues() throws TransformerException
+   {
+      ExtensionFunctionTarget target = new ExtensionFunctionTarget();
+      doTransform(target, "extensionFunctionEmptyNode.stx");
 
       assertEquals(0, target.getIntValue());
       assertNull(target.getIntegerValue());

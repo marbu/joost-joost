@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<stx:transform xmlns:stx="http://stx.sourceforge.net/2002/ns"
+               xmlns:t="java:net.sf.joost.test.stx.function.ExtensionFunctionTarget"
+               version="1.0">
+
+  <stx:param name="target" required="yes" />
+  
+  <stx:template match="x">
+    <stx:if test="t:setIntValue($target, .)" />
+    <stx:if test="t:setIntegerValue($target, .)" />
+  </stx:template>
+
+</stx:transform>
