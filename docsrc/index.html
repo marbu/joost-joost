@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- $Id: index.html,v 1.104 2009/10/17 10:39:02 obecker Exp $ -->
+<!-- $Id: index.html,v 1.105 2010/01/24 15:32:51 obecker Exp $ -->
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -23,9 +23,14 @@
         }
         h3 {
           color: #000066;
-          font-size: 100%; 
-          padding: 0px 10px 0px 10px;
-          margin: 10px 0px 0px 0px;
+          font-size: 100%;
+          padding: 0;
+          margin: 0;
+          margin-top: 1px; 
+        }
+        p.h3addon {
+          margin-top: 0;
+          padding-top: 0;
         }
         .contents {
           float: right; 
@@ -33,6 +38,10 @@
           background-color: #ffffff; 
           padding: 5px; 
           margin: 0 0 10px 10px;
+        }
+        .contents h3 {
+          padding: 0px 10px 0px 10px;
+          margin: 10px 0px 0px 0px;
         }
         .contents li {
           line-height: 1.25em;
@@ -154,8 +163,7 @@
             Component</a> from Apache Jakarta</li>
          <li>and of course a Java platform, at least version 1.4</li>
       </ul>
-      <p><a name="run-standalone"></a>
-      <strong><em>As a standalone application</em></strong></p>
+      <h3><a name="run-standalone">As a standalone application</a></h3>
       <p>
       Run <em>Joost</em> with<br>
       <strong><code>java net.sf.joost.Main [opts] <em>xml-source stx-sheet</em>
@@ -238,9 +246,22 @@
       It is not possible to change FOP's verbosity on the command
       line at the moment (<em>Joost</em> sets it to <code>warn</code>).
       </p>
+      
+      <p><strong><em>Setting features of the underlying SAX parser</em></strong><br>
+      <em>Joost</em> will create a default <code>XMLReader</code> for parsing
+      both source XML and STX when invoked via the command line. However, it is
+      possible to specify Java system properties that will be interpreted and
+      set as features for the <code>XMLReader</code>. Simply add the prefix
+      "<code>saxFeature-</code>" to the feature URI and specify its (boolean)
+      value as a system property. For example:
+      </p>
+      <pre>java net.sf.joost.Main -DsaxFeature-http://apache.org/xml/features/xinclude=true ...</pre>
+      <p>will enable XInclude processing with Xerces. In the same way 
+      <code>XMLReader</code> properties having a string value may be specified
+      using the prefix "<code>saxProperty-</code>".</p>
+      <p>Note: Most of the feature URIs and property URIs are parser specific.</p>
 
-      <p><a name="run-library"></a>
-      <strong><em>As a library</em></strong></p>
+      <h3><a name="run-library">As a library</a></h3>
       <p><em>Joost</em> implements the TrAX interfaces from JAXP 1.1.
       In order to create a <em>Joost</em> transformer you have to set the Java
       property <code>javax.xml.transform.TransformerFactory</code>
@@ -269,10 +290,10 @@
 
 
       <h2><a name="features">Features</a></h2>
-      <p><a name="stx-elements"></a>
-      <strong><em>Supported stx elements</em></strong> (and their attributes)
+      <h3><a name="stx-elements">Supported stx elements</a></h3>
+      <p class="h3addon">(and their attributes)
       in the namespace <code>http://stx.sourceforge.net/2002/ns</code> in
-      alphabetical order
+      alphabetical order</p>
       <ul>
       <li>stx:analyze-text (select)<br>
           stx:match ({regex}, {flags}?) <br>
@@ -365,9 +386,8 @@
       
       <hr>
 
-      <p><a name="stx-functions"></a>
-      <strong><em>Supported STXPath functions</em></strong> in alphabetical
-      order
+      <h3><a name="stx-functions">Supported STXPath functions</a></h3>
+      <p class="h3addon">in alphabetical order</p>
       <ul>
       <li>avg(sequence)</li>
       <li>boolean(object)</li>
@@ -445,7 +465,7 @@
 
       <h2><a name="extensions">Extensions</a></h2>
       
-      <h5><a name="html">HTML output</a></h5>
+      <h3><a name="html">HTML output</a></h3>
       <p>
         <em>Joost</em> provides an experimental HTML 4.01 output method that
         can be invoked by specifying <code>joost:html</code> in the
@@ -459,7 +479,7 @@
           
       <hr>
 
-      <h5><a name="doe">Disable output escaping</a></h5>
+      <h3><a name="doe">Disable output escaping</a></h3>
       <p>
         Though both STX and <em>Joost</em> don't have a feature for disabling
         output escaping in the language (unlike XSLT 1.0), it may happen that
@@ -523,7 +543,7 @@
       
       <hr>
 
-      <h5><a name="scripting">Scripting</a></h5>
+      <h3><a name="scripting">Scripting</a></h3>
       <p>
         This release of <em>Joost</em> introduces experimental support for 
         scripting languages. It uses the bean scripting framework BSF (see 
@@ -587,7 +607,7 @@
       
       <hr>
 
-      <h5><a name="java">Invoking Java methods</a></h5>
+      <h3><a name="java">Invoking Java methods</a></h3>
       <p>
         <em>Joost</em> allows the use of extension functions written in Java.
         An extension function is invoked using the notation
@@ -831,7 +851,7 @@
 
       <hr>
 
-      <h5><a name="filters">Using external SAX2 filters</a></h5>
+      <h3><a name="filters">Using external SAX2 filters</a></h3>
       <p>
         <em>Joost</em> implements the usage of external SAX2 filters as
         described in the 
@@ -882,7 +902,7 @@
 
       <hr>
 
-      <h5><a name="outputuriresolver">OutputURIResolver</a></h5>
+      <h3><a name="outputuriresolver">OutputURIResolver</a></h3>
       <p><em>Joost</em> provides the interface <code>OutputURIResolver</code>
         that acts as the counterpart to the JAXP <code>URIResolver</code>. With
         the help of this interface the user can define what kind of result

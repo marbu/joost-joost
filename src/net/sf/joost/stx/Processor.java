@@ -1,5 +1,5 @@
 /*
- * $Id: Processor.java,v 2.61 2009/08/21 12:46:17 obecker Exp $
+ * $Id: Processor.java,v 2.62 2010/01/24 15:32:51 obecker Exp $
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -71,7 +71,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * Processes an XML document as SAX XMLFilter. Actions are contained
  * within an array of templates, received from a transform node.
- * @version $Revision: 2.61 $ $Date: 2009/08/21 12:46:17 $
+ * @version $Revision: 2.62 $ $Date: 2010/01/24 15:32:51 $
  * @author Oliver Becker
  */
 
@@ -495,6 +495,26 @@ public class Processor extends XMLFilterImpl
             throw new SAXException("Can't find SAX parser implementation.\n" +
                   "Please specify a parser class via the system property " +
                   "'org.xml.sax.driver'");
+         }
+      }
+
+      // set features and properties that have been put
+      // into the system properties (e.g. via command line)
+      Properties sysProps = System.getProperties();
+      for (Enumeration e = sysProps.propertyNames();
+           e.hasMoreElements(); ) {
+         String propKey = (String) e.nextElement();
+         if (propKey.startsWith(EXTERN_SAX_FEATURE_PREFIX)) {
+            reader.setFeature(
+                  propKey.substring(EXTERN_SAX_FEATURE_PREFIX.length()),
+                  Boolean.parseBoolean(sysProps.getProperty(propKey)));
+            continue;
+         }
+         if (propKey.startsWith(EXTERN_SAX_PROPERTY_PREFIX)) {
+            reader.setProperty(
+                  propKey.substring(EXTERN_SAX_PROPERTY_PREFIX.length()),
+                  sysProps.getProperty(propKey));
+            continue;
          }
       }
 

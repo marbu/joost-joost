@@ -1,5 +1,7 @@
 Changes since 0.9.1
 - Bugfix: 2930934
+- XMLReader features can be specified via system props on the command line using
+  -DsaxFeature-<feature URL>=[true|false]
 
 Changes since 20090315
 - Bugfixes: 2840109, 2840121, 2840583, 2843559
